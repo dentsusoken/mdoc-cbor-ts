@@ -140,8 +140,8 @@ describe('settings', () => {
       EnvLoader.load({
         X509_NOT_VALID_AFTER: undefined,
       });
-      const now = new Date();
-      expect(X509_NOT_VALID_AFTER().getDate()).toEqual(now.getDate() + 10);
+      const now = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000);
+      expect(X509_NOT_VALID_AFTER().getDate()).toEqual(now.getDate());
     });
   });
   describe('X509_NOT_VALID_AFTER_DAYS', () => {
