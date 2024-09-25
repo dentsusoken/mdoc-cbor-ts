@@ -1,5 +1,4 @@
-import { decode } from 'cbor';
-import { Sign1 } from 'cose-kit';
+import { decode, Sign1 } from '@auth0/cose';
 
 /**
  * Convert a byte array to a COSE Sign1 object.
@@ -8,9 +7,7 @@ import { Sign1 } from 'cose-kit';
  * @throws {Error} If the byte array is not a valid COSE Sign1 object.
  */
 export const bytes2CoseSign1 = (data: Uint8Array): Sign1 => {
-  return new Sign1(
-    ...(decode(data).value as ConstructorParameters<typeof Sign1>)
-  );
+  return decode(data, Sign1);
 };
 
 /**

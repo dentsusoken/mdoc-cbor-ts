@@ -36,8 +36,7 @@
     "vitest": "^2.1.1"
   },
   "dependencies": {
-    "cbor": "^9.0.2",
-    "cose-kit": "^1.7.1",
+    "@auth0/cose": "^1.0.2",
     "node-forge": "^1.3.1",
     "zod": "^3.23.8"
   }

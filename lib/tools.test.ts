@@ -1,5 +1,4 @@
-import { decode } from 'cbor';
-import { Sign1 } from 'cose-kit';
+import { decode, Sign1 } from '@auth0/cose';
 import { bytes2CoseSign1, cborlist2CoseSign1, shuffleDict } from './tools';
 
 function hexToUint8Array(hex: string): Uint8Array {
@@ -24,8 +23,14 @@ describe('tools', () => {
   });
   describe('cborlist2CoseSign1', () => {
     it('should return a Sign1Message', async () => {
-      const list = decode(data).value;
-      const ret = cborlist2CoseSign1(list);
+      const { protectedHeaders, unprotectedHeaders, payload, signature } =
+        decode(data, Sign1);
+      const ret = cborlist2CoseSign1([
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        signature,
+      ]);
       expect(ret).toBeDefined();
       expect(ret).toBeInstanceOf(Sign1);
     });
