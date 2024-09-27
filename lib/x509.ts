@@ -25,7 +25,7 @@ export class MsoX509Fabric {
     const cert = new pkijs.Certificate();
     cert.version = 3;
     cert.subjectPublicKeyInfo.importKey(
-      await this.jwkToCryptoKey(this.toPublicKey(this.privateKey), false)
+      await this.toCryptoKey(this.toPublicKey(this.privateKey), false)
     );
 
     cert.serialNumber = asn1js.Integer.fromBigInt(this.randomSerialNumber());
@@ -87,10 +87,7 @@ export class MsoX509Fabric {
         parsedValue: subjectAltName,
       }),
     ];
-    await cert.sign(
-      await this.jwkToCryptoKey(this.privateKey, true),
-      'SHA-256'
-    );
+    await cert.sign(await this.toCryptoKey(this.privateKey, true), 'SHA-256');
     switch (encoding) {
       case 'DER':
         const der = cert.toSchema(true).toBER(false);
@@ -119,15 +116,18 @@ export class MsoX509Fabric {
    * @param {COSEKey | JWK} key The private key.
    * @returns {JWK} The public key.
    */
-  private toPublicKey(key: Uint8Array | COSEKey | JWK): JWK {
-    const privateKey =
-      key instanceof Uint8Array
-        ? COSEKey.import(key).toJWK()
-        : key instanceof COSEKey
-        ? key.toJWK()
-        : key;
+  protected toPublicKey(key: Uint8Array | COSEKey | JWK): JWK {
+    const privateKey = this.toJWK(key);
     privateKey.d = undefined;
     return privateKey;
+  }
+
+  protected toJWK(key: Uint8Array | COSEKey | JWK): JWK {
+    return key instanceof Uint8Array
+      ? COSEKey.import(key).toJWK()
+      : key instanceof COSEKey
+      ? key.toJWK()
+      : key;
   }
 
   /**
@@ -136,16 +136,11 @@ export class MsoX509Fabric {
    * @param {boolean} isPrivate Whether the key is a private key.
    * @returns {Promise<CryptoKey>} The CryptoKey.
    */
-  private async jwkToCryptoKey(
+  protected async toCryptoKey(
     key: Uint8Array | COSEKey | JWK,
     isPrivate: boolean
   ): Promise<CryptoKey> {
-    const jwk =
-      key instanceof Uint8Array
-        ? COSEKey.import(key).toJWK()
-        : key instanceof COSEKey
-        ? key.toJWK()
-        : key;
+    const jwk = this.toJWK(key);
     return crypto.subtle.importKey(
       'jwk',
       jwk,

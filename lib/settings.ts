@@ -50,7 +50,7 @@ export const TSMDOC_EXP_DELTA_HOURS = () =>
  * @property {string} SHA-256 - Identifier for the SHA-256 algorithm.
  * @property {string} SHA-512 - Identifier for the SHA-512 algorithm.
  */
-export const HASHALG_MAP = {
+export const HASHALG_MAP: Record<string, string> = {
   'SHA-256': 'sha256',
   'SHA-512': 'sha512',
 };
@@ -158,7 +158,7 @@ export const X509_SAN_URL = () =>
  * @property {number} expiry_date - CBOR tag number for the 'expiry_date' attribute.
  * @property {number} issue_date - CBOR tag number for the 'issue_date' attribute.
  */
-export const CBORTAGS_ATTR_MAP = {
+export const CBORTAGS_ATTR_MAP: Record<string, number> = {
   birth_date: 1004,
   expiry_date: 1004,
   issue_date: 1004,
