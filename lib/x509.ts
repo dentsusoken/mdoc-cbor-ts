@@ -4,6 +4,7 @@ import { JWK } from 'jose';
 import nodeForge from 'node-forge';
 import * as pkijs from 'pkijs';
 import * as pvutils from 'pvutils';
+import { crypto, cryptoEngine } from './crypto';
 import * as settings from './settings';
 
 /**
@@ -24,7 +25,8 @@ export class MsoX509Fabric {
     const cert = new pkijs.Certificate();
     cert.version = 3;
     cert.subjectPublicKeyInfo.importKey(
-      await this.toCryptoKey(this.toPublicKey(this.privateKey), false)
+      await this.toCryptoKey(this.toPublicKey(this.privateKey), false),
+      cryptoEngine
     );
 
     cert.serialNumber = asn1js.Integer.fromBigInt(this.randomSerialNumber());
@@ -86,7 +88,11 @@ export class MsoX509Fabric {
         parsedValue: subjectAltName,
       }),
     ];
-    await cert.sign(await this.toCryptoKey(this.privateKey, true), 'SHA-256');
+    await cert.sign(
+      await this.toCryptoKey(this.privateKey, true),
+      'SHA-256',
+      cryptoEngine
+    );
     switch (encoding) {
       case 'DER':
         const der = cert.toSchema(true).toBER(false);
