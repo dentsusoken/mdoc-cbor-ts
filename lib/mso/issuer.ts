@@ -7,7 +7,6 @@ import {
   UnprotectedHeaders,
 } from '@auth0/cose';
 import { Tag, encode } from 'cbor-x';
-import crypto from 'crypto';
 import { JWK } from 'jose';
 import { nanoid } from 'nanoid';
 import * as settings from '../settings';

@@ -43,6 +43,7 @@ export class MdocCborIssuer {
     doctype?: string
   ) {
     // TODO - confirm if this is necessary or not.
+    // @ts-ignore
     const cosekey =
       deviceKeyinfo instanceof Uint8Array
         ? COSEKey.import(deviceKeyinfo)

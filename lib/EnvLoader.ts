@@ -1,5 +1,3 @@
-import process from 'process';
-
 /**
  * Helper class to load environment variables.
  * Basically a wrapper around process.env.

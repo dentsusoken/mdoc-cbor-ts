@@ -1,10 +1,9 @@
 import { COSEKey } from '@auth0/cose';
-import asn1js from 'asn1js';
-import crypto from 'crypto';
+import * as asn1js from 'asn1js';
 import { JWK } from 'jose';
 import nodeForge from 'node-forge';
-import pkijs from 'pkijs';
-import pvutils from 'pvutils';
+import * as pkijs from 'pkijs';
+import * as pvutils from 'pvutils';
 import * as settings from './settings';
 
 /**

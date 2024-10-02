@@ -1,7 +1,6 @@
 import { COSEKey, Headers, Sign1 } from '@auth0/cose';
-import crypto from 'crypto';
 import { JWK } from 'jose';
-import pkijs from 'pkijs';
+import * as pkijs from 'pkijs';
 import { MsoX509ChainNotFound, UnsupportedMsoDataFormat } from '../exceptions';
 import { bytes2CoseSign1, cborlist2CoseSign1 } from '../tools';
 
