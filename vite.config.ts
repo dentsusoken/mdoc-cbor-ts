@@ -12,6 +12,9 @@ export default defineConfig({
         return `${format}/index.js`;
       },
     },
+    rollupOptions: {
+      external: ['@auth0/cose', 'cbor-x'],
+    },
   },
   test: {
     globals: true,

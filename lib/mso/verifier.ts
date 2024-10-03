@@ -1,7 +1,6 @@
 import { COSEKey, Headers, Sign1 } from '@auth0/cose';
 import { JWK } from 'jose';
 import * as pkijs from 'pkijs';
-import { crypto, cryptoEngine } from '../crypto';
 import { MsoX509ChainNotFound, UnsupportedMsoDataFormat } from '../exceptions';
 import { bytes2CoseSign1, cborlist2CoseSign1 } from '../tools';
 
@@ -73,7 +72,7 @@ export class MsoVerifier {
       this.x509Certs.push(value);
     }
     const cert = pkijs.Certificate.fromBER(this.x509Certs[0] as BufferSource);
-    const publicKey = await cert.getPublicKey(undefined, cryptoEngine);
+    const publicKey = await cert.getPublicKey();
     const jwk = await crypto.subtle.exportKey('jwk', publicKey);
 
     this.publicKey = COSEKey.fromJWK(jwk as JWK);

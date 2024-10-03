@@ -9,7 +9,6 @@ import {
 import { Tag, encode } from 'cbor-x';
 import { JWK } from 'jose';
 import { nanoid } from 'nanoid';
-import { crypto } from '../crypto';
 import * as settings from '../settings';
 import { shuffleDict } from '../tools';
 import { DisclosureMap, HashMap } from '../types';
