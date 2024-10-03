@@ -7,6 +7,7 @@ import {
   UnprotectedHeaders,
 } from '@auth0/cose';
 import { Tag, encode } from 'cbor-x';
+import crypto from 'crypto';
 import { JWK } from 'jose';
 import { nanoid } from 'nanoid';
 import * as settings from '../settings';
@@ -24,8 +25,17 @@ import { MsoX509Fabric } from '../x509';
  */
 export class MsoIssuer extends MsoX509Fabric {
   public publicKey: JWK;
-  public hashMap: HashMap = {};
-  public disclosureMap: DisclosureMap = {};
+
+  private constructor(
+    public data: Record<string, unknown>,
+    public privateKey: Uint8Array | COSEKey | JWK,
+    public digestAlg: string = settings.TSMDOC_HASHALG(),
+    public hashMap: HashMap,
+    public disclosureMap: DisclosureMap
+  ) {
+    super(privateKey);
+    this.publicKey = this.toPublicKey(privateKey);
+  }
 
   /**
    * Creates an instance of MsoIssuer.
@@ -33,46 +43,46 @@ export class MsoIssuer extends MsoX509Fabric {
    * @param {Uint8Array | COSEKey | JWK} privateKey The private key used to sign the MSO document.
    * @param {string} digestAlg The hash algorithm used to generate the hash map. Default is SHA-256.
    */
-  constructor(
-    public data: Record<string, unknown>,
+  static async create(
+    data: Record<string, unknown>,
     privateKey: Uint8Array | COSEKey | JWK,
-    public digestAlg: string = settings.TSMDOC_HASHALG()
+    digestAlg: string = settings.TSMDOC_HASHALG()
   ) {
-    super(privateKey);
-    this.publicKey = this.toPublicKey(privateKey);
-
     let digestCnt = 0;
 
-    Object.entries(data).forEach(([ns, values]) => {
-      this.disclosureMap[ns] = {};
-      this.hashMap[ns] = {};
+    const disclosureMap: DisclosureMap = {};
+    const hashMap: HashMap = {};
+
+    for (const [ns, values] of Object.entries(data)) {
+      disclosureMap[ns] = {};
+      hashMap[ns] = {};
       if (typeof values !== 'object') {
         throw new Error('Invalid data type');
       }
-      Object.entries(shuffleDict(values as Record<string, unknown>)).forEach(
-        async ([k, v]) => {
-          const rndSalt = nanoid(settings.DIGEST_SALT_LENGTH);
-          const valueCborTag = settings.CBORTAGS_ATTR_MAP[k];
-
-          if (valueCborTag) {
-            v = new Tag(v, valueCborTag);
-          }
-
-          this.disclosureMap[ns][digestCnt] = {
-            digestID: digestCnt,
-            random: rndSalt,
-            elementIdentifier: k,
-            elementValue: v,
-          };
-          this.hashMap[ns][digestCnt] = await crypto.subtle.digest(
-            settings.TSMDOC_HASHALG(),
-            encode(new Tag(encode(this.disclosureMap[ns][digestCnt]), 24))
-          );
-
-          digestCnt += 1;
+      const shuffledValues = shuffleDict(values as Record<string, unknown>);
+      for (const [k, v] of Object.entries(shuffledValues)) {
+        const rndSalt = nanoid(settings.DIGEST_SALT_LENGTH);
+        let value = v;
+        const valueCborTag = settings.CBORTAGS_ATTR_MAP[k];
+        if (valueCborTag) {
+          value = new Tag(v, valueCborTag);
         }
-      );
-    });
+
+        disclosureMap[ns][digestCnt] = {
+          digestID: digestCnt,
+          random: rndSalt,
+          elementIdentifier: k,
+          elementValue: value,
+        };
+        hashMap[ns][digestCnt] = await crypto.subtle.digest(
+          settings.TSMDOC_HASHALG(),
+          encode(new Tag(encode(disclosureMap[ns][digestCnt]), 24))
+        );
+
+        digestCnt += 1;
+      }
+    }
+    return new MsoIssuer(data, privateKey, digestAlg, hashMap, disclosureMap);
   }
 
   /**

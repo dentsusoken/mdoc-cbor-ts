@@ -56,7 +56,7 @@ export class MdocCborIssuer {
       : [{ doctype, data }];
 
     const documents = arrData.map(async (doc) => {
-      const msoi = new MsoIssuer(doc.data, this.privateKey);
+      const msoi = await MsoIssuer.create(doc.data, this.privateKey);
       const mso = await msoi.sign();
 
       const document = {

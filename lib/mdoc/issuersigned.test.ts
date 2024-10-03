@@ -19,7 +19,7 @@ describe('IssuerSigned', async () => {
       tax_id_code: 'TINIT-XXXXXXXXXXXXXXX',
     },
   };
-  const msoIssuer = new MsoIssuer(data, privateKey);
+  const msoIssuer = await MsoIssuer.create(data, privateKey);
   const mso = await msoIssuer.sign();
 
   describe('constructor', () => {

@@ -1,5 +1,6 @@
 import { COSEKey } from '@auth0/cose';
 import * as asn1js from 'asn1js';
+import crypto from 'crypto';
 import { JWK } from 'jose';
 import nodeForge from 'node-forge';
 import * as pkijs from 'pkijs';

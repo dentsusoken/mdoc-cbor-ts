@@ -13,7 +13,7 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: ['@auth0/cose', 'cbor-x'],
+      external: ['@auth0/cose', 'cbor-x', 'crypto'],
     },
   },
   test: {
