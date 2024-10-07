@@ -1,203 +1,164 @@
 import {
-  Algorithms,
   COSEKey,
+  COSEKeyParam,
   Headers,
   ProtectedHeaders,
-  Sign1,
   UnprotectedHeaders,
 } from '@auth0/cose';
-import { Tag, encode } from 'cbor-x';
-import crypto from 'crypto';
-import { JWK } from 'jose';
-import { nanoid } from 'nanoid';
-import * as settings from '../settings';
+import { DateTime } from 'luxon';
+import { Settings } from '../settings';
 import { shuffleDict } from '../tools';
-import { DisclosureMap, HashMap } from '../types';
+import {
+  DisclosureMap,
+  DisclosureMapItem,
+  HashMap,
+  HashMapItem,
+  MSOPayload,
+} from '../types';
+import { MSO } from '../types/MSO';
 import { MsoX509Fabric } from '../x509';
 
 /**
  * MsoIssuer is class that provides methods to generate MSO (Mobile Security Object).
- * @property {Record<string, unknown>} data The data to be included in the MSO document.
- * @property {JWK} publicKey The public key of the issuer.
- * @property {HashMap} hashMap The hash map of the data.
- * @property {DisclosureMap} disclosureMap The disclosure map of the data.
+ * @property {Record<string, Record<string, unknown>>} data - The data to be included in the MSO.
+ * @property {string} digestAlg - The digest algorithm used to hash the data.
+ * @property {HashMap} hashMap - The hash map of the data.
+ * @property {DisclosureMap} disclosureMap - The disclosure map of the data.
+ *
  * @extends MsoX509Fabric
  */
 export class MsoIssuer extends MsoX509Fabric {
-  public publicKey: JWK;
-
+  /**
+   * Create a new MsoIssuer instance.
+   * @param {Record<string, Record<string, unknown>>} data - The data to be included in the MSO.
+   * @param {COSEKey} privateKey - The private key used to sign the MSO.
+   * @param {Settings} settings - The settings to be used.
+   * @param {string} digestAlg - The digest algorithm used to hash the data.
+   * @param {HashMap} hashMap - The hash map of the data.
+   * @param {DisclosureMap} disclosureMap - The disclosure map of the data.
+   * @returns {MsoIssuer} The MsoIssuer instance.
+   */
   private constructor(
-    public data: Record<string, unknown>,
-    public privateKey: Uint8Array | COSEKey | JWK,
-    public digestAlg: string = settings.TSMDOC_HASHALG(),
+    public readonly data: Record<string, Record<string, unknown>>,
+    privateKey: COSEKey,
+    settings: Settings = new Settings(),
+    public digestAlg: string,
     public hashMap: HashMap,
     public disclosureMap: DisclosureMap
   ) {
-    super(privateKey);
-    this.publicKey = this.toPublicKey(privateKey);
+    super(privateKey, settings);
   }
 
   /**
-   * Creates an instance of MsoIssuer.
-   * @param {Record<string, unknown>} data The data to be included in the MSO document.
-   * @param {Uint8Array | COSEKey | JWK} privateKey The private key used to sign the MSO document.
-   * @param {string} digestAlg The hash algorithm used to generate the hash map. Default is SHA-256.
+   * Create a new MsoIssuer instance.
+   * @param {Record<string, Record<string, unknown>>} data - The data to be included in the MSO.
+   * @param {COSEKey} privateKey - The private key used to sign the MSO.
+   * @param {Settings} settings - The settings to be used.
+   * @param {string} digestAlg - The digest algorithm used to hash the data.
+   * @returns {Promise<MsoIssuer>} The MsoIssuer instance.
    */
-  static async create(
-    data: Record<string, unknown>,
-    privateKey: Uint8Array | COSEKey | JWK,
-    digestAlg: string = settings.TSMDOC_HASHALG()
+  static async new(
+    data: Record<string, Record<string, unknown>>,
+    privateKey: COSEKey,
+    settings: Settings = new Settings(),
+    digestAlg?: string
   ) {
+    const hashMap: HashMap = {};
+    const disclosureMap: DisclosureMap = {};
+    const alg = digestAlg ?? settings.TSMDOC_HASHALG();
+
     let digestCnt = 0;
 
-    const disclosureMap: DisclosureMap = {};
-    const hashMap: HashMap = {};
-
-    for (const [ns, values] of Object.entries(data)) {
+    for (const [ns, values] of Object.entries(shuffleDict(data))) {
       disclosureMap[ns] = {};
       hashMap[ns] = {};
-      if (typeof values !== 'object') {
-        throw new Error('Invalid data type');
-      }
-      const shuffledValues = shuffleDict(values as Record<string, unknown>);
-      for (const [k, v] of Object.entries(shuffledValues)) {
-        const rndSalt = nanoid(settings.DIGEST_SALT_LENGTH);
-        let value = v;
-        const valueCborTag = settings.CBORTAGS_ATTR_MAP[k];
-        if (valueCborTag) {
-          value = new Tag(v, valueCborTag);
-        }
+      for (const [k, v] of Object.entries(values)) {
+        const disclosureMapItem = new DisclosureMapItem(digestCnt, k, v);
+        disclosureMap[ns][digestCnt] = disclosureMapItem;
+        const hashMapItem = new HashMapItem(disclosureMapItem);
+        hashMap[ns][digestCnt] = await hashMapItem.digest(alg);
 
-        disclosureMap[ns][digestCnt] = {
-          digestID: digestCnt,
-          random: rndSalt,
-          elementIdentifier: k,
-          elementValue: value,
-        };
-        hashMap[ns][digestCnt] = await crypto.subtle.digest(
-          settings.TSMDOC_HASHALG(),
-          encode(new Tag(encode(disclosureMap[ns][digestCnt]), 24))
-        );
-
-        digestCnt += 1;
+        digestCnt++;
       }
     }
-    return new MsoIssuer(data, privateKey, digestAlg, hashMap, disclosureMap);
+
+    return new MsoIssuer(
+      data,
+      privateKey,
+      settings,
+      alg,
+      hashMap,
+      disclosureMap
+    );
   }
 
   /**
-   * Signs the MSO document.
-   * @param {Record<string, unknown>} deviceKey The device key to be included in the MSO document.
-   * @param {number | Date} validFrom The validity start date of the MSO document.
-   * @param {string} doctype The document type of the MSO document.
-   * @returns {Promise<Sign1>} The signed MSO document.
+   * Sign the MSO.
+   * @param {COSEKey} deviceKey - The device key to be included in the MSO.
+   * @param {DateTime} valid_from - The date and time from which the MSO is valid.
+   * @param {string} docType - The type of document to be signed.
+   * @returns {Promise<Uint8Array>} The signed MSO.
    */
-  async sign(
-    deviceKey?: Record<string, unknown>,
-    validFrom?: number | Date,
-    doctype?: string
-  ) {
-    const utcnow = Date.now();
-    let exp = 0;
-    if (settings.TSMDOC_EXP_DELTA_HOURS()) {
-      exp = utcnow + settings.TSMDOC_EXP_DELTA_HOURS() * 3600;
-    } else {
-      exp = utcnow + 365 * 24 * 3600 * 5;
-    }
+  async sign(deviceKey?: COSEKey, valid_from?: DateTime, docType?: string) {
+    const now = DateTime.now();
+    const exp = this.settings.TSMDOC_EXP_DELTA_HOURS()
+      ? now.plus({
+          hours: this.settings.TSMDOC_EXP_DELTA_HOURS(),
+        })
+      : now.plus({
+          year: 5,
+        });
 
-    const payload = {
-      version: '1.0',
-      digestAlgorithm: settings.HASHALG_MAP[settings.TSMDOC_HASHALG()],
+    const payload = new MSOPayload({
+      digestAlgorithm: this.digestAlg,
       valueDigests: this.hashMap,
-      deviceKeyInfo: {
-        deviceKey: deviceKey,
-      },
-      docType: doctype || this.hashMap[0],
+      docType: docType ?? Object.keys(this.hashMap)[0],
       validityInfo: {
-        signed: encode(new Tag(this.formatDatetimeRepr(utcnow), 0)),
-        validFrom: encode(
-          new Tag(
-            this.formatDatetimeRepr(
-              (validFrom instanceof Date ? validFrom.getTime() : validFrom) ||
-                utcnow
-            ),
-            0
-          )
-        ),
-        validUntil: encode(new Tag(this.formatDatetimeRepr(exp), 0)),
+        signed: now,
+        validFrom: valid_from ?? now,
+        validUntil: exp,
       },
-    };
+      deviceKeyInfo: deviceKey ? { deviceKey } : undefined,
+    });
 
-    const cert = settings.X509_DER_CERT() || (await this.selfSignedX509Cert());
+    const cert = this.settings.X509_DER_CERT()
+      ? new TextEncoder().encode(this.settings.X509_DER_CERT())
+      : await this.selfsignedX509Cert('DER');
 
-    const ph = new ProtectedHeaders();
-    ph.set(
+    const mso = new MSO(
+      this.createProtectedHeader(),
+      this.createUnprotectedHeader(cert),
+      payload
+    );
+
+    return mso.sign(await this.privateCryptoKey);
+  }
+
+  /**
+   * Create the protected header of the MSO.
+   * @returns {ProtectedHeaders} The protected header of the MSO.
+   */
+  private createProtectedHeader() {
+    const protectedHeader = new ProtectedHeaders();
+    protectedHeader.set(
       Headers.Algorithm,
-      this.getAlgorithm(this.toJWK(this.privateKey).alg)
+      this.privateKey.get(COSEKeyParam.Algorithm)!
     );
-    ph.set(
+    protectedHeader.set(
       Headers.KeyID,
-      new TextEncoder().encode(this.toJWK(this.privateKey).kid)
+      this.privateKey.get(COSEKeyParam.KeyID)!
     );
-
-    const uh = new UnprotectedHeaders();
-    uh.set(
-      Headers.X5Chain,
-      cert instanceof ArrayBuffer
-        ? new Uint8Array(cert)
-        : new TextEncoder().encode(cert)
-    );
-
-    const mso = await Sign1.sign(
-      ph,
-      uh,
-      encode(payload),
-      await COSEKey.fromJWK(this.toJWK(this.privateKey)).toKeyLike()
-    );
-
-    return mso;
+    return protectedHeader;
   }
 
   /**
-   * Formats a date string.
-   * @param {number} millisec The date in milliseconds.
-   * @returns {string} The formatted date string.
+   * Create the unprotected header of the MSO.
+   * @param {ArrayBuffer} cert - The X509 certificate to be included in the MSO.
+   * @returns {UnprotectedHeaders} The unprotected header of the MSO.
    */
-  private formatDatetimeRepr(millisec: number): string {
-    const date = new Date(millisec);
-    return date
-      .toISOString()
-      .replace(/[-:]/g, '')
-      .replace(/\.\d{3}Z/, 'Z');
-  }
-
-  /**
-   * Returns the algorithm number.
-   * @param {string} alg The algorithm name.
-   * @returns {number} The algorithm number.
-   */
-  private getAlgorithm(alg?: string): number {
-    switch (alg) {
-      case 'ES256':
-        return Algorithms.ES256;
-      case 'ES384':
-        return Algorithms.ES384;
-      case 'ES512':
-        return Algorithms.ES512;
-      case 'PS256':
-        return Algorithms.PS256;
-      case 'PS384':
-        return Algorithms.PS384;
-      case 'PS512':
-        return Algorithms.PS512;
-      case 'RS256':
-        return Algorithms.RS256;
-      case 'RS384':
-        return Algorithms.RS384;
-      case 'RS512':
-        return Algorithms.RS512;
-      default:
-        throw new Error('Unsupported algorithm');
-    }
+  private createUnprotectedHeader(cert: ArrayBuffer) {
+    const unprotectedHeader = new UnprotectedHeaders();
+    unprotectedHeader.set(Headers.X5Chain, new Uint8Array(cert));
+    return unprotectedHeader;
   }
 }

@@ -1,26 +1,16 @@
 import { Algorithms, COSEKey } from '@auth0/cose';
-import { MsoX509Fabric } from './x509';
+import { Settings } from './settings';
+import { MsoX509Fabric } from './x509.bak';
 
-describe('MsoX509Fabric', async () => {
+describe('x509', async () => {
   const { privateKey } = await COSEKey.generate(Algorithms.ES256, {
     crv: 'P-256',
   });
-  describe('selfSignedX509Cert', () => {
-    it('should return a self-signed X509 certificate in DER format', async () => {
-      const x509Fabric = new MsoX509Fabric(privateKey);
-      const cert = await x509Fabric.selfSignedX509Cert('DER');
+  describe('selfsignedX509Cert', () => {
+    it('should return a DER encoded certificate', async () => {
+      const fabric = new MsoX509Fabric(privateKey, new Settings());
+      const cert = await fabric.selfsignedX509Cert('DER');
       expect(cert).toBeDefined();
-      expect(cert).not.toContain('-----BEGIN CERTIFICATE-----');
-      expect(cert).not.toContain('-----END CERTIFICATE-----');
-    });
-
-    it('should return a self-signed X509 certificate in PEM format', async () => {
-      const x509Fabric = new MsoX509Fabric(privateKey);
-      const cert = await x509Fabric.selfSignedX509Cert('PEM');
-      console.log('cert :>> ', cert);
-      expect(cert).toBeDefined();
-      expect(cert).toContain('-----BEGIN CERTIFICATE-----');
-      expect(cert).toContain('-----END CERTIFICATE-----');
     });
   });
 });

@@ -1,155 +1,137 @@
-import { COSEKey } from '@auth0/cose';
-import * as asn1js from 'asn1js';
-import crypto from 'crypto';
-import { JWK } from 'jose';
-import nodeForge from 'node-forge';
-import * as pkijs from 'pkijs';
-import * as pvutils from 'pvutils';
-import * as settings from './settings';
+import { COSEKey, COSEKeyParam } from '@auth0/cose';
+import * as x509 from '@peculiar/x509';
+import { Settings } from './settings';
 
 /**
  * MsoX509Fabric is a class that provides methods to generate X509 certificates.
- * @property {COSEKey | JWK} privateKey The private key used to sign the certificate.
+ * @property privateKey - The private key used to sign the certificate.
+ * @property settings - The settings used to generate the certificate.
+ *
+ * @example
+ * const privateKey = COSEKey.from({ kty: 'EC', crv: 'P-256', d: Buffer.from('...') });
+ * const settings = new Settings();
+ * const fabric = new MsoX509Fabric(privateKey, settings);
+ * const cert = await fabric.selfsignedX509Cert('DER');
+ * console.log(cert);
  */
 export class MsoX509Fabric {
-  constructor(protected privateKey: Uint8Array | COSEKey | JWK) {}
+  #privateKey: COSEKey;
+  #settings: Settings;
 
   /**
-   * Generates a self-signed X509 certificate.
-   * @param {string} encoding The encoding of the certificate. Default is DER.
-   * @returns {Promise<ArrayBuffer | string>} The self-signed X509 certificate.
+   * Create a new MsoX509Fabric instance.
+   * @param privateKey - The private key used to sign the certificate.
+   * @param settings - The settings used to generate the certificate.
    */
-  async selfSignedX509Cert(
-    encoding: 'DER' | 'PEM' = 'DER'
-  ): Promise<ArrayBuffer | string> {
-    const cert = new pkijs.Certificate();
-    cert.version = 3;
-    cert.subjectPublicKeyInfo.importKey(
-      await this.toCryptoKey(this.toPublicKey(this.privateKey), false)
+  constructor(privateKey: COSEKey, settings: Settings) {
+    privateKey.set(
+      COSEKeyParam.KeyID,
+      crypto.getRandomValues(new Uint8Array(32))
     );
+    this.#privateKey = privateKey;
+    this.#settings = settings;
+  }
 
-    cert.serialNumber = asn1js.Integer.fromBigInt(this.randomSerialNumber());
-    cert.notBefore.value = settings.X509_NOT_VALID_BEFORE();
-    cert.notAfter.value = settings.X509_NOT_VALID_AFTER();
+  get privateKey() {
+    return this.#privateKey;
+  }
 
-    const attrs = [
-      new pkijs.AttributeTypeAndValue({
-        type: '2.5.4.6',
-        value: new asn1js.Utf8String({ value: settings.X509_COUNTRY_NAME() }),
-      }),
-      new pkijs.AttributeTypeAndValue({
-        type: '2.5.4.8',
-        value: new asn1js.Utf8String({
-          value: settings.X509_STATE_OR_PROVINCE_NAME(),
-        }),
-      }),
-      new pkijs.AttributeTypeAndValue({
-        type: '2.5.4.7',
-        value: new asn1js.Utf8String({
-          value: settings.X509_LOCALITY_NAME(),
-        }),
-      }),
-      new pkijs.AttributeTypeAndValue({
-        type: '2.5.4.10',
-        value: new asn1js.Utf8String({
-          value: settings.X509_ORGANIZATION_NAME(),
-        }),
-      }),
-      new pkijs.AttributeTypeAndValue({
-        type: '2.5.4.3',
-        value: new asn1js.Utf8String({
-          value: settings.X509_COMMON_NAME(),
-        }),
-      }),
-      new pkijs.AttributeTypeAndValue({
-        type: '2.5.4.3',
-        value: new asn1js.Utf8String({
-          value: settings.X509_COMMON_NAME(),
-        }),
-      }),
-    ];
+  get settings() {
+    return this.#settings;
+  }
 
-    cert.subject.typesAndValues = attrs;
-    cert.issuer.typesAndValues = attrs;
-    const subjectAltName = new pkijs.AltName({
-      altNames: [
-        new pkijs.GeneralName({
-          type: 6,
-          value: settings.X509_SAN_URL(),
-        }),
+  /**
+   * Generate a self-signed X509 certificate.
+   * @param encoding - The encoding of the certificate. Default is 'DER'.
+   * @returns The self-signed X509 certificate.
+   */
+  async selfsignedX509Cert(encoding: 'DER'): Promise<ArrayBuffer>;
+  async selfsignedX509Cert(encoding: 'PEM'): Promise<string>;
+  async selfsignedX509Cert(encoding: 'DER' | 'PEM' = 'DER') {
+    const privateCryptoKey = await this.privateCryptoKey;
+    const publicCryptoKey = await this.publicCryptoKey;
+
+    const keys = {
+      privateKey: privateCryptoKey,
+      publicKey: publicCryptoKey,
+    };
+
+    // TODO - change to use settings
+    const alg = {
+      name: 'ECDSA',
+      namedCurve: 'P-256',
+      hash: 'SHA-256',
+    };
+
+    const cert = await x509.X509CertificateGenerator.createSelfSigned({
+      serialNumber: Buffer.from(
+        crypto.getRandomValues(new Uint8Array(32))
+      ).toString('hex'),
+      name: `C=${this.#settings.X509_COUNTRY_NAME()}, ST=${this.#settings.X509_STATE_OR_PROVINCE_NAME()}, L=${this.#settings.X509_LOCALITY_NAME()}, O=${this.#settings.X509_ORGANIZATION_NAME()}, CN=${this.#settings.X509_COMMON_NAME()}`,
+      notBefore: this.#settings.X509_NOT_VALID_BEFORE(),
+      notAfter: this.#settings.X509_NOT_VALID_AFTER(),
+      signingAlgorithm: alg,
+      keys,
+      extensions: [
+        new x509.SubjectAlternativeNameExtension([
+          new x509.GeneralName('url', this.#settings.X509_SAN_URL()),
+        ]),
       ],
     });
-    cert.extensions = [
-      new pkijs.Extension({
-        extnID: '2.5.29.8',
-        critical: false,
-        extnValue: subjectAltName.toSchema().toBER(false),
-        parsedValue: subjectAltName,
-      }),
-    ];
-    await cert.sign(await this.toCryptoKey(this.privateKey, true), 'SHA-256');
-    switch (encoding) {
-      case 'DER':
-        const der = cert.toSchema(true).toBER(false);
-        return der;
-      case 'PEM':
-      default:
-        const pem = pvutils.toBase64(
-          pvutils.arrayBufferToString(cert.toSchema(true).toBER(false))
-        );
-        return `-----BEGIN CERTIFICATE-----\n${pem}\n-----END CERTIFICATE-----`;
+
+    if (encoding === 'DER') {
+      return cert.rawData;
+    } else {
+      return cert.toString('pem');
     }
   }
 
   /**
-   * Generates a random serial number.
-   * @returns {bigint} The random serial number.
+   * Generate a public key from the private key.
+   * @returns  The public key.
    */
-  private randomSerialNumber(): bigint {
-    const randomBytes = nodeForge.random.getBytesSync(20);
-    let randomNumber = BigInt('0x' + nodeForge.util.bytesToHex(randomBytes));
-    return randomNumber >> BigInt(1);
+  get publicKey(): COSEKey {
+    const jwk = this.privateKey.toJWK();
+    const publicKey = { ...jwk, key_ops: ['verify'] };
+    delete publicKey.d;
+    const coseKey = COSEKey.fromJWK(publicKey);
+    coseKey.set(COSEKeyParam.KeyOps, [2]);
+    return coseKey;
   }
 
   /**
-   * Generates a public key from a private key.
-   * @param {COSEKey | JWK} key The private key.
-   * @returns {JWK} The public key.
+   * Convert the private key to a CryptoKey.
+   * @returns The private key as a CryptoKey.
    */
-  protected toPublicKey(key: Uint8Array | COSEKey | JWK): JWK {
-    const privateKey = this.toJWK(key);
-    privateKey.d = undefined;
-    return privateKey;
-  }
-
-  protected toJWK(key: Uint8Array | COSEKey | JWK): JWK {
-    return key instanceof Uint8Array
-      ? COSEKey.import(key).toJWK()
-      : key instanceof COSEKey
-      ? key.toJWK()
-      : key;
-  }
-
-  /**
-   * Converts a JWK or COSEKey to a CryptoKey.
-   * @param {JWK | COSEKey} key The JWK or COSEKey.
-   * @param {boolean} isPrivate Whether the key is a private key.
-   * @returns {Promise<CryptoKey>} The CryptoKey.
-   */
-  protected async toCryptoKey(
-    key: Uint8Array | COSEKey | JWK,
-    isPrivate: boolean
-  ): Promise<CryptoKey> {
-    const jwk = this.toJWK(key);
+  get privateCryptoKey(): Promise<CryptoKey> {
+    const jwk = this.privateKey.toJWK();
     return crypto.subtle.importKey(
       'jwk',
       jwk,
       {
         name: 'ECDSA',
-        namedCurve: jwk.crv,
+        namedCurve: 'P-256',
       },
       true,
-      isPrivate ? ['sign'] : ['verify']
+      ['sign']
+    );
+  }
+
+  /**
+   * Convert the public key to a CryptoKey.
+   * @returns The public key as a CryptoKey.
+   */
+  get publicCryptoKey(): Promise<CryptoKey> {
+    const jwk = this.publicKey.toJWK();
+    return crypto.subtle.importKey(
+      'jwk',
+      jwk,
+      {
+        name: 'ECDSA',
+        namedCurve: 'P-256',
+      },
+      true,
+      ['verify']
     );
   }
 }
