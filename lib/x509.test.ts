@@ -1,6 +1,6 @@
 import { Algorithms, COSEKey } from '@auth0/cose';
 import { Settings } from './settings';
-import { MsoX509Fabric } from './x509.bak';
+import { MsoX509Fabric } from './x509';
 
 describe('x509', async () => {
   const { privateKey } = await COSEKey.generate(Algorithms.ES256, {

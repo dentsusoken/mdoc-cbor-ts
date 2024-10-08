@@ -20,13 +20,13 @@ describe('MsoIssuer', async () => {
   };
   describe('constructor', () => {
     it('should create an instance of MsoIssuer', async () => {
-      const msoIssuer = await MsoIssuer.create(data, privateKey);
+      const msoIssuer = await MsoIssuer.new(data, privateKey);
       expect(msoIssuer).toBeInstanceOf(MsoIssuer);
     });
   });
   describe('constructor', () => {
     it('should create an instance of MsoIssuer', async () => {
-      const msoIssuer = await MsoIssuer.create(data, privateKey);
+      const msoIssuer = await MsoIssuer.new(data, privateKey);
       const sig = await msoIssuer.sign();
       expect(sig).toBeInstanceOf(Sign1);
     });

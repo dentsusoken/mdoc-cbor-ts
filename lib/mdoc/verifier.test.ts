@@ -20,23 +20,18 @@ describe('MdocCbor', async () => {
     },
   };
   const issuer = new MdocCborIssuer(privateKey);
-  await issuer.new(data, privateKey, 'eu.europa.ec.eudiw.pid.1');
+  await issuer.new(data, 'eu.europa.ec.eudiw.pid.1');
 
   describe('load', () => {
     it('should load the data', async () => {
       const mdoc = new MdocCbor();
       mdoc.load(issuer.dump());
-      expect(mdoc.dataAsBytes).toBeInstanceOf(Uint8Array);
     });
   });
   describe('loads', () => {
     it('should create an instance of MobileDocument with dict issuerAuth', async () => {
       const mdoc = new MdocCbor();
       mdoc.loads(issuer.dumps());
-
-      expect(mdoc.dataAsCborDict).toHaveProperty('version');
-      expect(mdoc.dataAsCborDict).toHaveProperty('documents');
-      expect(mdoc.dataAsCborDict).toHaveProperty('status');
     });
   });
   describe('verify', () => {

@@ -28,11 +28,7 @@ describe('MdocCborIssuer', async () => {
   describe('new', () => {
     it('should create a new mdoc document', async () => {
       const issuer = new MdocCborIssuer(privateKey);
-      const mdoc = await issuer.new(
-        data,
-        privateKey,
-        'eu.europa.ec.eudiw.pid.1'
-      );
+      const mdoc = await issuer.new(data, 'eu.europa.ec.eudiw.pid.1');
       expect(mdoc).hasOwnProperty('version');
       expect(mdoc).hasOwnProperty('status');
       expect(mdoc).hasOwnProperty('documents');

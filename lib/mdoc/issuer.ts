@@ -25,7 +25,7 @@ export class MdocCborIssuer {
    * @param {COSEKey} privateKey - The private key used to sign the MDOC.
    * @returns {MdocIssuer} The MdocIssuer instance.
    */
-  private constructor(privateKey: COSEKey) {
+  constructor(privateKey: COSEKey) {
     this.#privateKey = privateKey;
   }
 
@@ -51,6 +51,7 @@ export class MdocCborIssuer {
     );
 
     this.signed = mdoc.toJSON();
+    return this.signed;
   }
 
   /**

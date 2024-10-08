@@ -7,6 +7,7 @@ import {
 import * as x509 from '@peculiar/x509';
 import { decode } from 'cbor-x';
 import { MSOPayload } from './MSOPayload';
+import { bytes2CoseSign1, cborlist2CoseSign1 } from '../tools';
 
 /**
  * MSO is a class that provides methods to generate a MSO.
@@ -74,10 +75,16 @@ export class MSO {
    * @param {string | Uint8Array} data - The CBOR encoded MSO.
    * @returns {MSO} The MSO instance.
    */
-  static decode(data: string | Uint8Array) {
-    const raw = typeof data === 'string' ? Buffer.from(data, 'hex') : data;
-    const uint8 = Uint8Array.from(raw);
-    const sign1 = Sign1.decode(uint8);
+  static decode(
+    data: string | Uint8Array | ConstructorParameters<typeof Sign1>
+  ) {
+    const sign1 = Array.isArray(data)
+      ? cborlist2CoseSign1(data)
+      : bytes2CoseSign1(
+          Uint8Array.from(
+            typeof data === 'string' ? Buffer.from(data, 'hex') : data
+          )
+        );
     const payload = decode(sign1.payload);
     return new MSO(
       sign1.protectedHeaders as unknown as ProtectedHeaders,

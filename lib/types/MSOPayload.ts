@@ -110,9 +110,14 @@ export class MSOPayload {
 
   /**
    * Convert the MSOPayload to JSON.
+   * @param {MSODecodableJSON | Tag} data - The MSOPayload json object.
    * @returns {MSOPayloadOptions} The JSON object.
    */
-  static decode(data: MSODecodableJSON) {
+  static decode(data: MSODecodableJSON | Tag) {
+    // TODO - Confirm which type is correct
+    if (data instanceof Tag) {
+      data = decode(data.value) as MSODecodableJSON;
+    }
     return new MSOPayload({
       digestAlgorithm: data.digestAlgorithm,
       valueDigests: data.valueDigests,
