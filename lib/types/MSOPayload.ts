@@ -34,9 +34,9 @@ export interface MSOPayloadOptions {
  */
 export type MSODecodableJSON = Omit<MSOPayloadOptions, 'validityInfo'> & {
   validityInfo: {
-    signed: Uint8Array | Buffer;
-    validFrom: Uint8Array | Buffer;
-    validUntil: Uint8Array | Buffer;
+    signed: Date;
+    validFrom: Date;
+    validUntil: Date;
   };
 };
 
@@ -124,9 +124,9 @@ export class MSOPayload {
       docType: data.docType,
       deviceKeyInfo: data.deviceKeyInfo,
       validityInfo: {
-        signed: DateTime.fromJSDate(decode(data.validityInfo.signed)),
-        validFrom: DateTime.fromJSDate(decode(data.validityInfo.validFrom)),
-        validUntil: DateTime.fromJSDate(decode(data.validityInfo.validUntil)),
+        signed: DateTime.fromJSDate(data.validityInfo.signed),
+        validFrom: DateTime.fromJSDate(data.validityInfo.validFrom),
+        validUntil: DateTime.fromJSDate(data.validityInfo.validUntil),
       },
     });
   }

@@ -6,8 +6,9 @@ import {
 } from '@auth0/cose';
 import * as x509 from '@peculiar/x509';
 import { decode } from 'cbor-x';
-import { MSOPayload } from './MSOPayload';
+import { Buffer } from 'node:buffer';
 import { bytes2CoseSign1, cborlist2CoseSign1 } from '../tools';
+import { MSOPayload } from './MSOPayload';
 
 /**
  * MSO is a class that provides methods to generate a MSO.
@@ -79,7 +80,18 @@ export class MSO {
     data: string | Uint8Array | ConstructorParameters<typeof Sign1>
   ) {
     const sign1 = Array.isArray(data)
-      ? cborlist2CoseSign1(data)
+      ? cborlist2CoseSign1([
+          data[0],
+          new Map<number, unknown>(
+            data[1] instanceof Map
+              ? data[1].entries()
+              : Object.entries(data[1] as Record<string, unknown>).map(
+                  ([k, v]) => [Number(k), v]
+                )
+          ),
+          data[2],
+          data[3],
+        ])
       : bytes2CoseSign1(
           Uint8Array.from(
             typeof data === 'string' ? Buffer.from(data, 'hex') : data

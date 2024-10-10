@@ -1,4 +1,5 @@
 import { Tag } from 'cbor-x';
+import { Buffer } from 'node:buffer';
 import { Settings } from '../settings';
 
 /**

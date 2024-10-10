@@ -1,5 +1,6 @@
 import { COSEKey } from '@auth0/cose';
 import { decode } from 'cbor-x';
+import { Buffer } from 'node:buffer';
 import { MsoIssuer } from '../mso/issuer';
 import { Settings } from '../settings';
 import { Document, DocumentJSON } from './Document';

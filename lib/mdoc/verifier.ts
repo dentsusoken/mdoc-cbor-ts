@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { InvalidMdoc } from '../exceptions';
 import { MSOVerifier } from '../mso';
 import { IssuerSigned, Mdoc } from '../types';

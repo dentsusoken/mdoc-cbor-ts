@@ -1,5 +1,6 @@
 import { COSEKey, COSEKeyParam } from '@auth0/cose';
 import * as x509 from '@peculiar/x509';
+import { Buffer } from 'node:buffer';
 import { Settings } from './settings';
 
 /**
