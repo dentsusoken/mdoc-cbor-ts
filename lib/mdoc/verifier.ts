@@ -70,8 +70,22 @@ export class MdocCbor {
    * Loads the data from a hex string.
    * @param {string} data The data as a hex string.
    */
-  loads(data: string) {
+  loadHex(data: string) {
     this.load(Uint8Array.from(Buffer.from(data, 'hex')));
+  }
+  /**
+   * Loads the data from a base64 string.
+   * @param {string} data The data as a hex string.
+   */
+  loadBase64(data: string) {
+    this.load(Buffer.from(data, 'base64'));
+  }
+  /**
+   * Loads the data from a base64url string.
+   * @param {string} data The data as a hex string.
+   */
+  loadBase64Url(data: string) {
+    this.load(Buffer.from(data, 'base64url'));
   }
 
   /**
@@ -111,6 +125,7 @@ export class MdocCbor {
         COSE Sign1 validation failed to the document number #${docCnt}. 
         Then it is appended to self.documents_invalid: ${e}
         `);
+        return false;
       }
     }
     if (this.invalidDocuments.length > 0) {

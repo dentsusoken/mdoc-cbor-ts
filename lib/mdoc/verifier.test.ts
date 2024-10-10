@@ -31,13 +31,13 @@ describe('MdocCbor', async () => {
   describe('loads', () => {
     it('should create an instance of MobileDocument with dict issuerAuth', async () => {
       const mdoc = new MdocCbor();
-      mdoc.loads(issuer.dumps());
+      mdoc.loadHex(issuer.dumps());
     });
   });
   describe('verify', () => {
     it('should create an instance of MobileDocument with dict issuerAuth', async () => {
       const mdoc = new MdocCbor();
-      mdoc.loads(issuer.dumps());
+      mdoc.loadHex(issuer.dumps());
 
       const result = await mdoc.verify();
       expect(result).toBe(true);
