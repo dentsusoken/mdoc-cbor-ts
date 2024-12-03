@@ -35,8 +35,8 @@ export class IssuerSigned {
 
     for (const [ns, dgst] of Object.entries(msoi.disclosureMap)) {
       nameSpaces[ns] = [];
-      for (const [k, v] of Object.entries(dgst)) {
-        nameSpaces[ns].push(new Tag({ [k]: v.toJSON() }, 24));
+      for (const [_, v] of Object.entries(dgst)) {
+        nameSpaces[ns].push(new Tag(v.toJSON(), 24));
       }
     }
     return new IssuerSigned(nameSpaces, mso.encode());
