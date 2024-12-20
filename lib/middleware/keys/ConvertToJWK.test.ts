@@ -1,5 +1,5 @@
 import { COSEKey } from '@auth0/cose';
-import { JWK } from '../../schemas/keys/jwk';
+import { JWK } from '../../schemas/keys';
 import { describe, expect, it, vi } from 'vitest';
 import { defaultConvertToJWK } from './ConvertToJWK';
 

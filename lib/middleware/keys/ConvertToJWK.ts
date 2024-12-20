@@ -1,6 +1,6 @@
 import { COSEKey } from '@auth0/cose';
 import { exportJWK } from 'jose';
-import { jwkSchema, JWK } from '../../schemas/keys/jwk';
+import { jwkSchema, JWK } from '../../schemas/keys';
 import { KeyKinds, KeyType } from './types';
 
 /**

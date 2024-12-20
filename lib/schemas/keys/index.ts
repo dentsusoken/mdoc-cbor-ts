@@ -1,1 +1,1 @@
-export * from './jwk';
+export * from './jwkSchema';
