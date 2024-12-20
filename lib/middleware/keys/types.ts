@@ -1,5 +1,5 @@
 import { COSEKey } from '@auth0/cose';
-import { JWK } from 'jose';
+import { JWK } from '../../schemas/keys/jwk';
 
 /**
  * Union type for different key formats

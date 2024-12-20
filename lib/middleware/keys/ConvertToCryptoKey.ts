@@ -33,8 +33,11 @@ export const defaultConvertToCryptoKey: ConvertToCryptoKey = async (
     const usage = type === 'private' ? 'sign' : 'verify';
 
     return await crypto.subtle.importKey('jwk', jwk, jwk.alg, true, [usage]);
-  } catch (e) {
-    console.error(e);
+  } catch (error: unknown) {
+    console.error(error);
+    if (error instanceof Error && error.message === 'alg is undefined.') {
+      throw error;
+    }
     throw new Error('Failed to convert to CryptoKey.');
   }
 };

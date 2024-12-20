@@ -1,5 +1,6 @@
 import { COSEKey } from '@auth0/cose';
-import { JWK, exportJWK } from 'jose';
+import { exportJWK } from 'jose';
+import { jwkSchema, JWK } from '../../schemas/keys/jwk';
 import { KeyKinds, KeyType } from './types';
 
 /**
@@ -17,16 +18,21 @@ export interface ConvertToJWK {
  * @param {KeyKinds} key - Source key (CryptoKey, JWK, or COSEKey)
  * @param {KeyType} type - Key type ('private' or 'public')
  * @returns {Promise<JWK>} Converted JWK. Private key information (d) is removed for public type
- * @throws {Error} Throws when failed to convert
+ * @throws {Error} Throws when failed to convert or validate JWK
  */
 export const defaultConvertToJWK: ConvertToJWK = async (key, type) => {
   try {
-    const jwk =
+    const validationResult = jwkSchema.safeParse(
       key instanceof CryptoKey
         ? await exportJWK(key)
         : key instanceof COSEKey
         ? key.toJWK()
-        : key;
+        : key
+    );
+    if (!validationResult.success) {
+      throw new Error('Invalid JWK format');
+    }
+    const jwk = validationResult.data;
 
     if (type === 'public') {
       delete jwk.d;
