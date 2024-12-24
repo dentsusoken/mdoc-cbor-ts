@@ -1,6 +1,6 @@
+import { Sign1 } from '@auth0/cose';
 import { NameSpace } from '../../schemas';
-import { Buffer } from 'node:buffer';
 
 export interface MsoIssueHandler {
-  issue(data: NameSpace, validFrom?: Date): Promise<Buffer>;
+  issue(data: NameSpace, validFrom?: Date): Promise<Sign1>;
 }

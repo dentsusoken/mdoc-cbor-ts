@@ -1,4 +1,4 @@
-import { COSEKey } from '@auth0/cose';
+import { COSEKey, COSEKeyParam } from '@auth0/cose';
 import { ConvertToJWK } from './ConvertToJWK';
 import { KeyKinds, KeyType } from './types';
 
@@ -26,7 +26,12 @@ export const createDefaultConvertToCoseKey = (
     try {
       const jwk = await convertToJWK(key, type, kid);
 
-      return COSEKey.fromJWK(jwk);
+      const coseKey = await COSEKey.fromJWK(jwk);
+      coseKey.set(
+        COSEKeyParam.KeyID,
+        Buffer.from(coseKey.get(COSEKeyParam.KeyID)!)
+      );
+      return coseKey;
     } catch (e) {
       console.error(e);
       throw new Error('Failed to convert to CoseKey.');

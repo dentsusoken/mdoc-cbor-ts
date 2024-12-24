@@ -4,6 +4,7 @@ import { KeyConverterImpl } from './KeyConverterImpl';
 import { KeyManager } from './KeyManager';
 import { KeyKinds, KeyPair } from './types';
 import { JWK } from '../../schemas/keys';
+import { Buffer } from 'node:buffer';
 
 /**
  * Implementation of KeyManager interface
@@ -21,15 +22,18 @@ export class KeyManagerImpl implements KeyManager {
    * @param {KeyConverter} keyConverter - KeyConverter instance
    */
   constructor(privateKey: KeyKinds, keyConverter: KeyConverterImpl) {
+    const generateKid = () => {
+      return Buffer.from(crypto.randomUUID()).toString('hex');
+    };
     this.#privateKey = privateKey;
     this.#keyConverter = keyConverter;
     if (privateKey instanceof CryptoKey) {
-      this.#kid = crypto.randomUUID();
+      this.#kid = generateKid();
     } else if (privateKey instanceof COSEKey) {
       const jwk = privateKey.toJWK();
-      this.#kid = jwk.kid ?? crypto.randomUUID();
+      this.#kid = jwk.kid ?? generateKid();
     } else {
-      this.#kid = privateKey.kid ?? crypto.randomUUID();
+      this.#kid = privateKey.kid ?? generateKid();
     }
   }
 

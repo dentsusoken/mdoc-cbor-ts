@@ -3,7 +3,10 @@ import { MsoIssueHandler } from './MsoIssueHandler';
 import { KeyManager } from '../../middleware/keys';
 import { X509Generator } from '../../middleware/x509';
 import { NameSpace } from '../../schemas';
-import { defaultHashMapGenerator, HashMapGenerator } from './HashMapGenerator';
+import {
+  createDefaultHashMapGenerator,
+  HashMapGenerator,
+} from './HashMapGenerator';
 import { MsoConfiguration } from '../../conf/MsoConfiguration';
 import {
   defaultMsoPayloadGenerator,
@@ -14,6 +17,7 @@ import {
   UnprotectHeaderGenerator,
 } from '.';
 import { encode } from 'cbor-x';
+import { CryptoConfig } from '../../conf';
 
 export interface MsoIssuerConstructorOpt {
   hashMapGenerator?: HashMapGenerator;
@@ -22,11 +26,14 @@ export interface MsoIssuerConstructorOpt {
   unprotectHeaderGenerator?: UnprotectHeaderGenerator;
 }
 
+export type MsoIssuerConfig = MsoConfiguration &
+  Pick<CryptoConfig, 'HASH_ALGORITHM'>;
+
 export class MsoIssueHandlerImpl implements MsoIssueHandler {
   #keyManager: KeyManager;
   #x509Generator: X509Generator;
   #hashMapGenerator: HashMapGenerator;
-  #msoConfiguration: MsoConfiguration;
+  #msoIssuerConfiguration: MsoIssuerConfig;
   #msoPayloadGenerator: MsoPayloadGenerator;
   #protectHeaderGenerator: ProtectHeaderGenerator;
   #unprotectHeaderGenerator: UnprotectHeaderGenerator;
@@ -34,14 +41,15 @@ export class MsoIssueHandlerImpl implements MsoIssueHandler {
   constructor(
     keyManager: KeyManager,
     x509Generator: X509Generator,
-    msoConfiguration: MsoConfiguration,
+    msoIssuerConfiguration: MsoIssuerConfig,
     options: MsoIssuerConstructorOpt = {}
   ) {
     this.#keyManager = keyManager;
     this.#x509Generator = x509Generator;
     this.#hashMapGenerator =
-      options.hashMapGenerator ?? defaultHashMapGenerator;
-    this.#msoConfiguration = msoConfiguration;
+      options.hashMapGenerator ??
+      createDefaultHashMapGenerator(msoIssuerConfiguration);
+    this.#msoIssuerConfiguration = msoIssuerConfiguration;
     this.#msoPayloadGenerator =
       options.msoPayloadGenerator ?? defaultMsoPayloadGenerator;
     this.#protectHeaderGenerator =
@@ -50,24 +58,22 @@ export class MsoIssueHandlerImpl implements MsoIssueHandler {
       options.unprotectHeaderGenerator ?? defaultUnprotectHeaderGenerator;
   }
 
-  async issue(data: NameSpace, validFrom?: Date): Promise<Buffer> {
+  async issue(data: NameSpace, validFrom?: Date): Promise<Sign1> {
     const hashMap = await this.#hashMapGenerator(data);
     const payload = await this.#msoPayloadGenerator(
       hashMap,
-      this.#msoConfiguration.EXPIRATION_DELTA_HOURS,
+      this.#msoIssuerConfiguration.EXPIRATION_DELTA_HOURS,
       validFrom
     );
 
     const { privateKey: coseKey } = await this.#keyManager.getCoseKeyPair();
     const { privateKey: cryptoKey } = await this.#keyManager.getCryptoKeyPair();
 
-    const sign1 = await Sign1.sign(
+    return await Sign1.sign(
       this.#protectHeaderGenerator.generate(coseKey),
       await this.#unprotectHeaderGenerator.generate(this.#x509Generator),
       encode(payload),
       cryptoKey
     );
-
-    return sign1.encode();
   }
 }

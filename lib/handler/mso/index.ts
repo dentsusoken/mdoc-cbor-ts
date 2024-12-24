@@ -3,4 +3,4 @@ export * from './MsoIssueHandlerImpl';
 export * from './HashMapGenerator';
 export * from './MsoPayloadGenerator';
 export * from './ProtectHeaderGenerator';
-export * from './UnProtectHeaderGenerator';
+export * from './UnprotectHeaderGenerator';

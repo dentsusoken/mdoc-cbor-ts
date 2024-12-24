@@ -6,12 +6,20 @@ export interface ProtectHeaderGenerator {
 
 export const defaultProtectHeaderGenerator: ProtectHeaderGenerator = {
   generate: (privateKey: COSEKey) => {
+    const algorithm = privateKey.get(COSEKeyParam.Algorithm);
+    const keyId = privateKey.get(COSEKeyParam.KeyID);
+
+    if (!algorithm) {
+      throw new Error('Algorithm is required');
+    }
+    if (!keyId) {
+      throw new Error('KeyID is required');
+    }
+
     const protectedHeader = new ProtectedHeaders();
-    protectedHeader.set(
-      Headers.Algorithm,
-      privateKey.get(COSEKeyParam.Algorithm)!
-    );
-    protectedHeader.set(Headers.KeyID, privateKey.get(COSEKeyParam.KeyID)!);
+    protectedHeader.set(Headers.Algorithm, algorithm);
+    protectedHeader.set(Headers.KeyID, keyId);
+
     return protectedHeader;
   },
 };
