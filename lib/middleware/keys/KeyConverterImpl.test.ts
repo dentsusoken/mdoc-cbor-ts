@@ -1,48 +1,57 @@
 import { describe, expect, it } from 'vitest';
-import { defaultConvertToCoseKey } from './ConvertToCoseKey';
-import { defaultConvertToCryptoKey } from './ConvertToCryptoKey';
-import { defaultConvertToJWK } from './ConvertToJWK';
-import { KeyConverterImpl } from './KeyConverterImpl';
+import { KeyConverterConfig, KeyConverterImpl } from './KeyConverterImpl';
 
 describe('KeyConverterImpl', () => {
+  const config: KeyConverterConfig = {
+    KEY_ALGORITHM: 'ES256',
+    NAMED_CURVE: 'P-256',
+    HASH_ALGORITHM: 'SHA-256',
+  };
+
   it('should use default converters when no options provided', () => {
-    const converter = new KeyConverterImpl({});
-    expect(converter.convertToCoseKey).toBe(defaultConvertToCoseKey);
-    expect(converter.convertToCryptoKey).toBe(defaultConvertToCryptoKey);
-    expect(converter.convertToJWK).toBe(defaultConvertToJWK);
+    const converter = new KeyConverterImpl(config, {});
+
+    expect(converter.convertToCoseKey).toBeDefined();
+    expect(converter.convertToCryptoKey).toBeDefined();
+    expect(converter.convertToJWK).toBeDefined();
   });
 
   it('should use custom convertToCoseKey when provided', () => {
     const customConverter = async () => {
       return {} as any;
     };
-    const converter = new KeyConverterImpl({
+    const converter = new KeyConverterImpl(config, {
       convertToCoseKey: customConverter,
     });
+
     expect(converter.convertToCoseKey).toBe(customConverter);
-    expect(converter.convertToCryptoKey).toBe(defaultConvertToCryptoKey);
-    expect(converter.convertToJWK).toBe(defaultConvertToJWK);
+    expect(converter.convertToCryptoKey).toBeDefined();
+    expect(converter.convertToJWK).toBeDefined();
   });
 
   it('should use custom convertToCryptoKey when provided', () => {
     const customConverter = async () => {
       return {} as any;
     };
-    const converter = new KeyConverterImpl({
+    const converter = new KeyConverterImpl(config, {
       convertToCryptoKey: customConverter,
     });
-    expect(converter.convertToCoseKey).toBe(defaultConvertToCoseKey);
+
+    expect(converter.convertToCoseKey).toBeDefined();
     expect(converter.convertToCryptoKey).toBe(customConverter);
-    expect(converter.convertToJWK).toBe(defaultConvertToJWK);
+    expect(converter.convertToJWK).toBeDefined();
   });
 
   it('should use custom convertToJWK when provided', () => {
     const customConverter = async () => {
       return {} as any;
     };
-    const converter = new KeyConverterImpl({ convertToJWK: customConverter });
-    expect(converter.convertToCoseKey).toBe(defaultConvertToCoseKey);
-    expect(converter.convertToCryptoKey).toBe(defaultConvertToCryptoKey);
+    const converter = new KeyConverterImpl(config, {
+      convertToJWK: customConverter,
+    });
+
+    expect(converter.convertToCoseKey).toBeDefined();
+    expect(converter.convertToCryptoKey).toBeDefined();
     expect(converter.convertToJWK).toBe(customConverter);
   });
 
@@ -57,7 +66,7 @@ describe('KeyConverterImpl', () => {
       return {} as any;
     };
 
-    const converter = new KeyConverterImpl({
+    const converter = new KeyConverterImpl(config, {
       convertToCoseKey: customCoseConverter,
       convertToCryptoKey: customCryptoConverter,
       convertToJWK: customJWKConverter,

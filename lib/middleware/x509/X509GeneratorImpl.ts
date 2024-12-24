@@ -1,9 +1,12 @@
-import { X509Configuration } from '../../conf';
+import { X509Configuration, CryptoConfig } from '../../conf';
 import { KeyManager } from '../keys';
 import { EncodingType } from './types';
 import { X509Generator } from './X509Generator';
 import * as x509 from '@peculiar/x509';
 import { Buffer } from 'node:buffer';
+
+export type X509GeneratorConfig = X509Configuration &
+  Omit<CryptoConfig, 'SALT_LENGTH'>;
 
 /**
  * Implementation of X509Generator interface
@@ -11,14 +14,14 @@ import { Buffer } from 'node:buffer';
  */
 export class X509GeneratorImpl implements X509Generator {
   #keyManager: KeyManager;
-  #config: X509Configuration;
+  #config: X509GeneratorConfig;
 
   /**
    * Creates a new X509GeneratorImpl instance
    * @param {KeyManager} keyManager - Key manager for handling cryptographic keys
-   * @param {X509Configuration} config - Configuration for X.509 certificate generation
+   * @param {X509GeneratorConfig} config - Configuration for X.509 certificate generation
    */
-  constructor(keyManager: KeyManager, config: X509Configuration) {
+  constructor(keyManager: KeyManager, config: X509GeneratorConfig) {
     this.#keyManager = keyManager;
     this.#config = config;
   }
@@ -47,9 +50,9 @@ export class X509GeneratorImpl implements X509Generator {
 
     // TODO: get values from privateKey
     const alg = {
-      name: privateKey.algorithm.name,
-      namedCurve: 'P-256',
-      hash: 'SHA-256',
+      name: this.#config.KEY_ALGORITHM,
+      namedCurve: this.#config.NAMED_CURVE,
+      hash: this.#config.HASH_ALGORITHM,
     };
 
     const cert = await x509.X509CertificateGenerator.createSelfSigned({

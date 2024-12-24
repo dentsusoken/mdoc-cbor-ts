@@ -29,7 +29,7 @@ export const jwkSchema = z
      * Key Operations parameter
      * Identifies the operation(s) for which the key is intended to be used
      */
-    key_ops: z.array(z.string()).optional(),
+    key_ops: z.array(z.enum(['sign', 'verify'])).optional(),
 
     /**
      * Key ID parameter

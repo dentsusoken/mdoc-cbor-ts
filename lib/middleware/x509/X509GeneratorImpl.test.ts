@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { X509GeneratorImpl } from './X509GeneratorImpl';
+import { X509GeneratorImpl, X509GeneratorConfig } from './X509GeneratorImpl';
 import { KeyManager } from '../keys';
-import { X509Configuration } from '../../conf';
 import * as x509 from '@peculiar/x509';
 
 vi.mock('@peculiar/x509', () => {
@@ -29,7 +28,7 @@ vi.mock('@peculiar/x509', () => {
 
 describe('X509GeneratorImpl', () => {
   let keyManager: KeyManager;
-  let config: X509Configuration;
+  let config: X509GeneratorConfig;
   let generator: X509GeneratorImpl;
   let originalCrypto: Crypto;
 
@@ -67,6 +66,9 @@ describe('X509GeneratorImpl', () => {
       X509_NOT_VALID_BEFORE: new Date('2023-01-01'),
       X509_NOT_VALID_AFTER: new Date('2024-01-01'),
       X509_SAN_URL: 'https://example.com',
+      NAMED_CURVE: 'P-256',
+      KEY_ALGORITHM: 'ES256',
+      HASH_ALGORITHM: 'SHA-256',
     };
 
     generator = new X509GeneratorImpl(keyManager, config);

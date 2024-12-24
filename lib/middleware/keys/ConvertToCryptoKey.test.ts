@@ -1,93 +1,146 @@
 import { COSEKey } from '@auth0/cose';
+import {
+  ConvertToCryptoKey,
+  createDefaultConvertToCryptoKey,
+} from './ConvertToCryptoKey';
+import { createDefaultConvertToJWK } from './ConvertToJWK';
+import { KeyConverterConfig } from './KeyConverterImpl';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { JWK } from '../../schemas/keys';
-import { describe, expect, it, vi } from 'vitest';
-import { defaultConvertToCryptoKey } from './ConvertToCryptoKey';
-import * as jwkModule from './ConvertToJWK';
 
-describe('defaultConvertToCryptoKey', () => {
-  const mockJWK: JWK = {
-    kty: 'EC',
-    crv: 'P-256',
-    x: 'test-x',
-    y: 'test-y',
-    d: 'test-d',
-    alg: 'ES256',
+describe('ConvertToCryptoKey', () => {
+  const config: KeyConverterConfig = {
+    KEY_ALGORITHM: 'ES256',
+    NAMED_CURVE: 'P-256',
+    HASH_ALGORITHM: 'SHA-256',
   };
 
-  const mockCryptoKey = {
-    type: 'private',
-    algorithm: { name: 'ECDSA', namedCurve: 'P-256' },
-    extractable: true,
-    usages: ['sign'],
-  } as CryptoKey;
+  let mockCryptoKey: CryptoKey;
+  let mockCOSEKey: COSEKey;
+  const convertToJWK = createDefaultConvertToJWK(config);
+  const convertToCryptoKey: ConvertToCryptoKey =
+    createDefaultConvertToCryptoKey(convertToJWK);
 
-  const mockCOSEKey = {
-    toJWK: () => mockJWK,
-  } as unknown as COSEKey;
-
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    vi.spyOn(crypto.subtle, 'importKey').mockResolvedValue(mockCryptoKey);
-    vi.spyOn(jwkModule, 'defaultConvertToJWK').mockResolvedValue(mockJWK);
+
+    // CryptoKeyの生成
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: 'ECDSA',
+        namedCurve: 'P-256',
+      },
+      true,
+      ['sign', 'verify']
+    );
+    mockCryptoKey = (keyPair as CryptoKeyPair).privateKey;
+
+    // JWKの生成
+    const exportedJwk = await crypto.subtle.exportKey('jwk', mockCryptoKey);
+    const jwk: JWK = {
+      kty: exportedJwk.kty!,
+      crv: exportedJwk.crv!,
+      x: exportedJwk.x!,
+      y: exportedJwk.y!,
+      d: exportedJwk.d,
+      alg: config.KEY_ALGORITHM,
+      use: 'sig',
+      key_ops: ['sign'],
+    };
+    // COSEKeyの生成
+    mockCOSEKey = await COSEKey.fromJWK(jwk);
   });
 
   it('should convert JWK to private CryptoKey', async () => {
-    const result = await defaultConvertToCryptoKey(mockJWK, 'private');
-    expect(crypto.subtle.importKey).toHaveBeenCalledWith(
-      'jwk',
-      mockJWK,
-      'ES256',
-      true,
-      ['sign']
-    );
-    expect(result).toEqual(mockCryptoKey);
+    const kid = 'test-kid';
+    const exportedJwk = await crypto.subtle.exportKey('jwk', mockCryptoKey);
+    const jwk: JWK = {
+      kty: exportedJwk.kty!,
+      crv: exportedJwk.crv!,
+      x: exportedJwk.x!,
+      y: exportedJwk.y!,
+      d: exportedJwk.d,
+      alg: config.KEY_ALGORITHM,
+      use: 'sig',
+      key_ops: ['sign'],
+    };
+    const result = await convertToCryptoKey(jwk, 'private', kid);
+
+    expect(result).toBeInstanceOf(CryptoKey);
+    expect(result.type).toBe('private');
+    expect(result.algorithm).toEqual({
+      name: 'ECDSA',
+      namedCurve: 'P-256',
+    });
+    expect(result.extractable).toBe(true);
+    expect(result.usages).toEqual(['sign']);
   });
 
   it('should convert JWK to public CryptoKey', async () => {
-    const result = await defaultConvertToCryptoKey(mockJWK, 'public');
-    expect(crypto.subtle.importKey).toHaveBeenCalledWith(
-      'jwk',
-      mockJWK,
-      'ES256',
-      true,
-      ['verify']
-    );
-    expect(result).toEqual(mockCryptoKey);
+    const kid = 'test-kid';
+    const exportedJwk = await crypto.subtle.exportKey('jwk', mockCryptoKey);
+    const jwk: JWK = {
+      kty: exportedJwk.kty!,
+      crv: exportedJwk.crv!,
+      x: exportedJwk.x!,
+      y: exportedJwk.y!,
+      alg: config.KEY_ALGORITHM,
+      use: 'sig',
+      key_ops: ['verify'],
+    };
+    const result = await convertToCryptoKey(jwk, 'public', kid);
+
+    expect(result).toBeInstanceOf(CryptoKey);
+    expect(result.type).toBe('public');
+    expect(result.algorithm).toEqual({
+      name: 'ECDSA',
+      namedCurve: 'P-256',
+    });
+    expect(result.extractable).toBe(true);
+    expect(result.usages).toEqual(['verify']);
   });
 
   it('should convert COSEKey to CryptoKey', async () => {
-    const result = await defaultConvertToCryptoKey(mockCOSEKey, 'private');
-    expect(jwkModule.defaultConvertToJWK).toHaveBeenCalledWith(
-      mockCOSEKey,
-      'private'
-    );
-    expect(crypto.subtle.importKey).toHaveBeenCalled();
-    expect(result).toEqual(mockCryptoKey);
+    const kid = 'test-kid';
+    const result = await convertToCryptoKey(mockCOSEKey, 'private', kid);
+
+    expect(result).toBeInstanceOf(CryptoKey);
+    expect(result.type).toBe('private');
+    expect(result.algorithm).toEqual({
+      name: 'ECDSA',
+      namedCurve: 'P-256',
+    });
+    expect(result.extractable).toBe(true);
+    expect(result.usages).toEqual(['sign']);
   });
 
-  it('should pass through CryptoKey', async () => {
-    const result = await defaultConvertToCryptoKey(mockCryptoKey, 'private');
-    expect(jwkModule.defaultConvertToJWK).toHaveBeenCalledWith(
-      mockCryptoKey,
-      'private'
-    );
-    expect(result).toEqual(mockCryptoKey);
+  it('should pass through CryptoKey and update its properties', async () => {
+    const kid = 'test-kid';
+    const result = await convertToCryptoKey(mockCryptoKey, 'private', kid);
+
+    expect(result).toBeInstanceOf(CryptoKey);
+    expect(result.type).toBe('private');
+    expect(result.algorithm).toEqual({
+      name: 'ECDSA',
+      namedCurve: 'P-256',
+    });
+    expect(result.extractable).toBe(true);
+    expect(result.usages).toEqual(['sign']);
   });
 
-  it('should throw error when alg is undefined', async () => {
-    const jwkWithoutAlg = { ...mockJWK, alg: undefined };
-    vi.spyOn(jwkModule, 'defaultConvertToJWK').mockResolvedValue(jwkWithoutAlg);
-    await expect(defaultConvertToCryptoKey(mockJWK, 'private')).rejects.toThrow(
-      'alg is undefined.'
-    );
+  it('should throw error when JWK is invalid', async () => {
+    const invalidJWK = {} as JWK; // Missing required 'kty' field
+    await expect(
+      convertToCryptoKey(invalidJWK, 'private', 'test-kid')
+    ).rejects.toThrow('Failed to convert to CryptoKey.');
   });
 
-  it('should throw error when conversion fails', async () => {
-    vi.spyOn(crypto.subtle, 'importKey').mockRejectedValue(
-      new Error('Mock error')
-    );
-    await expect(defaultConvertToCryptoKey(mockJWK, 'private')).rejects.toThrow(
-      'Failed to convert to CryptoKey.'
-    );
+  it('should throw error when COSEKey conversion fails', async () => {
+    vi.spyOn(mockCOSEKey, 'toJWK').mockImplementation(() => {
+      throw new Error('Conversion failed');
+    });
+    await expect(
+      convertToCryptoKey(mockCOSEKey, 'private', 'test-kid')
+    ).rejects.toThrow('Failed to convert to CryptoKey.');
   });
 });

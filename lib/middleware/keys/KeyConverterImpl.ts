@@ -1,16 +1,22 @@
-import { ConvertToCoseKey, defaultConvertToCoseKey } from './ConvertToCoseKey';
+import { CryptoConfig } from '../../conf';
+import {
+  ConvertToCoseKey,
+  createDefaultConvertToCoseKey,
+} from './ConvertToCoseKey';
 import {
   ConvertToCryptoKey,
-  defaultConvertToCryptoKey,
+  createDefaultConvertToCryptoKey,
 } from './ConvertToCryptoKey';
-import { ConvertToJWK, defaultConvertToJWK } from './ConvertToJWK';
+import { ConvertToJWK, createDefaultConvertToJWK } from './ConvertToJWK';
 import { KeyConverter } from './KeyConverter';
+
+export type KeyConverterConfig = Omit<CryptoConfig, 'SALT_LENGTH'>;
 
 /**
  * Constructor type for KeyConverterImpl
  * Allows partial initialization of converter functions
  */
-export type KeyConverterConstructor = Partial<KeyConverter>;
+export type KeyConverterConstructorOpt = Partial<KeyConverter>;
 
 /**
  * Default implementation of KeyConverter interface
@@ -24,16 +30,25 @@ export class KeyConverterImpl implements KeyConverter {
 
   /**
    * Creates an instance of KeyConverterImpl
-   * @param {KeyConverterConstructor} options - Configuration object for converter functions
+   * @param {KeyConverterConstructorOpt} options - Configuration object for converter functions
    * @param {ConvertToCoseKey} [options.convertToCoseKey] - Custom function to convert to COSEKey
    * @param {ConvertToCryptoKey} [options.convertToCryptoKey] - Custom function to convert to CryptoKey
    * @param {ConvertToJWK} [options.convertToJWK] - Custom function to convert to JWK
    */
-  constructor({
-    convertToCoseKey,
-    convertToCryptoKey,
-    convertToJWK,
-  }: KeyConverterConstructor) {
+  constructor(
+    config: KeyConverterConfig,
+    {
+      convertToCoseKey,
+      convertToCryptoKey,
+      convertToJWK,
+    }: KeyConverterConstructorOpt = {}
+  ) {
+    const defaultConvertToJWK = createDefaultConvertToJWK(config);
+    const defaultConvertToCoseKey =
+      createDefaultConvertToCoseKey(defaultConvertToJWK);
+    const defaultConvertToCryptoKey =
+      createDefaultConvertToCryptoKey(defaultConvertToJWK);
+
     convertToCoseKey
       ? (this.convertToCoseKey = convertToCoseKey)
       : (this.convertToCoseKey = defaultConvertToCoseKey);

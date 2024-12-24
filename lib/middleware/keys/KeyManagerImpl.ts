@@ -1,13 +1,9 @@
 import { COSEKey } from '@auth0/cose';
 import { KeyConverter } from './KeyConverter';
-import { KeyConverterConstructor, KeyConverterImpl } from './KeyConverterImpl';
+import { KeyConverterImpl } from './KeyConverterImpl';
 import { KeyManager } from './KeyManager';
 import { KeyKinds, KeyPair } from './types';
-
-/**
- * Type alias for KeyConverter constructor options
- */
-export type KeyConverterConstructorOpt = KeyConverterConstructor;
+import { JWK } from '../../schemas/keys';
 
 /**
  * Implementation of KeyManager interface
@@ -17,15 +13,24 @@ export type KeyConverterConstructorOpt = KeyConverterConstructor;
 export class KeyManagerImpl implements KeyManager {
   #privateKey: KeyKinds;
   #keyConverter: KeyConverter;
+  #kid: string;
 
   /**
    * Creates an instance of KeyManagerImpl
    * @param {KeyKinds} privateKey - Initial private key
-   * @param {KeyConverterConstructorOpt} options - Options for KeyConverter initialization
+   * @param {KeyConverter} keyConverter - KeyConverter instance
    */
-  constructor(privateKey: KeyKinds, options: KeyConverterConstructorOpt) {
+  constructor(privateKey: KeyKinds, keyConverter: KeyConverterImpl) {
     this.#privateKey = privateKey;
-    this.#keyConverter = new KeyConverterImpl(options);
+    this.#keyConverter = keyConverter;
+    if (privateKey instanceof CryptoKey) {
+      this.#kid = crypto.randomUUID();
+    } else if (privateKey instanceof COSEKey) {
+      const jwk = privateKey.toJWK();
+      this.#kid = jwk.kid ?? crypto.randomUUID();
+    } else {
+      this.#kid = privateKey.kid ?? crypto.randomUUID();
+    }
   }
 
   /**
@@ -42,11 +47,13 @@ export class KeyManagerImpl implements KeyManager {
     return {
       privateKey: await this.#keyConverter.convertToCoseKey(
         this.#privateKey,
-        'private'
+        'private',
+        this.#kid
       ),
       publicKey: await this.#keyConverter.convertToCoseKey(
         this.#privateKey,
-        'public'
+        'public',
+        this.#kid
       ),
     };
   }
@@ -58,11 +65,13 @@ export class KeyManagerImpl implements KeyManager {
     return {
       privateKey: await this.#keyConverter.convertToCryptoKey(
         this.#privateKey,
-        'private'
+        'private',
+        this.#kid
       ),
       publicKey: await this.#keyConverter.convertToCryptoKey(
         this.#privateKey,
-        'public'
+        'public',
+        this.#kid
       ),
     };
   }
@@ -70,15 +79,17 @@ export class KeyManagerImpl implements KeyManager {
   /**
    * @inheritdoc
    */
-  async getJWKPair(): Promise<KeyPair<JsonWebKey>> {
+  async getJWKPair(): Promise<KeyPair<JWK>> {
     return {
       privateKey: await this.#keyConverter.convertToJWK(
         this.#privateKey,
-        'private'
+        'private',
+        this.#kid
       ),
       publicKey: await this.#keyConverter.convertToJWK(
         this.#privateKey,
-        'public'
+        'public',
+        this.#kid
       ),
     };
   }

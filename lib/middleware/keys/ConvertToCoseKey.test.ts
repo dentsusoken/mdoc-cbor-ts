@@ -1,90 +1,133 @@
 import { COSEKey } from '@auth0/cose';
+import {
+  ConvertToCoseKey,
+  createDefaultConvertToCoseKey,
+} from './ConvertToCoseKey';
+import { createDefaultConvertToJWK } from './ConvertToJWK';
+import { KeyConverterConfig } from './KeyConverterImpl';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { JWK } from '../../schemas/keys';
-import { describe, expect, it, vi } from 'vitest';
-import { defaultConvertToCoseKey } from './ConvertToCoseKey';
-import * as jwkModule from './ConvertToJWK';
 
-describe('defaultConvertToCoseKey', () => {
-  const mockJWK: JWK = {
-    kty: 'EC',
-    crv: 'P-256',
-    x: 'test-x',
-    y: 'test-y',
-    d: 'test-d',
-    alg: 'ES256',
+describe('ConvertToCoseKey', () => {
+  const config: KeyConverterConfig = {
+    KEY_ALGORITHM: 'ES256',
+    NAMED_CURVE: 'P-256',
+    HASH_ALGORITHM: 'SHA-256',
   };
 
-  const mockCryptoKey = {
-    type: 'private',
-    algorithm: { name: 'ECDSA', namedCurve: 'P-256' },
-    extractable: true,
-    usages: ['sign'],
-  } as CryptoKey;
+  let mockCryptoKey: CryptoKey;
+  let mockJWK: JWK;
+  let mockCOSEKey: COSEKey;
+  const convertToJWK = createDefaultConvertToJWK(config);
+  const convertToCoseKey: ConvertToCoseKey =
+    createDefaultConvertToCoseKey(convertToJWK);
 
-  const mockCOSEKey = {
-    toJWK: () => mockJWK,
-  } as unknown as COSEKey;
-
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    vi.spyOn(COSEKey, 'fromJWK').mockReturnValue(mockCOSEKey);
-    vi.spyOn(jwkModule, 'defaultConvertToJWK').mockResolvedValue(mockJWK);
-  });
 
-  it('should convert JWK to private COSEKey', async () => {
-    const result = await defaultConvertToCoseKey(mockJWK, 'private');
-    expect(jwkModule.defaultConvertToJWK).toHaveBeenCalledWith(
-      mockJWK,
-      'private'
+    // CryptoKeyの生成
+    const keyPair = await crypto.subtle.generateKey(
+      {
+        name: 'ECDSA',
+        namedCurve: 'P-256',
+      },
+      true,
+      ['sign', 'verify']
     );
-    expect(COSEKey.fromJWK).toHaveBeenCalledWith(mockJWK);
-    expect(result).toEqual(mockCOSEKey);
-  });
+    mockCryptoKey = (keyPair as CryptoKeyPair).privateKey;
 
-  it('should convert JWK to public COSEKey', async () => {
-    const result = await defaultConvertToCoseKey(mockJWK, 'public');
-    expect(jwkModule.defaultConvertToJWK).toHaveBeenCalledWith(
-      mockJWK,
-      'public'
-    );
-    expect(COSEKey.fromJWK).toHaveBeenCalled();
-    expect(result).toEqual(mockCOSEKey);
+    // JWKの生成
+    const exportedJwk = await crypto.subtle.exportKey('jwk', mockCryptoKey);
+    mockJWK = {
+      kty: exportedJwk.kty!,
+      crv: exportedJwk.crv!,
+      x: exportedJwk.x!,
+      y: exportedJwk.y!,
+      d: exportedJwk.d,
+      alg: config.KEY_ALGORITHM,
+      use: 'sig',
+      key_ops: ['sign'],
+    };
+
+    // COSEKeyの生成
+    mockCOSEKey = await COSEKey.fromJWK(mockJWK);
   });
 
   it('should convert CryptoKey to COSEKey', async () => {
-    const result = await defaultConvertToCoseKey(mockCryptoKey, 'private');
-    expect(jwkModule.defaultConvertToJWK).toHaveBeenCalledWith(
-      mockCryptoKey,
-      'private'
-    );
-    expect(COSEKey.fromJWK).toHaveBeenCalled();
-    expect(result).toEqual(mockCOSEKey);
+    const kid = 'test-kid';
+    const result = await convertToCoseKey(mockCryptoKey, 'private', kid);
+
+    expect(result).toBeInstanceOf(COSEKey);
+    const jwk = await result.toJWK();
+    expect(jwk.kty).toBe('EC');
+    expect(jwk.alg).toBe('ES256');
+    expect(jwk.crv).toBe('P-256');
+    expect(jwk.kid).toBe(kid);
+    expect(jwk.x).toBeDefined();
+    expect(jwk.y).toBeDefined();
+    expect(jwk.d).toBeDefined();
   });
 
-  it('should pass through COSEKey for private key', async () => {
-    const result = await defaultConvertToCoseKey(mockCOSEKey, 'private');
-    expect(jwkModule.defaultConvertToJWK).toHaveBeenCalledWith(
-      mockCOSEKey,
-      'private'
-    );
-    expect(result).toEqual(mockCOSEKey);
+  it('should convert JWK to COSEKey', async () => {
+    const kid = 'test-kid';
+    const result = await convertToCoseKey(mockJWK, 'private', kid);
+
+    expect(result).toBeInstanceOf(COSEKey);
+    const jwk = await result.toJWK();
+    expect(jwk.kty).toBe('EC');
+    expect(jwk.alg).toBe('ES256');
+    expect(jwk.crv).toBe('P-256');
+    expect(jwk.kid).toBe(kid);
+    expect(jwk.x).toBeDefined();
+    expect(jwk.y).toBeDefined();
+    expect(jwk.d).toBeDefined();
   });
 
-  it('should pass through COSEKey for public key', async () => {
-    const result = await defaultConvertToCoseKey(mockCOSEKey, 'public');
-    expect(jwkModule.defaultConvertToJWK).toHaveBeenCalledWith(
-      mockCOSEKey,
-      'public'
-    );
-    expect(result).toEqual(mockCOSEKey);
+  it('should convert JWK to public COSEKey', async () => {
+    const kid = 'test-kid';
+    const publicJWK = { ...mockJWK };
+    delete publicJWK.d;
+    publicJWK.key_ops = ['verify'];
+
+    const result = await convertToCoseKey(publicJWK, 'public', kid);
+
+    expect(result).toBeInstanceOf(COSEKey);
+    const jwk = await result.toJWK();
+    expect(jwk.kty).toBe('EC');
+    expect(jwk.alg).toBe('ES256');
+    expect(jwk.crv).toBe('P-256');
+    expect(jwk.kid).toBe(kid);
+    expect(jwk.x).toBeDefined();
+    expect(jwk.y).toBeDefined();
+    expect(jwk.d).toBeUndefined();
   });
 
-  it('should throw error when conversion fails', async () => {
-    vi.spyOn(COSEKey, 'fromJWK').mockImplementation(() => {
-      throw new Error('Mock error');
-    });
-    await expect(defaultConvertToCoseKey(mockJWK, 'private')).rejects.toThrow(
-      'Failed to convert to CoseKey.'
-    );
+  it('should pass through COSEKey and update its properties', async () => {
+    const kid = 'test-kid';
+    const result = await convertToCoseKey(mockCOSEKey, 'private', kid);
+
+    expect(result).toBeInstanceOf(COSEKey);
+    const jwk = await result.toJWK();
+    expect(jwk.kty).toBe('EC');
+    expect(jwk.alg).toBe('ES256');
+    expect(jwk.crv).toBe('P-256');
+    expect(jwk.kid).toBe(kid);
+    expect(jwk.x).toBeDefined();
+    expect(jwk.y).toBeDefined();
+    expect(jwk.d).toBeDefined();
+  });
+
+  it('should throw error when JWK is invalid', async () => {
+    const invalidJWK = {} as JWK; // Missing required fields
+    await expect(
+      convertToCoseKey(invalidJWK, 'private', 'test-kid')
+    ).rejects.toThrow('Failed to convert to CoseKey.');
+  });
+
+  it('should throw error when CryptoKey conversion fails', async () => {
+    const invalidCryptoKey = {} as CryptoKey;
+    await expect(
+      convertToCoseKey(invalidCryptoKey, 'private', 'test-kid')
+    ).rejects.toThrow('Failed to convert to CoseKey.');
   });
 });
