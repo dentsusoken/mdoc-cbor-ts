@@ -13,7 +13,7 @@ import {
   defaultUnprotectHeaderGenerator,
   UnprotectHeaderGenerator,
 } from '.';
-import { encode } from 'cbor';
+import { encode } from 'cbor-x';
 
 export interface MsoIssuerConstructorOpt {
   hashMapGenerator?: HashMapGenerator;

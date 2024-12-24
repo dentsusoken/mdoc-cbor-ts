@@ -3,7 +3,10 @@ import { disclosureMapSchema } from './disclosureMapSchema';
 
 export const nameSpaceIdSchema = z.string();
 
-export const nameSpaceSchema = z.record(nameSpaceIdSchema, disclosureMapSchema);
+export const nameSpaceSchema = z.record(
+  nameSpaceIdSchema,
+  z.array(disclosureMapSchema)
+);
 
 export const encodedNameSpaceSchema = z.record(
   nameSpaceIdSchema,

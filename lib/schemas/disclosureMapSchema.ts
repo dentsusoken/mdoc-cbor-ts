@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { bufferSchema } from './common/bufferSchema';
-import { Tag } from 'cbor';
+import { Tag } from 'cbor-x';
 
 export const disclosureMapItemSchema = z.object({
   random: bufferSchema,
@@ -9,15 +9,15 @@ export const disclosureMapItemSchema = z.object({
   elementValue: z.string(),
 });
 
-export const disclosureMapSchema = z
-  .array(z.custom<Tag<DisclosureMapItem>>())
-  .refine((tags) => {
-    return tags.every((tag) => {
-      if (tag.tag !== 24) {
-        throw new Error('Invalid tag');
-      }
-      return disclosureMapItemSchema.parse(tag.value);
-    });
+export const disclosureMapSchema =
+  // z.array(z.custom<Tag<DisclosureMapItem>>())
+  z.custom<Tag<DisclosureMapItem>>().refine((tag) => {
+    // return tags.every((tag) => {
+    if (tag.tag !== 24) {
+      throw new Error('Invalid tag');
+    }
+    return disclosureMapItemSchema.parse(tag.value);
+    // });
   });
 
 export type DisclosureMapItem = z.infer<typeof disclosureMapItemSchema>;

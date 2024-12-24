@@ -1,5 +1,5 @@
 import { HashMap, NameSpace } from '../../schemas';
-import { encode, Tag } from 'cbor';
+import { encode, Tag } from 'cbor-x';
 
 // TODO: アルゴリズムを指定できるようにする
 export type HashMapGenerator = (
