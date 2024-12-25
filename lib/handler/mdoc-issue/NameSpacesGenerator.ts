@@ -1,4 +1,5 @@
-import { encode, Tag } from 'cbor-x';
+import { encode } from 'cbor-x';
+import { TypedTag } from '../../cbor';
 import { DisclosureMapItem, EncodedNameSpaces } from '../../schemas';
 import { MdocIssuerConfig } from './MdocIssueHandlerImpl';
 
@@ -25,7 +26,7 @@ export const createDefaultNameSpacesGenerator = (
           elementIdentifier: key,
           elementValue: value,
         };
-        const tag = new Tag(encode(disclosureMapItem), 24);
+        const tag = new TypedTag(encode(disclosureMapItem), 24);
         nameSpaces[namespaceId].push(tag);
         digestID++;
       });

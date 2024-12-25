@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createDefaultNameSpacesGenerator } from './NameSpacesGenerator';
-import { Tag } from 'cbor-x';
+import { TypedTag } from '../../cbor';
 
 describe('NameSpacesGenerator', () => {
   const nameSpacesGenerator = createDefaultNameSpacesGenerator({
@@ -19,7 +19,7 @@ describe('NameSpacesGenerator', () => {
     expect(result).toHaveProperty('org');
     expect(result.org).toBeInstanceOf(Array);
     result.org.forEach((item) => {
-      expect(item).toBeInstanceOf(Tag);
+      expect(item).toBeInstanceOf(TypedTag);
     });
   });
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { bufferSchema } from './common/bufferSchema';
-import { decode, Tag } from 'cbor-x';
+import { decode } from 'cbor-x';
+import { TypedTag } from '../cbor';
 
 export const disclosureMapItemSchema = z.object({
   random: bufferSchema,
@@ -10,15 +11,15 @@ export const disclosureMapItemSchema = z.object({
 });
 
 export const rawDisclosureMapSchema = z
-  .custom<Tag<Buffer | DisclosureMapItem>>()
+  .custom<TypedTag<Buffer | DisclosureMapItem>>()
   .transform((data) => {
     const encoded = encodedDisclosureMapSchema.parse(data);
     const value = disclosureMapItemSchema.parse(decode(encoded.value));
-    return new Tag<DisclosureMapItem>(value, 24);
+    return new TypedTag<DisclosureMapItem>(value, 24);
   });
 
 export const encodedDisclosureMapSchema = z
-  .custom<Tag<Buffer>>()
+  .custom<TypedTag<Buffer>>()
   .refine((data) => {
     return data.tag === 24;
   });

@@ -8,7 +8,9 @@ import { NameSpacesGenerator } from './NameSpacesGenerator';
 
 describe('DocumentGenerator', () => {
   const mockMsoIssueHandler: MsoIssueHandler = {
-    issue: vi.fn().mockResolvedValue({}),
+    issue: vi.fn().mockResolvedValue({
+      encode: vi.fn().mockReturnValue(Buffer.from('test')),
+    }),
   };
 
   const mockNameSpacesGenerator: NameSpacesGenerator = vi
@@ -41,7 +43,7 @@ describe('DocumentGenerator', () => {
       docType: 'mdoc',
       issuerSigned: {
         nameSpaces: { org: [] },
-        issuerAuth: expect.any(Object),
+        issuerAuth: Buffer.from('test'),
       },
       deviceSigned: {},
     });

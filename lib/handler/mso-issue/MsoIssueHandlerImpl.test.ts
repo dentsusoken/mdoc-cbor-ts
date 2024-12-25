@@ -4,8 +4,8 @@ import { KeyManager } from '../../middleware/keys';
 import { X509Generator } from '../../middleware/x509';
 import { EncodedNameSpaces } from '../../schemas';
 import { COSEKey, Sign1, COSEKeyParam } from '@auth0/cose';
+import { TypedTag } from '../../cbor';
 import { encode } from 'cbor-x';
-import { Tag } from 'cbor-x';
 
 describe('MsoIssueHandlerImpl', () => {
   const mockConfig = {
@@ -15,13 +15,13 @@ describe('MsoIssueHandlerImpl', () => {
 
   const mockNameSpaces: EncodedNameSpaces = {
     'org.iso.18013.5.1': [
-      new Tag(
-        {
+      new TypedTag(
+        encode({
           digestID: 1,
           random: Buffer.from('random1'),
           elementIdentifier: 'test-element-1',
           elementValue: 'test-value-1',
-        },
+        }),
         24
       ),
     ],

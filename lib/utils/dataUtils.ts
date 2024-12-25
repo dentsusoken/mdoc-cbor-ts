@@ -1,4 +1,5 @@
-import { encode, Tag } from 'cbor-x';
+import { encode } from 'cbor-x';
+import { TypedTag } from '../cbor';
 
 export const formatMsoDateStr = (date: Date) => {
   return date.toISOString()?.split('.')[0] + 'Z';
@@ -6,5 +7,5 @@ export const formatMsoDateStr = (date: Date) => {
 
 export const encodeMsoDate = (date: Date) => {
   const str = formatMsoDateStr(date);
-  return encode(new Tag(str, 0));
+  return encode(new TypedTag(str, 0));
 };
