@@ -62,7 +62,7 @@ describe('ConvertToCoseKey', () => {
     expect(jwk.kty).toBe('EC');
     expect(jwk.alg).toBe('ES256');
     expect(jwk.crv).toBe('P-256');
-    expect(jwk.kid).toBe(kid);
+    expect(jwk.kid).toBe(Buffer.from(kid).toString('base64url'));
     expect(jwk.x).toBeDefined();
     expect(jwk.y).toBeDefined();
     expect(jwk.d).toBeDefined();
@@ -77,7 +77,7 @@ describe('ConvertToCoseKey', () => {
     expect(jwk.kty).toBe('EC');
     expect(jwk.alg).toBe('ES256');
     expect(jwk.crv).toBe('P-256');
-    expect(jwk.kid).toBe(kid);
+    expect(jwk.kid).toBe(Buffer.from(kid).toString('base64url'));
     expect(jwk.x).toBeDefined();
     expect(jwk.y).toBeDefined();
     expect(jwk.d).toBeDefined();
@@ -96,7 +96,7 @@ describe('ConvertToCoseKey', () => {
     expect(jwk.kty).toBe('EC');
     expect(jwk.alg).toBe('ES256');
     expect(jwk.crv).toBe('P-256');
-    expect(jwk.kid).toBe(kid);
+    expect(jwk.kid).toBe(Buffer.from(kid).toString('base64url'));
     expect(jwk.x).toBeDefined();
     expect(jwk.y).toBeDefined();
     expect(jwk.d).toBeUndefined();
@@ -111,7 +111,7 @@ describe('ConvertToCoseKey', () => {
     expect(jwk.kty).toBe('EC');
     expect(jwk.alg).toBe('ES256');
     expect(jwk.crv).toBe('P-256');
-    expect(jwk.kid).toBe(kid);
+    expect(jwk.kid).toBe(Buffer.from(kid).toString('base64url'));
     expect(jwk.x).toBeDefined();
     expect(jwk.y).toBeDefined();
     expect(jwk.d).toBeDefined();

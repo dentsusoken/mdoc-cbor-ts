@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { MsoIssueHandlerImpl } from './MsoIssueHandlerImpl';
 import { KeyManager } from '../../middleware/keys';
 import { X509Generator } from '../../middleware/x509';
-import { NameSpace } from '../../schemas';
+import { NameSpaces } from '../../schemas';
 import { COSEKey, Sign1, COSEKeyParam } from '@auth0/cose';
 import { encode } from 'cbor-x';
 import { Tag } from 'cbor-x';
@@ -13,7 +13,7 @@ describe('MsoIssueHandlerImpl', () => {
     EXPIRATION_DELTA_HOURS: 24,
   };
 
-  const mockNameSpace: NameSpace = {
+  const mockNameSpaces: NameSpaces = {
     'org.iso.18013.5.1': [
       new Tag(
         {
@@ -67,7 +67,7 @@ describe('MsoIssueHandlerImpl', () => {
       mockConfig
     );
 
-    const result = await handler.issue(mockNameSpace);
+    const result = await handler.issue(mockNameSpaces);
 
     // KeyManagerからキーペアを取得していることを確認
     expect(mockKeyManager.getCoseKeyPair).toHaveBeenCalled();
@@ -89,7 +89,7 @@ describe('MsoIssueHandlerImpl', () => {
     );
 
     const validFrom = new Date('2024-01-02T00:00:00Z');
-    const result = await handler.issue(mockNameSpace, validFrom);
+    const result = await handler.issue(mockNameSpaces, validFrom);
 
     // KeyManagerからキーペアを取得していることを確認
     expect(mockKeyManager.getCoseKeyPair).toHaveBeenCalled();
@@ -125,10 +125,10 @@ describe('MsoIssueHandlerImpl', () => {
       }
     );
 
-    await handler.issue(mockNameSpace);
+    await handler.issue(mockNameSpaces);
 
     // カスタムジェネレータが使用されていることを確認
-    expect(mockHashMapGenerator).toHaveBeenCalledWith(mockNameSpace);
+    expect(mockHashMapGenerator).toHaveBeenCalledWith(mockNameSpaces);
     expect(mockMsoPayloadGenerator).toHaveBeenCalled();
     expect(mockProtectHeaderGenerator.generate).toHaveBeenCalled();
     expect(mockUnprotectHeaderGenerator.generate).toHaveBeenCalled();
@@ -148,7 +148,7 @@ describe('MsoIssueHandlerImpl', () => {
       }
     );
 
-    await expect(handler.issue(mockNameSpace)).rejects.toThrow(
+    await expect(handler.issue(mockNameSpaces)).rejects.toThrow(
       'Generator failed'
     );
   });

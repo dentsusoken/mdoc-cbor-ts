@@ -1,17 +1,9 @@
+import * as cborX from 'cbor-x';
+
 declare module 'cbor-x' {
-  import {
-    encode,
-    decode,
-    decodeMultiple,
-    addExtension,
-    Extensions,
-    Tag as CborXTag,
-  } from 'cbor-x';
+  export * from cborX;
 
-  export { encode, decode, decodeMultiple, addExtension, Extensions };
-
-  export class Tag<T = unknown> extends CborXTag<T> {
-    constructor(value: T, tagNumber: number);
+  export interface Tag<T = any> {
     value: T;
     tag: number;
   }

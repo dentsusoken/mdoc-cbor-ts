@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createDefaultHashMapGenerator } from './HashMapGenerator';
-import { NameSpace } from '../../schemas';
+import { RawNameSpaces } from '../../schemas';
 import { encode, Tag } from 'cbor-x';
 import { MsoIssuerConfig } from './MsoIssueHandlerImpl';
 
@@ -10,7 +10,7 @@ describe('HashMapGenerator', () => {
     EXPIRATION_DELTA_HOURS: 24,
   };
 
-  const mockNameSpace: NameSpace = {
+  const mockNameSpaces: RawNameSpaces = {
     'org.iso.18013.5.1': [
       new Tag(
         {
@@ -40,7 +40,7 @@ describe('HashMapGenerator', () => {
       .mockResolvedValue(mockDigest);
 
     const hashMapGenerator = createDefaultHashMapGenerator(mockConfig);
-    const result = await hashMapGenerator(mockNameSpace);
+    const result = await hashMapGenerator(mockNameSpaces);
 
     // 各エントリに対してハッシュが生成されていることを確認
     expect(mockSubtleDigest).toHaveBeenCalledTimes(2);
@@ -50,7 +50,7 @@ describe('HashMapGenerator', () => {
     expect(result['org.iso.18013.5.1'][2]).toEqual(mockDigest);
 
     // digestの呼び出し引数を確認
-    mockNameSpace['org.iso.18013.5.1'].forEach((item) => {
+    mockNameSpaces['org.iso.18013.5.1'].forEach((item) => {
       expect(mockSubtleDigest).toHaveBeenCalledWith(
         mockConfig.HASH_ALGORITHM,
         encode(new Tag(encode(item.value), 24))
@@ -58,14 +58,14 @@ describe('HashMapGenerator', () => {
     });
   });
 
-  it('should handle empty namespace', async () => {
+  it('should handle empty NameSpaces', async () => {
     const hashMapGenerator = createDefaultHashMapGenerator(mockConfig);
     const result = await hashMapGenerator({});
 
     expect(result).toEqual({});
   });
 
-  it('should handle namespace with empty arrays', async () => {
+  it('should handle NameSpaces with empty arrays', async () => {
     const hashMapGenerator = createDefaultHashMapGenerator(mockConfig);
     const result = await hashMapGenerator({ 'org.iso.18013.5.1': [] });
 
@@ -78,7 +78,7 @@ describe('HashMapGenerator', () => {
     );
 
     const hashMapGenerator = createDefaultHashMapGenerator(mockConfig);
-    await expect(hashMapGenerator(mockNameSpace)).rejects.toThrow(
+    await expect(hashMapGenerator(mockNameSpaces)).rejects.toThrow(
       'Digest failed'
     );
   });
