@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { MsoIssueHandlerImpl } from './MsoIssueHandlerImpl';
 import { KeyManager } from '../../middleware/keys';
 import { X509Generator } from '../../middleware/x509';
-import { EncodedNameSpaces } from '../../schemas';
+import { RawNameSpaces } from '../../schemas';
 import { COSEKey, Sign1, COSEKeyParam } from '@auth0/cose';
 import { TypedTag } from '../../cbor';
 import { encode } from 'cbor-x';
@@ -13,15 +13,15 @@ describe('MsoIssueHandlerImpl', () => {
     EXPIRATION_DELTA_HOURS: 24,
   };
 
-  const mockNameSpaces: EncodedNameSpaces = {
+  const mockNameSpaces: RawNameSpaces = {
     'org.iso.18013.5.1': [
       new TypedTag(
-        encode({
+        {
           digestID: 1,
           random: Buffer.from('random1'),
           elementIdentifier: 'test-element-1',
           elementValue: 'test-value-1',
-        }),
+        },
         24
       ),
     ],

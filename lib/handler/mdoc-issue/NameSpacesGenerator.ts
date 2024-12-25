@@ -1,22 +1,32 @@
-import { encode } from 'cbor-x';
 import { TypedTag } from '../../cbor';
-import { DisclosureMapItem, EncodedNameSpaces } from '../../schemas';
+import {
+  DisclosureMapItem,
+  RawNameSpaces,
+  EncodedNameSpaces,
+} from '../../schemas';
 import { MdocIssuerConfig } from './MdocIssueHandlerImpl';
+
+export type NameSpacesGeneratorResult = {
+  raw: RawNameSpaces;
+  encoded: EncodedNameSpaces;
+};
 
 export type NameSpacesGenerator = (
   data: Record<string, Record<string, unknown>>
-) => Promise<EncodedNameSpaces>;
+) => Promise<NameSpacesGeneratorResult>;
 
 export const createDefaultNameSpacesGenerator = (
   config: MdocIssuerConfig
 ): NameSpacesGenerator => {
   return async (data) => {
-    const nameSpaces: EncodedNameSpaces = {};
+    const raw: RawNameSpaces = {};
+    const encoded: EncodedNameSpaces = {};
 
     let digestID = 0;
 
     for (const [namespaceId, values] of Object.entries(data)) {
-      nameSpaces[namespaceId] = [];
+      raw[namespaceId] = [];
+      encoded[namespaceId] = [];
       Object.entries(values).map(([key, value]) => {
         const disclosureMapItem: DisclosureMapItem = {
           random: Buffer.from(
@@ -26,11 +36,12 @@ export const createDefaultNameSpacesGenerator = (
           elementIdentifier: key,
           elementValue: value,
         };
-        const tag = new TypedTag(encode(disclosureMapItem), 24);
-        nameSpaces[namespaceId].push(tag);
+        const tag = new TypedTag(disclosureMapItem, 24);
+        raw[namespaceId].push(tag);
+        encoded[namespaceId].push(tag.encode());
         digestID++;
       });
     }
-    return nameSpaces;
+    return { raw, encoded };
   };
 };

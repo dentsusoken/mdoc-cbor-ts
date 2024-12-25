@@ -1,4 +1,3 @@
-import { encode } from 'cbor-x';
 import { EncodedDocument } from '../../schemas/documentSchema';
 import { MsoIssueHandler } from '../mso-issue';
 import { NameSpacesGenerator } from './NameSpacesGenerator';
@@ -19,12 +18,12 @@ export const createDefaultDocumentsGenerator = (
   return async (data: DocumentData[]) => {
     const documents: EncodedDocument[] = [];
     for (const item of data) {
-      const nameSpaces = await nameSpacesGenerator(item.data);
-      const issuerAuth = await msoIssuerHandler.issue(nameSpaces);
+      const { raw, encoded } = await nameSpacesGenerator(item.data);
+      const issuerAuth = await msoIssuerHandler.issue(raw);
       documents.push({
         docType: item.docType,
         issuerSigned: {
-          nameSpaces,
+          nameSpaces: encoded,
           issuerAuth: issuerAuth.encode(),
         },
         deviceSigned: {},

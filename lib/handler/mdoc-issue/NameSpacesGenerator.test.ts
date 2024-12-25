@@ -16,15 +16,18 @@ describe('NameSpacesGenerator', () => {
 
     const result = await nameSpacesGenerator(inputData);
 
-    expect(result).toHaveProperty('org');
-    expect(result.org).toBeInstanceOf(Array);
-    result.org.forEach((item) => {
+    expect(result).toHaveProperty('raw');
+    expect(result.raw.org).toBeInstanceOf(Array);
+    result.raw.org.forEach((item) => {
       expect(item).toBeInstanceOf(TypedTag);
     });
   });
 
   it('should handle empty input data', async () => {
     const result = await nameSpacesGenerator({});
-    expect(result).toEqual({});
+    expect(result).toEqual({
+      raw: {},
+      encoded: {},
+    });
   });
 });

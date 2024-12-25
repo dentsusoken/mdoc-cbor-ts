@@ -60,6 +60,7 @@ describe('issue', async () => {
       'org.iso.18013.5.1',
       'base64url'
     );
+    console.log('result :>> ', result);
     expect(result).toBeDefined();
     const cbor = cborSchema.parse(result);
     const parsed = encodedMdocSchema.parse(cbor);

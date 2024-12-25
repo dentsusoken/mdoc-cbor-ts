@@ -1,8 +1,8 @@
-import { HashMap, EncodedNameSpaces } from '../../schemas';
+import { HashMap, RawNameSpaces } from '../../schemas';
 import { encode } from 'cbor-x';
 import { MsoIssuerConfig } from './MsoIssueHandlerImpl';
 
-export type HashMapGenerator = (data: EncodedNameSpaces) => Promise<HashMap>;
+export type HashMapGenerator = (data: RawNameSpaces) => Promise<HashMap>;
 
 export const createDefaultHashMapGenerator = (
   config: MsoIssuerConfig

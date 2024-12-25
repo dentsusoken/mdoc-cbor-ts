@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createDefaultHashMapGenerator } from './HashMapGenerator';
-import { EncodedNameSpaces } from '../../schemas';
+import { RawNameSpaces } from '../../schemas';
 import { encode } from 'cbor-x';
 import { TypedTag } from '../../cbor';
 import { MsoIssuerConfig } from './MsoIssueHandlerImpl';
@@ -11,24 +11,24 @@ describe('HashMapGenerator', () => {
     EXPIRATION_DELTA_HOURS: 24,
   };
 
-  const mockNameSpaces: EncodedNameSpaces = {
+  const mockNameSpaces: RawNameSpaces = {
     'org.iso.18013.5.1': [
       new TypedTag(
-        encode({
+        {
           digestID: 1,
           random: Buffer.from('random1'),
           elementIdentifier: 'test-element-1',
           elementValue: 'test-value-1',
-        }),
+        },
         24
       ),
       new TypedTag(
-        encode({
+        {
           digestID: 2,
           random: Buffer.from('random2'),
           elementIdentifier: 'test-element-2',
           elementValue: 'test-value-2',
-        }),
+        },
         24
       ),
     ],

@@ -16,7 +16,8 @@ describe('DocumentGenerator', () => {
   const mockNameSpacesGenerator: NameSpacesGenerator = vi
     .fn()
     .mockResolvedValue({
-      org: [],
+      raw: { org: [] },
+      encoded: { org: [] },
     });
 
   const documentsGenerator = createDefaultDocumentsGenerator(
