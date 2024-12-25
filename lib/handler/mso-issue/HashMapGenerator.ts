@@ -1,8 +1,8 @@
-import { HashMap, RawNameSpaces } from '../../schemas';
-import { encode, Tag } from 'cbor-x';
+import { HashMap, EncodedNameSpaces } from '../../schemas';
+import { encode } from 'cbor-x';
 import { MsoIssuerConfig } from './MsoIssueHandlerImpl';
 
-export type HashMapGenerator = (data: RawNameSpaces) => Promise<HashMap>;
+export type HashMapGenerator = (data: EncodedNameSpaces) => Promise<HashMap>;
 
 export const createDefaultHashMapGenerator = (
   config: MsoIssuerConfig
@@ -14,7 +14,7 @@ export const createDefaultHashMapGenerator = (
       for (const item of value) {
         const digest = await crypto.subtle.digest(
           config.HASH_ALGORITHM,
-          encode(new Tag(encode(item.value), 24))
+          encode(item)
         );
         hashMap[key][item.value.digestID] = digest;
       }

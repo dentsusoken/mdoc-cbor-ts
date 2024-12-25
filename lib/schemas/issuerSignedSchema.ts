@@ -4,6 +4,7 @@ import {
   rawNameSpacesSchema,
 } from './nameSpacesSchema';
 import { msoSchema } from './msoSchema';
+import { bufferSchema } from './common';
 
 export const rawIssuerSignedSchema = z.object({
   nameSpaces: rawNameSpacesSchema,
@@ -12,7 +13,7 @@ export const rawIssuerSignedSchema = z.object({
 
 export const encodedIssuerSignedSchema = z.object({
   nameSpaces: encodedNameSpacesSchema,
-  issuerAuth: msoSchema,
+  issuerAuth: bufferSchema,
 });
 
 export type RawIssuerSigned = z.infer<typeof rawIssuerSignedSchema>;

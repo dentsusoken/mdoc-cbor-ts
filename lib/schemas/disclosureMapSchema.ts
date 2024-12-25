@@ -25,5 +25,5 @@ export const encodedDisclosureMapSchema = z
 
 export type DisclosureMapItem = z.infer<typeof disclosureMapItemSchema>;
 
-export type DecodedDisclosureMap = z.infer<typeof rawDisclosureMapSchema>;
+export type RawDisclosureMap = z.infer<typeof rawDisclosureMapSchema>;
 export type EncodedDisclosureMap = z.infer<typeof encodedDisclosureMapSchema>;

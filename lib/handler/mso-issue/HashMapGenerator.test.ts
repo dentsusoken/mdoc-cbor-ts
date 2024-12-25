@@ -53,7 +53,7 @@ describe('HashMapGenerator', () => {
     mockNameSpaces['org.iso.18013.5.1'].forEach((item) => {
       expect(mockSubtleDigest).toHaveBeenCalledWith(
         mockConfig.HASH_ALGORITHM,
-        encode(new Tag(encode(item.value), 24))
+        encode(item)
       );
     });
   });

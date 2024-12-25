@@ -2,7 +2,7 @@ import { Sign1 } from '@auth0/cose';
 import { MsoIssueHandler } from './MsoIssueHandler';
 import { KeyManager } from '../../middleware/keys';
 import { X509Generator } from '../../middleware/x509';
-import { RawNameSpaces } from '../../schemas';
+import { EncodedNameSpaces } from '../../schemas';
 import {
   createDefaultHashMapGenerator,
   HashMapGenerator,
@@ -58,7 +58,7 @@ export class MsoIssueHandlerImpl implements MsoIssueHandler {
       options.unprotectHeaderGenerator ?? defaultUnprotectHeaderGenerator;
   }
 
-  async issue(data: RawNameSpaces, validFrom?: Date): Promise<Sign1> {
+  async issue(data: EncodedNameSpaces, validFrom?: Date): Promise<Sign1> {
     const hashMap = await this.#hashMapGenerator(data);
     const payload = await this.#msoPayloadGenerator(
       hashMap,
