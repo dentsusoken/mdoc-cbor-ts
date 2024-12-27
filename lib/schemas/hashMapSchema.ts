@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-export const hashMapItemSchema = z.record(z.number(), z.custom<ArrayBuffer>());
+export const hashMapItemSchema = z.record(
+  z.string().regex(/^[0-9]+$/),
+  z.custom<ArrayBuffer>()
+);
 
 export const hashMapSchema = z.record(z.string(), hashMapItemSchema);
 

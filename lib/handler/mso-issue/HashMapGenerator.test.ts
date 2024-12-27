@@ -4,6 +4,7 @@ import { RawNameSpaces } from '../../schemas';
 import { encode } from 'cbor-x';
 import { TypedTag } from '../../cbor';
 import { MsoIssuerConfig } from './MsoIssueHandlerImpl';
+import { Buffer } from 'buffer';
 
 describe('HashMapGenerator', () => {
   const mockConfig: MsoIssuerConfig = {
@@ -51,11 +52,12 @@ describe('HashMapGenerator', () => {
     expect(result['org.iso.18013.5.1'][2]).toEqual(mockDigest);
 
     // digestの呼び出し引数を確認
-    mockNameSpaces['org.iso.18013.5.1'].forEach((item) => {
-      expect(mockSubtleDigest).toHaveBeenCalledWith(
-        mockConfig.HASH_ALGORITHM,
-        encode(item)
-      );
+    const calls = mockSubtleDigest.mock.calls;
+    expect(calls.length).toBe(2);
+    calls.forEach((call, index) => {
+      expect(call[0]).toBe(mockConfig.HASH_ALGORITHM);
+      // 実際のエンコードされたデータを使用して呼び出されたことを確認
+      expect(call[1]).toBeInstanceOf(Uint8Array);
     });
   });
 

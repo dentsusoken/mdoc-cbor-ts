@@ -14,7 +14,7 @@ export const createDefaultHashMapGenerator = (
       for (const item of value) {
         const digest = await crypto.subtle.digest(
           config.HASH_ALGORITHM,
-          encode(item)
+          encode(item.encode())
         );
         hashMap[key][item.value.digestID] = digest;
       }
