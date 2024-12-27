@@ -21,7 +21,7 @@ export class MsoVerifyHandlerImpl implements MsoVerifyHandler {
   #verifySignatureHandler: VerifySignatureHandler;
   #verifyDigestHandler: VerifyDigestHandler;
 
-  constructor(x509Parser: X509Parser, opt: MsoVerifyHandlerOpt) {
+  constructor(x509Parser: X509Parser, opt: MsoVerifyHandlerOpt = {}) {
     if (!x509Parser) {
       throw new Error('X509Parser is required');
     }
