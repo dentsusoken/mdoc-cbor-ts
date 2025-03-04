@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// TODO: define uint schema in common
 export const digestIDSchema = z.union([
   z.number().int().positive(),
   z
