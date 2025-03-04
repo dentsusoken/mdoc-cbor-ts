@@ -5,7 +5,17 @@ export const validityInfoSchema = z.object({
   signed: z.date(),
   validFrom: z.date(),
   validUntil: z.date(),
-  expectedUpdate: z.date(),
+  expectedUpdate: z.date().optional(),
 });
 
+/**
+ * ```cddl
+ * ValidityInfo = {
+ *  "signed": tdate,
+ *  "validFrom": tdate,
+ *  "validUntil": tdate,
+ *  ? "expectedUpdate": tdate
+ * }
+ * ```
+ */
 export type ValidityInfo = z.infer<typeof validityInfoSchema>;

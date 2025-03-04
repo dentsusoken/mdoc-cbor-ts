@@ -1,11 +1,21 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema, nameSpaceSchema, Entry } from '../common';
+import { nameSpaceSchema, Entry } from '../common';
+import {
+  dataElementsArraySchema,
+  DataElementsArray,
+} from './DataElementsArray';
 
 export const authorizedDataElementsSchema = z.map(
   nameSpaceSchema,
-  dataElementIdentifierSchema
+  dataElementsArraySchema
 );
 
+/**
+ * ```cddl
+ * AuthorizedDataElements = {+ NameSpace => DataElementsArray}
+ * ```
+ * @see {@link DataElementsArray}
+ */
 export type AuthorizedDataElements = z.infer<
   typeof authorizedDataElementsSchema
 >;

@@ -1,10 +1,26 @@
 import { z } from 'zod';
-import { authorizedDataElementsSchema } from './AuthorizedDataElements';
-import { authorizedNameSpaceSchema } from './AuthorizedNameSpace';
+import {
+  authorizedDataElementsSchema,
+  AuthorizedDataElements,
+} from './AuthorizedDataElements';
+import {
+  authorizedNameSpacesSchema,
+  AuthorizedNameSpaces,
+} from './AuthorizedNameSpaces';
 
 export const keyAuthorizationsSchema = z.object({
-  nameSpaces: authorizedNameSpaceSchema.optional(),
+  nameSpaces: authorizedNameSpacesSchema.optional(),
   dataElements: authorizedDataElementsSchema.optional(),
 });
 
-export type KeyAuthorization = z.infer<typeof keyAuthorizationsSchema>;
+/**
+ * ```cddl
+ * KeyAuthorizations = {
+ *  ? "nameSpaces": AuthorizedNameSpaces,
+ *  ? "dataElements": AuthorizedDataElements
+ * }
+ * ```
+ * @see {@link AuthorizedNameSpaces}
+ * @see {@link AuthorizedDataElements}
+ */
+export type KeyAuthorizations = z.infer<typeof keyAuthorizationsSchema>;
