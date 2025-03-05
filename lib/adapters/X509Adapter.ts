@@ -1,6 +1,6 @@
 import { COSEKey } from '@auth0/cose';
-import { X509Certificate } from '@peculiar/x509';
 import { JWK } from 'jose';
+import { X509Certificate } from 'node:crypto';
 
 /**
  * Adapter class for handling X.509 certificates and private keys
@@ -46,6 +46,10 @@ export class X509Adapter {
     return this.#privateKey;
   }
 
+  private static toPem(certificate: string) {
+    return `-----BEGIN CERTIFICATE-----\n${certificate}\n-----END CERTIFICATE-----`;
+  }
+
   /**
    * Creates an X509Adapter instance from a JWK
    * @description
@@ -61,7 +65,7 @@ export class X509Adapter {
     if (!jwk.x5c || jwk.x5c.length === 0) {
       throw new Error('x5c is required');
     }
-    const certificate = new X509Certificate(jwk.x5c[0]);
+    const certificate = new X509Certificate(this.toPem(jwk.x5c[0]));
     return new X509Adapter(certificate, COSEKey.fromJWK(jwk));
   }
 }

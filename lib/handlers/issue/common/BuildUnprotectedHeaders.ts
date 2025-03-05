@@ -1,5 +1,5 @@
 import { Headers, UnprotectedHeaders } from '@auth0/cose';
-import { X509Certificate } from '@peculiar/x509';
+import { X509Certificate } from 'node:crypto';
 
 /**
  * Type definition for building unprotected headers
@@ -28,7 +28,5 @@ export type BuildUnprotectedHeaders = (
 export const buildUnprotectedHeaders: BuildUnprotectedHeaders = (
   cert: X509Certificate
 ) => {
-  return new UnprotectedHeaders([
-    [Headers.X5Chain, new Uint8Array(cert.rawData)],
-  ]);
+  return new UnprotectedHeaders([[Headers.X5Chain, new Uint8Array(cert.raw)]]);
 };
