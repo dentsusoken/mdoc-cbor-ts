@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { docTypeSchema, DocType } from '../common';
-import { issuerSignedSchema, IssuerSigned } from './IssuerSigned';
-import { deviceSignedSchema, DeviceSigned } from './DeviceSigned';
-import { errorsSchema, Errors } from './error';
+import { DocType, docTypeSchema } from '../common';
+import { DeviceSigned, deviceSignedSchema } from './DeviceSigned';
+import { Errors, errorsSchema } from './error';
+import { IssuerSigned, issuerSignedSchema } from './IssuerSigned';
 
 export const documentSchema = z.object({
   docType: docTypeSchema,

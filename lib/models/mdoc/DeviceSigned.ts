@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
 import { deviceAuthSchema } from './DeviceAuth';
+import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
 
 export const deviceSignedSchema = z.object({
   nameSpaces: deviceNameSpacesBytesSchema,

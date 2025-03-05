@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { Tag } from 'cbor-x';
+import { z } from 'zod';
 
 // export const issuerSignedItemBytesSchema = bytesSchema;
 export const issuerSignedItemBytesSchema = z.custom<Tag>();

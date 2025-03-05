@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { docTypeSchema, DocType } from '../../common';
-import { errorCodeSchema, ErrorCode } from './ErrorCode';
-import { Entry } from '../../common';
+import { DocType, docTypeSchema, Entry } from '../../common';
+import { ErrorCode, errorCodeSchema } from './ErrorCode';
 export const documentErrorSchema = z.record(docTypeSchema, errorCodeSchema);
 
 /**

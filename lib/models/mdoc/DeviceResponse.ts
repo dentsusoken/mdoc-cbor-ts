@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { documentSchema, Document } from './Document';
-import { documentErrorSchema, DocumentError } from './error';
+import { Document, documentSchema } from './Document';
+import { DocumentError, documentErrorSchema } from './error';
 import { statusSchema } from './Status';
 
 export const deviceResponseSchema = z.object({

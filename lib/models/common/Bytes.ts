@@ -1,5 +1,5 @@
-import { z } from 'zod';
 import { Buffer } from 'node:buffer';
+import { z } from 'zod';
 
 export const bytesSchema = z
   .custom<Uint8Array | Buffer>()

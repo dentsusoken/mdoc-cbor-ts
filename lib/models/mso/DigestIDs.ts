@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { digestIDSchema, DigestID } from './DigestID';
-import { digestSchema, Digest } from './Digest';
+import { Digest, digestSchema } from './Digest';
+import { DigestID, digestIDSchema } from './DigestID';
 
 export const digestIDsSchema = z.record(digestIDSchema, digestSchema);
 

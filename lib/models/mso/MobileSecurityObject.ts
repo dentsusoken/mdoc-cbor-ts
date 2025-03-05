@@ -1,13 +1,13 @@
 import { z } from 'zod';
-import { valueDigestsSchema, ValueDigests } from './ValueDigests';
-import { deviceKeyInfoSchema, DeviceKeyInfo } from './DeviceKeyInfo';
 import { docTypeSchema } from '../common';
-import { validityInfoSchema, ValidityInfo } from './ValidityInfo';
+import { DeviceKeyInfo, deviceKeyInfoSchema } from './DeviceKeyInfo';
+import { digestAlgorithmSchema } from './DigestAlgorithm';
+import { ValidityInfo, validityInfoSchema } from './ValidityInfo';
+import { ValueDigests, valueDigestsSchema } from './ValueDigests';
 
 export const mobileSecurityObjectSchema = z.object({
   version: z.literal('1.0'),
-  // TODO: digestAlgorithm should be defined in the common schema
-  digestAlgorithm: z.literal('SHA-256'),
+  digestAlgorithm: digestAlgorithmSchema,
   valueDigests: valueDigestsSchema,
   deviceKeyInfo: deviceKeyInfoSchema,
   docType: docTypeSchema,

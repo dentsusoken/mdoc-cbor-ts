@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { nameSpaceSchema, Entry } from '../common';
+import { Entry, nameSpaceSchema } from '../common';
 import {
-  dataElementsArraySchema,
   DataElementsArray,
+  dataElementsArraySchema,
 } from './DataElementsArray';
 
 export const authorizedDataElementsSchema = z.record(

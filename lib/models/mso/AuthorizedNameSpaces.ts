@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { nameSpaceSchema, NameSpace } from '../common';
+import { NameSpace, nameSpaceSchema } from '../common';
 
 export const authorizedNameSpacesSchema = z.array(nameSpaceSchema).nonempty();
 

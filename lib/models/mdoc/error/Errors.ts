@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { nameSpaceSchema, NameSpace } from '../../common';
-import { errorItemsSchema, ErrorItems } from './ErrorItems';
-import { Entry } from '../../common';
+import { Entry, NameSpace, nameSpaceSchema } from '../../common';
+import { ErrorItems, errorItemsSchema } from './ErrorItems';
 export const errorsSchema = z.record(nameSpaceSchema, errorItemsSchema);
 
 /**

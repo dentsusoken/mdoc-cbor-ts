@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { deviceKeySchema, DeviceKey } from './DeviceKey';
+import { DeviceKey, deviceKeySchema } from './DeviceKey';
 import {
-  keyAuthorizationsSchema,
   KeyAuthorizations,
+  keyAuthorizationsSchema,
 } from './KeyAuthorizations';
-import { keyInfoSchema, KeyInfo } from './KeyInfo';
+import { KeyInfo, keyInfoSchema } from './KeyInfo';
 
 export const deviceKeyInfoSchema = z.object({
   deviceKey: deviceKeySchema,

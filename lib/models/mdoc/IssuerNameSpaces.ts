@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { nameSpaceSchema, NameSpace, Entry } from '../common';
+import { Entry, NameSpace, nameSpaceSchema } from '../common';
 import {
-  issuerSignedItemBytesSchema,
   IssuerSignedItemBytes,
+  issuerSignedItemBytesSchema,
 } from './IssuerSignedItemBytes';
 
 export const issuerNameSpacesSchema = z.record(

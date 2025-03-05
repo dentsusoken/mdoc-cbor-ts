@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import {
-  dataElementIdentifierSchema,
   DataElementIdentifier,
+  dataElementIdentifierSchema,
+  Entry,
 } from '../../common';
-import { errorCodeSchema, ErrorCode } from './ErrorCode';
-import { Entry } from '../../common';
+import { ErrorCode, errorCodeSchema } from './ErrorCode';
 
 export const errorItemsSchema = z.record(
   dataElementIdentifierSchema,

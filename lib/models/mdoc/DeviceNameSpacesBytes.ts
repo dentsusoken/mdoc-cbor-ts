@@ -1,6 +1,6 @@
+import { Tag } from 'cbor-x';
 import { z } from 'zod';
 import { DeviceNameSpaces } from './DeviceNameSpaces';
-import { Tag } from 'cbor-x';
 
 // export const deviceNameSpacesBytesSchema = bytesSchema;
 export const deviceNameSpacesBytesSchema = z.custom<Tag>();

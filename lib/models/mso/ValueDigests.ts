@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { nameSpaceSchema, NameSpace } from '../common';
-import { digestIDsSchema, DigestIDs } from './DigestIDs';
+import { NameSpace, nameSpaceSchema } from '../common';
+import { DigestIDs, digestIDsSchema } from './DigestIDs';
 
 export const valueDigestsSchema = z.record(nameSpaceSchema, digestIDsSchema);
 

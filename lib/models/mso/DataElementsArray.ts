@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema, DataElementIdentifier } from '../common';
+import { DataElementIdentifier, dataElementIdentifierSchema } from '../common';
 
 export const dataElementsArraySchema = z
   .array(dataElementIdentifierSchema)

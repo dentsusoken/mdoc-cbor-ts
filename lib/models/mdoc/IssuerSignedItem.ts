@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import {
   bytesSchema,
-  dataElementIdentifierSchema,
-  dataElementValueSchema,
   DataElementIdentifier,
+  dataElementIdentifierSchema,
   DataElementValue,
+  dataElementValueSchema,
 } from '../common';
 
 export const issuerSignedItemSchema = z.object({

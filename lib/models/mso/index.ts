@@ -4,6 +4,7 @@ export * from './DataElementsArray';
 export * from './DeviceKey';
 export * from './DeviceKeyInfo';
 export * from './Digest';
+export * from './DigestAlgorithm';
 export * from './DigestID';
 export * from './DigestIDs';
 export * from './IssuerAuth';

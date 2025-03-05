@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { deviceSignatureSchema, DeviceSignature } from './DeviceSignature';
-import { deviceMacSchema, DeviceMac } from './DeviceMac';
+import { DeviceMac, deviceMacSchema } from './DeviceMac';
+import { DeviceSignature, deviceSignatureSchema } from './DeviceSignature';
 
 export const deviceAuthSchema = z.union([
   z.object({

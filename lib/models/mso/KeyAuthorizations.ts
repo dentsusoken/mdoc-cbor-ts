@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import {
-  authorizedDataElementsSchema,
   AuthorizedDataElements,
+  authorizedDataElementsSchema,
 } from './AuthorizedDataElements';
 import {
-  authorizedNameSpacesSchema,
   AuthorizedNameSpaces,
+  authorizedNameSpacesSchema,
 } from './AuthorizedNameSpaces';
 
 export const keyAuthorizationsSchema = z.object({

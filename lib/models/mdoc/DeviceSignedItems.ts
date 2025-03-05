@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import {
-  dataElementIdentifierSchema,
-  dataElementValueSchema,
   DataElementIdentifier,
+  dataElementIdentifierSchema,
   DataElementValue,
+  dataElementValueSchema,
   Entry,
 } from '../common';
 

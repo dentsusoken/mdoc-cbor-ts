@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { issuerNameSpacesSchema, IssuerNameSpaces } from './IssuerNameSpaces';
-import { issuerAuthSchema, IssuerAuth } from '../mso';
+import { IssuerAuth, issuerAuthSchema } from '../mso';
+import { IssuerNameSpaces, issuerNameSpacesSchema } from './IssuerNameSpaces';
 
 export const issuerSignedSchema = z.object({
   nameSpaces: issuerNameSpacesSchema,
