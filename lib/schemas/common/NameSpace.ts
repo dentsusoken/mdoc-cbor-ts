@@ -12,7 +12,7 @@ import { z } from 'zod';
  * const result = nameSpaceSchema.parse(validNamespace); // Returns string
  * ```
  */
-export const nameSpaceSchema = z.string();
+export const nameSpaceSchema = z.string().min(1);
 
 /**
  * Type definition for namespaces

@@ -1,5 +1,6 @@
 import { Mac0 } from '@auth0/cose';
 import { z } from 'zod';
+import { numberMap } from '../common';
 
 /**
  * Schema for device MAC in mdoc
@@ -9,13 +10,14 @@ import { z } from 'zod';
  *
  * @example
  * ```typescript
- * const mac0 = new Mac0(protectedHeaders, unprotectedHeaders, payload, tag);
+ * const mac0 = [protectedHeaders, unprotectedHeaders, payload, tag];
  * const result = deviceMacSchema.parse(mac0); // Returns Mac0
  * ```
  */
-export const deviceMacSchema = z.custom<Mac0>().transform((mac) => {
-  const { protectedHeaders, unprotectedHeaders, payload, tag } = mac;
-  return new Mac0(protectedHeaders, unprotectedHeaders, payload, tag);
+export const deviceMacSchema = z.array(z.any()).transform((mac) => {
+  const [protectedHeaders, unprotectedHeaders, payload, tag] = mac;
+  const unprotectedHeadersMap = numberMap.parse(unprotectedHeaders);
+  return new Mac0(protectedHeaders, unprotectedHeadersMap, payload, tag);
 });
 
 /**

@@ -23,10 +23,11 @@ import {
  * const result = deviceSignedItemsSchema.parse(items); // Returns DeviceSignedItems
  * ```
  */
-export const deviceSignedItemsSchema = z.record(
-  dataElementIdentifierSchema,
-  dataElementValueSchema
-);
+export const deviceSignedItemsSchema = z
+  .record(dataElementIdentifierSchema, dataElementValueSchema)
+  .refine((data) => {
+    return Object.keys(data).length > 0;
+  });
 
 /**
  * Type definition for device-signed items

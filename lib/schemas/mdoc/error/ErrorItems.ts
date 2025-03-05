@@ -20,10 +20,11 @@ import { ErrorCode, errorCodeSchema } from './ErrorCode';
  * const result = errorItemsSchema.parse(errors); // Returns ErrorItems
  * ```
  */
-export const errorItemsSchema = z.record(
-  dataElementIdentifierSchema,
-  errorCodeSchema
-);
+export const errorItemsSchema = z
+  .record(dataElementIdentifierSchema, errorCodeSchema)
+  .refine((data) => {
+    return Object.keys(data).length > 0;
+  });
 
 /**
  * Type definition for error items

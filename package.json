@@ -20,8 +20,7 @@
     "dev": "vite",
     "build": "vite build && tsc --project tsconfig.build.json",
     "prepare": "npm run build",
-    "test": "vitest",
-    "test:run": "vitest run",
+    "test": "vitest run",
     "test:coverage": "vitest --coverage",
     "lint": "eslint ./lib --ext .ts"
   },

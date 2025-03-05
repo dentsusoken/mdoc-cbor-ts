@@ -11,12 +11,18 @@ import { DigestIDs, digestIDsSchema } from './DigestIDs';
  * @example
  * ```typescript
  * const digests = {
- *   "org.iso.18013.5.1": [1, 2, 3]
+ *   "org.iso.18013.5.1": {
+ *     0: Buffer.from('0123456789abcdef')
+ *   }
  * };
  * const result = valueDigestsSchema.parse(digests); // Returns ValueDigests
  * ```
  */
-export const valueDigestsSchema = z.record(nameSpaceSchema, digestIDsSchema);
+export const valueDigestsSchema = z
+  .record(nameSpaceSchema, digestIDsSchema)
+  .refine((data) => {
+    return Object.keys(data).length > 0;
+  });
 
 /**
  * Type definition for value digests

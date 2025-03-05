@@ -19,10 +19,11 @@ import {
  * const result = deviceNameSpacesSchema.parse(namespaces);
  * ```
  */
-export const deviceNameSpacesSchema = z.record(
-  nameSpaceSchema,
-  deviceSignedItemsSchema
-);
+export const deviceNameSpacesSchema = z
+  .record(nameSpaceSchema, deviceSignedItemsSchema)
+  .refine((data) => {
+    return Object.keys(data).length > 0;
+  });
 
 /**
  * Type definition for device-signed namespaces

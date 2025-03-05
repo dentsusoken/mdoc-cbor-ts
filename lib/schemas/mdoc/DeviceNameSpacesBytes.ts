@@ -14,7 +14,7 @@ import { DeviceNameSpaces } from './DeviceNameSpaces';
  * const result = deviceNameSpacesBytesSchema.parse(bytes);
  * ```
  */
-export const deviceNameSpacesBytesSchema = z.custom<Tag>();
+export const deviceNameSpacesBytesSchema = z.instanceof(Tag);
 
 /**
  * Type definition for CBOR-encoded device-signed namespaces

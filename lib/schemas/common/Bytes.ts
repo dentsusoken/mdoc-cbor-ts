@@ -14,7 +14,7 @@ import { z } from 'zod';
  * ```
  */
 export const bytesSchema = z
-  .custom<Uint8Array | Buffer>()
+  .union([z.instanceof(Uint8Array), z.instanceof(Buffer)])
   .transform((bytes) => {
     return Buffer.from(bytes);
   });

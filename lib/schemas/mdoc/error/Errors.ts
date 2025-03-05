@@ -18,7 +18,11 @@ import { ErrorItems, errorItemsSchema } from './ErrorItems';
  * const result = errorsSchema.parse(errors); // Returns Errors
  * ```
  */
-export const errorsSchema = z.record(nameSpaceSchema, errorItemsSchema);
+export const errorsSchema = z
+  .record(nameSpaceSchema, errorItemsSchema)
+  .refine((data) => {
+    return Object.keys(data).length > 0;
+  });
 
 /**
  * Type definition for errors

@@ -16,7 +16,11 @@ import { ErrorCode, errorCodeSchema } from './ErrorCode';
  * const result = documentErrorSchema.parse(errors); // Returns DocumentError
  * ```
  */
-export const documentErrorSchema = z.record(docTypeSchema, errorCodeSchema);
+export const documentErrorSchema = z
+  .record(docTypeSchema, errorCodeSchema)
+  .refine((data) => {
+    return Object.keys(data).length > 0;
+  });
 
 /**
  * Type definition for document errors

@@ -22,8 +22,8 @@ import { statusSchema } from './Status';
  */
 export const deviceResponseSchema = z.object({
   version: z.string(),
-  documents: z.array(documentSchema).optional(),
-  documentErrors: z.array(documentErrorSchema).optional(),
+  documents: z.array(documentSchema).nonempty().optional(),
+  documentErrors: z.array(documentErrorSchema).nonempty().optional(),
   status: statusSchema,
 });
 

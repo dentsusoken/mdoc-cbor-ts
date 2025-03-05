@@ -19,10 +19,11 @@ import {
  * const result = authorizedDataElementsSchema.parse(elements); // Returns AuthorizedDataElements
  * ```
  */
-export const authorizedDataElementsSchema = z.record(
-  nameSpaceSchema,
-  dataElementsArraySchema
-);
+export const authorizedDataElementsSchema = z
+  .record(nameSpaceSchema, dataElementsArraySchema)
+  .refine((data) => {
+    return Object.keys(data).length > 0;
+  });
 
 /**
  * Type definition for authorized data elements

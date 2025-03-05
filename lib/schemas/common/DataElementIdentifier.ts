@@ -12,7 +12,7 @@ import { z } from 'zod';
  * const result = dataElementIdentifierSchema.parse(validId); // Returns string
  * ```
  */
-export const dataElementIdentifierSchema = z.string();
+export const dataElementIdentifierSchema = z.string().min(1);
 
 /**
  * Type definition for data element identifiers

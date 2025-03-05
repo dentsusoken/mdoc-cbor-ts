@@ -13,7 +13,8 @@ import { z } from 'zod';
  * const result = deviceKeySchema.parse(key);
  * ```
  */
-export const deviceKeySchema = z.custom<COSEKey>().transform((key) => {
+// TODO: which is better? instanceOf or custom?
+export const deviceKeySchema = z.instanceof(COSEKey).transform((key) => {
   return new COSEKey(key);
 });
 

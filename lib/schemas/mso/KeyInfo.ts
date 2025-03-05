@@ -4,19 +4,28 @@ import { Entry } from '../common';
 /**
  * Schema for key information in MSO
  * @description
- * Represents a record of key information with string keys and arbitrary values.
+ * Represents a record of key information with integer keys and arbitrary values.
  * This schema validates that the key information is a valid record structure.
  *
  * @example
  * ```typescript
  * const info = {
- *   "key1": "value1",
- *   "key2": 123
+ *   "1": "value1",
+ *   "-1": 123
  * };
  * const result = keyInfoSchema.parse(info); // Returns KeyInfo
  * ```
  */
-export const keyInfoSchema = z.record(z.string(), z.any());
+export const keyInfoSchema = z.record(
+  z.union([
+    z.number().int(),
+    z
+      .string()
+      .regex(/^-?\d+$/)
+      .transform((s) => Number(s)),
+  ]),
+  z.any()
+);
 
 /**
  * Type definition for key information

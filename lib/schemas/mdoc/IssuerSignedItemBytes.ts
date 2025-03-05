@@ -13,7 +13,7 @@ import { z } from 'zod';
  * const result = issuerSignedItemBytesSchema.parse(bytes); // Returns Tag
  * ```
  */
-export const issuerSignedItemBytesSchema = z.custom<Tag>();
+export const issuerSignedItemBytesSchema = z.instanceof(Tag);
 
 /**
  * Type definition for CBOR-encoded issuer-signed items
