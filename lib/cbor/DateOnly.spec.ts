@@ -1,5 +1,5 @@
-import { decode, encode } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
+import { decode, encode } from '../cbor';
 import { DateOnly } from './DateOnly';
 
 describe('DateOnly', () => {
@@ -36,7 +36,7 @@ describe('DateOnly', () => {
     it('should encode and decode DateOnly correctly', () => {
       const originalDate = new DateOnly('2024-03-20');
       const encoded = encode(originalDate);
-      const decoded = decode(encoded);
+      const decoded = decode(encoded) as DateOnly;
 
       console.log('encoded :>> ', encoded.toString('base64url'));
 
@@ -51,7 +51,10 @@ describe('DateOnly', () => {
       };
 
       const encoded = encode(data);
-      const decoded = decode(encoded);
+      const decoded = decode(encoded) as {
+        date1: DateOnly;
+        date2: DateOnly;
+      };
 
       expect(decoded.date1).toBeInstanceOf(DateOnly);
       expect(decoded.date2).toBeInstanceOf(DateOnly);

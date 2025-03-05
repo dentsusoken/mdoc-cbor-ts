@@ -14,14 +14,6 @@ import { addExtension } from 'cbor-x';
  */
 export class DateTime extends Date {
   /**
-   * Creates a new DateTime instance
-   * @param dateString - ISO 8601 date-time string
-   */
-  constructor(dateString: string) {
-    super(dateString);
-  }
-
-  /**
    * Returns the date-time in ISO 8601 format without milliseconds
    * @returns ISO 8601 date-time string
    */

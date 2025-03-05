@@ -7,15 +7,18 @@ describe('Bytes', () => {
     const result = bytesSchema.parse(uint8Array);
 
     expect(Buffer.isBuffer(result)).toBe(true);
-    expect(result).toEqual(Buffer.from([1, 2, 3]));
+    expect(result.equals(Buffer.from([1, 2, 3]))).toBe(true);
   });
 
   it('should accept and return Buffer as is', () => {
     const buffer = Buffer.from([1, 2, 3]);
     const result = bytesSchema.parse(buffer);
 
+    console.log('result :>> ', result);
+    console.log('buffer :>> ', buffer);
+
     expect(Buffer.isBuffer(result)).toBe(true);
-    expect(result).toEqual(buffer);
+    expect(result.equals(buffer)).toBe(true);
   });
 
   it('should throw error for invalid input', () => {

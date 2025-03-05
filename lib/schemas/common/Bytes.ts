@@ -13,11 +13,15 @@ import { z } from 'zod';
  * const result = bytesSchema.parse(validBytes); // Returns Buffer
  * ```
  */
-export const bytesSchema = z
-  .union([z.instanceof(Uint8Array), z.instanceof(Buffer)])
-  .transform((bytes) => {
-    return Buffer.from(bytes);
-  });
+export const bytesSchema = z.union([
+  z.instanceof(Buffer),
+  z
+    .instanceof(Uint8Array)
+    .refine((bytes) => !(bytes instanceof Buffer))
+    .transform((bytes) => {
+      return Buffer.from(bytes.buffer);
+    }),
+]);
 
 /**
  * Type definition for binary data

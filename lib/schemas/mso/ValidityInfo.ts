@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DateTime } from '../../cbor';
 
 // TODO: z.date() should be CborDateTime
 /**
@@ -20,10 +21,10 @@ import { z } from 'zod';
  * ```
  */
 export const validityInfoSchema = z.object({
-  signed: z.date(),
-  validFrom: z.date(),
-  validUntil: z.date(),
-  expectedUpdate: z.date().optional(),
+  signed: z.instanceof(DateTime),
+  validFrom: z.instanceof(DateTime),
+  validUntil: z.instanceof(DateTime),
+  expectedUpdate: z.instanceof(DateTime).optional(),
 });
 
 /**

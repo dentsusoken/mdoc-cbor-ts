@@ -1,5 +1,6 @@
-import { Tag } from 'cbor-x';
 import { z } from 'zod';
+import { ByteString } from '../../cbor';
+import { IssuerSignedItem } from './IssuerSignedItem';
 
 /**
  * Schema for CBOR-encoded issuer-signed items
@@ -13,7 +14,9 @@ import { z } from 'zod';
  * const result = issuerSignedItemBytesSchema.parse(bytes); // Returns Tag
  * ```
  */
-export const issuerSignedItemBytesSchema = z.instanceof(Tag);
+export const issuerSignedItemBytesSchema = z.instanceof(
+  ByteString<IssuerSignedItem>
+);
 
 /**
  * Type definition for CBOR-encoded issuer-signed items

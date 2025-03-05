@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import { DateTime } from '../../cbor';
 import { validityInfoSchema } from './ValidityInfo';
 
 describe('ValidityInfo', () => {
   it('should accept valid validity info with all fields', () => {
     const validInfo = {
-      signed: new Date('2024-03-20T00:00:00Z'),
-      validFrom: new Date('2024-03-20T00:00:00Z'),
-      validUntil: new Date('2024-03-21T00:00:00Z'),
-      expectedUpdate: new Date('2024-03-22T00:00:00Z'),
+      signed: new DateTime('2024-03-20T00:00:00Z'),
+      validFrom: new DateTime('2024-03-20T00:00:00Z'),
+      validUntil: new DateTime('2024-03-21T00:00:00Z'),
+      expectedUpdate: new DateTime('2024-03-22T00:00:00Z'),
     };
 
     expect(() => validityInfoSchema.parse(validInfo)).not.toThrow();
@@ -17,9 +18,9 @@ describe('ValidityInfo', () => {
 
   it('should accept valid validity info without expectedUpdate', () => {
     const validInfo = {
-      signed: new Date('2024-03-20T00:00:00Z'),
-      validFrom: new Date('2024-03-20T00:00:00Z'),
-      validUntil: new Date('2024-03-21T00:00:00Z'),
+      signed: new DateTime('2024-03-20T00:00:00Z'),
+      validFrom: new DateTime('2024-03-20T00:00:00Z'),
+      validUntil: new DateTime('2024-03-21T00:00:00Z'),
     };
 
     expect(() => validityInfoSchema.parse(validInfo)).not.toThrow();
@@ -38,23 +39,23 @@ describe('ValidityInfo', () => {
       {},
       {
         signed: '2024-03-20T00:00:00Z',
-        validFrom: new Date('2024-03-20T00:00:00Z'),
-        validUntil: new Date('2024-03-21T00:00:00Z'),
+        validFrom: new DateTime('2024-03-20T00:00:00Z'),
+        validUntil: new DateTime('2024-03-21T00:00:00Z'),
       },
       {
-        signed: new Date('2024-03-20T00:00:00Z'),
+        signed: new DateTime('2024-03-20T00:00:00Z'),
         validFrom: '2024-03-20T00:00:00Z',
-        validUntil: new Date('2024-03-21T00:00:00Z'),
+        validUntil: new DateTime('2024-03-21T00:00:00Z'),
       },
       {
-        signed: new Date('2024-03-20T00:00:00Z'),
-        validFrom: new Date('2024-03-20T00:00:00Z'),
+        signed: new DateTime('2024-03-20T00:00:00Z'),
+        validFrom: new DateTime('2024-03-20T00:00:00Z'),
         validUntil: '2024-03-21T00:00:00Z',
       },
       {
-        signed: new Date('2024-03-20T00:00:00Z'),
-        validFrom: new Date('2024-03-20T00:00:00Z'),
-        validUntil: new Date('2024-03-21T00:00:00Z'),
+        signed: new DateTime('2024-03-20T00:00:00Z'),
+        validFrom: new DateTime('2024-03-20T00:00:00Z'),
+        validUntil: new DateTime('2024-03-21T00:00:00Z'),
         expectedUpdate: '2024-03-22T00:00:00Z',
       },
     ];

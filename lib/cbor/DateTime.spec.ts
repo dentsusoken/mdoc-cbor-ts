@@ -1,5 +1,5 @@
-import { decode, encode } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
+import { decode, encode } from '../cbor';
 import { DateTime } from './DateTime';
 
 describe('DateTime', () => {
@@ -41,7 +41,7 @@ describe('DateTime', () => {
     it('should encode and decode DateTime correctly', () => {
       const originalDateTime = new DateTime('2024-03-20T15:30:00Z');
       const encoded = encode(originalDateTime);
-      const decoded = decode(encoded);
+      const decoded = decode(encoded) as DateTime;
 
       console.log('encoded :>> ', encoded.toString('base64url'));
 
@@ -56,7 +56,10 @@ describe('DateTime', () => {
       };
 
       const encoded = encode(data);
-      const decoded = decode(encoded);
+      const decoded = decode(encoded) as {
+        dateTime1: DateTime;
+        dateTime2: DateTime;
+      };
 
       expect(decoded.dateTime1).toBeInstanceOf(DateTime);
       expect(decoded.dateTime2).toBeInstanceOf(DateTime);

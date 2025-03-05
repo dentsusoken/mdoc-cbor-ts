@@ -1,16 +1,37 @@
-import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
+import { ByteString } from '../../cbor';
 import { issuerNameSpacesSchema } from './IssuerNameSpaces';
 
 describe('IssuerNameSpaces', () => {
   it('should accept valid issuer name spaces records', () => {
     const validRecords = [
       {
-        'org.iso.18013.5.1': [new Tag(24, 0)],
+        'org.iso.18013.5.1': [
+          new ByteString({
+            digestID: 1,
+            random: Buffer.from([]),
+            elementIdentifier: 'given_name',
+            elementValue: 'John',
+          }),
+        ],
       },
       {
-        'com.example.namespace': [new Tag(24, 123), new Tag(24, 456)],
-        'test.namespace': [new Tag(24, 789)],
+        'com.example.namespace': [
+          new ByteString({
+            digestID: 1,
+            random: Buffer.from([]),
+            elementIdentifier: 'given_name',
+            elementValue: 'John',
+          }),
+        ],
+        'test.namespace': [
+          new ByteString({
+            digestID: 1,
+            random: Buffer.from([]),
+            elementIdentifier: 'given_name',
+            elementValue: 'John',
+          }),
+        ],
       },
     ];
 

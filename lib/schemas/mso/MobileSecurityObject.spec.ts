@@ -1,5 +1,6 @@
 import { COSEKey } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
+import { DateTime } from '../../cbor';
 import { mobileSecurityObjectSchema } from './MobileSecurityObject';
 
 describe('MobileSecurityObject', () => {
@@ -17,9 +18,9 @@ describe('MobileSecurityObject', () => {
       },
       docType: 'org.iso.18013.5.1.mDL',
       validityInfo: {
-        signed: new Date('2024-03-20T00:00:00Z'),
-        validFrom: new Date('2024-03-20T00:00:00Z'),
-        validUntil: new Date('2024-03-21T00:00:00Z'),
+        signed: new DateTime('2024-03-20T00:00:00Z'),
+        validFrom: new DateTime('2024-03-20T00:00:00Z'),
+        validUntil: new DateTime('2024-03-21T00:00:00Z'),
       },
     };
 
@@ -46,9 +47,9 @@ describe('MobileSecurityObject', () => {
         },
         docType: 'org.iso.18013.5.1.mDL',
         validityInfo: {
-          signed: new Date('2024-03-20T00:00:00Z'),
-          validFrom: new Date('2024-03-20T00:00:00Z'),
-          validUntil: new Date('2024-03-21T00:00:00Z'),
+          signed: new DateTime('2024-03-20T00:00:00Z'),
+          validFrom: new DateTime('2024-03-20T00:00:00Z'),
+          validUntil: new DateTime('2024-03-21T00:00:00Z'),
         },
       },
       {
@@ -60,9 +61,9 @@ describe('MobileSecurityObject', () => {
         },
         docType: 'org.iso.18013.5.1.mDL',
         validityInfo: {
-          signed: new Date('2024-03-20T00:00:00Z'),
-          validFrom: new Date('2024-03-20T00:00:00Z'),
-          validUntil: new Date('2024-03-21T00:00:00Z'),
+          signed: new DateTime('2024-03-20T00:00:00Z'),
+          validFrom: new DateTime('2024-03-20T00:00:00Z'),
+          validUntil: new DateTime('2024-03-21T00:00:00Z'),
         },
       },
       {
@@ -74,9 +75,9 @@ describe('MobileSecurityObject', () => {
         },
         docType: 'org.iso.18013.5.1.mDL',
         validityInfo: {
-          signed: new Date('2024-03-20T00:00:00Z'),
-          validFrom: new Date('2024-03-20T00:00:00Z'),
-          validUntil: new Date('2024-03-21T00:00:00Z'),
+          signed: new DateTime('2024-03-20T00:00:00Z'),
+          validFrom: new DateTime('2024-03-20T00:00:00Z'),
+          validUntil: new DateTime('2024-03-21T00:00:00Z'),
         },
       },
       {
@@ -88,9 +89,9 @@ describe('MobileSecurityObject', () => {
         },
         docType: '',
         validityInfo: {
-          signed: new Date('2024-03-20T00:00:00Z'),
-          validFrom: new Date('2024-03-20T00:00:00Z'),
-          validUntil: new Date('2024-03-21T00:00:00Z'),
+          signed: new DateTime('2024-03-20T00:00:00Z'),
+          validFrom: new DateTime('2024-03-20T00:00:00Z'),
+          validUntil: new DateTime('2024-03-21T00:00:00Z'),
         },
       },
       {
@@ -103,8 +104,8 @@ describe('MobileSecurityObject', () => {
         docType: 'org.iso.18013.5.1.mDL',
         validityInfo: {
           signed: '2024-03-20T00:00:00Z',
-          validFrom: new Date('2024-03-20T00:00:00Z'),
-          validUntil: new Date('2024-03-21T00:00:00Z'),
+          validFrom: new DateTime('2024-03-20T00:00:00Z'),
+          validUntil: new DateTime('2024-03-21T00:00:00Z'),
         },
       },
     ];

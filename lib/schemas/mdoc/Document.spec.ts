@@ -1,6 +1,7 @@
 import { Sign1 } from '@auth0/cose';
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
+import { ByteString } from '../../cbor';
 import { documentSchema } from './Document';
 
 describe('Document', () => {
@@ -16,12 +17,19 @@ describe('Document', () => {
         docType: 'com.example.document',
         issuerSigned: {
           nameSpaces: {
-            'org.iso.18013.5.1': [new Tag(24, 0)],
+            'org.iso.18013.5.1': [
+              new ByteString({
+                digestID: 1,
+                random: Buffer.from([]),
+                elementIdentifier: 'given_name',
+                elementValue: 'John',
+              }),
+            ],
           },
           issuerAuth: sign1.getContentForEncoding(),
         },
         deviceSigned: {
-          nameSpaces: new Tag(24, 123),
+          nameSpaces: new ByteString({}),
           deviceAuth: {
             deviceSignature: sign1.getContentForEncoding(),
           },

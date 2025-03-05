@@ -1,6 +1,6 @@
 import { Mac0, Sign1 } from '@auth0/cose';
-import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
+import { ByteString } from '../../cbor';
 import { deviceSignedSchema } from './DeviceSigned';
 
 describe('DeviceSigned', () => {
@@ -19,13 +19,13 @@ describe('DeviceSigned', () => {
     );
     const validData = [
       {
-        nameSpaces: new Tag(24, 0),
+        nameSpaces: new ByteString({}),
         deviceAuth: {
           deviceSignature: sign1.getContentForEncoding(),
         },
       },
       {
-        nameSpaces: new Tag(24, 123),
+        nameSpaces: new ByteString({}),
         deviceAuth: {
           deviceMac: mac0.getContentForEncoding(),
         },
@@ -51,6 +51,18 @@ describe('DeviceSigned', () => {
   });
 
   it('should throw error for invalid input', () => {
+    const sign1 = new Sign1(
+      Buffer.from([]),
+      new Map<number, string>([[1, 'value']]),
+      Buffer.from([]),
+      Buffer.from([])
+    );
+    const mac0 = new Mac0(
+      Buffer.from([]),
+      new Map<number, string>([[1, 'value']]),
+      Buffer.from([]),
+      Buffer.from([])
+    );
     const invalidInputs = [
       null,
       undefined,
@@ -62,29 +74,17 @@ describe('DeviceSigned', () => {
       {
         nameSpaces: null,
         deviceAuth: {
-          deviceSignature: new Tag(18, 0),
+          deviceSignature: sign1.getContentForEncoding(),
         },
       },
       {
-        nameSpaces: new Tag(24, 0),
+        nameSpaces: new ByteString({}),
         deviceAuth: null,
       },
       {
-        nameSpaces: new Tag(24, 0),
+        nameSpaces: new ByteString({}),
         deviceAuth: {
           deviceSignature: null,
-        },
-      },
-      {
-        nameSpaces: new Tag(23, 0),
-        deviceAuth: {
-          deviceSignature: new Tag(18, 0),
-        },
-      },
-      {
-        nameSpaces: new Tag(24, 0),
-        deviceAuth: {
-          deviceSignature: new Tag(17, 0),
         },
       },
     ];

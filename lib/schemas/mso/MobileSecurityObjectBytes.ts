@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { bytesSchema } from '../common';
-
+import { ByteString } from '../../cbor';
+import { MobileSecurityObject } from './MobileSecurityObject';
+// TODO: instanceof ByteStringが正しい。
 /**
  * Schema for CBOR-encoded mobile security object
  * @description
@@ -13,7 +14,9 @@ import { bytesSchema } from '../common';
  * const result = mobileSecurityObjectBytesSchema.parse(bytes); // Returns MobileSecurityObjectBytes
  * ```
  */
-export const mobileSecurityObjectBytesSchema = bytesSchema;
+export const mobileSecurityObjectBytesSchema = z.instanceof(
+  ByteString<MobileSecurityObject>
+);
 
 /**
  * Type definition for CBOR-encoded mobile security object

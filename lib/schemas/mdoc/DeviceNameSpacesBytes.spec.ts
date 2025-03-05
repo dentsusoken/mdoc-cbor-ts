@@ -1,16 +1,21 @@
-import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
+import { ByteString } from '../../cbor';
 import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
 
 describe('DeviceNameSpacesBytes', () => {
   it('should accept valid CBOR tags', () => {
-    const validTags = [new Tag(24, 0), new Tag(24, 123), new Tag(24, 456)];
+    const validTags = [
+      new ByteString({}),
+      new ByteString({
+        'org.iso.18013.5.1': [{ given_name: 'John' }],
+      }),
+    ];
 
     validTags.forEach((tag) => {
       expect(() => deviceNameSpacesBytesSchema.parse(tag)).not.toThrow();
       const result = deviceNameSpacesBytesSchema.parse(tag);
-      expect(result).toBeInstanceOf(Tag);
-      expect(result).toEqual(tag);
+      expect(result).toBeInstanceOf(ByteString);
+      expect(result.data).toEqual(tag.data);
     });
   });
 

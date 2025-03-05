@@ -1,21 +1,34 @@
+import { COSEKey } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
+import { ByteString, DateTime } from '../../cbor';
 import { mobileSecurityObjectBytesSchema } from './MobileSecurityObjectBytes';
 
 describe('MobileSecurityObjectBytes', () => {
   it('should accept valid binary data', () => {
-    const validBytes = [
-      Buffer.from([]),
-      Buffer.from([1, 2, 3]),
-      Buffer.from('test'),
-      new Uint8Array([1, 2, 3]),
-    ];
+    const validMSO = {
+      version: '1.0',
+      digestAlgorithm: 'SHA-256',
+      valueDigests: {
+        'org.iso.18013.5.1': {
+          0: Buffer.from('0123456789abcdef'),
+        },
+      },
+      deviceKeyInfo: {
+        deviceKey: new COSEKey([]),
+      },
+      docType: 'org.iso.18013.5.1.mDL',
+      validityInfo: {
+        signed: new DateTime('2024-03-20T00:00:00Z'),
+        validFrom: new DateTime('2024-03-20T00:00:00Z'),
+        validUntil: new DateTime('2024-03-21T00:00:00Z'),
+      },
+    };
 
-    validBytes.forEach((bytes) => {
-      expect(() => mobileSecurityObjectBytesSchema.parse(bytes)).not.toThrow();
-      const result = mobileSecurityObjectBytesSchema.parse(bytes);
-      expect(Buffer.isBuffer(result)).toBe(true);
-      expect(result).toEqual(Buffer.from(bytes));
-    });
+    const bytes = new ByteString(validMSO);
+
+    expect(() => mobileSecurityObjectBytesSchema.parse(bytes)).not.toThrow();
+    const result = mobileSecurityObjectBytesSchema.parse(bytes);
+    expect(result).toEqual(bytes);
   });
 
   it('should throw error for invalid input', () => {

@@ -1,5 +1,5 @@
-import { Tag } from 'cbor-x';
 import { z } from 'zod';
+import { ByteString } from '../../cbor';
 import { DeviceNameSpaces } from './DeviceNameSpaces';
 
 /**
@@ -14,7 +14,9 @@ import { DeviceNameSpaces } from './DeviceNameSpaces';
  * const result = deviceNameSpacesBytesSchema.parse(bytes);
  * ```
  */
-export const deviceNameSpacesBytesSchema = z.instanceof(Tag);
+export const deviceNameSpacesBytesSchema = z.instanceof(
+  ByteString<DeviceNameSpaces>
+);
 
 /**
  * Type definition for CBOR-encoded device-signed namespaces
