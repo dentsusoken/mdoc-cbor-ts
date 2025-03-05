@@ -1,9 +1,7 @@
-import crypto from 'crypto';
-import { Buffer } from 'node:buffer';
-import { encode } from '../../../cbor';
 import { Configuration } from '../../../conf/Configuration';
 import { IssuerNameSpaces } from '../../../schemas/mdoc';
 import { DigestAlgorithm, ValueDigests } from '../../../schemas/mso';
+import { calculateDigest } from '../../../utils/calculateDigest';
 import { CreateBuilderFunction } from '../CreateBuilder';
 
 /**
@@ -62,11 +60,9 @@ export const createValueDigestsBuilder: CreateBuilderFunction<
     for (const [namespace, elements] of Object.entries(nameSpaces)) {
       valueDigests[namespace] = {};
       for (const element of elements) {
-        valueDigests[namespace][element.data.digestID] = Buffer.from(
-          await crypto.subtle.digest(
-            configuration.digestAlgorithm,
-            encode(element)
-          )
+        valueDigests[namespace][element.data.digestID] = await calculateDigest(
+          configuration.digestAlgorithm,
+          element
         );
       }
     }
