@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { docTypeSchema, DocType } from '../../common';
 import { errorCodeSchema, ErrorCode } from './ErrorCode';
 import { Entry } from '../../common';
-export const documentErrorSchema = z.map(docTypeSchema, errorCodeSchema);
+export const documentErrorSchema = z.record(docTypeSchema, errorCodeSchema);
 
 /**
  * ```cddl

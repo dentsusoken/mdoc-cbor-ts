@@ -5,7 +5,7 @@ import {
   IssuerSignedItemBytes,
 } from './IssuerSignedItemBytes';
 
-export const issuerNameSpacesSchema = z.map(
+export const issuerNameSpacesSchema = z.record(
   nameSpaceSchema,
   z.array(issuerSignedItemBytesSchema)
 );

@@ -5,7 +5,7 @@ import {
   DeviceSignedItems,
 } from './DeviceSignedItems';
 
-export const deviceNameSpacesSchema = z.map(
+export const deviceNameSpacesSchema = z.record(
   nameSpaceSchema,
   deviceSignedItemsSchema
 );

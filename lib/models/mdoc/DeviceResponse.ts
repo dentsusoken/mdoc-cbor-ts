@@ -1,19 +1,13 @@
 import { z } from 'zod';
 import { documentSchema, Document } from './Document';
 import { documentErrorSchema, DocumentError } from './error';
+import { statusSchema } from './Status';
 
 export const deviceResponseSchema = z.object({
   version: z.string(),
   documents: z.array(documentSchema).optional(),
   documentErrors: z.array(documentErrorSchema).optional(),
-  // TODO: define uint schema in common
-  status: z.union([
-    z.number().int().positive(),
-    z
-      .string()
-      .regex(/^\d+$/)
-      .transform((s) => Number(s)),
-  ]),
+  status: statusSchema,
 });
 
 /**
@@ -27,5 +21,6 @@ export const deviceResponseSchema = z.object({
  * ```
  * @see {@link Document}
  * @see {@link DocumentError}
+ * @see {@link Status}
  */
 export type DeviceResponse = z.infer<typeof deviceResponseSchema>;

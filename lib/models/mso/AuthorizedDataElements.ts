@@ -5,7 +5,7 @@ import {
   DataElementsArray,
 } from './DataElementsArray';
 
-export const authorizedDataElementsSchema = z.map(
+export const authorizedDataElementsSchema = z.record(
   nameSpaceSchema,
   dataElementsArraySchema
 );

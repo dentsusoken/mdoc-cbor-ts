@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { Entry } from '../common';
 
-export const keyInfoSchema = z.map(z.string(), z.any());
+export const keyInfoSchema = z.record(z.string(), z.any());
 
 /**
  * ```cddl

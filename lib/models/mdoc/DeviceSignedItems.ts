@@ -7,7 +7,7 @@ import {
   Entry,
 } from '../common';
 
-export const deviceSignedItemsSchema = z.map(
+export const deviceSignedItemsSchema = z.record(
   dataElementIdentifierSchema,
   dataElementValueSchema
 );

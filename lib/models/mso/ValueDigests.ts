@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { nameSpaceSchema, NameSpace } from '../common';
 import { digestIDsSchema, DigestIDs } from './DigestIDs';
 
-export const valueDigestsSchema = z.map(nameSpaceSchema, digestIDsSchema);
+export const valueDigestsSchema = z.record(nameSpaceSchema, digestIDsSchema);
 
 /**
  * ```cddl

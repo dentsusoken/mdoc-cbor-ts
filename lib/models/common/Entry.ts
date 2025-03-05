@@ -1,1 +1,1 @@
-export type Entry<T> = T extends Map<infer K, infer V> ? [K, V] : never;
+export type Entry<T> = T extends Record<infer K, infer V> ? [K, V] : never;
