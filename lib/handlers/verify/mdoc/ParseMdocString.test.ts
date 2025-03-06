@@ -9,7 +9,6 @@ describe('parseMdocString', () => {
     new Map(),
     new Map(),
     encode(new ByteString({})),
-    // @ts-ignore
     Buffer.from('test-random')
   );
   const mockDeviceResponse: DeviceResponse = {
