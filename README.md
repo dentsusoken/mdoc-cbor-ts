@@ -81,20 +81,3 @@ try {
   console.error('Verification error:', error);
 }
 ```
-
-## Project Structure
-
-```
-lib/
-├── adapters/      # Adapters for external services (X.509, etc.)
-├── cbor/          # CBOR encoding/decoding utilities
-├── conf/          # Configuration management
-├── handlers/      # Core handlers for MDOC operations
-│   ├── issue/     # MDOC issuance handlers
-│   └── verify/    # MDOC verification handlers
-└── schemas/       # Document schemas and validators
-```
-
-## License
-
-[Add your license information here]
