@@ -14,14 +14,6 @@ import { addExtension } from 'cbor-x';
  */
 export class DateOnly extends Date {
   /**
-   * Creates a new DateOnly instance
-   * @param dateString - ISO 8601 date string (YYYY-MM-DD format)
-   */
-  constructor(dateString: string) {
-    super(dateString);
-  }
-
-  /**
    * Returns the date in ISO 8601 format (YYYY-MM-DD)
    * @returns ISO 8601 date string
    */

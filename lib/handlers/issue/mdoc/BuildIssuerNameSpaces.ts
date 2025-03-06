@@ -59,6 +59,7 @@ export const createIssuerNameSpacesBuilder: CreateBuilderFunction<
       // TODO: elementsの順番をランダムにする。
       Object.entries(elements).forEach(([elementIdentifier, elementValue]) => {
         const random = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
+        // TODO: NameSpaceDataの時点でtagを適用（addExtension）するようにする。
         if (!!configuration.tagElements[elementIdentifier]) {
           const tag = new Tag(
             elementValue,
