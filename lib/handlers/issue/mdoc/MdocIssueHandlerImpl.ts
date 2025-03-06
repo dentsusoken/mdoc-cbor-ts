@@ -9,10 +9,28 @@ import { createDocumentsBuilder } from './BuildDocuments';
 import { createIssuerNameSpacesBuilder } from './BuildIssuerNameSpaces';
 import { MdocData, MdocIssueHandler } from './MdocIssueHandler';
 
+/**
+ * Implementation of the MDOC issue handler
+ * @description
+ * A class that implements the MDOC issue process. It creates MDOCs with
+ * issuer-signed and device-signed data using the provided configuration
+ * and X.509 adapter.
+ *
+ * @example
+ * ```typescript
+ * const handler = new MdocIssueHandlerImpl(configuration, x509Adapter);
+ * const deviceResponse = await handler.issue(data, deviceKey);
+ * ```
+ */
 export class MdocIssueHandlerImpl implements MdocIssueHandler {
   #x509Adapter: X509Adapter;
   issue: (data: MdocData, deviceKey: COSEKey) => Promise<DeviceResponse>;
 
+  /**
+   * Creates a new MDOC issue handler
+   * @param configuration - Configuration settings for the MDOC
+   * @param x509Adapter - Adapter for handling X.509 certificates and keys
+   */
   constructor(configuration: Configuration, x509Adapter: X509Adapter) {
     this.#x509Adapter = x509Adapter;
     const issuerNameSpacesBuilder = createIssuerNameSpacesBuilder({

@@ -1,5 +1,21 @@
 import { Algorithms } from '@auth0/cose';
 
+/**
+ * Looks up the algorithm name from its COSE algorithm number
+ * @description
+ * A utility function that converts a COSE algorithm number to its corresponding
+ * algorithm name. This function supports various signature algorithms including
+ * EdDSA, ES256/384/512, PS256/384/512, and RS256/384/512.
+ *
+ * @param number - The COSE algorithm number to look up
+ * @returns The corresponding algorithm name as a string
+ * @throws {Error} If the provided algorithm number is not supported
+ *
+ * @example
+ * ```typescript
+ * const algorithm = lookupAlgorithm(-7); // Returns 'ES256'
+ * ```
+ */
 export const lookupAlgorithm = (number?: Algorithms) => {
   switch (number) {
     case -8:

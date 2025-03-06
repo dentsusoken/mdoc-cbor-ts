@@ -10,13 +10,41 @@ import {
 import { CreateBuilderFunction } from '../CreateBuilder';
 import { NameSpaceData } from './MdocIssueHandler';
 
+/**
+ * Type definition for building issuer name spaces
+ * @description
+ * A function type that creates issuer name spaces from the provided data.
+ * The function processes each name space and its elements, creating
+ * signed items with random values and digest IDs.
+ */
 export type BuildIssuerNameSpaces = (data: NameSpaceData) => IssuerNameSpaces;
 
+/**
+ * Parameters for creating an issuer name spaces builder
+ * @description
+ * Configuration required to create a builder function for issuer name spaces.
+ */
 export type CreateIssuerNameSpacesBuilderParams = {
-  /** Configuration settings for validity periods */
+  /** Configuration settings for validity periods and tag elements */
   configuration: Configuration;
 };
 
+/**
+ * Creates a function for building issuer name spaces
+ * @description
+ * Returns a function that creates issuer name spaces from the provided data.
+ * The function processes each name space and its elements, creating
+ * signed items with random values and digest IDs. It also applies
+ * appropriate tags to element values based on configuration.
+ *
+ * @example
+ * ```typescript
+ * const builder = createIssuerNameSpacesBuilder({
+ *   configuration
+ * });
+ * const nameSpaces = builder(data);
+ * ```
+ */
 export const createIssuerNameSpacesBuilder: CreateBuilderFunction<
   CreateIssuerNameSpacesBuilderParams,
   BuildIssuerNameSpaces

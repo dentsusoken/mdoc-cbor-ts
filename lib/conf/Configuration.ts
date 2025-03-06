@@ -101,6 +101,15 @@ export class Configuration {
     return this.#options.expectedUpdate;
   }
 
+  /**
+   * Gets the configured tag elements mapping
+   * @description
+   * Returns a mapping of element names to their CBOR tag numbers.
+   * If no custom mapping is provided, returns the default mapping.
+   * Custom mappings are merged with defaults, with custom values taking precedence.
+   *
+   * @returns The tag elements mapping
+   */
   get tagElements(): TagElements {
     return this.#options.tagElements
       ? { ...DEFAULT_TAG_ELEMENTS, ...this.#options.tagElements }

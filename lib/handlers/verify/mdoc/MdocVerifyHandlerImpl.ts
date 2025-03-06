@@ -6,9 +6,27 @@ import {
   NameSpaceSchemas,
 } from './VerifyNameSpacesSchema';
 
+/**
+ * Implementation of the MDOC verification handler
+ * @description
+ * A class that implements the MDOC verification process. It verifies both
+ * the MSO signatures and the document schemas for each document in the MDOC.
+ *
+ * @example
+ * ```typescript
+ * const handler = new MdocVerifyHandlerImpl({
+ *   'org.iso.18013.5.1.mDL': mDLNameSpaceSchema
+ * });
+ * const result = await handler.verify(mdocString);
+ * ```
+ */
 export class MdocVerifyHandlerImpl implements MdocVerifyHandler {
   verify: (mdoc: string) => Promise<MdocVerifyResult>;
 
+  /**
+   * Creates a new MDOC verification handler
+   * @param schemas - Optional schemas for validating document name spaces
+   */
   constructor(schemas: NameSpaceSchemas = {}) {
     const msoVerifyHandler = new MSOVerifyHandlerImpl();
     const verifyNameSpacesSchema = createVerifyNameSpacesSchema({ schemas });

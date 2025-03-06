@@ -11,6 +11,19 @@ import { createValidityInfoBuilder } from './BuildValidityInfo';
 import { createValueDigestsBuilder } from './BuildValueDigests';
 import { MSOIssueHandler } from './MSOIssueHandler';
 
+/**
+ * Implementation of the Mobile Security Object issue handler
+ * @description
+ * A class that implements the MSO issue process. It creates Mobile Security
+ * Objects with issuer authentication using the provided configuration and
+ * X.509 adapter.
+ *
+ * @example
+ * ```typescript
+ * const handler = new MSOIssueHandlerImpl(configuration, x509Adapter);
+ * const issuerAuth = await handler.issue(docType, nameSpaces, deviceKey);
+ * ```
+ */
 export class MSOIssueHandlerImpl implements MSOIssueHandler {
   #x509Adapter: X509Adapter;
   issue: (
@@ -19,6 +32,11 @@ export class MSOIssueHandlerImpl implements MSOIssueHandler {
     deviceKey: COSEKey
   ) => Promise<IssuerAuth>;
 
+  /**
+   * Creates a new MSO issue handler
+   * @param configuration - Configuration settings for the MSO
+   * @param x509Adapter - Adapter for handling X.509 certificates and keys
+   */
   constructor(configuration: Configuration, x509Adapter: X509Adapter) {
     this.#x509Adapter = x509Adapter;
     const buildValidityInfo = createValidityInfoBuilder({

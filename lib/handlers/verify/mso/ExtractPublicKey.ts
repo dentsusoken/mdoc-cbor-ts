@@ -9,8 +9,31 @@ import { X509Certificate } from 'node:crypto';
 import { IssuerAuth } from '../../../schemas/mso';
 import { lookupAlgorithm } from '../../../utils/lookupAlgorithm';
 
+/**
+ * Type definition for extracting public key from issuer authentication
+ * @description
+ * A function type that extracts a public key from the issuer's authentication data.
+ * The function processes the protected and unprotected headers to find the
+ * X.509 certificate chain and algorithm information.
+ */
 export type ExtractPublicKey = (issuerAuth: IssuerAuth) => Promise<KeyLike>;
 
+/**
+ * Extracts a public key from issuer authentication data
+ * @description
+ * Processes the issuer's authentication data to extract and import the public key.
+ * The function looks for X.509 certificates in both protected and unprotected headers,
+ * and determines the signing algorithm from the headers.
+ *
+ * @param issuerAuth - The issuer's authentication data containing headers and certificates
+ * @returns A Promise that resolves to the imported public key
+ * @throws {Error} If no X.509 certificate is found in the headers
+ *
+ * @example
+ * ```typescript
+ * const publicKey = await extractPublicKey(issuerAuth);
+ * ```
+ */
 export const extractPublicKey: ExtractPublicKey = async (issuerAuth) => {
   const protectedHeaders = ProtectedHeaders.from(
     issuerAuth.protectedHeaders.entries() as Iterable<
@@ -31,6 +54,7 @@ export const extractPublicKey: ExtractPublicKey = async (issuerAuth) => {
   if (!x5c || x5c.length === 0) {
     throw new Error('X509 certificate not found');
   }
+
   const alg = lookupAlgorithm(
     protectedHeaders.get(Headers.Algorithm) ??
       unprotectedHeaders.get(Headers.Algorithm)
