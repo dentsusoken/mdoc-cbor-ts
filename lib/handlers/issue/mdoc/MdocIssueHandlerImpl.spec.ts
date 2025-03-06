@@ -41,8 +41,8 @@ describe('MdocIssueHandlerImpl', async () => {
       const data: MdocData = {
         'org.iso.18013.5.1.mDL': {
           'org.iso.18013.5.1': {
-            JAN: 'given_name',
-            '111111114': 'document_number',
+            given_name: 'JAN',
+            document_number: '111111114',
           },
         },
       };

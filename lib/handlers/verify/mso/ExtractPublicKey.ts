@@ -28,14 +28,14 @@ export const extractPublicKey: ExtractPublicKey = async (issuerAuth) => {
     protectedHeaders.get(Headers.X5Chain) ??
     unprotectedHeaders.get(Headers.X5Chain);
 
+  if (!x5c || x5c.length === 0) {
+    throw new Error('X509 certificate not found');
+  }
   const alg = lookupAlgorithm(
     protectedHeaders.get(Headers.Algorithm) ??
       unprotectedHeaders.get(Headers.Algorithm)
   );
 
-  if (!x5c) {
-    throw new Error('X509 certificate not found');
-  }
   const certs: X509Certificate[] = [];
   if (Array.isArray(x5c)) {
     x5c.forEach((cert) => {
