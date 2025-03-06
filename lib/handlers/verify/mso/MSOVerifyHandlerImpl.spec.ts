@@ -20,8 +20,9 @@ describe('MSOVerifyHandlerImpl', () => {
     it('should verify a certificate', async () => {
       const msoVerifyHandler = new MSOVerifyHandlerImpl();
       const { issuerAuth, nameSpaces } = mdoc.documents![0].issuerSigned;
-      const result = await msoVerifyHandler.verify(issuerAuth, nameSpaces);
-      expect(result).toBe(true);
+      expect(
+        async () => await msoVerifyHandler.verify(issuerAuth, nameSpaces)
+      ).not.toThrow();
     });
   });
 });

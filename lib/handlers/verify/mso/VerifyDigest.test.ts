@@ -78,7 +78,7 @@ describe('verifyDigest', () => {
     vi.mocked(calculateDigest).mockResolvedValueOnce(DIFFERENT_DIGEST);
 
     await expect(verifyDigest(issuerAuth, issuerNameSpaces)).rejects.toThrow(
-      'Digest mismatch for org.iso.18013.5.1 0'
+      'Digest mismatch for org.iso.18013.5.1, DigestID: 0'
     );
   });
 

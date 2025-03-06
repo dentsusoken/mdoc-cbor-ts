@@ -12,10 +12,9 @@ export interface MSOVerifyHandler {
    * Verifies an MSO's issuer authentication and name spaces
    * @param issuerAuth - The issuer's authentication data
    * @param issuerNameSpaces - The issuer's name spaces containing document data
-   * @returns A Promise that resolves to true if verification succeeds, false otherwise
    */
   verify: (
     issuerAuth: IssuerAuth,
     issuerNameSpaces: IssuerNameSpaces
-  ) => Promise<boolean>;
+  ) => Promise<void>;
 }

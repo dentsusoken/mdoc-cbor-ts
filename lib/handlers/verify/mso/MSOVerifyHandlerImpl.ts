@@ -20,7 +20,7 @@ export class MSOVerifyHandlerImpl implements MSOVerifyHandler {
   verify: (
     issuerAuth: IssuerAuth,
     issuerNameSpaces: IssuerNameSpaces
-  ) => Promise<boolean>;
+  ) => Promise<void>;
 
   /**
    * Creates a new MSO verification handler
@@ -30,15 +30,9 @@ export class MSOVerifyHandlerImpl implements MSOVerifyHandler {
       issuerAuth: IssuerAuth,
       issuerNameSpaces: IssuerNameSpaces
     ) => {
-      try {
-        const publicKey = await extractPublicKey(issuerAuth);
-        await issuerAuth.verify(publicKey);
-        await verifyDigest(issuerAuth, issuerNameSpaces);
-        return true;
-      } catch (e) {
-        console.error(e);
-        return false;
-      }
+      const publicKey = await extractPublicKey(issuerAuth);
+      await issuerAuth.verify(publicKey);
+      await verifyDigest(issuerAuth, issuerNameSpaces);
     };
   }
 }

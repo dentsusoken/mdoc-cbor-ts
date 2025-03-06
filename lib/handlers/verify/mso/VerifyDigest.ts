@@ -49,7 +49,9 @@ export const verifyDigest: VerifyDigest = async (
       const actual = await calculateDigest(digestAlgorithm, issuerSignedItem);
       const expected = valueDigests[namespace][digestID];
       if (!actual.equals(expected)) {
-        throw new Error(`Digest mismatch for ${namespace} ${digestID}`);
+        throw new Error(
+          `Digest mismatch for ${namespace}, DigestID: ${digestID}`
+        );
       }
     }
   }
