@@ -22,11 +22,15 @@ import { IssuerSigned, issuerSignedSchema } from './IssuerSigned';
  * const result = documentSchema.parse(document); // Returns Document
  * ```
  */
-export const documentSchema = z.object({
-  docType: docTypeSchema,
-  issuerSigned: issuerSignedSchema,
-  deviceSigned: deviceSignedSchema,
-  errors: errorsSchema.optional(),
+export const documentSchema = z.map(z.any(), z.any()).transform((v) => {
+  return z
+    .object({
+      docType: docTypeSchema,
+      issuerSigned: issuerSignedSchema,
+      deviceSigned: deviceSignedSchema.optional(), // TODO - is optional correct?
+      errors: errorsSchema.optional(),
+    })
+    .parse(Object.fromEntries(v));
 });
 
 /**

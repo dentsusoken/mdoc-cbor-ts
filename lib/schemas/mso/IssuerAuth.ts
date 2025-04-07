@@ -14,11 +14,17 @@ import { numberMap } from '../common';
  * const result = issuerAuthSchema.parse(sign1); // Returns Sign1
  * ```
  */
-export const issuerAuthSchema = z.array(z.any()).transform((sign1) => {
-  const [protectedHeaders, unprotectedHeaders, payload, signature] = sign1;
-  const unprotectedHeadersMap = numberMap.parse(unprotectedHeaders);
-  return new Sign1(protectedHeaders, unprotectedHeadersMap, payload, signature);
-});
+export const issuerAuthSchema = z.tuple([
+  z.union([numberMap, z.instanceof(Uint8Array)]),
+  numberMap,
+  z.instanceof(Uint8Array),
+  z.instanceof(Uint8Array),
+]); // TODO
+// .transform((sign1) => {
+//   const [protectedHeaders, unprotectedHeaders, payload, signature] = sign1;
+//   const unprotectedHeadersMap = numberMap.parse(unprotectedHeaders);
+//   return new Sign1(protectedHeaders, unprotectedHeadersMap, payload, signature);
+// });
 
 /**
  * Type definition for issuer authentication

@@ -26,7 +26,7 @@ import {
  * ```
  */
 export const issuerSignedItemSchema = z.object({
-  digestID: z.number().int().positive(),
+  digestID: z.number().int().min(0),
   random: bytesSchema,
   elementIdentifier: dataElementIdentifierSchema,
   elementValue: dataElementValueSchema,
@@ -48,4 +48,4 @@ export const issuerSignedItemSchema = z.object({
  * @see {@link DataElementIdentifier}
  * @see {@link DataElementValue}
  */
-export type IssuerSignedItem = z.infer<typeof issuerSignedItemSchema>;
+export type IssuerSignedItem = Required<z.infer<typeof issuerSignedItemSchema>>;

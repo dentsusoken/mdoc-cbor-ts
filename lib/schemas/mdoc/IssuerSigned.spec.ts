@@ -1,4 +1,5 @@
 import { Sign1 } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { ByteString } from '../../cbor';
 import { issuerSignedSchema } from './IssuerSigned';
@@ -12,26 +13,37 @@ describe('IssuerSigned', () => {
       Buffer.from([])
     );
     const validData = [
-      {
-        nameSpaces: {
-          'org.iso.18013.5.1': [
-            new ByteString({
-              digestID: 1,
-              random: Buffer.from([]),
-              elementIdentifier: 'given_name',
-              elementValue: 'John',
-            }),
-          ],
-        },
-        issuerAuth: sign1.getContentForEncoding(),
-      },
+      new Map<any, any>([
+        [
+          'nameSpaces',
+          new Map([
+            [
+              'org.iso.18013.5.1',
+              [
+                new ByteString(
+                  new TypedMap([
+                    ['digestID', 1],
+                    ['random', Buffer.from([])],
+                    ['elementIdentifier', 'given_name'],
+                    ['elementValue', 'John'],
+                  ])
+                ),
+              ],
+            ],
+          ]),
+        ],
+        ['issuerAuth', sign1.getContentForEncoding()],
+      ]),
     ];
 
     validData.forEach((data) => {
       expect(() => issuerSignedSchema.parse(data)).not.toThrow();
       const result = issuerSignedSchema.parse(data);
-      expect(result.nameSpaces).toEqual(data.nameSpaces);
-      expect(result.issuerAuth).toBeInstanceOf(Sign1);
+      expect(result.nameSpaces).toEqual(
+        Object.fromEntries(data.get('nameSpaces'))
+      );
+
+      expect(new Sign1(...result.issuerAuth)).toBeInstanceOf(Sign1);
     });
   });
 

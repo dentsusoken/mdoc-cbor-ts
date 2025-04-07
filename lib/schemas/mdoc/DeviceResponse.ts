@@ -20,11 +20,15 @@ import { statusSchema } from './Status';
  * const result = deviceResponseSchema.parse(response); // Returns DeviceResponse
  * ```
  */
-export const deviceResponseSchema = z.object({
-  version: z.string(),
-  documents: z.array(documentSchema).nonempty().optional(),
-  documentErrors: z.array(documentErrorSchema).nonempty().optional(),
-  status: statusSchema,
+export const deviceResponseSchema = z.map(z.any(), z.any()).transform((v) => {
+  return z
+    .object({
+      version: z.string(),
+      documents: z.array(documentSchema).nonempty().optional(),
+      documentErrors: z.array(documentErrorSchema).nonempty().optional(),
+      status: statusSchema,
+    })
+    .parse(Object.fromEntries(v));
 });
 
 /**

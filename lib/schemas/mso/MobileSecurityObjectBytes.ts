@@ -1,5 +1,7 @@
+import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
 import { ByteString } from '../../cbor';
+import { KVMap } from '../../types';
 import { MobileSecurityObject } from './MobileSecurityObject';
 // TODO: instanceof ByteStringが正しい。
 /**
@@ -15,7 +17,7 @@ import { MobileSecurityObject } from './MobileSecurityObject';
  * ```
  */
 export const mobileSecurityObjectBytesSchema = z.instanceof(
-  ByteString<MobileSecurityObject>
+  ByteString<TypedMap<KVMap<MobileSecurityObject>>>
 );
 
 /**

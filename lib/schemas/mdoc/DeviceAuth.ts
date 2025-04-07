@@ -14,14 +14,17 @@ import { DeviceSignature, deviceSignatureSchema } from './DeviceSignature';
  * const result = deviceAuthSchema.parse(auth); // Returns DeviceAuth
  * ```
  */
-export const deviceAuthSchema = z.union([
-  z.object({
-    deviceSignature: deviceSignatureSchema,
-  }),
-  z.object({
-    deviceMac: deviceMacSchema,
-  }),
-]);
+export const deviceAuthSchema = z.map(z.any(), z.any()).transform((v) => {
+  const objSchema = z.union([
+    z.object({
+      deviceSignature: deviceSignatureSchema,
+    }),
+    z.object({
+      deviceMac: deviceMacSchema,
+    }),
+  ]);
+  return objSchema.parse(Object.fromEntries(v));
+});
 
 /**
  * Type definition for device authentication

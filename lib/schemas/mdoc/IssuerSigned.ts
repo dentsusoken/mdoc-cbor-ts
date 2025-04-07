@@ -17,9 +17,13 @@ import { IssuerNameSpaces, issuerNameSpacesSchema } from './IssuerNameSpaces';
  * const result = issuerSignedSchema.parse(issuerSigned);
  * ```
  */
-export const issuerSignedSchema = z.object({
-  nameSpaces: issuerNameSpacesSchema,
-  issuerAuth: issuerAuthSchema,
+export const issuerSignedSchema = z.map(z.any(), z.any()).transform((v) => {
+  return z
+    .object({
+      nameSpaces: issuerNameSpacesSchema,
+      issuerAuth: issuerAuthSchema,
+    })
+    .parse(Object.fromEntries(v));
 });
 
 /**

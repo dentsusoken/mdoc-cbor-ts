@@ -13,7 +13,8 @@ describe('IssuerAuth', () => {
     const validSign1Array = sign1.getContentForEncoding();
 
     expect(() => issuerAuthSchema.parse(validSign1Array)).not.toThrow();
-    const result = issuerAuthSchema.parse(validSign1Array);
+    const result = new Sign1(...issuerAuthSchema.parse(validSign1Array));
+
     expect(result).toBeInstanceOf(Sign1);
     expect(result.protectedHeaders).toEqual(sign1.protectedHeaders);
     expect(result.unprotectedHeaders).toEqual(sign1.unprotectedHeaders);
@@ -34,10 +35,10 @@ describe('IssuerAuth', () => {
 
     expect(() => issuerAuthSchema.parse(array)).not.toThrow();
     const result = issuerAuthSchema.parse(array);
-    expect(result).toBeInstanceOf(Sign1);
-    expect(result.unprotectedHeaders).toBeInstanceOf(Map);
-    expect(result.unprotectedHeaders.get(1)).toBe('value');
-    expect(result.unprotectedHeaders.get(2)).toBe('123');
+    const sign1 = new Sign1(...result);
+
+    expect(sign1.unprotectedHeaders.get(1)).toBe('value');
+    expect(sign1.unprotectedHeaders.get(2)).toBe('123');
   });
 
   it('should throw error for invalid input', () => {

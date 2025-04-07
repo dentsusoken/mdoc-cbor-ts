@@ -1,6 +1,8 @@
+import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
 import { ByteString } from '../../cbor';
-import { IssuerSignedItem } from './IssuerSignedItem';
+import { KVMap } from '../../types';
+import { IssuerSignedItem, issuerSignedItemSchema } from './IssuerSignedItem';
 
 /**
  * Schema for CBOR-encoded issuer-signed items
@@ -14,9 +16,9 @@ import { IssuerSignedItem } from './IssuerSignedItem';
  * const result = issuerSignedItemBytesSchema.parse(bytes); // Returns Tag
  * ```
  */
-export const issuerSignedItemBytesSchema = z.instanceof(
-  ByteString<IssuerSignedItem>
-);
+export const issuerSignedItemBytesSchema = z
+  .instanceof(ByteString<TypedMap<KVMap<IssuerSignedItem>>>)
+  .refine((v) => issuerSignedItemSchema.parse(Object.fromEntries(v.data)));
 
 /**
  * Type definition for CBOR-encoded issuer-signed items

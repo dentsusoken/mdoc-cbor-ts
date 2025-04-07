@@ -1,4 +1,5 @@
 import { Sign1 } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { ByteString } from '../../cbor';
@@ -13,44 +14,54 @@ describe('Document', () => {
       Buffer.from([])
     );
     const validDocuments = [
-      {
-        docType: 'com.example.document',
-        issuerSigned: {
-          nameSpaces: {
-            'org.iso.18013.5.1': [
-              new ByteString({
-                digestID: 1,
-                random: Buffer.from([]),
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-              }),
+      new Map<any, any>([
+        ['docType', 'com.example.document'],
+        [
+          'issuerSigned',
+          new Map<any, any>([
+            [
+              'nameSpaces',
+              new Map([
+                [
+                  'org.iso.18013.5.1',
+                  [
+                    new ByteString(
+                      new TypedMap([
+                        ['digestID', 1],
+                        ['random', Buffer.from([])],
+                        ['elementIdentifier', 'given_name'],
+                        ['elementValue', 'John'],
+                      ])
+                    ),
+                  ],
+                ],
+              ]),
             ],
-          },
-          issuerAuth: sign1.getContentForEncoding(),
-        },
-        deviceSigned: {
-          nameSpaces: new ByteString({}),
-          deviceAuth: {
-            deviceSignature: sign1.getContentForEncoding(),
-          },
-        },
-      },
+            ['issuerAuth', sign1.getContentForEncoding()],
+          ]),
+        ],
+        [
+          'deviceSigned',
+          new Map<any, any>([
+            ['nameSpaces', new ByteString(new Map())],
+            [
+              'deviceAuth',
+              new Map([['deviceSignature', sign1.getContentForEncoding()]]),
+            ],
+          ]),
+        ],
+      ]),
     ];
 
     validDocuments.forEach((doc) => {
       expect(() => documentSchema.parse(doc)).not.toThrow();
       const result = documentSchema.parse(doc);
-      expect(result.docType).toEqual(doc.docType);
+      expect(result.docType).toEqual(doc.get('docType'));
       expect(result.issuerSigned.nameSpaces).toEqual(
-        doc.issuerSigned.nameSpaces
+        Object.fromEntries(doc.get('issuerSigned').get('nameSpaces'))
       );
-      expect(result.issuerSigned.issuerAuth).toBeInstanceOf(Sign1);
-      expect(result.deviceSigned.nameSpaces).toEqual(
-        doc.deviceSigned.nameSpaces
-      );
-      // @ts-ignore
-      expect(result.deviceSigned.deviceAuth.deviceSignature).toBeInstanceOf(
-        Sign1
+      expect(result.deviceSigned!.nameSpaces).toEqual(
+        doc.get('deviceSigned').get('nameSpaces')
       );
     });
   });

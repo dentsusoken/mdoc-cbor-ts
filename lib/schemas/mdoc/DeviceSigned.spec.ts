@@ -18,24 +18,23 @@ describe('DeviceSigned', () => {
       Buffer.from([])
     );
     const validData = [
-      {
-        nameSpaces: new ByteString({}),
-        deviceAuth: {
-          deviceSignature: sign1.getContentForEncoding(),
-        },
-      },
-      {
-        nameSpaces: new ByteString({}),
-        deviceAuth: {
-          deviceMac: mac0.getContentForEncoding(),
-        },
-      },
+      new Map<any, any>([
+        ['nameSpaces', new ByteString(new Map())],
+        [
+          'deviceAuth',
+          new Map([['deviceSignature', sign1.getContentForEncoding()]]),
+        ],
+      ]),
+      new Map<any, any>([
+        ['nameSpaces', new ByteString(new Map())],
+        ['deviceAuth', new Map([['deviceMac', mac0.getContentForEncoding()]])],
+      ]),
     ];
 
     validData.forEach((data) => {
       expect(() => deviceSignedSchema.parse(data)).not.toThrow();
       const result = deviceSignedSchema.parse(data);
-      expect(result.nameSpaces).toEqual(data.nameSpaces);
+      expect(result.nameSpaces).toEqual(data.get('nameSpaces'));
       if ('deviceSignature' in result.deviceAuth) {
         expect(result.deviceAuth.deviceSignature).toBeInstanceOf(Sign1);
         expect(result.deviceAuth.deviceSignature.protectedHeaders).toEqual(

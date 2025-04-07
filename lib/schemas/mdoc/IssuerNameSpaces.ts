@@ -19,11 +19,14 @@ import {
  * const result = issuerNameSpacesSchema.parse(namespaces); // Returns IssuerNameSpaces
  * ```
  */
-export const issuerNameSpacesSchema = z
-  .record(nameSpaceSchema, z.array(issuerSignedItemBytesSchema).nonempty())
-  .refine((data) => {
-    return Object.keys(data).length > 0;
-  });
+export const issuerNameSpacesSchema = z.map(z.any(), z.any()).transform((v) => {
+  return z
+    .record(nameSpaceSchema, z.array(issuerSignedItemBytesSchema).nonempty())
+    .refine((data) => {
+      return Object.keys(data).length > 0;
+    })
+    .parse(Object.fromEntries(v));
+});
 
 /**
  * Type definition for issuer-signed namespaces

@@ -17,9 +17,13 @@ import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
  * const result = deviceSignedSchema.parse(deviceSigned); // Returns DeviceSigned
  * ```
  */
-export const deviceSignedSchema = z.object({
-  nameSpaces: deviceNameSpacesBytesSchema,
-  deviceAuth: deviceAuthSchema,
+export const deviceSignedSchema = z.map(z.any(), z.any()).transform((v) => {
+  return z
+    .object({
+      nameSpaces: deviceNameSpacesBytesSchema,
+      deviceAuth: deviceAuthSchema,
+    })
+    .parse(Object.fromEntries(v));
 });
 
 /**

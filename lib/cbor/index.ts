@@ -13,7 +13,7 @@ export * from './DateTime';
 const encoderDefaults: Options = {
   tagUint8Array: false,
   useRecords: false,
-  mapsAsObjects: true,
+  mapsAsObjects: false,
   // @ts-ignore
   useTag259ForMaps: false,
 };

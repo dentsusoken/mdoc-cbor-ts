@@ -1,3 +1,4 @@
+import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { ByteString } from '../../cbor';
 import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
@@ -5,10 +6,10 @@ import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
 describe('DeviceNameSpacesBytes', () => {
   it('should accept valid CBOR tags', () => {
     const validTags = [
-      new ByteString({}),
-      new ByteString({
-        'org.iso.18013.5.1': [{ given_name: 'John' }],
-      }),
+      new ByteString(new TypedMap()),
+      new ByteString(
+        new TypedMap([['org.iso.18013.5.1', { given_name: 'John' }]])
+      ),
     ];
 
     validTags.forEach((tag) => {

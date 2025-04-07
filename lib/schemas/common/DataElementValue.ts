@@ -12,7 +12,7 @@ import { z } from 'zod';
  * const result = dataElementValueSchema.parse(validValue); // Returns any
  * ```
  */
-export const dataElementValueSchema = z.any();
+export const dataElementValueSchema = z.unknown();
 
 /**
  * Type definition for data element values

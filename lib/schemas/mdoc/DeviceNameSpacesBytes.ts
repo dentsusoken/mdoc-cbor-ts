@@ -1,6 +1,8 @@
+import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
 import { ByteString } from '../../cbor';
-import { DeviceNameSpaces } from './DeviceNameSpaces';
+import { KVMap } from '../../types';
+import { DeviceNameSpaces, deviceNameSpacesSchema } from './DeviceNameSpaces';
 
 /**
  * Schema for CBOR-encoded device-signed namespaces
@@ -14,9 +16,10 @@ import { DeviceNameSpaces } from './DeviceNameSpaces';
  * const result = deviceNameSpacesBytesSchema.parse(bytes);
  * ```
  */
-export const deviceNameSpacesBytesSchema = z.instanceof(
-  ByteString<DeviceNameSpaces>
-);
+export const deviceNameSpacesBytesSchema = z
+  .instanceof(ByteString<TypedMap<KVMap<DeviceNameSpaces>>>)
+  // .refine((v) => console.log('object :>> ', v.data));
+  .refine((v) => deviceNameSpacesSchema.parse(Object.fromEntries(v.data)));
 
 /**
  * Type definition for CBOR-encoded device-signed namespaces

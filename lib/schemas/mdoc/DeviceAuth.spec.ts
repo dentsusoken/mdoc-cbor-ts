@@ -11,9 +11,9 @@ describe('DeviceAuth', () => {
       Buffer.from([]),
       Buffer.from([])
     );
-    const validSignature = {
-      deviceSignature: sign1.getContentForEncoding(),
-    };
+    const validSignature = new Map([
+      ['deviceSignature', sign1.getContentForEncoding()],
+    ]);
 
     expect(() => deviceAuthSchema.parse(validSignature)).not.toThrow();
     const result = deviceAuthSchema.parse(validSignature);
@@ -37,9 +37,7 @@ describe('DeviceAuth', () => {
       Buffer.from([]),
       Buffer.from([])
     );
-    const validMac = {
-      deviceMac: mac0.getContentForEncoding(),
-    };
+    const validMac = new Map([['deviceMac', mac0.getContentForEncoding()]]);
 
     expect(() => deviceAuthSchema.parse(validMac)).not.toThrow();
     const result = deviceAuthSchema.parse(validMac);
@@ -63,22 +61,14 @@ describe('DeviceAuth', () => {
       'string',
       [],
       {},
-      {
-        deviceSignature: null,
-      },
-      {
-        deviceMac: null,
-      },
-      {
-        deviceSignature: new Tag(17, 0),
-      },
-      {
-        deviceMac: new Tag(18, 0),
-      },
-      {
-        deviceSignature: new Tag(18, 0),
-        deviceMac: new Tag(19, 0),
-      },
+      new Map([['deviceSignature', null]]),
+      new Map([['deviceMac', null]]),
+      new Map([['deviceSignature', new Tag(17, 0)]]),
+      new Map([['deviceMac', new Tag(18, 0)]]),
+      new Map([
+        ['deviceSignature', new Tag(18, 0)],
+        ['deviceMac', new Tag(19, 0)],
+      ]),
     ];
 
     invalidInputs.forEach((input) => {

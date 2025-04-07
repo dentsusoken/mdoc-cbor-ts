@@ -22,7 +22,7 @@ import {
 export const deviceNameSpacesSchema = z
   .record(nameSpaceSchema, deviceSignedItemsSchema)
   .refine((data) => {
-    return Object.keys(data).length > 0;
+    return Object.keys(data).length >= 0;
   });
 
 /**
@@ -31,7 +31,7 @@ export const deviceNameSpacesSchema = z
  * Represents a validated record of namespaces and their device-signed items
  *
  * ```cddl
- * DeviceNameSpaces = {+ NameSpace => DeviceSignedItems}
+ * DeviceNameSpaces = {* NameSpace => DeviceSignedItems}
  * ```
  * @see {@link NameSpace}
  * @see {@link DeviceSignedItems}

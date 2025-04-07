@@ -23,9 +23,9 @@ describe('DeviceNameSpaces', () => {
     });
   });
 
-  it('should throw error for empty record', () => {
+  it('should not throw error for empty record', () => {
     const emptyRecord = {};
-    expect(() => deviceNameSpacesSchema.parse(emptyRecord)).toThrow();
+    expect(() => deviceNameSpacesSchema.parse(emptyRecord)).not.toThrow();
   });
 
   it('should throw error for invalid input', () => {
