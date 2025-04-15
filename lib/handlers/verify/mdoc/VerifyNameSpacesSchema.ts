@@ -87,10 +87,8 @@ export const createVerifyNameSpacesSchema: CreateVerifyNameSpacesSchema =
           //   throw new Error(`Schema for nameSpace ${nameSpace} not found`);
           continue;
         }
-        const schema = schemas[nameSpace].partial();
-        validDocuments[docType][nameSpace] = schema.parse(
-          validDocuments[docType][nameSpace]
-        );
+        const schema = schemas[nameSpace].partial().strict();
+        schema.parse(validDocuments[docType][nameSpace]);
       }
     }
     return validDocuments;

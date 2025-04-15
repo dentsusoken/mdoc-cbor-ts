@@ -40,9 +40,9 @@ export class MdocVerifyHandlerImpl implements MdocVerifyHandler {
           const { issuerAuth, nameSpaces } = document.issuerSigned;
           await msoVerifyHandler.verify(issuerAuth, nameSpaces);
         }
-        const documents = await verifyNameSpacesSchema(deviceResponse);
+        const nameSpaces = await verifyNameSpacesSchema(deviceResponse);
 
-        return { valid: true, documents };
+        return { valid: true, documents: nameSpaces };
       } catch (e) {
         console.error(e);
         return { valid: false };
