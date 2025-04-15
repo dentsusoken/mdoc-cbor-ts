@@ -5,12 +5,41 @@ import { mobileSecurityObjectSchema } from './MobileSecurityObject';
 
 describe('MobileSecurityObject', () => {
   it('should accept valid mobile security object', () => {
-    const validMSO = {
+    const validMSO = new Map<string, any>([
+      ['version', '1.0'],
+      ['digestAlgorithm', 'SHA-256'],
+      [
+        'valueDigests',
+        new Map<string, any>([
+          [
+            'org.iso.18013.5.1',
+            new Map<number, Buffer>([[1, Buffer.from('0123456789abcdef')]]),
+          ],
+        ]),
+      ],
+      [
+        'deviceKeyInfo',
+        new Map<string, any>([['deviceKey', new Map<number, any>()]]),
+      ],
+      ['docType', 'org.iso.18013.5.1.mDL'],
+      [
+        'validityInfo',
+        new Map<string, any>([
+          ['signed', new DateTime('2024-03-20T00:00:00Z')],
+          ['validFrom', new DateTime('2024-03-20T00:00:00Z')],
+          ['validUntil', new DateTime('2024-03-21T00:00:00Z')],
+        ]),
+      ],
+    ]);
+
+    expect(() => mobileSecurityObjectSchema.parse(validMSO)).not.toThrow();
+    const result = mobileSecurityObjectSchema.parse(validMSO);
+    expect(result).toEqual({
       version: '1.0',
       digestAlgorithm: 'SHA-256',
       valueDigests: {
         'org.iso.18013.5.1': {
-          0: Buffer.from('0123456789abcdef'),
+          '1': Buffer.from('0123456789abcdef'),
         },
       },
       deviceKeyInfo: {
@@ -22,11 +51,7 @@ describe('MobileSecurityObject', () => {
         validFrom: new DateTime('2024-03-20T00:00:00Z'),
         validUntil: new DateTime('2024-03-21T00:00:00Z'),
       },
-    };
-
-    expect(() => mobileSecurityObjectSchema.parse(validMSO)).not.toThrow();
-    const result = mobileSecurityObjectSchema.parse(validMSO);
-    expect(result).toEqual(validMSO);
+    });
   });
 
   it('should throw error for invalid input', () => {
@@ -38,76 +63,93 @@ describe('MobileSecurityObject', () => {
       'string',
       [],
       {},
-      {
-        version: '2.0',
-        digestAlgorithm: 'SHA-256',
-        valueDigests: {},
-        deviceKeyInfo: {
-          deviceKey: new COSEKey([]),
-        },
-        docType: 'org.iso.18013.5.1.mDL',
-        validityInfo: {
-          signed: new DateTime('2024-03-20T00:00:00Z'),
-          validFrom: new DateTime('2024-03-20T00:00:00Z'),
-          validUntil: new DateTime('2024-03-21T00:00:00Z'),
-        },
-      },
-      {
-        version: '1.0',
-        digestAlgorithm: 'MD5',
-        valueDigests: {},
-        deviceKeyInfo: {
-          deviceKey: new COSEKey([]),
-        },
-        docType: 'org.iso.18013.5.1.mDL',
-        validityInfo: {
-          signed: new DateTime('2024-03-20T00:00:00Z'),
-          validFrom: new DateTime('2024-03-20T00:00:00Z'),
-          validUntil: new DateTime('2024-03-21T00:00:00Z'),
-        },
-      },
-      {
-        version: '1.0',
-        digestAlgorithm: 'SHA-256',
-        valueDigests: {},
-        deviceKeyInfo: {
-          deviceKey: {},
-        },
-        docType: 'org.iso.18013.5.1.mDL',
-        validityInfo: {
-          signed: new DateTime('2024-03-20T00:00:00Z'),
-          validFrom: new DateTime('2024-03-20T00:00:00Z'),
-          validUntil: new DateTime('2024-03-21T00:00:00Z'),
-        },
-      },
-      {
-        version: '1.0',
-        digestAlgorithm: 'SHA-256',
-        valueDigests: {},
-        deviceKeyInfo: {
-          deviceKey: new COSEKey([]),
-        },
-        docType: '',
-        validityInfo: {
-          signed: new DateTime('2024-03-20T00:00:00Z'),
-          validFrom: new DateTime('2024-03-20T00:00:00Z'),
-          validUntil: new DateTime('2024-03-21T00:00:00Z'),
-        },
-      },
-      {
-        version: '1.0',
-        digestAlgorithm: 'SHA-256',
-        valueDigests: {},
-        deviceKeyInfo: {
-          deviceKey: new COSEKey([]),
-        },
-        docType: 'org.iso.18013.5.1.mDL',
-        validityInfo: {
-          signed: '2024-03-20T00:00:00Z',
-          validFrom: new DateTime('2024-03-20T00:00:00Z'),
-          validUntil: new DateTime('2024-03-21T00:00:00Z'),
-        },
-      },
+      new Map<string, any>([
+        ['version', '2.0'],
+        ['digestAlgorithm', 'SHA-256'],
+        ['valueDigests', new Map()],
+        [
+          'deviceKeyInfo',
+          new Map<string, any>([['deviceKey', new Map<number, any>()]]),
+        ],
+        ['docType', 'org.iso.18013.5.1.mDL'],
+        [
+          'validityInfo',
+          new Map<string, any>([
+            ['signed', new DateTime('2024-03-20T00:00:00Z')],
+            ['validFrom', new DateTime('2024-03-20T00:00:00Z')],
+            ['validUntil', new DateTime('2024-03-21T00:00:00Z')],
+          ]),
+        ],
+      ]),
+      new Map<string, any>([
+        ['version', '1.0'],
+        ['digestAlgorithm', 'MD5'],
+        ['valueDigests', new Map()],
+        [
+          'deviceKeyInfo',
+          new Map<string, any>([['deviceKey', new Map<number, any>()]]),
+        ],
+        ['docType', 'org.iso.18013.5.1.mDL'],
+        [
+          'validityInfo',
+          new Map<string, any>([
+            ['signed', new DateTime('2024-03-20T00:00:00Z')],
+            ['validFrom', new DateTime('2024-03-20T00:00:00Z')],
+            ['validUntil', new DateTime('2024-03-21T00:00:00Z')],
+          ]),
+        ],
+      ]),
+      new Map<string, any>([
+        ['version', '1.0'],
+        ['digestAlgorithm', 'SHA-256'],
+        ['valueDigests', new Map()],
+        ['deviceKeyInfo', new Map<string, any>([['deviceKey', {}]])],
+        ['docType', 'org.iso.18013.5.1.mDL'],
+        [
+          'validityInfo',
+          new Map<string, any>([
+            ['signed', new DateTime('2024-03-20T00:00:00Z')],
+            ['validFrom', new DateTime('2024-03-20T00:00:00Z')],
+            ['validUntil', new DateTime('2024-03-21T00:00:00Z')],
+          ]),
+        ],
+      ]),
+      new Map<string, any>([
+        ['version', '1.0'],
+        ['digestAlgorithm', 'SHA-256'],
+        ['valueDigests', new Map()],
+        [
+          'deviceKeyInfo',
+          new Map<string, any>([['deviceKey', new Map<number, any>()]]),
+        ],
+        ['docType', ''],
+        [
+          'validityInfo',
+          new Map<string, any>([
+            ['signed', new DateTime('2024-03-20T00:00:00Z')],
+            ['validFrom', new DateTime('2024-03-20T00:00:00Z')],
+            ['validUntil', new DateTime('2024-03-21T00:00:00Z')],
+          ]),
+        ],
+      ]),
+      new Map<string, any>([
+        ['version', '1.0'],
+        ['digestAlgorithm', 'SHA-256'],
+        ['valueDigests', new Map()],
+        [
+          'deviceKeyInfo',
+          new Map<string, any>([['deviceKey', new Map<number, any>()]]),
+        ],
+        ['docType', 'org.iso.18013.5.1.mDL'],
+        [
+          'validityInfo',
+          new Map<string, any>([
+            ['signed', '2024-03-20T00:00:00Z'],
+            ['validFrom', new DateTime('2024-03-20T00:00:00Z')],
+            ['validUntil', new DateTime('2024-03-21T00:00:00Z')],
+          ]),
+        ],
+      ]),
     ];
 
     invalidInputs.forEach((input) => {

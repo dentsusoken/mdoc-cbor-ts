@@ -14,8 +14,8 @@ import { z } from 'zod';
  * ```
  */
 // TODO: which is better? instanceOf or custom?
-export const deviceKeySchema = z.instanceof(COSEKey).transform((key) => {
-  return new COSEKey(key);
+export const deviceKeySchema = z.map(z.any(), z.any()).transform((data) => {
+  return new COSEKey(data);
 });
 
 /**

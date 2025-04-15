@@ -25,11 +25,16 @@ import {
  * const result = keyAuthorizationsSchema.parse(authorizations); // Returns KeyAuthorizations
  * ```
  */
-export const keyAuthorizationsSchema = z.object({
-  nameSpaces: authorizedNameSpacesSchema.optional(),
-  dataElements: authorizedDataElementsSchema.optional(),
-});
-
+export const keyAuthorizationsSchema = z
+  .map(z.any(), z.any())
+  .transform((data) => {
+    return z
+      .object({
+        nameSpaces: authorizedNameSpacesSchema.optional(),
+        dataElements: authorizedDataElementsSchema.optional(),
+      })
+      .parse(Object.fromEntries(data));
+  });
 /**
  * Type definition for key authorizations
  * @description

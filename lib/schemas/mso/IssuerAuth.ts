@@ -15,7 +15,7 @@ import { numberMap } from '../common';
  * ```
  */
 export const issuerAuthSchema = z.tuple([
-  z.union([numberMap, z.instanceof(Uint8Array)]),
+  z.union([z.instanceof(Uint8Array), numberMap]),
   numberMap,
   z.instanceof(Uint8Array),
   z.instanceof(Uint8Array),

@@ -1,4 +1,5 @@
 import { Sign1 } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { ByteString, encode } from '../../../cbor';
@@ -9,7 +10,7 @@ describe('createVerifyNameSpacesSchema', () => {
   const sign1 = new Sign1(
     new Map(),
     new Map(),
-    encode(new ByteString({})),
+    encode(new ByteString(new TypedMap([]))),
     // @ts-ignore
     Buffer.from('test-random')
   );
@@ -21,19 +22,23 @@ describe('createVerifyNameSpacesSchema', () => {
         issuerSigned: {
           nameSpaces: {
             'org.iso.18013.5.1': [
-              new ByteString({
-                digestID: 0,
-                elementIdentifier: 'test-element',
-                elementValue: 'test-value',
-                random: Buffer.from('test-random'),
-              }),
+              new ByteString(
+                new TypedMap<[any, any]>(
+                  Object.entries({
+                    digestID: 0,
+                    elementIdentifier: 'test-element',
+                    elementValue: 'test-value',
+                    random: Buffer.from('test-random'),
+                  })
+                )
+              ),
             ],
           },
           // @ts-ignore
           issuerAuth: sign1.getContentForEncoding(),
         },
         deviceSigned: {
-          nameSpaces: new ByteString({}),
+          nameSpaces: new ByteString(new TypedMap()),
           // @ts-ignore
           deviceAuth: {
             // @ts-ignore
@@ -98,13 +103,16 @@ describe('createVerifyNameSpacesSchema', () => {
             ...mockDeviceResponse.documents[0].issuerSigned,
             nameSpaces: {
               'unknown.namespace': [
-                {
-                  data: {
-                    digestID: 0,
-                    elementIdentifier: 'test-element',
-                    elementValue: 'test-value',
-                  },
-                },
+                new ByteString(
+                  new TypedMap<[any, any]>(
+                    Object.entries({
+                      digestID: 0,
+                      elementIdentifier: 'test-element',
+                      elementValue: 'test-value',
+                      random: Buffer.from('test-random'),
+                    })
+                  )
+                ),
               ],
             },
           },

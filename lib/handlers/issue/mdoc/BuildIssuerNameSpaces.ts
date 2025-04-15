@@ -1,3 +1,4 @@
+import { TypedMap } from '@jfromaniello/typedmap';
 import { Tag } from 'cbor-x';
 import crypto from 'crypto';
 import { ByteString } from '../../../cbor';
@@ -7,6 +8,7 @@ import {
   IssuerSignedItem,
   IssuerSignedItemBytes,
 } from '../../../schemas/mdoc';
+import { KVMap } from '../../../types';
 import { CreateBuilderFunction } from '../CreateBuilder';
 import { NameSpaceData } from './MdocIssueHandler';
 
@@ -67,13 +69,16 @@ export const createIssuerNameSpacesBuilder: CreateBuilderFunction<
           );
           elementValue = tag;
         }
-        const issuerSignedItem: IssuerSignedItem = {
-          random,
-          digestID,
-          elementIdentifier,
-          elementValue,
-        };
-        issuerSignedItems.push(new ByteString(issuerSignedItem));
+        issuerSignedItems.push(
+          new ByteString(
+            new TypedMap<KVMap<IssuerSignedItem>>([
+              ['random', random],
+              ['digestID', digestID],
+              ['elementIdentifier', elementIdentifier],
+              ['elementValue', elementValue],
+            ])
+          )
+        );
         digestID++;
       });
       if (issuerSignedItems.length === 0) {

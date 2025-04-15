@@ -24,7 +24,8 @@ describe('extractPublicKey', () => {
       Buffer.from('test-signature')
     );
 
-    const result = await extractPublicKey(issuerAuth);
+    // @ts-ignore
+    const result = await extractPublicKey(issuerAuth.getContentForEncoding());
 
     expect(result).toBeDefined();
     // Note: The actual key value cannot be tested as it's a KeyLike object
@@ -44,7 +45,8 @@ describe('extractPublicKey', () => {
       Buffer.from('test-signature')
     );
 
-    const result = await extractPublicKey(issuerAuth);
+    // @ts-ignore
+    const result = await extractPublicKey(issuerAuth.getContentForEncoding());
 
     expect(result).toBeDefined();
     // Note: The actual key value cannot be tested as it's a KeyLike object
@@ -68,7 +70,8 @@ describe('extractPublicKey', () => {
       Buffer.from('test-signature')
     );
 
-    const result = await extractPublicKey(issuerAuth);
+    // @ts-ignore
+    const result = await extractPublicKey(issuerAuth.getContentForEncoding());
 
     expect(result).toBeDefined();
     // Note: The actual key value cannot be tested as it's a KeyLike object
@@ -85,9 +88,10 @@ describe('extractPublicKey', () => {
       Buffer.from('test-signature')
     );
 
-    await expect(extractPublicKey(issuerAuth)).rejects.toThrow(
-      'X509 certificate not found'
-    );
+    await expect(
+      // @ts-ignore
+      extractPublicKey(issuerAuth.getContentForEncoding())
+    ).rejects.toThrow('X509 certificate not found');
   });
 
   it('should throw error when no algorithm found', async () => {
@@ -103,6 +107,9 @@ describe('extractPublicKey', () => {
       Buffer.from('test-signature')
     );
 
-    await expect(extractPublicKey(issuerAuth)).rejects.toThrow();
+    await expect(
+      // @ts-ignore
+      extractPublicKey(issuerAuth.getContentForEncoding())
+    ).rejects.toThrow();
   });
 });

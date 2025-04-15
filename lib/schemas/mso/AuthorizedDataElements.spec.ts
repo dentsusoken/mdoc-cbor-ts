@@ -4,24 +4,22 @@ import { authorizedDataElementsSchema } from './AuthorizedDataElements';
 describe('AuthorizedDataElements', () => {
   it('should accept valid authorized data elements record', () => {
     const validRecords = [
-      {
-        'org.iso.18013.5.1': ['given_name', 'family_name'],
-      },
-      {
-        'com.example.namespace': ['id', 'type'],
-        'test.namespace': ['value'],
-      },
+      new Map([['org.iso.18013.5.1', ['given_name', 'family_name']]]),
+      new Map([
+        ['com.example.namespace', ['id', 'type']],
+        ['test.namespace', ['value']],
+      ]),
     ];
 
     validRecords.forEach((record) => {
       expect(() => authorizedDataElementsSchema.parse(record)).not.toThrow();
       const result = authorizedDataElementsSchema.parse(record);
-      expect(result).toEqual(record);
+      expect(result).toEqual(Object.fromEntries(record));
     });
   });
 
   it('should throw error for empty record', () => {
-    const emptyRecord = {};
+    const emptyRecord = new Map();
     expect(() => authorizedDataElementsSchema.parse(emptyRecord)).toThrow();
   });
 
@@ -33,18 +31,10 @@ describe('AuthorizedDataElements', () => {
       123,
       'string',
       [],
-      {
-        'org.iso.18013.5.1': [],
-      },
-      {
-        'org.iso.18013.5.1': [123],
-      },
-      {
-        'org.iso.18013.5.1': [true],
-      },
-      {
-        'org.iso.18013.5.1': [{ key: 'value' }],
-      },
+      new Map([['org.iso.18013.5.1', []]]),
+      new Map([['org.iso.18013.5.1', [123]]]),
+      new Map([['org.iso.18013.5.1', [true]]]),
+      new Map([['org.iso.18013.5.1', [{ key: 'value' }]]]),
     ];
 
     invalidInputs.forEach((input) => {

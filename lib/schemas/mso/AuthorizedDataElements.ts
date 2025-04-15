@@ -20,10 +20,9 @@ import {
  * ```
  */
 export const authorizedDataElementsSchema = z
-  .record(nameSpaceSchema, dataElementsArraySchema)
-  .refine((data) => {
-    return Object.keys(data).length > 0;
-  });
+  .map(nameSpaceSchema, dataElementsArraySchema)
+  .refine((data) => data.size > 0)
+  .transform((data) => Object.fromEntries(data));
 
 /**
  * Type definition for authorized data elements

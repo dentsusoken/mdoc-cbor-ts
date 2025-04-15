@@ -78,8 +78,9 @@ export const createVerifyNameSpacesSchema: CreateVerifyNameSpacesSchema =
       for (const [nameSpace, elements] of Object.entries(nameSpaces)) {
         validDocuments[docType][nameSpace] = {};
         elements.forEach((element) => {
-          validDocuments[docType][nameSpace][element.data.elementIdentifier] =
-            element.data.elementValue;
+          const id = element.data.get('elementIdentifier');
+          const value = element.data.get('elementValue');
+          validDocuments[docType][nameSpace][id!] = value;
         });
         if (!(nameSpace in schemas)) {
           // TODO: should error or ignore?

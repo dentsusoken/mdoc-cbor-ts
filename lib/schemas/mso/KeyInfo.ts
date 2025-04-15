@@ -16,16 +16,18 @@ import { Entry } from '../common';
  * const result = keyInfoSchema.parse(info); // Returns KeyInfo
  * ```
  */
-export const keyInfoSchema = z.record(
-  z.union([
-    z.number().int(),
-    z
-      .string()
-      .regex(/^-?\d+$/)
-      .transform((s) => Number(s)),
-  ]),
-  z.any()
-);
+export const keyInfoSchema = z
+  .map(
+    z.union([
+      z.number().int(),
+      z
+        .string()
+        .regex(/^-?\d+$/)
+        .transform((s) => Number(s)),
+    ]),
+    z.any()
+  )
+  .transform((data) => Object.fromEntries(data));
 
 /**
  * Type definition for key information

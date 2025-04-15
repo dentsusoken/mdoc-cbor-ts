@@ -22,10 +22,14 @@ import { KeyInfo, keyInfoSchema } from './KeyInfo';
  * const result = deviceKeyInfoSchema.parse(keyInfo); // Returns DeviceKeyInfo
  * ```
  */
-export const deviceKeyInfoSchema = z.object({
-  deviceKey: deviceKeySchema,
-  keyAuthorizations: keyAuthorizationsSchema.optional(),
-  keyInfo: keyInfoSchema.optional(),
+export const deviceKeyInfoSchema = z.map(z.any(), z.any()).transform((data) => {
+  return z
+    .object({
+      deviceKey: deviceKeySchema,
+      keyAuthorizations: keyAuthorizationsSchema.optional(),
+      keyInfo: keyInfoSchema.optional(),
+    })
+    .parse(Object.fromEntries(data));
 });
 
 /**

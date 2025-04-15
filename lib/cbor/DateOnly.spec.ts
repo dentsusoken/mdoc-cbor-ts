@@ -51,15 +51,12 @@ describe('DateOnly', () => {
       };
 
       const encoded = encode(data);
-      const decoded = decode(encoded) as {
-        date1: DateOnly;
-        date2: DateOnly;
-      };
+      const decoded = decode(encoded) as Map<any, any>;
 
-      expect(decoded.date1).toBeInstanceOf(DateOnly);
-      expect(decoded.date2).toBeInstanceOf(DateOnly);
-      expect(decoded.date1.toISOString()).toBe('2024-03-20');
-      expect(decoded.date2.toISOString()).toBe('2024-03-21');
+      expect(decoded.get('date1')).toBeInstanceOf(DateOnly);
+      expect(decoded.get('date2')).toBeInstanceOf(DateOnly);
+      expect(decoded.get('date1').toISOString()).toBe('2024-03-20');
+      expect(decoded.get('date2').toISOString()).toBe('2024-03-21');
     });
   });
 });

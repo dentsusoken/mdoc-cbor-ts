@@ -18,7 +18,9 @@ import { IssuerSignedItem, issuerSignedItemSchema } from './IssuerSignedItem';
  */
 export const issuerSignedItemBytesSchema = z
   .instanceof(ByteString<TypedMap<KVMap<IssuerSignedItem>>>)
-  .refine((v) => issuerSignedItemSchema.parse(Object.fromEntries(v.data)));
+  .refine((v) => {
+    return issuerSignedItemSchema.parse(Object.fromEntries(v.data));
+  });
 
 /**
  * Type definition for CBOR-encoded issuer-signed items

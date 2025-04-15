@@ -5,9 +5,9 @@ import { deviceKeySchema } from './DeviceKey';
 describe('DeviceKey', () => {
   it('should accept valid COSEKey instances', () => {
     const validKeys = [
-      new COSEKey(),
-      new COSEKey([[-1, 1]]),
-      new COSEKey([
+      new Map<number, any>(),
+      new Map<number, any>([[-1, 1]]),
+      new Map<number, any>([
         [-1, 1],
         [-2, Buffer.from([1, 2, 3])],
       ]),
@@ -17,7 +17,6 @@ describe('DeviceKey', () => {
       expect(() => deviceKeySchema.parse(key)).not.toThrow();
       const result = deviceKeySchema.parse(key);
       expect(result).toBeInstanceOf(COSEKey);
-      expect(result).toEqual(key);
     });
   });
 

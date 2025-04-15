@@ -20,11 +20,15 @@ import { DateTime } from '../../cbor';
  * const result = validityInfoSchema.parse(info); // Returns ValidityInfo
  * ```
  */
-export const validityInfoSchema = z.object({
-  signed: z.instanceof(DateTime),
-  validFrom: z.instanceof(DateTime),
-  validUntil: z.instanceof(DateTime),
-  expectedUpdate: z.instanceof(DateTime).optional(),
+export const validityInfoSchema = z.map(z.any(), z.any()).transform((data) => {
+  return z
+    .object({
+      signed: z.instanceof(DateTime),
+      validFrom: z.instanceof(DateTime),
+      validUntil: z.instanceof(DateTime),
+      expectedUpdate: z.instanceof(DateTime).optional(),
+    })
+    .parse(Object.fromEntries(data));
 });
 
 /**

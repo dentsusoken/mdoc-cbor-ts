@@ -25,14 +25,29 @@ import { ValueDigests, valueDigestsSchema } from './ValueDigests';
  * const result = mobileSecurityObjectSchema.parse(mso); // Returns MobileSecurityObject
  * ```
  */
-export const mobileSecurityObjectSchema = z.object({
-  version: z.literal('1.0'),
-  digestAlgorithm: digestAlgorithmSchema,
-  valueDigests: valueDigestsSchema,
-  deviceKeyInfo: deviceKeyInfoSchema,
-  docType: docTypeSchema,
-  validityInfo: validityInfoSchema,
-});
+export const mobileSecurityObjectSchema = z
+  .map(z.any(), z.any())
+  .transform((v) => {
+    return z
+      .object({
+        version: z.literal('1.0'),
+        digestAlgorithm: digestAlgorithmSchema,
+        valueDigests: valueDigestsSchema,
+        deviceKeyInfo: deviceKeyInfoSchema,
+        docType: docTypeSchema,
+        validityInfo: validityInfoSchema,
+      })
+      .parse(Object.fromEntries(v));
+  });
+
+// z.object({
+//   version: z.literal('1.0'),
+//   digestAlgorithm: digestAlgorithmSchema,
+//   valueDigests: valueDigestsSchema,
+//   deviceKeyInfo: deviceKeyInfoSchema,
+//   docType: docTypeSchema,
+//   validityInfo: validityInfoSchema,
+// });
 
 /**
  * Type definition for mobile security object

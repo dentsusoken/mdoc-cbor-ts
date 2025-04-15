@@ -1,4 +1,5 @@
 import { COSEKey, Sign1 } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { ByteString } from '../../../cbor';
 import { DeviceSigned } from '../../../schemas/mdoc';
 import { BuildProtectedHeaders } from '../common';
@@ -53,7 +54,7 @@ export const createDeviceSignedBuilder: CreateBuilderFunction<
 
     const deviceSigned: DeviceSigned = {
       // TODO: implement
-      nameSpaces: new ByteString({}),
+      nameSpaces: new ByteString(new TypedMap()),
       // TODO: DeviceAuthenticationを実装する
       deviceAuth: {
         // @ts-ignore

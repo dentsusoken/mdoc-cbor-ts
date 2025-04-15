@@ -1,7 +1,9 @@
 import { COSEKey } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { Configuration } from '../../../conf/Configuration';
 import { IssuerNameSpaces } from '../../../schemas/mdoc';
 import { MobileSecurityObject } from '../../../schemas/mso';
+import { KVMap } from '../../../types';
 import { CreateBuilderFunction } from '../CreateBuilder';
 import { BuildValidityInfo } from './BuildValidityInfo';
 import { BuildValueDigests } from './BuildValueDigests';
@@ -21,7 +23,7 @@ export type BuildMobileSecurityObject = (
   docType: string,
   nameSpaces: IssuerNameSpaces,
   deviceKey: COSEKey
-) => Promise<MobileSecurityObject>;
+) => Promise<TypedMap<KVMap<MobileSecurityObject>>>;
 
 /**
  * Parameters for creating a Mobile Security Object builder
@@ -62,19 +64,17 @@ export const createMobileSecurityObjectBuilder: CreateBuilderFunction<
 > =
   ({ configuration, buildValueDigests, buildValidityInfo }) =>
   async (docType: string, nameSpaces: IssuerNameSpaces, deviceKey: COSEKey) => {
-    const mso: MobileSecurityObject = {
-      docType,
-      version: '1.0',
-      digestAlgorithm: configuration.digestAlgorithm,
-      valueDigests: await buildValueDigests(
-        nameSpaces,
-        configuration.digestAlgorithm
-      ),
-      validityInfo: buildValidityInfo(),
-      deviceKeyInfo: {
-        // TODO: encoderを変えてMapをObjectにする
-        deviceKey: Object.fromEntries(deviceKey.entries()),
-      },
-    };
+    const mso = new TypedMap<KVMap<MobileSecurityObject>>();
+    mso.set('version', '1.0');
+    mso.set('docType', docType);
+    mso.set('digestAlgorithm', configuration.digestAlgorithm);
+    mso.set(
+      'valueDigests',
+      await buildValueDigests(nameSpaces, configuration.digestAlgorithm)
+    );
+    mso.set('validityInfo', buildValidityInfo());
+    mso.set('deviceKeyInfo', {
+      deviceKey: Object.fromEntries(deviceKey.esMap),
+    });
     return mso;
   };

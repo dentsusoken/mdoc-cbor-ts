@@ -18,7 +18,6 @@ import { DeviceNameSpaces, deviceNameSpacesSchema } from './DeviceNameSpaces';
  */
 export const deviceNameSpacesBytesSchema = z
   .instanceof(ByteString<TypedMap<KVMap<DeviceNameSpaces>>>)
-  // .refine((v) => console.log('object :>> ', v.data));
   .refine((v) => deviceNameSpacesSchema.parse(Object.fromEntries(v.data)));
 
 /**

@@ -19,10 +19,9 @@ import { DigestIDs, digestIDsSchema } from './DigestIDs';
  * ```
  */
 export const valueDigestsSchema = z
-  .record(nameSpaceSchema, digestIDsSchema)
-  .refine((data) => {
-    return Object.keys(data).length > 0;
-  });
+  .map(nameSpaceSchema, digestIDsSchema)
+  .refine((data) => data.size > 0)
+  .transform((data) => Object.fromEntries(data));
 
 /**
  * Type definition for value digests

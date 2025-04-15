@@ -56,15 +56,16 @@ describe('DateTime', () => {
       };
 
       const encoded = encode(data);
-      const decoded = decode(encoded) as {
-        dateTime1: DateTime;
-        dateTime2: DateTime;
-      };
+      const decoded = decode(encoded) as Map<any, any>;
 
-      expect(decoded.dateTime1).toBeInstanceOf(DateTime);
-      expect(decoded.dateTime2).toBeInstanceOf(DateTime);
-      expect(decoded.dateTime1.toISOString()).toBe('2024-03-20T15:30:00Z');
-      expect(decoded.dateTime2.toISOString()).toBe('2024-03-21T16:45:00Z');
+      expect(decoded.get('dateTime1')).toBeInstanceOf(DateTime);
+      expect(decoded.get('dateTime2')).toBeInstanceOf(DateTime);
+      expect(decoded.get('dateTime1').toISOString()).toBe(
+        '2024-03-20T15:30:00Z'
+      );
+      expect(decoded.get('dateTime2').toISOString()).toBe(
+        '2024-03-21T16:45:00Z'
+      );
     });
   });
 });

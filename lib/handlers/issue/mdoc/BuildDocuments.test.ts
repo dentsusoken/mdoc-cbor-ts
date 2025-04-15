@@ -105,7 +105,7 @@ describe('createDocumentsBuilder', () => {
       docType: 'org.iso.18013.5.1.mDL',
       issuerSigned: {
         nameSpaces: mockIssuerNameSpaces1,
-        issuerAuth: Buffer.from('test-issuer-auth'),
+        issuerAuth: mockIssuerAuth,
       },
       deviceSigned: await mockBuildDeviceSigned(privateKey),
     });

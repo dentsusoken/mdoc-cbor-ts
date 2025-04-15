@@ -1,4 +1,6 @@
+import { TypedMap } from '@jfromaniello/typedmap';
 import { addExtension } from 'cbor-x';
+import { KVMap } from '../types';
 import { decode, encode } from './index';
 
 /**
@@ -14,7 +16,7 @@ import { decode, encode } from './index';
  * console.log(byteString.buffer); // Uint8Array containing CBOR-encoded data
  * ```
  */
-export class ByteString<T = any> {
+export class ByteString<T extends TypedMap<KVMap<any>>> {
   #data: T;
   #buffer: Uint8Array;
 
@@ -24,7 +26,7 @@ export class ByteString<T = any> {
    */
   constructor(data: T) {
     this.#data = data;
-    this.#buffer = encode(this.#data);
+    this.#buffer = encode(this.#data.esMap);
   }
 
   /**
@@ -49,7 +51,9 @@ export class ByteString<T = any> {
    * @returns A new ByteString instance containing the decoded data
    */
   public static fromBuffer(buffer: Uint8Array): ByteString<any> {
-    return new ByteString(decode(buffer));
+    const map = decode(buffer) as Map<any, any>;
+    const tMap = new TypedMap<[any, any]>(map);
+    return new ByteString(tMap);
   }
 }
 
@@ -65,7 +69,7 @@ addExtension({
   encode: (instance: ByteString<any>, encode) => {
     return encode(instance.buffer);
   },
-  decode: (buffer: Uint8Array): Object => {
+  decode: (buffer: Uint8Array) => {
     return ByteString.fromBuffer(buffer);
   },
 });

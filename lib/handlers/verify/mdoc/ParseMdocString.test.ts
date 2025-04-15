@@ -1,4 +1,5 @@
 import { Sign1 } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { ByteString, encode } from '../../../cbor';
 import { DeviceResponse } from '../../../schemas/mdoc';
@@ -8,7 +9,7 @@ describe('parseMdocString', () => {
   const sign1 = new Sign1(
     new Map(),
     new Map(),
-    encode(new ByteString({})),
+    encode(new ByteString(new TypedMap([]))),
     Buffer.from('test-random')
   );
   const mockDeviceResponse: DeviceResponse = {
@@ -19,19 +20,23 @@ describe('parseMdocString', () => {
         issuerSigned: {
           nameSpaces: {
             'org.iso.18013.5.1': [
-              new ByteString({
-                digestID: 0,
-                elementIdentifier: 'test-element',
-                elementValue: 'test-value',
-                random: Buffer.from('test-random'),
-              }),
+              new ByteString(
+                new TypedMap<[any, any]>(
+                  Object.entries({
+                    digestID: 0,
+                    elementIdentifier: 'test-element',
+                    elementValue: 'test-value',
+                    random: Buffer.from('test-random'),
+                  })
+                )
+              ),
             ],
           },
           // @ts-ignore
           issuerAuth: sign1.getContentForEncoding(),
         },
         deviceSigned: {
-          nameSpaces: new ByteString({}),
+          nameSpaces: new ByteString(new TypedMap([])),
           // @ts-ignore
           deviceAuth: {
             // @ts-ignore

@@ -2,6 +2,7 @@ import {
   Algorithms,
   Headers,
   ProtectedHeaders,
+  Sign1,
   UnprotectedHeaders,
 } from '@auth0/cose';
 import { importX509, KeyLike } from 'jose';
@@ -35,13 +36,14 @@ export type ExtractPublicKey = (issuerAuth: IssuerAuth) => Promise<KeyLike>;
  * ```
  */
 export const extractPublicKey: ExtractPublicKey = async (issuerAuth) => {
+  const sign1 = new Sign1(...issuerAuth);
   const protectedHeaders = ProtectedHeaders.from(
-    issuerAuth.protectedHeaders.entries() as Iterable<
+    sign1.protectedHeaders.entries() as Iterable<
       [Headers.Algorithm, Algorithms]
     >
   );
   const unprotectedHeaders = UnprotectedHeaders.from(
-    issuerAuth.unprotectedHeaders.entries() as Iterable<
+    sign1.unprotectedHeaders.entries() as Iterable<
       [Headers.Algorithm, Algorithms]
     >
   );

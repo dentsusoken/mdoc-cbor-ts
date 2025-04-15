@@ -1,7 +1,9 @@
 import { COSEKey } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it, vi } from 'vitest';
 import { ByteString } from '../../../cbor';
 import { Configuration } from '../../../conf/Configuration';
+import { IssuerNameSpaces, IssuerSignedItemBytes } from '../../../schemas/mdoc';
 import { createMobileSecurityObjectBuilder } from './BuildMobileSecurityObject';
 
 describe('createMobileSecurityObjectBuilder', () => {
@@ -32,27 +34,18 @@ describe('createMobileSecurityObjectBuilder', () => {
     const docType = 'org.iso.18013.5.1.mDL';
     const nameSpaces = {
       'org.iso.18013.5.1': [
-        new ByteString({
-          digestID: 1,
-          random: Buffer.from('test-random'),
-          elementIdentifier: 'test-element',
-          elementValue: 'test-value',
-        }),
-      ] as [
-        ByteString<{
-          digestID: number;
-          random: Buffer;
-          elementIdentifier: string;
-          elementValue?: any;
-        }>,
-        ...ByteString<{
-          digestID: number;
-          random: Buffer;
-          elementIdentifier: string;
-          elementValue?: any;
-        }>[],
+        new ByteString(
+          new TypedMap(
+            Object.entries({
+              digestID: 1,
+              random: Buffer.from('test-random'),
+              elementIdentifier: 'test-element',
+              elementValue: 'test-value',
+            })
+          )
+        ) as IssuerSignedItemBytes,
       ],
-    };
+    } as IssuerNameSpaces;
 
     const deviceKey = COSEKey.fromJWK({
       kty: 'EC',
@@ -70,20 +63,24 @@ describe('createMobileSecurityObjectBuilder', () => {
 
     const mso = await builder(docType, nameSpaces, deviceKey);
 
-    expect(mso).toEqual({
-      docType,
-      version: '1.0',
-      digestAlgorithm: 'SHA-256',
-      valueDigests: {
-        'org.iso.18013.5.1': {
-          1: mockDigest,
-        },
-      },
-      validityInfo: mockValidityInfo,
-      deviceKeyInfo: {
-        deviceKey: Object.fromEntries(deviceKey.entries()),
-      },
-    });
+    expect(mso.esMap).toEqual(
+      new TypedMap(
+        Object.entries({
+          docType,
+          version: '1.0',
+          digestAlgorithm: 'SHA-256',
+          valueDigests: {
+            'org.iso.18013.5.1': {
+              1: mockDigest,
+            },
+          },
+          validityInfo: mockValidityInfo,
+          deviceKeyInfo: {
+            deviceKey: Object.fromEntries(deviceKey.entries()),
+          },
+        })
+      ).esMap
+    );
 
     expect(mockBuildValueDigests).toHaveBeenCalledWith(nameSpaces, 'SHA-256');
     expect(mockBuildValidityInfo).toHaveBeenCalled();
@@ -97,48 +94,30 @@ describe('createMobileSecurityObjectBuilder', () => {
     const docType = 'org.iso.18013.5.1.mDL';
     const nameSpaces = {
       'org.iso.18013.5.1': [
-        new ByteString({
-          digestID: 1,
-          random: Buffer.from('test-random-1'),
-          elementIdentifier: 'test-element-1',
-          elementValue: 'test-value-1',
-        }),
-      ] as [
-        ByteString<{
-          digestID: number;
-          random: Buffer;
-          elementIdentifier: string;
-          elementValue?: any;
-        }>,
-        ...ByteString<{
-          digestID: number;
-          random: Buffer;
-          elementIdentifier: string;
-          elementValue?: any;
-        }>[],
+        new ByteString(
+          new TypedMap(
+            Object.entries({
+              digestID: 1,
+              random: Buffer.from('test-random-1'),
+              elementIdentifier: 'test-element-1',
+              elementValue: 'test-value-1',
+            })
+          )
+        ) as IssuerSignedItemBytes,
       ],
       'org.iso.18013.5.2': [
-        new ByteString({
-          digestID: 1,
-          random: Buffer.from('test-random-2'),
-          elementIdentifier: 'test-element-2',
-          elementValue: 'test-value-2',
-        }),
-      ] as [
-        ByteString<{
-          digestID: number;
-          random: Buffer;
-          elementIdentifier: string;
-          elementValue?: any;
-        }>,
-        ...ByteString<{
-          digestID: number;
-          random: Buffer;
-          elementIdentifier: string;
-          elementValue?: any;
-        }>[],
+        new ByteString(
+          new TypedMap(
+            Object.entries({
+              digestID: 1,
+              random: Buffer.from('test-random-2'),
+              elementIdentifier: 'test-element-2',
+              elementValue: 'test-value-2',
+            })
+          )
+        ) as IssuerSignedItemBytes,
       ],
-    };
+    } as IssuerNameSpaces;
 
     const deviceKey = COSEKey.fromJWK({
       kty: 'EC',
@@ -167,16 +146,20 @@ describe('createMobileSecurityObjectBuilder', () => {
 
     const mso = await builder(docType, nameSpaces, deviceKey);
 
-    expect(mso).toEqual({
-      docType,
-      version: '1.0',
-      digestAlgorithm: 'SHA-256',
-      valueDigests: mockValueDigests,
-      validityInfo: mockValidityInfo,
-      deviceKeyInfo: {
-        deviceKey: Object.fromEntries(deviceKey.entries()),
-      },
-    });
+    expect(mso.esMap).toEqual(
+      new TypedMap(
+        Object.entries({
+          docType,
+          version: '1.0',
+          digestAlgorithm: 'SHA-256',
+          valueDigests: mockValueDigests,
+          validityInfo: mockValidityInfo,
+          deviceKeyInfo: {
+            deviceKey: Object.fromEntries(deviceKey.entries()),
+          },
+        })
+      ).esMap
+    );
 
     expect(mockBuildValueDigests).toHaveBeenCalledWith(nameSpaces, 'SHA-256');
     expect(mockBuildValidityInfo).toHaveBeenCalled();

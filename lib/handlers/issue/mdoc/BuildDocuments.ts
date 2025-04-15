@@ -68,9 +68,7 @@ export const createDocumentsBuilder: CreateBuilderFunction<
           docType,
           issuerSigned: {
             nameSpaces: issuerNameSpaces,
-            // @ts-ignore
-            // TODO: 型をちゃんとつける
-            issuerAuth: issuerAuth.getContentForEncoding(),
+            issuerAuth: issuerAuth,
           },
           deviceSigned: await buildDeviceSigned(privateKey),
         };

@@ -17,10 +17,9 @@ import { DigestID, digestIDSchema } from './DigestID';
  * ```
  */
 export const digestIDsSchema = z
-  .record(digestIDSchema, digestSchema)
-  .refine((data) => {
-    return Object.keys(data).length > 0;
-  });
+  .map(digestIDSchema, digestSchema)
+  .refine((data) => data.size > 0)
+  .transform((data) => Object.fromEntries(data));
 
 /**
  * Type definition for digest IDs

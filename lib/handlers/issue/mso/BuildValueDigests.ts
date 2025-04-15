@@ -60,10 +60,8 @@ export const createValueDigestsBuilder: CreateBuilderFunction<
     for (const [namespace, elements] of Object.entries(nameSpaces)) {
       valueDigests[namespace] = {};
       for (const element of elements) {
-        valueDigests[namespace][element.data.digestID] = await calculateDigest(
-          configuration.digestAlgorithm,
-          element
-        );
+        valueDigests[namespace][element.data.get('digestID')!] =
+          await calculateDigest(configuration.digestAlgorithm, element);
       }
     }
 

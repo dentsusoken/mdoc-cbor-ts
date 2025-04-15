@@ -1,4 +1,5 @@
 import { Mac0, Sign1 } from '@auth0/cose';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { ByteString } from '../../cbor';
 import { deviceSignedSchema } from './DeviceSigned';
@@ -19,14 +20,14 @@ describe('DeviceSigned', () => {
     );
     const validData = [
       new Map<any, any>([
-        ['nameSpaces', new ByteString(new Map())],
+        ['nameSpaces', new ByteString(new TypedMap([]))],
         [
           'deviceAuth',
           new Map([['deviceSignature', sign1.getContentForEncoding()]]),
         ],
       ]),
       new Map<any, any>([
-        ['nameSpaces', new ByteString(new Map())],
+        ['nameSpaces', new ByteString(new TypedMap([]))],
         ['deviceAuth', new Map([['deviceMac', mac0.getContentForEncoding()]])],
       ]),
     ];
@@ -56,12 +57,6 @@ describe('DeviceSigned', () => {
       Buffer.from([]),
       Buffer.from([])
     );
-    const mac0 = new Mac0(
-      Buffer.from([]),
-      new Map<number, string>([[1, 'value']]),
-      Buffer.from([]),
-      Buffer.from([])
-    );
     const invalidInputs = [
       null,
       undefined,
@@ -77,11 +72,11 @@ describe('DeviceSigned', () => {
         },
       },
       {
-        nameSpaces: new ByteString({}),
+        nameSpaces: new ByteString(new TypedMap([])),
         deviceAuth: null,
       },
       {
-        nameSpaces: new ByteString({}),
+        nameSpaces: new ByteString(new TypedMap([])),
         deviceAuth: {
           deviceSignature: null,
         },

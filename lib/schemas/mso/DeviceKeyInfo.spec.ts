@@ -4,25 +4,29 @@ import { deviceKeyInfoSchema } from './DeviceKeyInfo';
 
 describe('DeviceKeyInfo', () => {
   it('should accept valid device key info with required fields', () => {
-    const validKeyInfo = {
-      deviceKey: new COSEKey([]),
-    };
+    const validKeyInfo = new Map([['deviceKey', new Map<number, any>()]]);
 
     expect(() => deviceKeyInfoSchema.parse(validKeyInfo)).not.toThrow();
     const result = deviceKeyInfoSchema.parse(validKeyInfo);
-    expect(result).toEqual(validKeyInfo);
+    expect(result).toEqual({
+      deviceKey: new COSEKey([]),
+    });
   });
 
   it('should accept valid device key info with all fields', () => {
-    const validKeyInfo = {
-      deviceKey: new COSEKey([]),
-      keyAuthorizations: {},
-      keyInfo: {},
-    };
+    const validKeyInfo = new Map([
+      ['deviceKey', new Map<number, any>()],
+      ['keyAuthorizations', new Map()],
+      ['keyInfo', new Map()],
+    ]);
 
     expect(() => deviceKeyInfoSchema.parse(validKeyInfo)).not.toThrow();
     const result = deviceKeyInfoSchema.parse(validKeyInfo);
-    expect(result).toEqual(validKeyInfo);
+    expect(result).toEqual({
+      deviceKey: new COSEKey([]),
+      keyAuthorizations: {},
+      keyInfo: {},
+    });
   });
 
   it('should throw error for invalid input', () => {
@@ -34,15 +38,15 @@ describe('DeviceKeyInfo', () => {
       'string',
       [1, 2, 3],
       {},
-      {
-        keyAuthorizations: {},
-        keyInfo: {},
-      },
-      {
-        deviceKey: {},
-        keyAuthorizations: {},
-        keyInfo: {},
-      },
+      new Map([
+        ['keyAuthorizations', new Map()],
+        ['keyInfo', new Map()],
+      ]),
+      new Map<string, any>([
+        ['deviceKey', {}],
+        ['keyAuthorizations', new Map()],
+        ['keyInfo', new Map()],
+      ]),
     ];
 
     invalidInputs.forEach((input) => {

@@ -1,4 +1,4 @@
-import { decode } from 'cbor-x';
+import { decode } from '../../../cbor';
 import { DeviceResponse, deviceResponseSchema } from '../../../schemas/mdoc';
 
 /**

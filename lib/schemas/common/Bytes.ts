@@ -15,12 +15,7 @@ import { z } from 'zod';
  */
 export const bytesSchema = z.union([
   z.instanceof(Buffer),
-  z
-    .instanceof(Uint8Array)
-    .refine((bytes) => !(bytes instanceof Buffer))
-    .transform((bytes) => {
-      return Buffer.from(bytes.buffer);
-    }),
+  z.instanceof(Uint8Array).transform((v) => Buffer.from(v)),
 ]);
 
 /**

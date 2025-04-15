@@ -1,3 +1,4 @@
+import { Sign1 } from '@auth0/cose';
 import { IssuerNameSpaces } from '../../../schemas/mdoc';
 import { IssuerAuth } from '../../../schemas/mso';
 import { extractPublicKey } from './ExtractPublicKey';
@@ -30,9 +31,13 @@ export class MSOVerifyHandlerImpl implements MSOVerifyHandler {
       issuerAuth: IssuerAuth,
       issuerNameSpaces: IssuerNameSpaces
     ) => {
-      const publicKey = await extractPublicKey(issuerAuth);
-      await issuerAuth.verify(publicKey);
-      await verifyDigest(issuerAuth, issuerNameSpaces);
+      try {
+        const publicKey = await extractPublicKey(issuerAuth);
+        await new Sign1(...issuerAuth).verify(publicKey);
+        await verifyDigest(issuerAuth, issuerNameSpaces);
+      } catch (e) {
+        throw e;
+      }
     };
   }
 }

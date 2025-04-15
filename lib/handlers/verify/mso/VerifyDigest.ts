@@ -3,6 +3,7 @@ import { IssuerNameSpaces } from '../../../schemas/mdoc';
 import {
   IssuerAuth,
   mobileSecurityObjectBytesSchema,
+  mobileSecurityObjectSchema,
 } from '../../../schemas/mso';
 import { calculateDigest } from '../../../utils/calculateDigest';
 
@@ -38,14 +39,15 @@ export const verifyDigest: VerifyDigest = async (
   issuerAuth,
   issuerNameSpaces
 ) => {
-  const { payload } = issuerAuth;
-  const mso = mobileSecurityObjectBytesSchema.parse(decode(payload));
-  const { digestAlgorithm, valueDigests } = mso.data;
+  const payload = issuerAuth[2];
+  const msoByte = mobileSecurityObjectBytesSchema.parse(decode(payload));
+  const mso = mobileSecurityObjectSchema.parse(msoByte.data.esMap);
+  const { digestAlgorithm, valueDigests } = mso;
   for (const [namespace, issuerSignedItems] of Object.entries(
     issuerNameSpaces
   )) {
     for (const issuerSignedItem of issuerSignedItems) {
-      const { digestID } = issuerSignedItem.data;
+      const digestID = issuerSignedItem.data.get('digestID')!;
       const actual = await calculateDigest(digestAlgorithm, issuerSignedItem);
       const expected = valueDigests[namespace][digestID];
       if (!actual.equals(expected)) {

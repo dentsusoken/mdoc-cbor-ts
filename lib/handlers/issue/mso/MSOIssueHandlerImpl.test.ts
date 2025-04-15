@@ -1,10 +1,10 @@
 import { Algorithms, COSEKey, Sign1 } from '@auth0/cose';
-import crypto from 'crypto';
+import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { X509Adapter } from '../../../adapters/X509Adapter';
-import { ByteString, encode } from '../../../cbor';
+import { ByteString } from '../../../cbor';
 import { Configuration } from '../../../conf/Configuration';
-import { IssuerNameSpaces } from '../../../schemas/mdoc';
+import { IssuerNameSpaces, IssuerSignedItemBytes } from '../../../schemas/mdoc';
 import { MSOIssueHandlerImpl } from './MSOIssueHandlerImpl';
 
 describe('MSOIssueHandlerImpl', async () => {
@@ -39,14 +39,16 @@ describe('MSOIssueHandlerImpl', async () => {
   describe('issue', () => {
     it('should issue a certificate', async () => {
       const msoIssueHandler = new MSOIssueHandlerImpl(config, x509Adapter);
+
+      const ent = Object.entries({
+        random: Buffer.from(crypto.getRandomValues(new Uint8Array(16))),
+        digestID: 38,
+        elementValue: 'JAN',
+        elementIdentifier: 'given_name',
+      });
       const nameSpaces: IssuerNameSpaces = {
         'org.iso.18013.5.1': [
-          new ByteString({
-            random: Buffer.from(crypto.getRandomValues(new Uint8Array(16))),
-            digestID: 38,
-            elementValue: 'JAN',
-            elementIdentifier: 'given_name',
-          }),
+          new ByteString(new TypedMap(ent)) as IssuerSignedItemBytes,
         ],
       };
       const { publicKey } = await COSEKey.generate(Algorithms.ES256, {
@@ -57,11 +59,7 @@ describe('MSOIssueHandlerImpl', async () => {
         nameSpaces,
         publicKey
       );
-      console.log(
-        'issuerAuth :>> ',
-        encode(issuerAuth.getContentForEncoding())
-      );
-      expect(issuerAuth).toBeInstanceOf(Sign1);
+      expect(new Sign1(...issuerAuth)).toBeInstanceOf(Sign1);
     });
   });
 });

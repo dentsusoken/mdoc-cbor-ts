@@ -3,7 +3,11 @@ import { X509Adapter } from '../../../adapters/X509Adapter';
 import { ByteString, encode } from '../../../cbor';
 import { Configuration } from '../../../conf/Configuration';
 import { IssuerNameSpaces } from '../../../schemas/mdoc';
-import { IssuerAuth, MobileSecurityObjectBytes } from '../../../schemas/mso';
+import {
+  IssuerAuth,
+  issuerAuthSchema,
+  MobileSecurityObjectBytes,
+} from '../../../schemas/mso';
 import { buildProtectedHeaders } from '../common/BuildProtectedHeaders';
 import { buildUnprotectedHeaders } from '../common/BuildUnprotectedHeaders';
 import { createMobileSecurityObjectBuilder } from './BuildMobileSecurityObject';
@@ -66,12 +70,15 @@ export class MSOIssueHandlerImpl implements MSOIssueHandler {
       const unprotectedHeaders = buildUnprotectedHeaders(
         this.#x509Adapter.certificate
       );
-      return await Sign1.sign(
+
+      const sign1 = await Sign1.sign(
         protectedHeaders,
         unprotectedHeaders,
         encode(msoBytes),
         await this.#x509Adapter.privateKey.toKeyLike()
       );
+
+      return issuerAuthSchema.parse(sign1.getContentForEncoding());
     };
   }
 }
