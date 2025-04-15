@@ -58,9 +58,7 @@ import { MdocVerifyHandlerImpl } from 'mdoc-cbor-ts';
 
 // Define name space schemas for document validation
 const nameSpaceSchemas = {
-  'org.iso.18013.5.1.mDL': {
-    // Your mDL name space schema
-  },
+  'org.iso.18013.5.1': zodSchemaForNamespace,
 };
 
 // Create MDOC verification handler
