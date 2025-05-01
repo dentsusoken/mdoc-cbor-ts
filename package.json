@@ -20,27 +20,32 @@
     "dev": "vite",
     "build": "vite build && tsc --project tsconfig.build.json",
     "prepare": "npm run build",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "test:coverage": "vitest --coverage"
+    "test": "vitest run",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint ./lib --ext .ts",
+    "lint:fix": "eslint ./lib --ext .ts --fix"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
     "@types/luxon": "^3.4.2",
     "@types/node": "^22.5.5",
-    "@typescript-eslint/eslint-plugin": "^7.5.0",
-    "@typescript-eslint/parser": "^7.5.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
     "@vitest/coverage-v8": "^2.1.1",
-    "eslint": "^8.57.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "globals": "^16.0.0",
     "typescript": "^5.4.5",
     "vite": "^5.2.10",
     "vitest": "^2.1.1"
   },
   "dependencies": {
     "@auth0/cose": "^1.0.2",
-    "@peculiar/asn1-x509": "^2.3.13",
-    "@peculiar/x509": "^1.12.3",
+    "@jfromaniello/typedmap": "^1.4.1",
     "cbor-x": "^1.6.0",
     "hono": "^4.6.3",
-    "luxon": "^3.5.0"
+    "luxon": "^3.5.0",
+    "zod": "^3.24.2"
   }
 }

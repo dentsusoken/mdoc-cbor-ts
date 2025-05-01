@@ -13,7 +13,13 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: ['@auth0/cose', 'cbor-x', 'crypto', 'node:buffer'],
+      external: [
+        '@auth0/cose',
+        'cbor-x',
+        'crypto',
+        'node:buffer',
+        'node:crypto',
+      ],
     },
   },
   test: {
@@ -24,5 +30,6 @@ export default defineConfig({
       include: ['lib/**/*.ts'],
       exclude: ['lib/index.ts', 'lib/**/*.test.ts', 'lib/**/*.spec.ts'],
     },
+    environment: 'edge-runtime',
   },
 });
