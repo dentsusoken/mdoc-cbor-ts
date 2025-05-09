@@ -1,5 +1,6 @@
 import { TypedMap } from '@jfromaniello/typedmap';
 import { Tag } from 'cbor-x';
+import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 import { ByteString } from '../../../cbor';
 import { Configuration } from '../../../conf/Configuration';

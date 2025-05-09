@@ -1,4 +1,5 @@
 import { TypedMap } from '@jfromaniello/typedmap';
+import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 import { ByteString, encode } from '../cbor';
 import { DigestAlgorithm } from '../schemas/mso';

@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { decode } from '../../../cbor';
 import { DeviceResponse, deviceResponseSchema } from '../../../schemas/mdoc';
 

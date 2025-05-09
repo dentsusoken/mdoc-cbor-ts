@@ -1,4 +1,5 @@
 import { Decoder, Encoder, Options } from 'cbor-x';
+import { Buffer } from 'node:buffer';
 
 export * from './ByteString';
 export * from './DateOnly';
