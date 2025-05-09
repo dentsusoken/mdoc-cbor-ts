@@ -16,7 +16,7 @@ export default defineConfig({
       external: [
         '@auth0/cose',
         'cbor-x',
-        'crypto',
+        'node:crypto',
         'node:buffer',
         'node:crypto',
       ],

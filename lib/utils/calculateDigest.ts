@@ -1,6 +1,8 @@
-import crypto from 'crypto';
+import { TypedMap } from '@jfromaniello/typedmap';
+import crypto from 'node:crypto';
 import { ByteString, encode } from '../cbor';
 import { DigestAlgorithm } from '../schemas/mso';
+import { KVMap } from '../types';
 
 /**
  * Calculates a digest of the provided data using the specified algorithm
@@ -19,9 +21,9 @@ import { DigestAlgorithm } from '../schemas/mso';
  * const digest = await calculateDigest('SHA-256', data);
  * ```
  */
-export const calculateDigest = async (
+export const calculateDigest = async <T extends TypedMap<KVMap<any>>>(
   algorithm: DigestAlgorithm,
-  data: ByteString
+  data: ByteString<T>
 ): Promise<Buffer> => {
   return Buffer.from(await crypto.subtle.digest(algorithm, encode(data)));
 };
