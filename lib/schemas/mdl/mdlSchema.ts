@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DateOnly, DateTime } from '../../cbor';
+import { DateOnly } from '../../cbor';
 import { bytesSchema } from '../common';
 
 /**
