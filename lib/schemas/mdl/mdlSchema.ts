@@ -36,19 +36,25 @@ export const codeSchema = z.object({
  * ```typescript
  * const privileges = {
  *   vehicle_category_code: "B",
- *   issue_date: new DateTime(),
- *   expiry_date: new DateTime(),
+ *   issue_date: new DateOnly(),
+ *   expiry_date: new DateOnly(),
  *   codes: [{ code: "A" }]
  * };
  * const result = drivingPrivilegesSchema.parse(privileges);
  * ```
  */
-export const drivingPrivilegesSchema = z.object({
-  vehicle_category_code: z.string(),
-  issue_date: z.instanceof(DateTime).optional(),
-  expiry_date: z.instanceof(DateTime).optional(),
-  codes: z.array(codeSchema),
-});
+export const drivingPrivilegesSchema = z
+  .map(z.string(), z.unknown())
+  .transform((v) => {
+    return z
+      .object({
+        vehicle_category_code: z.string(),
+        issue_date: z.instanceof(DateOnly).optional(),
+        expiry_date: z.instanceof(DateOnly).optional(),
+        codes: z.array(codeSchema).optional(),
+      })
+      .parse(Object.fromEntries(v));
+  });
 
 /**
  * Schema for age verification flags
@@ -182,9 +188,9 @@ export const overAgeSchema = z
  * const mdl = {
  *   family_name: "Doe",
  *   given_name: "John",
- *   birth_date: new DateTime(),
- *   issue_date: new DateTime(),
- *   expiry_date: new DateTime(),
+ *   birth_date: new DateOnly(),
+ *   issue_date: new DateOnly(),
+ *   expiry_date: new DateOnly(),
  *   // ... other required fields ...
  * };
  * const result = mdlSchema.parse(mdl);
@@ -194,9 +200,9 @@ export const mdlSchema = z
   .object({
     family_name: z.string(),
     given_name: z.string(),
-    birth_date: z.instanceof(DateTime),
-    issue_date: z.instanceof(DateTime),
-    expiry_date: z.instanceof(DateTime),
+    birth_date: z.instanceof(DateOnly),
+    issue_date: z.instanceof(DateOnly),
+    expiry_date: z.instanceof(DateOnly),
     issuing_country: z.string(),
     issuing_authority: z.string(),
     document_number: z.string(),
