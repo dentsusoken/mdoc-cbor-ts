@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { DeviceResponse } from '../../../schemas/mdoc';
 import { CreateBuilderFunction } from '../../issue/CreateBuilder';
-import { ValidDocuments } from './MdocVerifyHandler';
+import { ValidDocuments, ValidDocumentsList } from './MdocVerifyHandler';
 
 /**
  * Type definition for name space validation schemas
@@ -22,7 +22,7 @@ export type NameSpaceSchemas = {
  */
 export type VerifyNameSpacesSchema = (
   deviceResponse: DeviceResponse
-) => Promise<ValidDocuments>;
+) => Promise<ValidDocumentsList>;
 
 /**
  * Parameters for creating a name space schema verifier
@@ -65,11 +65,13 @@ export type CreateVerifyNameSpacesSchema = CreateBuilderFunction<
 export const createVerifyNameSpacesSchema: CreateVerifyNameSpacesSchema =
   ({ schemas }) =>
   async (deviceResponse) => {
-    const validDocuments: ValidDocuments = {};
+    const validDocumentList: ValidDocumentsList = [];
+
     if (!deviceResponse.documents) {
       throw new Error('No documents found');
     }
     for (const document of deviceResponse.documents) {
+      const validDocuments: ValidDocuments = {};
       const docType = document.docType;
       const nameSpaces = document.issuerSigned.nameSpaces;
 
@@ -90,6 +92,7 @@ export const createVerifyNameSpacesSchema: CreateVerifyNameSpacesSchema =
         const schema = schemas[nameSpace].partial().strict();
         schema.parse(validDocuments[docType][nameSpace]);
       }
+      validDocumentList.push(validDocuments);
     }
-    return validDocuments;
+    return validDocumentList;
   };

@@ -21,6 +21,8 @@ export type ValidDocuments = {
   [docType: string]: ValidNameSpace;
 };
 
+export type ValidDocumentsList = ValidDocuments[];
+
 /**
  * Type definition for MDOC verification result
  * @description
@@ -29,7 +31,7 @@ export type ValidDocuments = {
  * valid flag set to false.
  */
 export type MdocVerifyResult =
-  | { valid: true; documents: ValidDocuments }
+  | { valid: true; documents: ValidDocumentsList }
   | { valid: false };
 
 /**
