@@ -63,13 +63,15 @@ describe('createVerifyNameSpacesSchema', () => {
 
     const result = await verifier(mockDeviceResponse);
 
-    expect(result).toEqual({
-      'org.iso.18013.5.1.mDL': {
-        'org.iso.18013.5.1': {
-          'test-element': 'test-value',
+    expect(result).toEqual([
+      {
+        'org.iso.18013.5.1.mDL': {
+          'org.iso.18013.5.1': {
+            'test-element': 'test-value',
+          },
         },
       },
-    });
+    ]);
   });
 
   it('should throw error when no documents found', async () => {
@@ -123,13 +125,15 @@ describe('createVerifyNameSpacesSchema', () => {
     // @ts-ignore
     const result = await verifier(responseWithUnknownNamespace);
 
-    expect(result).toEqual({
-      'org.iso.18013.5.1.mDL': {
-        'unknown.namespace': {
-          'test-element': 'test-value',
+    expect(result).toEqual([
+      {
+        'org.iso.18013.5.1.mDL': {
+          'unknown.namespace': {
+            'test-element': 'test-value',
+          },
         },
       },
-    });
+    ]);
   });
 
   it('should throw error when schema validation fails', async () => {

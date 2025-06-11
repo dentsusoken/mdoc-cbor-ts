@@ -1,25 +1,25 @@
 import { describe, expect, it } from 'vitest';
-import { DateOnly, DateTime } from '../../cbor';
+import { DateOnly } from '../../cbor';
 import { mdlSchema } from './mdlSchema';
 
 describe('mdlSchema', () => {
   const validData = {
     family_name: 'Doe',
     given_name: 'John',
-    birth_date: new DateTime(),
-    issue_date: new DateTime(),
-    expiry_date: new DateTime(),
+    birth_date: new DateOnly(),
+    issue_date: new DateOnly(),
+    expiry_date: new DateOnly(),
     issuing_country: 'JPN',
     issuing_authority: 'Police',
     document_number: '123456789',
     portrait: Buffer.from('test-portrait'),
     driving_privileges: [
-      {
-        vehicle_category_code: 'B',
-        issue_date: new DateTime(),
-        expiry_date: new DateTime(),
-        codes: [{ code: 'A' }],
-      },
+      new Map<string, unknown>([
+        ['vehicle_category_code', 'B'],
+        ['issue_date', new DateOnly()],
+        ['expiry_date', new DateOnly()],
+        ['codes', [{ code: 'A' }]],
+      ]),
     ],
     un_distinguishing_sign: 'J',
     administrative_number: 'ADMIN123',
@@ -53,7 +53,19 @@ describe('mdlSchema', () => {
     const result = mdlSchema.safeParse(validData);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data).toEqual(validData);
+      const expected = {
+        ...validData,
+        driving_privileges: validData.driving_privileges.map((priv) =>
+          Object.fromEntries(priv)
+        ),
+      };
+      const actual = {
+        ...result.data,
+        driving_privileges: validData.driving_privileges.map((priv) =>
+          Object.fromEntries(priv)
+        ),
+      };
+      expect(actual).toEqual(expected);
     }
   });
 
@@ -120,12 +132,12 @@ describe('mdlSchema', () => {
     const validPrivileges = {
       ...validData,
       driving_privileges: [
-        {
-          vehicle_category_code: 'B',
-          issue_date: new DateTime(),
-          expiry_date: new DateTime(),
-          codes: [{ code: 'A', sign: '>', value: '18' }],
-        },
+        new Map<string, unknown>([
+          ['vehicle_category_code', 'B'],
+          ['issue_date', new DateOnly()],
+          ['expiry_date', new DateOnly()],
+          ['codes', [{ code: 'A', sign: '>', value: '18' }]],
+        ]),
       ],
     };
 
@@ -137,8 +149,8 @@ describe('mdlSchema', () => {
       driving_privileges: [
         {
           vehicle_category_code: 123, // number instead of string
-          issue_date: new DateTime(),
-          expiry_date: new DateTime(),
+          issue_date: new DateOnly(),
+          expiry_date: new DateOnly(),
           codes: [{ code: 'A' }],
         },
       ],
