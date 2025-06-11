@@ -3,20 +3,20 @@ import { describe, expect, it, vi } from 'vitest';
 import { ByteString } from '../../../cbor';
 import { Configuration } from '../../../conf/Configuration';
 import { createIssuerNameSpacesBuilder } from './BuildIssuerNameSpaces';
+import { TypedMap } from '@jfromaniello/typedmap';
 
 describe('createIssuerNameSpacesBuilder', () => {
   const mockRandom = crypto.getRandomValues(new Uint8Array(32));
 
   beforeEach(() => {
-    // @ts-ignore
-    global.crypto = {
+    vi.stubGlobal('crypto', {
       getRandomValues: vi.fn().mockReturnValue(mockRandom),
-    };
+    });
   });
 
   afterEach(() => {
-    // @ts-ignore
-    global.crypto = crypto;
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('should create issuer name spaces', () => {
@@ -40,14 +40,14 @@ describe('createIssuerNameSpacesBuilder', () => {
 
     expect(issuerNameSpaces).toEqual({
       'org.iso.18013.5.1': [
-        new ByteString({
-          data: {
-            random: mockRandom,
-            digestID: 0,
-            elementIdentifier: 'test-element',
-            elementValue: 123,
-          },
-        }),
+        new ByteString(
+          new TypedMap([
+            ['random', mockRandom],
+            ['digestID', 0],
+            ['elementIdentifier', 'test-element'],
+            ['elementValue', 123],
+          ])
+        ),
       ],
     });
   });
@@ -73,18 +73,22 @@ describe('createIssuerNameSpacesBuilder', () => {
 
     expect(issuerNameSpaces).toEqual({
       'org.iso.18013.5.1': [
-        new ByteString({
-          random: mockRandom,
-          digestID: 0,
-          elementIdentifier: 'test-element-1',
-          elementValue: 123,
-        }),
-        new ByteString({
-          random: mockRandom,
-          digestID: 1,
-          elementIdentifier: 'test-element-2',
-          elementValue: 456,
-        }),
+        new ByteString(
+          new TypedMap([
+            ['random', mockRandom],
+            ['digestID', 0],
+            ['elementIdentifier', 'test-element-1'],
+            ['elementValue', 123],
+          ])
+        ),
+        new ByteString(
+          new TypedMap([
+            ['random', mockRandom],
+            ['digestID', 1],
+            ['elementIdentifier', 'test-element-2'],
+            ['elementValue', 456],
+          ])
+        ),
       ],
     });
   });
@@ -112,20 +116,24 @@ describe('createIssuerNameSpacesBuilder', () => {
 
     expect(issuerNameSpaces).toEqual({
       'org.iso.18013.5.1': [
-        new ByteString({
-          random: mockRandom,
-          digestID: 0,
-          elementIdentifier: 'test-element-1',
-          elementValue: 123,
-        }),
+        new ByteString(
+          new TypedMap([
+            ['random', mockRandom],
+            ['digestID', 0],
+            ['elementIdentifier', 'test-element-1'],
+            ['elementValue', 123],
+          ])
+        ),
       ],
       'org.iso.18013.5.2': [
-        new ByteString({
-          random: mockRandom,
-          digestID: 1,
-          elementIdentifier: 'test-element-2',
-          elementValue: 456,
-        }),
+        new ByteString(
+          new TypedMap([
+            ['random', mockRandom],
+            ['digestID', 1],
+            ['elementIdentifier', 'test-element-2'],
+            ['elementValue', 456],
+          ])
+        ),
       ],
     });
   });
@@ -147,12 +155,14 @@ describe('createIssuerNameSpacesBuilder', () => {
 
     expect(issuerNameSpaces).toEqual({
       'org.iso.18013.5.1': [
-        new ByteString({
-          random: mockRandom,
-          digestID: 0,
-          elementIdentifier: 'test-element',
-          elementValue: 'test-value',
-        }),
+        new ByteString(
+          new TypedMap([
+            ['random', mockRandom],
+            ['digestID', 0],
+            ['elementIdentifier', 'test-element'],
+            ['elementValue', 'test-value'],
+          ])
+        ),
       ],
     });
   });
