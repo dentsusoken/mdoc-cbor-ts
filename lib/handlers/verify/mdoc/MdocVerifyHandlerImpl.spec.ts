@@ -24,5 +24,11 @@ describe('MSOVerifyHandlerImpl', () => {
       const result = await mdocVerifyHandler.verify(mdoc);
       expect(result.valid).toBe(true);
     });
+
+    it('should verify IssuerSigned mdoc', async () => {
+      const mdocVerifyHandler = new MdocVerifyHandlerImpl(schemas);
+      const result = await mdocVerifyHandler.verify(mdoc);
+      expect(result.valid).toBe(true);
+    });
   });
 });

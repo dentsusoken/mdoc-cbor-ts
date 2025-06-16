@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon';
 import { decode } from '../../../cbor';
 import { IssuerNameSpaces } from '../../../schemas/mdoc';
 import {
@@ -42,6 +43,16 @@ export const verifyDigest: VerifyDigest = async (
   const payload = issuerAuth[2];
   const msoByte = mobileSecurityObjectBytesSchema.parse(decode(payload));
   const mso = mobileSecurityObjectSchema.parse(msoByte.data.esMap);
+
+  const validFrom = mso.validityInfo.validFrom.getTime();
+  const validUntil = mso.validityInfo.validUntil.getTime();
+  if (validFrom !== validUntil) {
+    const now = Date.now();
+    if (now < validFrom || now > validUntil) {
+      throw new Error('MSO is not valid at the current time');
+    }
+  }
+
   const { digestAlgorithm, valueDigests } = mso;
   for (const [namespace, issuerSignedItems] of Object.entries(
     issuerNameSpaces

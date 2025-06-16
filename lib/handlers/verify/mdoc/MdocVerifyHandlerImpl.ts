@@ -38,7 +38,26 @@ export class MdocVerifyHandlerImpl implements MdocVerifyHandler {
         }
         for (const document of deviceResponse.documents) {
           const { issuerAuth, nameSpaces } = document.issuerSigned;
-          await msoVerifyHandler.verify(issuerAuth, nameSpaces);
+          if (issuerAuth) {
+            await msoVerifyHandler.verify(issuerAuth, nameSpaces);
+          } else {
+            for (const [nameSpace, elements] of Object.entries(nameSpaces)) {
+              const schema = schemas[nameSpace];
+              if (schema) {
+                schema
+                  .partial()
+                  .strict()
+                  .parse(
+                    Object.fromEntries(
+                      elements.map((e) => [
+                        e.data.get('elementIdentifier'),
+                        e.data.get('elementValue'),
+                      ])
+                    )
+                  );
+              }
+            }
+          }
         }
         const nameSpaces = await verifyNameSpacesSchema(deviceResponse);
 

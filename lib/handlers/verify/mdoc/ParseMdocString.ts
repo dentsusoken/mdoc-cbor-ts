@@ -8,7 +8,9 @@ import { DeviceResponse, deviceResponseSchema } from '../../../schemas/mdoc';
  * A function type that takes an MDOC string and returns a parsed DeviceResponse.
  * The function attempts to decode the string using various encoding formats.
  */
-export type ParseMdocString = (mdoc: string) => DeviceResponse;
+export type ParseMdocString = (
+  mdoc: string | Uint8Array | Buffer
+) => DeviceResponse;
 
 /**
  * Supported encoding types for MDOC strings
@@ -34,6 +36,10 @@ export const MDOC_ENCODING_TYPES = ['base64url', 'base64', 'hex'] as const;
  * ```
  */
 export const parseMdocString: ParseMdocString = (mdoc) => {
+  if (mdoc instanceof Uint8Array || Buffer.isBuffer(mdoc)) {
+    const decoded = decode(mdoc);
+    return deviceResponseSchema.parse(decoded);
+  }
   for (const encodingType of MDOC_ENCODING_TYPES) {
     try {
       const buffer = Buffer.from(mdoc, encodingType);

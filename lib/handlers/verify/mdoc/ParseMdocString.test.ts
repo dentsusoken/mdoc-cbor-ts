@@ -78,6 +78,19 @@ describe('parseMdocString', () => {
     expect(() => parseMdocString(mdoc)).not.toThrow();
   });
 
+  it('should parse Uint8Array mdoc', () => {
+    const mdocBuffer = encode(mockDeviceResponse);
+    const mdoc = new Uint8Array(mdocBuffer);
+
+    expect(() => parseMdocString(mdoc)).not.toThrow();
+  });
+
+  it('should parse Buffer mdoc', () => {
+    const mdocBuffer = encode(mockDeviceResponse);
+
+    expect(() => parseMdocString(mdocBuffer)).not.toThrow();
+  });
+
   it('should throw error for invalid mdoc string', () => {
     const invalidMdoc = 'invalid-mdoc-string';
     expect(() => parseMdocString(invalidMdoc)).toThrow('Invalid mdoc string');
