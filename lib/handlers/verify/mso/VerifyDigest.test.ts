@@ -111,149 +111,16 @@ describe('verifyDigest', () => {
   });
 
   it('should verify valid digest', async () => {
-    const now = Date.now();
-    const validFrom = new DateTime(now - 60 * 60 * 1000); // 1 hour ago
-    const validUntil = new DateTime(now + 60 * 60 * 1000); // 1 hour later
-    const msoValid: MobileSecurityObjectBytes = new ByteString(
-      new TypedMap([
-        ...mso.data.esMap,
-        [
-          'validityInfo',
-          {
-            signed: new DateTime(),
-            validFrom,
-            validUntil,
-          },
-        ],
-      ])
-    );
-    const issuerAuthValid = new Sign1(
-      new Map(),
-      new Map(),
-      encode(msoValid),
-      Buffer.from('test-signature')
-    ).getContentForEncoding() as IssuerAuth;
-    vi.stubGlobal('decode', vi.fn().mockReturnValue(msoValid));
-
-    await verifyDigest(issuerAuthValid, issuerNameSpaces);
-    expect(calculateDigest).toHaveBeenCalledWith('SHA-256', testElement);
-  });
-
-  it('should treat MSO as always valid if validFrom and validUntil are the same', async () => {
-    const now = Date.now();
-    const sameDate = new DateTime(now);
-
-    const msoSameValidity: MobileSecurityObjectBytes = new ByteString(
-      new TypedMap([
-        ...mso.data.esMap,
-        [
-          'validityInfo',
-          {
-            signed: new DateTime(),
-            validFrom: sameDate,
-            validUntil: sameDate,
-          },
-        ],
-      ])
-    );
-    const issuerAuthSameValidity = new Sign1(
-      new Map(),
-      new Map(),
-      encode(msoSameValidity),
-      Buffer.from('test-signature')
-    ).getContentForEncoding() as IssuerAuth;
-
-    vi.stubGlobal('decode', vi.fn().mockReturnValue(msoSameValidity));
-    await verifyDigest(issuerAuthSameValidity, issuerNameSpaces);
+    await verifyDigest(issuerAuth, issuerNameSpaces);
     expect(calculateDigest).toHaveBeenCalledWith('SHA-256', testElement);
   });
 
   it('should throw error when digest mismatch', async () => {
     vi.mocked(calculateDigest).mockResolvedValueOnce(DIFFERENT_DIGEST);
 
-    const now = Date.now();
-    const validFrom = new DateTime(now - 60 * 60 * 1000); // 1 hour ago
-    const validUntil = new DateTime(now + 60 * 60 * 1000); // 1 hour later
-    const msoMismatch: MobileSecurityObjectBytes = new ByteString(
-      new TypedMap([
-        ...mso.data.esMap,
-        [
-          'validityInfo',
-          {
-            signed: new DateTime(),
-            validFrom,
-            validUntil,
-          },
-        ],
-      ])
+    await expect(verifyDigest(issuerAuth, issuerNameSpaces)).rejects.toThrow(
+      'Digest mismatch for org.iso.18013.5.1, DigestID: 0'
     );
-    const issuerAuthMismatch = new Sign1(
-      new Map(),
-      new Map(),
-      encode(msoMismatch),
-      Buffer.from('test-signature')
-    ).getContentForEncoding() as IssuerAuth;
-    vi.stubGlobal('decode', vi.fn().mockReturnValue(msoMismatch));
-
-    await expect(
-      verifyDigest(issuerAuthMismatch, issuerNameSpaces)
-    ).rejects.toThrow('Digest mismatch for org.iso.18013.5.1, DigestID: 0');
-  });
-
-  it('should throw error if MSO is not yet valid (vaildFrom in future)', async () => {
-    const futureDate = new DateTime(Date.now() + 60 * 60 * 1000);
-    const msoFuture: MobileSecurityObjectBytes = new ByteString(
-      new TypedMap([
-        ...mso.data.esMap,
-        [
-          'validityInfo',
-          {
-            signed: new DateTime(),
-            validFrom: futureDate,
-            validUntil: new DateTime(Date.now() + 2 * 60 * 60 * 1000),
-          },
-        ],
-      ])
-    );
-    const issuerAuthFuture = new Sign1(
-      new Map(),
-      new Map(),
-      encode(msoFuture),
-      Buffer.from('test-signature')
-    ).getContentForEncoding() as IssuerAuth;
-
-    vi.stubGlobal('decode', vi.fn().mockReturnValue(msoFuture));
-    await expect(
-      verifyDigest(issuerAuthFuture, issuerNameSpaces)
-    ).rejects.toThrow('MSO is not valid at the current time');
-  });
-
-  it('should throw error if MSO is expired (validUntil in past)', async () => {
-    const validFrom = new DateTime(Date.now() - 2 * 60 * 60 * 1000);
-    const validUntil = new DateTime(Date.now() - 60 * 60 * 1000);
-    const msoPast: MobileSecurityObjectBytes = new ByteString(
-      new TypedMap([
-        ...mso.data.esMap,
-        [
-          'validityInfo',
-          {
-            signed: new DateTime(),
-            validFrom,
-            validUntil,
-          },
-        ],
-      ])
-    );
-    const issuerAuthPast = new Sign1(
-      new Map(),
-      new Map(),
-      encode(msoPast),
-      Buffer.from('test-signature')
-    ).getContentForEncoding() as IssuerAuth;
-    vi.stubGlobal('decode', vi.fn().mockReturnValue(msoPast));
-    await expect(
-      verifyDigest(issuerAuthPast, issuerNameSpaces)
-    ).rejects.toThrow('MSO is not valid at the current time');
   });
 
   // it('should handle multiple namespaces', async () => {

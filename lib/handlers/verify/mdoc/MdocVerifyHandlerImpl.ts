@@ -1,6 +1,6 @@
 import { MSOVerifyHandlerImpl } from '../mso';
 import { MdocVerifyHandler, MdocVerifyResult } from './MdocVerifyHandler';
-import { parseMdocString } from './ParseMdocString';
+import { parseMdocString as defaultParseMdocString } from './ParseMdocString';
 import {
   createVerifyNameSpacesSchema,
   NameSpaceSchemas,
@@ -27,45 +27,52 @@ export class MdocVerifyHandlerImpl implements MdocVerifyHandler {
    * Creates a new MDOC verification handler
    * @param schemas - Optional schemas for validating document name spaces
    */
-  constructor(schemas: NameSpaceSchemas = {}) {
+  constructor(
+    schemas: NameSpaceSchemas = {},
+    parseMdocString = defaultParseMdocString
+  ) {
     const msoVerifyHandler = new MSOVerifyHandlerImpl();
     const verifyNameSpacesSchema = createVerifyNameSpacesSchema({ schemas });
     this.verify = async (mdoc: string) => {
-      try {
-        const deviceResponse = parseMdocString(mdoc);
-        if (!deviceResponse.documents) {
-          throw new Error('No documents found');
-        }
-        for (const document of deviceResponse.documents) {
+      const parsed = parseMdocString(mdoc);
+      // DeviceResponse
+      if ('documents' in parsed && Array.isArray(parsed.documents)) {
+        for (const document of parsed.documents) {
           const { issuerAuth, nameSpaces } = document.issuerSigned;
-          if (issuerAuth) {
-            await msoVerifyHandler.verify(issuerAuth, nameSpaces);
-          } else {
-            for (const [nameSpace, elements] of Object.entries(nameSpaces)) {
-              const schema = schemas[nameSpace];
-              if (schema) {
-                schema
-                  .partial()
-                  .strict()
-                  .parse(
-                    Object.fromEntries(
-                      elements.map((e) => [
-                        e.data.get('elementIdentifier'),
-                        e.data.get('elementValue'),
-                      ])
-                    )
-                  );
-              }
-            }
-          }
+          await msoVerifyHandler.verify(issuerAuth, nameSpaces);
         }
-        const nameSpaces = await verifyNameSpacesSchema(deviceResponse);
-
+        const nameSpaces = await verifyNameSpacesSchema(parsed);
         return { valid: true, documents: nameSpaces };
-      } catch (e) {
-        console.error(e);
-        return { valid: false };
       }
+
+      // IssuerSigned
+      if ('issuerAuth' in parsed && 'nameSpaces' in parsed) {
+        if (parsed.issuerAuth) {
+          await msoVerifyHandler.verify(parsed.issuerAuth, parsed.nameSpaces);
+        }
+        const validated = Object.fromEntries(
+          Object.entries(parsed.nameSpaces).map(([ns, elements]) => {
+            const schema = schemas[ns];
+            if (schema) {
+              schema
+                .partial()
+                .strict()
+                .parse(
+                  Object.fromEntries(
+                    elements.map((e) => [
+                      e.data.get('elementIdentifier'),
+                      e.data.get('elementValue'),
+                    ])
+                  )
+                );
+            }
+            return [ns, elements];
+          })
+        );
+        return { valid: true, documents: validated };
+      }
+
+      throw new Error('Invalid MDOC format');
     };
   }
 }
