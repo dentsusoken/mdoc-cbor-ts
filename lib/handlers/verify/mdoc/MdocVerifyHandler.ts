@@ -1,3 +1,5 @@
+import { ByteString } from '../../../cbor';
+
 /**
  * Type definition for a valid name space structure
  * @description
@@ -31,7 +33,10 @@ export type ValidDocumentsList = ValidDocuments[];
  * valid flag set to false.
  */
 export type MdocVerifyResult =
-  | { valid: true; documents: ValidDocumentsList }
+  | {
+      valid: true;
+      documents: ValidDocumentsList | { [k: string]: ByteString<any>[] };
+    }
   | { valid: false };
 
 /**
