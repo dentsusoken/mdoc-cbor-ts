@@ -35,9 +35,17 @@ export type ValidDocumentsList = ValidDocuments[];
 export type MdocVerifyResult =
   | {
       valid: true;
-      documents: ValidDocumentsList | { [k: string]: ByteString<any>[] };
+      type: 'deviceResponse';
+      documents: ValidDocumentsList;
     }
-  | { valid: false };
+  | {
+      valid: true;
+      type: 'issuerSigned';
+      nameSpaces: ValidNameSpace;
+    }
+  | {
+      valid: false;
+    };
 
 /**
  * Interface for MDOC verification handler

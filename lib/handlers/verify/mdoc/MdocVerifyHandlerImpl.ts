@@ -41,8 +41,10 @@ export class MdocVerifyHandlerImpl implements MdocVerifyHandler {
           const { issuerAuth, nameSpaces } = document.issuerSigned;
           await msoVerifyHandler.verify(issuerAuth, nameSpaces);
         }
-        const nameSpaces = await verifyNameSpacesSchema(parsed);
-        return { valid: true, documents: nameSpaces };
+        const nameSpaces = await verifyNameSpacesSchema({
+          deviceResponse: parsed,
+        });
+        return { valid: true, type: 'deviceResponse', documents: nameSpaces };
       }
 
       // IssuerSigned
@@ -50,28 +52,16 @@ export class MdocVerifyHandlerImpl implements MdocVerifyHandler {
         if (parsed.issuerAuth) {
           await msoVerifyHandler.verify(parsed.issuerAuth, parsed.nameSpaces);
         }
-        const validated = Object.fromEntries(
-          Object.entries(parsed.nameSpaces).map(([ns, elements]) => {
-            const schema = schemas[ns];
-            if (schema) {
-              schema
-                .partial()
-                .strict()
-                .parse(
-                  Object.fromEntries(
-                    elements.map((e) => [
-                      e.data.get('elementIdentifier'),
-                      e.data.get('elementValue'),
-                    ])
-                  )
-                );
-            }
-            return [ns, elements];
-          })
-        );
-        return { valid: true, documents: validated };
-      }
 
+        const nameSpaces = await verifyNameSpacesSchema({
+          issuerSigned: parsed,
+        });
+        return {
+          valid: true,
+          type: 'issuerSigned',
+          nameSpaces: nameSpaces[0]['issuerSigned'],
+        };
+      }
       throw new Error('Invalid MDOC format');
     };
   }

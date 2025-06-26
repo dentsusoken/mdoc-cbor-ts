@@ -3,7 +3,7 @@ import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { ByteString, encode } from '../../../cbor';
-import { DeviceResponse } from '../../../schemas/mdoc';
+import { DeviceResponse, IssuerSigned } from '../../../schemas/mdoc';
 import { createVerifyNameSpacesSchema } from './VerifyNameSpacesSchema';
 
 describe('createVerifyNameSpacesSchema', () => {
@@ -61,7 +61,7 @@ describe('createVerifyNameSpacesSchema', () => {
       schemas: mockSchemas,
     });
 
-    const result = await verifier(mockDeviceResponse);
+    const result = await verifier({ deviceResponse: mockDeviceResponse });
 
     expect(result).toEqual([
       {
@@ -84,7 +84,7 @@ describe('createVerifyNameSpacesSchema', () => {
       documents: undefined,
     };
 
-    await expect(verifier(invalidResponse)).rejects.toThrow(
+    await expect(verifier({ deviceResponse: invalidResponse })).rejects.toThrow(
       'No documents found'
     );
   });
@@ -115,7 +115,7 @@ describe('createVerifyNameSpacesSchema', () => {
                     })
                   )
                 ),
-              ],
+              ] as any,
             },
           },
         },
@@ -123,11 +123,15 @@ describe('createVerifyNameSpacesSchema', () => {
     };
 
     // @ts-ignore
-    const result = await verifier(responseWithUnknownNamespace);
+    const result = await verifier({
+      issuerSigned: {
+        ...responseWithUnknownNamespace.documents[0].issuerSigned,
+      },
+    });
 
     expect(result).toEqual([
       {
-        'org.iso.18013.5.1.mDL': {
+        issuerSigned: {
           'unknown.namespace': {
             'test-element': 'test-value',
           },
@@ -156,7 +160,7 @@ describe('createVerifyNameSpacesSchema', () => {
                   data: {
                     digestID: 0,
                     elementIdentifier: 'test-element',
-                    elementValue: 123, // Should be string
+                    elementValue: 123,
                   },
                 },
               ],

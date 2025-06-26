@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DeviceResponse } from '../../../schemas/mdoc';
+import { DeviceResponse, IssuerSigned } from '../../../schemas/mdoc';
 import { CreateBuilderFunction } from '../../issue/CreateBuilder';
 import { ValidDocuments, ValidDocumentsList } from './MdocVerifyHandler';
 
@@ -20,9 +20,10 @@ export type NameSpaceSchemas = {
  * A function that verifies document name spaces against their corresponding
  * schemas and returns the validated documents.
  */
-export type VerifyNameSpacesSchema = (
-  deviceResponse: DeviceResponse
-) => Promise<ValidDocumentsList>;
+export type VerifyNameSpacesSchema = (params: {
+  deviceResponse?: DeviceResponse;
+  issuerSigned?: IssuerSigned;
+}) => Promise<ValidDocumentsList>;
 
 /**
  * Parameters for creating a name space schema verifier
@@ -64,13 +65,24 @@ export type CreateVerifyNameSpacesSchema = CreateBuilderFunction<
  */
 export const createVerifyNameSpacesSchema: CreateVerifyNameSpacesSchema =
   ({ schemas }) =>
-  async (deviceResponse) => {
+  async ({ deviceResponse, issuerSigned }) => {
     const validDocumentList: ValidDocumentsList = [];
 
-    if (!deviceResponse.documents) {
+    let documents: any[] | undefined;
+    if (deviceResponse && deviceResponse.documents) {
+      documents = deviceResponse.documents;
+    } else if (issuerSigned && issuerSigned.nameSpaces) {
+      documents = [
+        {
+          docType: 'issuerSigned',
+          issuerSigned,
+        },
+      ];
+    } else {
       throw new Error('No documents found');
     }
-    for (const document of deviceResponse.documents) {
+
+    for (const document of documents) {
       const validDocuments: ValidDocuments = {};
       const docType = document.docType;
       const nameSpaces = document.issuerSigned.nameSpaces;
@@ -79,14 +91,12 @@ export const createVerifyNameSpacesSchema: CreateVerifyNameSpacesSchema =
 
       for (const [nameSpace, elements] of Object.entries(nameSpaces)) {
         validDocuments[docType][nameSpace] = {};
-        elements.forEach((element) => {
+        (elements as any[]).forEach((element: any) => {
           const id = element.data.get('elementIdentifier');
           const value = element.data.get('elementValue');
           validDocuments[docType][nameSpace][id!] = value;
         });
         if (!(nameSpace in schemas)) {
-          // TODO: should error or ignore?
-          //   throw new Error(`Schema for nameSpace ${nameSpace} not found`);
           continue;
         }
         const schema = schemas[nameSpace].partial().strict();

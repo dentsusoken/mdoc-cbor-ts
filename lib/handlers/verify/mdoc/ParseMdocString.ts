@@ -6,7 +6,6 @@ import {
   issuerSignedSchema,
   IssuerSigned,
 } from '../../../schemas/mdoc';
-import { C } from 'vitest/dist/chunks/reporters.d.C-cu31ET.js';
 
 /**
  * Type definition for parsing MDOC strings
