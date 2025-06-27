@@ -1,3 +1,5 @@
+import { ByteString } from '../../../cbor';
+
 /**
  * Type definition for a valid name space structure
  * @description
@@ -31,8 +33,19 @@ export type ValidDocumentsList = ValidDocuments[];
  * valid flag set to false.
  */
 export type MdocVerifyResult =
-  | { valid: true; documents: ValidDocumentsList }
-  | { valid: false };
+  | {
+      valid: true;
+      type: 'deviceResponse';
+      documents: ValidDocumentsList;
+    }
+  | {
+      valid: true;
+      type: 'issuerSigned';
+      nameSpaces: ValidNameSpace;
+    }
+  | {
+      valid: false;
+    };
 
 /**
  * Interface for MDOC verification handler

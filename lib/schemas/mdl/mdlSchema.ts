@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DateOnly } from '../../cbor';
+import { DateOnly, DateTime } from '../../cbor';
 import { bytesSchema } from '../common';
 
 /**
@@ -201,8 +201,8 @@ export const mdlSchema = z
     family_name: z.string(),
     given_name: z.string(),
     birth_date: z.instanceof(DateOnly),
-    issue_date: z.union([z.instanceof(DateOnly), z.instanceof(Date)]),
-    expiry_date: z.union([z.instanceof(DateOnly), z.instanceof(Date)]),
+    issue_date: z.union([z.instanceof(DateOnly), z.instanceof(DateTime)]),
+    expiry_date: z.union([z.instanceof(DateOnly), z.instanceof(DateTime)]),
     issuing_country: z.string(),
     issuing_authority: z.string(),
     document_number: z.string(),

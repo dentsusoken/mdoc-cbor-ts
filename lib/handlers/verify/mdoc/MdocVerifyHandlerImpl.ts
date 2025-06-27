@@ -1,6 +1,6 @@
 import { MSOVerifyHandlerImpl } from '../mso';
 import { MdocVerifyHandler, MdocVerifyResult } from './MdocVerifyHandler';
-import { parseMdocString } from './ParseMdocString';
+import { parseMdocString as defaultParseMdocString } from './ParseMdocString';
 import {
   createVerifyNameSpacesSchema,
   NameSpaceSchemas,
@@ -27,26 +27,42 @@ export class MdocVerifyHandlerImpl implements MdocVerifyHandler {
    * Creates a new MDOC verification handler
    * @param schemas - Optional schemas for validating document name spaces
    */
-  constructor(schemas: NameSpaceSchemas = {}) {
+  constructor(
+    schemas: NameSpaceSchemas = {},
+    parseMdocString = defaultParseMdocString
+  ) {
     const msoVerifyHandler = new MSOVerifyHandlerImpl();
     const verifyNameSpacesSchema = createVerifyNameSpacesSchema({ schemas });
     this.verify = async (mdoc: string) => {
-      try {
-        const deviceResponse = parseMdocString(mdoc);
-        if (!deviceResponse.documents) {
-          throw new Error('No documents found');
-        }
-        for (const document of deviceResponse.documents) {
+      const parsed = parseMdocString(mdoc);
+      // DeviceResponse
+      if ('documents' in parsed && Array.isArray(parsed.documents)) {
+        for (const document of parsed.documents) {
           const { issuerAuth, nameSpaces } = document.issuerSigned;
           await msoVerifyHandler.verify(issuerAuth, nameSpaces);
         }
-        const nameSpaces = await verifyNameSpacesSchema(deviceResponse);
-
-        return { valid: true, documents: nameSpaces };
-      } catch (e) {
-        console.error(e);
-        return { valid: false };
+        const nameSpaces = await verifyNameSpacesSchema({
+          deviceResponse: parsed,
+        });
+        return { valid: true, type: 'deviceResponse', documents: nameSpaces };
       }
+
+      // IssuerSigned
+      if ('issuerAuth' in parsed && 'nameSpaces' in parsed) {
+        if (parsed.issuerAuth) {
+          await msoVerifyHandler.verify(parsed.issuerAuth, parsed.nameSpaces);
+        }
+
+        const nameSpaces = await verifyNameSpacesSchema({
+          issuerSigned: parsed,
+        });
+        return {
+          valid: true,
+          type: 'issuerSigned',
+          nameSpaces: nameSpaces[0]['issuerSigned'],
+        };
+      }
+      throw new Error('Invalid MDOC format');
     };
   }
 }
