@@ -11,7 +11,10 @@ export const numberKey = z.union([
   z
     .string()
     .regex(/^\d+$/)
-    .transform((s) => Number(s)),
+    .transform((s) => Number(s))
+    .refine((n) => n > 0, {
+      message: 'Number must be greater than 0',
+    }),
 ]);
 
 /**
@@ -21,12 +24,11 @@ export const numberKey = z.union([
  * This schema validates and normalizes the map format.
  */
 export const numberMap = z.union([
-  z.record(numberKey, z.any()).transform((obj) => {
-    const entries: [number, any][] = Object.entries(obj).map(([key, value]) => [
-      Number(key),
-      value,
-    ]);
+  z.record(numberKey, z.unknown()).transform((obj) => {
+    const entries: [number, unknown][] = Object.entries(obj).map(
+      ([key, value]) => [Number(key), value]
+    );
     return new Map(entries);
   }),
-  z.map(numberKey, z.any()),
+  z.map(numberKey, z.unknown()),
 ]);

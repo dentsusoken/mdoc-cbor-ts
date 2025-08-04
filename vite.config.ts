@@ -1,6 +1,12 @@
 import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './lib'),
+    },
+  },
   build: {
     lib: {
       entry: {
@@ -21,15 +27,5 @@ export default defineConfig({
         'node:crypto',
       ],
     },
-  },
-  test: {
-    globals: true,
-    include: ['lib/**/*.test.ts', 'lib/**/*.spec.ts'],
-    coverage: {
-      provider: 'v8',
-      include: ['lib/**/*.ts'],
-      exclude: ['lib/index.ts', 'lib/**/*.test.ts', 'lib/**/*.spec.ts'],
-    },
-    environment: 'edge-runtime',
   },
 });

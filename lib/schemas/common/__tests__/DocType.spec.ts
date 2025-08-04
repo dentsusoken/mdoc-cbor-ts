@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { docTypeSchema } from './DocType';
+import { docTypeSchema } from '../DocType';
 
 describe('DocType', () => {
   it('should accept valid document type strings', () => {

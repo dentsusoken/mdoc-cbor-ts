@@ -23,4 +23,4 @@ export const bytesSchema = z.union([
  * @description
  * Represents binary data that has been validated and transformed through the bytesSchema
  */
-export type Bytes = z.infer<typeof bytesSchema>;
+export type Bytes = z.output<typeof bytesSchema>;

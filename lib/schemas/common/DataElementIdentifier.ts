@@ -19,4 +19,6 @@ export const dataElementIdentifierSchema = z.string().min(1);
  * @description
  * Represents a validated string identifier for data elements
  */
-export type DataElementIdentifier = z.infer<typeof dataElementIdentifierSchema>;
+export type DataElementIdentifier = z.output<
+  typeof dataElementIdentifierSchema
+>;

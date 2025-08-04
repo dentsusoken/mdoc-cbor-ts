@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Entry } from './Entry';
+import type { Entry } from '../Entry';
 
 describe('Entry', () => {
   it('should correctly type entries from a record', () => {

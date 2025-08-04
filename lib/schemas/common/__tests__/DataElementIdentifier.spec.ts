@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dataElementIdentifierSchema } from './DataElementIdentifier';
+import { dataElementIdentifierSchema } from '../DataElementIdentifier';
 
 describe('DataElementIdentifier', () => {
   it('should accept valid data element identifiers', () => {
@@ -11,7 +11,6 @@ describe('DataElementIdentifier', () => {
     ];
 
     validIdentifiers.forEach((identifier) => {
-      expect(() => dataElementIdentifierSchema.parse(identifier)).not.toThrow();
       expect(dataElementIdentifierSchema.parse(identifier)).toBe(identifier);
     });
   });

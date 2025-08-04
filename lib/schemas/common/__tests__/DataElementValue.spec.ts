@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dataElementValueSchema } from './DataElementValue';
+import { dataElementValueSchema } from '../DataElementValue';
 
 describe('DataElementValue', () => {
   it('should accept any value type', () => {

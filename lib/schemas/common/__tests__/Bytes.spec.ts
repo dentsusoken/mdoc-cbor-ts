@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bytesSchema } from './Bytes';
+import { bytesSchema } from '../Bytes';
 
 describe('Bytes', () => {
   it('should accept and transform Uint8Array to Buffer', () => {

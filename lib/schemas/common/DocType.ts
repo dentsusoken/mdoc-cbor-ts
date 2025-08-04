@@ -19,4 +19,4 @@ export const docTypeSchema = z.string();
  * @description
  * Represents a validated string identifier for document types
  */
-export type DocType = z.infer<typeof docTypeSchema>;
+export type DocType = z.output<typeof docTypeSchema>;

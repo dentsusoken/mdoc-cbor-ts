@@ -23,4 +23,4 @@ export const dataElementValueSchema = z.unknown();
  * DataElementValue = any
  * ```
  */
-export type DataElementValue = z.infer<typeof dataElementValueSchema>;
+export type DataElementValue = z.output<typeof dataElementValueSchema>;

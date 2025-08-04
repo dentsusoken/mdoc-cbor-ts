@@ -17,6 +17,12 @@
     "declaration": true,
     "declarationDir": "./dist/types",
 
+    /* Path mapping */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["lib/*"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

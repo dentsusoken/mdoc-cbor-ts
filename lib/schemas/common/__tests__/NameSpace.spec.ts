@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nameSpaceSchema } from './NameSpace';
+import { nameSpaceSchema } from '../NameSpace';
 
 describe('NameSpace', () => {
   it('should accept valid string namespaces', () => {

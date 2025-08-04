@@ -19,4 +19,4 @@ export const nameSpaceSchema = z.string().min(1);
  * @description
  * Represents a validated string identifier for namespaces
  */
-export type NameSpace = z.infer<typeof nameSpaceSchema>;
+export type NameSpace = z.output<typeof nameSpaceSchema>;
