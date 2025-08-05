@@ -1,6 +1,8 @@
 import { Buffer } from 'node:buffer';
 import { z } from 'zod';
 
+export const GENERIC_ERROR_MESSAGE =
+  'Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.';
 /**
  * Schema for handling binary data in the form of Uint8Array or Buffer
  * @description
@@ -17,20 +19,19 @@ import { z } from 'zod';
  * const result = bytesSchema.parse(validBytes); // Returns Buffer
  * ```
  */
-export const bytesSchema = z.union(
-  [
-    z.instanceof(Buffer),
-    z.instanceof(Uint8Array).transform((v) => Buffer.from(v)),
-  ],
-  {
-    errorMap: () => {
-      return {
-        message:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
-      };
-    },
-  }
-);
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const createBytesSchema = (errorMessage: string) =>
+  z.union(
+    [
+      z.instanceof(Buffer),
+      z.instanceof(Uint8Array).transform((v) => Buffer.from(v)),
+    ],
+    {
+      errorMap: () => ({ message: errorMessage }),
+    }
+  );
+
+export const bytesSchema = createBytesSchema(`Bytes: ${GENERIC_ERROR_MESSAGE}`);
 
 /**
  * Type definition for binary data

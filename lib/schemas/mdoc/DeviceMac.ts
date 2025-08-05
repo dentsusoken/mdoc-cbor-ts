@@ -1,7 +1,29 @@
 import { Mac0 } from '@auth0/cose';
 import { z } from 'zod';
-import { bytesSchema } from '../common/Bytes';
-import { numberMapSchema } from '../common/NumberMap';
+import {
+  bytesSchema,
+  createBytesSchema,
+  GENERIC_ERROR_MESSAGE as BYTES_GENERIC_ERROR_MESSAGE,
+} from '../common/Bytes';
+import {
+  numberMapSchema,
+  createNumberMapSchema,
+  GENERIC_ERROR_MESSAGE as NUMBER_MAP_GENERIC_ERROR_MESSAGE,
+} from '../common/NumberMap';
+
+const protectedHeadersSchema = createBytesSchema(
+  `ProtectedHeaders: ${BYTES_GENERIC_ERROR_MESSAGE}`
+);
+
+const unprotectedHeadersSchema = createNumberMapSchema(
+  `UnprotectedHeaders: ${NUMBER_MAP_GENERIC_ERROR_MESSAGE}`
+);
+
+const payloadSchema = createBytesSchema(
+  `Payload: ${BYTES_GENERIC_ERROR_MESSAGE}`
+);
+
+const tagSchema = createBytesSchema(`Tag: ${BYTES_GENERIC_ERROR_MESSAGE}`);
 
 /**
  * Schema for device MAC in mdoc
@@ -27,10 +49,10 @@ import { numberMapSchema } from '../common/NumberMap';
  */
 export const deviceMacSchema = z
   .tuple([
-    bytesSchema, // protected headers (Bytes)
-    numberMapSchema, // unprotected headers (NumberMap)
-    bytesSchema, // payload (Bytes)
-    bytesSchema, // tag (Bytes)
+    protectedHeadersSchema, // protected headers (Bytes)
+    unprotectedHeadersSchema, // unprotected headers (NumberMap)
+    payloadSchema, // payload (Bytes)
+    tagSchema, // tag (Bytes)
   ])
   .transform(([protectedHeaders, unprotectedHeaders, payload, tag]) => {
     return new Mac0(protectedHeaders, unprotectedHeaders, payload, tag);

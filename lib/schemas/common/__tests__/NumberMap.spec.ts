@@ -61,7 +61,7 @@ describe('NumberMap', () => {
     expect(result.size).toBe(0);
   });
 
-  it('should throw NumberKey error for object with invalid string keys', () => {
+  it('should throw NumberMap error for object with invalid string keys', () => {
     try {
       numberMapSchema.parse({ abc: 'value' });
       throw new Error('Should have thrown');
@@ -69,12 +69,12 @@ describe('NumberMap', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a string containing only digits (e.g., "123")'
+        'NumberMap: Please provide a valid number map (object or Map)'
       );
     }
   });
 
-  it('should throw NumberKey error for object with negative number keys', () => {
+  it('should throw NumberMap error for object with negative number keys', () => {
     try {
       numberMapSchema.parse({ '-1': 'value' });
       throw new Error('Should have thrown');
@@ -82,12 +82,12 @@ describe('NumberMap', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a string containing only digits (e.g., "123")'
+        'NumberMap: Please provide a valid number map (object or Map)'
       );
     }
   });
 
-  it('should throw NumberKey error for object with zero keys', () => {
+  it('should throw NumberMap error for object with zero keys', () => {
     try {
       numberMapSchema.parse({ '0': 'value' });
       throw new Error('Should have thrown');
@@ -95,12 +95,12 @@ describe('NumberMap', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer greater than 0'
+        'NumberMap: Please provide a valid number map (object or Map)'
       );
     }
   });
 
-  it('should throw NumberKey error for object with decimal keys', () => {
+  it('should throw NumberMap error for object with decimal keys', () => {
     try {
       numberMapSchema.parse({ '1.5': 'value' });
       throw new Error('Should have thrown');
@@ -108,7 +108,7 @@ describe('NumberMap', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a string containing only digits (e.g., "123")'
+        'NumberMap: Please provide a valid number map (object or Map)'
       );
     }
   });

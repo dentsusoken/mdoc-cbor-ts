@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { numberKeySchema } from './NumberKey';
 
+export const GENERIC_ERROR_MESSAGE =
+  'Please provide a valid number map (object or Map)';
 /**
  * Schema for validating number maps in MSO
  * @description
@@ -23,21 +25,27 @@ import { numberKeySchema } from './NumberKey';
  * const result2 = numberMapSchema.parse(mapData); // Returns Map<number, unknown>
  * ```
  */
-export const numberMapSchema = z.union(
-  [
-    z.record(numberKeySchema, z.unknown()).transform((obj) => {
-      const entries: [number, unknown][] = Object.entries(obj).map(
-        ([key, value]) => [Number(key), value]
-      );
-      return new Map(entries);
-    }),
-    z.map(numberKeySchema, z.unknown()),
-  ],
-  {
-    errorMap: () => ({
-      message: 'NumberMap: Please provide a valid number map (object or Map)',
-    }),
-  }
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const createNumberMapSchema = (errorMessage: string) =>
+  z.union(
+    [
+      z.record(numberKeySchema, z.unknown()).transform((obj) => {
+        const entries: [number, unknown][] = Object.entries(obj).map(
+          ([key, value]) => [Number(key), value]
+        );
+        return new Map(entries);
+      }),
+      z.map(numberKeySchema, z.unknown()),
+    ],
+    {
+      errorMap: () => ({
+        message: errorMessage,
+      }),
+    }
+  );
+
+export const numberMapSchema = createNumberMapSchema(
+  `NumberMap: ${GENERIC_ERROR_MESSAGE}`
 );
 
 /**

@@ -26,6 +26,7 @@
     "lint:fix": "eslint ./lib --ext .ts --fix"
   },
   "devDependencies": {
+    "@auth0/cose": "^1.0.2",
     "@edge-runtime/vm": "^5.0.0",
     "@types/luxon": "^3.4.2",
     "@types/node": "^22.5.5",
@@ -41,11 +42,12 @@
     "vitest": "^3.1.4"
   },
   "dependencies": {
-    "@auth0/cose": "^1.0.2",
     "@jfromaniello/typedmap": "^1.4.1",
+    "luxon": "^3.5.0"
+  },
+  "peerDependencies": {
+    "@auth0/cose": "^1.0.2",
     "cbor-x": "^1.6.0",
-    "hono": "^4.6.3",
-    "luxon": "^3.5.0",
-    "zod": "^3.24.2"
+    "zod": "^3.25.76"
   }
 }
