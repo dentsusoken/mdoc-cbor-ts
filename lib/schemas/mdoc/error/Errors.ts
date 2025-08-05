@@ -1,12 +1,17 @@
 import { z } from 'zod';
-import { Entry, NameSpace, nameSpaceSchema } from '../../common';
-import { ErrorItems, errorItemsSchema } from './ErrorItems';
+import { Entry } from '@/schemas/common/Entry';
+import { nameSpaceSchema } from '@/schemas/common/NameSpace';
+import { errorItemsSchema } from './ErrorItems';
 
 /**
  * Schema for errors in MDOC
  * @description
  * Represents a record of namespaces and their corresponding error items.
  * This schema validates that each namespace maps to valid error items.
+ *
+ * ```cddl
+ * Errors = {+ NameSpace => ErrorItems}
+ * ```
  *
  * @example
  * ```typescript
@@ -19,10 +24,21 @@ import { ErrorItems, errorItemsSchema } from './ErrorItems';
  * ```
  */
 export const errorsSchema = z
-  .record(nameSpaceSchema, errorItemsSchema)
-  .refine((data) => {
-    return Object.keys(data).length > 0;
-  });
+  .record(nameSpaceSchema, errorItemsSchema, {
+    invalid_type_error:
+      'Errors: Expected an object with namespaces as keys and error items as values.',
+    required_error:
+      'Errors: This field is required. Please provide a valid errors object.',
+  })
+  .refine(
+    (data) => {
+      return Object.keys(data).length > 0;
+    },
+    {
+      message:
+        'Errors: At least one namespace and error items pair is required.',
+    }
+  );
 
 /**
  * Type definition for errors
@@ -35,7 +51,7 @@ export const errorsSchema = z
  * @see {@link NameSpace}
  * @see {@link ErrorItems}
  */
-export type Errors = z.infer<typeof errorsSchema>;
+export type Errors = z.output<typeof errorsSchema>;
 
 /**
  * Type definition for errors entries

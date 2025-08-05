@@ -22,10 +22,21 @@ import { errorCodeSchema } from './ErrorCode';
  * ```
  */
 export const errorItemsSchema = z
-  .record(dataElementIdentifierSchema, errorCodeSchema)
-  .refine((data) => {
-    return Object.keys(data).length > 0;
-  });
+  .record(dataElementIdentifierSchema, errorCodeSchema, {
+    invalid_type_error:
+      'ErrorItems: Expected an object with data element identifiers as keys and error codes as values.',
+    required_error:
+      'ErrorItems: This field is required. Please provide a valid error items object.',
+  })
+  .refine(
+    (data) => {
+      return Object.keys(data).length > 0;
+    },
+    {
+      message:
+        'ErrorItems: At least one data element identifier and error code pair is required.',
+    }
+  );
 
 /**
  * Type definition for error items

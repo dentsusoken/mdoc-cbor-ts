@@ -22,10 +22,21 @@ import { errorCodeSchema } from './ErrorCode';
  * ```
  */
 export const documentErrorSchema = z
-  .record(docTypeSchema, errorCodeSchema)
-  .refine((data) => {
-    return Object.keys(data).length > 0;
-  });
+  .record(docTypeSchema, errorCodeSchema, {
+    invalid_type_error:
+      'DocumentError: Expected an object with document types as keys and error codes as values.',
+    required_error:
+      'DocumentError: This field is required. Please provide a valid document error object.',
+  })
+  .refine(
+    (data) => {
+      return Object.keys(data).length > 0;
+    },
+    {
+      message:
+        'DocumentError: At least one document type and error code pair is required.',
+    }
+  );
 
 /**
  * Type definition for document errors

@@ -1,34 +1,41 @@
 import { describe, expect, it } from 'vitest';
-import { documentErrorSchema } from '../DocumentError';
+import { errorsSchema } from '../Errors';
 import { z } from 'zod';
 
-describe('DocumentError', () => {
-  it('should accept valid document errors', () => {
+describe('Errors', () => {
+  it('should accept valid errors', () => {
     const validErrors = [
       {
-        'org.iso.18013.5.1.mDL': 0,
+        'org.iso.18013.5.1': {
+          given_name: 0,
+        },
       },
       {
-        'com.example.document': 1,
-        'test.document': -1,
+        'com.example.namespace': {
+          item1: 1,
+          item2: -1,
+        },
+        'test.namespace': {
+          item3: 2,
+        },
       },
     ];
 
     validErrors.forEach((errors) => {
-      const result = documentErrorSchema.parse(errors);
+      const result = errorsSchema.parse(errors);
       expect(result).toEqual(errors);
     });
   });
 
   it('should throw error for empty record', () => {
     try {
-      documentErrorSchema.parse({});
+      errorsSchema.parse({});
       throw new Error('Should have thrown');
     } catch (error) {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        'DocumentError: At least one document type and error code pair is required.'
+        'Errors: At least one namespace and error items pair is required.'
       );
     }
   });
@@ -38,13 +45,13 @@ describe('DocumentError', () => {
 
     for (const input of invalidInputs) {
       try {
-        documentErrorSchema.parse(input);
+        errorsSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          'DocumentError: Expected an object with document types as keys and error codes as values.'
+          'Errors: Expected an object with namespaces as keys and error items as values.'
         );
       }
     }
@@ -52,21 +59,38 @@ describe('DocumentError', () => {
 
   it('should throw error for undefined input', () => {
     try {
-      documentErrorSchema.parse(undefined);
+      errorsSchema.parse(undefined);
       throw new Error('Should have thrown');
     } catch (error) {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        'DocumentError: This field is required. Please provide a valid document error object.'
+        'Errors: This field is required. Please provide a valid errors object.'
+      );
+    }
+  });
+
+  it('should throw error for object with null error items value', () => {
+    try {
+      errorsSchema.parse({
+        'org.iso.18013.5.1': null,
+      });
+      throw new Error('Should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(z.ZodError);
+      const zodError = error as z.ZodError;
+      expect(zodError.issues[0].message).toBe(
+        'ErrorItems: Expected an object with data element identifiers as keys and error codes as values.'
       );
     }
   });
 
   it('should throw error for object with null error code value', () => {
     try {
-      documentErrorSchema.parse({
-        'org.iso.18013.5.1.mDL': null,
+      errorsSchema.parse({
+        'org.iso.18013.5.1': {
+          valid_identifier: null,
+        },
       });
       throw new Error('Should have thrown');
     } catch (error) {
@@ -80,8 +104,10 @@ describe('DocumentError', () => {
 
   it('should throw error for object with decimal error code value', () => {
     try {
-      documentErrorSchema.parse({
-        'org.iso.18013.5.1.mDL': 1.5,
+      errorsSchema.parse({
+        'org.iso.18013.5.1': {
+          valid_identifier: 1.5,
+        },
       });
       throw new Error('Should have thrown');
     } catch (error) {

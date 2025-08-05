@@ -6,13 +6,26 @@ import { z } from 'zod';
  * Represents an integer value that indicates the type of error that occurred.
  * This schema validates that the error code is a valid integer.
  *
+ * ```cddl
+ * ErrorCode = int
+ * ```
+ *
  * @example
  * ```typescript
  * const code = 0;
  * const result = errorCodeSchema.parse(code); // Returns ErrorCode
  * ```
  */
-export const errorCodeSchema = z.number().int();
+export const errorCodeSchema = z
+  .number({
+    invalid_type_error:
+      'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+    required_error:
+      'ErrorCode: This field is required. Please provide a valid integer.',
+  })
+  .int({
+    message: 'ErrorCode: Please provide an integer (no decimal places).',
+  });
 
 /**
  * Type definition for error codes
