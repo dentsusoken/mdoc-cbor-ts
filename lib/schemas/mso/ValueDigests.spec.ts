@@ -29,7 +29,7 @@ describe('ValueDigests', () => {
       expect(() => valueDigestsSchema.parse(record)).not.toThrow();
       const result = valueDigestsSchema.parse(record);
 
-      // 期待結果を構築
+      // Build expected result
       const expected: Record<string, Record<string, Buffer>> = {};
       for (const [nsKey, nsMap] of record.entries()) {
         expected[nsKey] = {};

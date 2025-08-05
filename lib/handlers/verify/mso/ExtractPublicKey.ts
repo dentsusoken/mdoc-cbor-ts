@@ -48,7 +48,7 @@ export const extractPublicKey: ExtractPublicKey = async (issuerAuth) => {
     >
   );
 
-  // TODO: 多分ヘッダーを結合したほうがいい気がする。
+  // TODO: Probably should combine headers
   const x5c =
     protectedHeaders.get(Headers.X5Chain) ??
     unprotectedHeaders.get(Headers.X5Chain);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { bytesSchema } from '../Bytes';
+import { z } from 'zod';
 
 describe('Bytes', () => {
   it('should accept and transform Uint8Array to Buffer', () => {
@@ -14,14 +15,11 @@ describe('Bytes', () => {
     const buffer = Buffer.from([1, 2, 3]);
     const result = bytesSchema.parse(buffer);
 
-    console.log('result :>> ', result);
-    console.log('buffer :>> ', buffer);
-
     expect(Buffer.isBuffer(result)).toBe(true);
     expect(result.equals(buffer)).toBe(true);
   });
 
-  it('should throw error for invalid input', () => {
+  it('should throw error for invalid input with clear messages', () => {
     const invalidInputs = [
       'not bytes',
       123,
@@ -32,8 +30,65 @@ describe('Bytes', () => {
       [1, 2, 3],
     ];
 
-    invalidInputs.forEach((input) => {
-      expect(() => bytesSchema.parse(input)).toThrow();
-    });
+    for (const input of invalidInputs) {
+      try {
+        bytesSchema.parse(input);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        // Verify it's a ZodError
+        expect(error).toBeInstanceOf(z.ZodError);
+
+        // Check the message property
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.'
+        );
+      }
+    }
+  });
+
+  it('should provide detailed error information in unionErrors', () => {
+    try {
+      bytesSchema.parse('hello');
+    } catch (error) {
+      // Check if it's a ZodError with unionErrors
+      expect(error).toBeInstanceOf(Error);
+      expect(error).toHaveProperty('issues');
+
+      const zodError = error as any;
+      expect(zodError.issues[0].code).toBe('invalid_union');
+      expect(zodError.issues[0].unionErrors).toHaveLength(2);
+
+      // Check the unified error message
+      expect(zodError.issues[0].message).toBe(
+        'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.'
+      );
+    }
+  });
+
+  it('should handle empty Buffer and Uint8Array', () => {
+    const emptyBuffer = Buffer.from([]);
+    const emptyUint8Array = new Uint8Array([]);
+
+    const result1 = bytesSchema.parse(emptyBuffer);
+    const result2 = bytesSchema.parse(emptyUint8Array);
+
+    expect(Buffer.isBuffer(result1)).toBe(true);
+    expect(Buffer.isBuffer(result2)).toBe(true);
+    expect(result1.length).toBe(0);
+    expect(result2.length).toBe(0);
+  });
+
+  it('should handle large Buffer and Uint8Array', () => {
+    const largeBuffer = Buffer.alloc(1000, 1);
+    const largeUint8Array = new Uint8Array(1000).fill(1);
+
+    const result1 = bytesSchema.parse(largeBuffer);
+    const result2 = bytesSchema.parse(largeUint8Array);
+
+    expect(Buffer.isBuffer(result1)).toBe(true);
+    expect(Buffer.isBuffer(result2)).toBe(true);
+    expect(result1.length).toBe(1000);
+    expect(result2.length).toBe(1000);
   });
 });

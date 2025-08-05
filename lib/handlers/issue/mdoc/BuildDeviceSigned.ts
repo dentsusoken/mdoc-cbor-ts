@@ -53,7 +53,8 @@ export const createDeviceSignedBuilder: CreateBuilderFunction<
     );
 
     const deviceSigned: DeviceSigned = {
-      // TODO: implement
+      // TODO: Implement DeviceAuthentication
+      // TODO: Add proper types
       nameSpaces: new ByteString(new TypedMap()),
       // TODO: DeviceAuthenticationを実装する
       deviceAuth: {

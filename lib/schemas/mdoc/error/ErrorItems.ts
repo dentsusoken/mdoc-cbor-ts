@@ -1,16 +1,17 @@
 import { z } from 'zod';
-import {
-  DataElementIdentifier,
-  dataElementIdentifierSchema,
-  Entry,
-} from '../../common';
-import { ErrorCode, errorCodeSchema } from './ErrorCode';
+import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
+import { Entry } from '@/schemas/common/Entry';
+import { errorCodeSchema } from './ErrorCode';
 
 /**
  * Schema for error items in MDOC
  * @description
  * Represents a record of data element identifiers and their corresponding error codes.
  * This schema validates that each data element identifier maps to a valid error code.
+ *
+ * ```cddl
+ * ErrorItems = {+ DataElementIdentifier => ErrorCode}
+ * ```
  *
  * @example
  * ```typescript
@@ -37,11 +38,15 @@ export const errorItemsSchema = z
  * @see {@link DataElementIdentifier}
  * @see {@link ErrorCode}
  */
-export type ErrorItems = z.infer<typeof errorItemsSchema>;
+export type ErrorItems = z.output<typeof errorItemsSchema>;
 
 /**
  * Type definition for error items entries
  * @description
  * Represents a key-value pair from the error items record
+ *
+ * ```cddl
+ * ErrorItemsEntry = [DataElementIdentifier, ErrorCode]
+ * ```
  */
 export type ErrorItemsEntry = Entry<ErrorItems>;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documentErrorSchema } from './DocumentError';
+import { documentErrorSchema } from '../DocumentError';
 
 describe('DocumentError', () => {
   it('should accept valid document errors', () => {
@@ -14,7 +14,6 @@ describe('DocumentError', () => {
     ];
 
     validErrors.forEach((errors) => {
-      expect(() => documentErrorSchema.parse(errors)).not.toThrow();
       const result = documentErrorSchema.parse(errors);
       expect(result).toEqual(errors);
     });

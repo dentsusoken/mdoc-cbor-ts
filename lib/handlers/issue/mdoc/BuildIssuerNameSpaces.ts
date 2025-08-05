@@ -55,8 +55,13 @@ export const createIssuerNameSpacesBuilder: CreateBuilderFunction<
   ({ configuration }) =>
   (data) => {
     const issuerNameSpaces: IssuerNameSpaces = {};
-    // TODO: Documentごとに0から始まっていいのか、それとも前のDocumentのdigestIDを引き継ぐのか
-    let digestID = 0;
+    // TODO: Should digestID start from 0 for each Document, or continue from previous Document's digestID?
+    const digestID = 0;
+
+    // TODO: Randomize the order of elements
+    const elements = nameSpaceData.elements;
+
+    // TODO: Apply tags (addExtension) at the NameSpaceData level
     Object.entries(data).forEach(([nameSpace, elements]) => {
       const issuerSignedItems: IssuerSignedItemBytes[] = [];
       // TODO: elementsの順番をランダムにする。

@@ -1,10 +1,14 @@
 import { z } from 'zod';
-// TODO: test
+
 /**
  * Schema for validating number keys in MSO
  * @description
  * Represents a positive integer that can be provided as a number or string.
  * This schema validates and normalizes the key format.
+ *
+ * ```cddl
+ * NumberKey = uint
+ * ```
  */
 export const numberKey = z.union([
   z.number().int().positive(),
@@ -22,6 +26,10 @@ export const numberKey = z.union([
  * @description
  * Represents a map with number keys that can be provided as an object or Map.
  * This schema validates and normalizes the map format.
+ *
+ * ```cddl
+ * NumberMap = {+ NumberKey => any}
+ * ```
  */
 export const numberMap = z.union([
   z.record(numberKey, z.unknown()).transform((obj) => {

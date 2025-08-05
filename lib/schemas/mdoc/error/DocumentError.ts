@@ -1,12 +1,17 @@
 import { z } from 'zod';
-import { DocType, docTypeSchema, Entry } from '../../common';
-import { ErrorCode, errorCodeSchema } from './ErrorCode';
+import { docTypeSchema } from '@/schemas/common/DocType';
+import { Entry } from '@/schemas/common/Entry';
+import { errorCodeSchema } from './ErrorCode';
 
 /**
  * Schema for document errors in MDOC
  * @description
  * Represents a record of document types and their corresponding error codes.
  * This schema validates that each document type maps to a valid error code.
+ *
+ * ```cddl
+ * DocumentError = {+ DocType => ErrorCode}
+ * ```
  *
  * @example
  * ```typescript
@@ -33,11 +38,15 @@ export const documentErrorSchema = z
  * @see {@link DocType}
  * @see {@link ErrorCode}
  */
-export type DocumentError = z.infer<typeof documentErrorSchema>;
+export type DocumentError = z.output<typeof documentErrorSchema>;
 
 /**
  * Type definition for document error entries
  * @description
  * Represents a key-value pair from the document errors record
+ *
+ * ```cddl
+ * DocumentErrorEntry = [DocType, ErrorCode]
+ * ```
  */
 export type DocumentErrorEntry = Entry<DocumentError>;

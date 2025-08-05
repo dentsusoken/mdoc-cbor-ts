@@ -29,4 +29,4 @@ export const errorCodeSchema = z.number().int();
  * | Other positive integers | See description | RFU |
  * | Negative integers | See description | These error codes may be used for application-specific purposes. |
  */
-export type ErrorCode = z.infer<typeof errorCodeSchema>;
+export type ErrorCode = z.output<typeof errorCodeSchema>;

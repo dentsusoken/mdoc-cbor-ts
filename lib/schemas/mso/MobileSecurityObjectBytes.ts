@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ByteString } from '../../cbor';
 import { KVMap } from '../../types';
 import { MobileSecurityObject } from './MobileSecurityObject';
-// TODO: instanceof ByteStringが正しい。
+// TODO: instanceof ByteString is correct
 /**
  * Schema for CBOR-encoded mobile security object
  * @description
