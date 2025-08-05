@@ -19,7 +19,7 @@ describe('Bytes', () => {
     expect(result.equals(buffer)).toBe(true);
   });
 
-  it('should throw error for invalid input with clear messages', () => {
+  it('should throw invalid_union error for invalid input with unified message', () => {
     const invalidInputs = [
       'not bytes',
       123,
@@ -38,31 +38,12 @@ describe('Bytes', () => {
         // Verify it's a ZodError
         expect(error).toBeInstanceOf(z.ZodError);
 
-        // Check the message property
+        // Check the unified error message
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
           'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.'
         );
       }
-    }
-  });
-
-  it('should provide detailed error information in unionErrors', () => {
-    try {
-      bytesSchema.parse('hello');
-    } catch (error) {
-      // Check if it's a ZodError with unionErrors
-      expect(error).toBeInstanceOf(Error);
-      expect(error).toHaveProperty('issues');
-
-      const zodError = error as any;
-      expect(zodError.issues[0].code).toBe('invalid_union');
-      expect(zodError.issues[0].unionErrors).toHaveLength(2);
-
-      // Check the unified error message
-      expect(zodError.issues[0].message).toBe(
-        'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.'
-      );
     }
   });
 

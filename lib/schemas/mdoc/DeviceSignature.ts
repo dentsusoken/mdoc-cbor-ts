@@ -1,6 +1,6 @@
 import { Sign1 } from '@auth0/cose';
 import { z } from 'zod';
-import { numberMap } from '../common';
+import { numberMapSchema } from '../common';
 
 /**
  * Schema for device signatures in mdoc
@@ -16,7 +16,7 @@ import { numberMap } from '../common';
  */
 export const deviceSignatureSchema = z.array(z.any()).transform((sign1) => {
   const [protectedHeaders, unprotectedHeaders, payload, signature] = sign1;
-  const unprotectedHeadersMap = numberMap.parse(unprotectedHeaders);
+  const unprotectedHeadersMap = numberMapSchema.parse(unprotectedHeaders);
   return new Sign1(protectedHeaders, unprotectedHeadersMap, payload, signature);
 });
 

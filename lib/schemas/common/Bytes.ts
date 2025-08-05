@@ -23,7 +23,8 @@ export const bytesSchema = z.union(
     z.instanceof(Uint8Array).transform((v) => Buffer.from(v)),
   ],
   {
-    errorMap: () => {
+    errorMap: (issue) => {
+      console.log('issue', issue);
       return {
         message:
           'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',

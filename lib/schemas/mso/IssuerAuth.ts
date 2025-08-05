@@ -1,6 +1,6 @@
 import { Sign1 } from '@auth0/cose';
 import { z } from 'zod';
-import { numberMap } from '../common';
+import { numberMapSchema } from '../common';
 
 /**
  * Schema for issuer authentication in MSO
@@ -15,8 +15,8 @@ import { numberMap } from '../common';
  * ```
  */
 export const issuerAuthSchema = z.tuple([
-  z.union([z.instanceof(Uint8Array), numberMap]),
-  numberMap,
+  z.union([z.instanceof(Uint8Array), numberMapSchema]),
+  numberMapSchema,
   z.instanceof(Uint8Array),
   z.instanceof(Uint8Array),
 ]); // TODO

@@ -16,7 +16,21 @@ import { z } from 'zod';
  * const result = docTypeSchema.parse(validDocType); // Returns string
  * ```
  */
-export const docTypeSchema = z.string();
+export const docTypeSchema = z
+  .string({
+    required_error:
+      'DocType: This field is required. Please provide a string identifier.',
+    invalid_type_error:
+      'DocType: Expected a string, but received a different type. Please provide a string identifier.',
+  })
+  .min(1, {
+    message:
+      'DocType: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1.mDL")',
+  })
+  .refine((val) => val.trim().length > 0, {
+    message:
+      'DocType: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1.mDL")',
+  });
 
 /**
  * Type definition for document types
