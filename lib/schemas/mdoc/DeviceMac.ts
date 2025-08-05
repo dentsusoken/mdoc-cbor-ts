@@ -6,7 +6,6 @@ import {
   GENERIC_ERROR_MESSAGE as BYTES_GENERIC_ERROR_MESSAGE,
 } from '../common/Bytes';
 import {
-  numberMapSchema,
   createNumberMapSchema,
   GENERIC_ERROR_MESSAGE as NUMBER_MAP_GENERIC_ERROR_MESSAGE,
 } from '../common/NumberMap';
