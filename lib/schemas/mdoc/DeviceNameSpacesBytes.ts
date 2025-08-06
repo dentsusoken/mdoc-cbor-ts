@@ -1,7 +1,7 @@
 import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
-import { ByteString } from '../../cbor';
-import { KVMap } from '../../types';
+import { ByteString } from '@/cbor/ByteString';
+import { KVMap } from '@/types';
 import { DeviceNameSpaces, deviceNameSpacesSchema } from './DeviceNameSpaces';
 
 /**

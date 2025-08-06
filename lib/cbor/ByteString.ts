@@ -1,32 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TypedMap } from '@jfromaniello/typedmap';
 import { addExtension } from 'cbor-x';
-import { KVMap } from '../types';
-import { decode, encode } from './index';
+import { decodeCbor, encodeCbor } from './codec';
 
-/**
- * Class representing a CBOR byte string
- * @description
- * A class that wraps data and its CBOR-encoded buffer representation.
- * This class is used for CBOR encoding/decoding of byte strings with tag 24.
- *
- * @example
- * ```typescript
- * const data = { key: 'value' };
- * const byteString = new ByteString(data);
- * console.log(byteString.buffer); // Uint8Array containing CBOR-encoded data
- * ```
- */
-export class ByteString<T extends TypedMap<KVMap<any>>> {
+export class ByteString<T extends TypedMap<[string, any]>> {
   #data: T;
   #buffer: Uint8Array;
 
-  /**
-   * Creates a new ByteString instance
-   * @param data - The data to be encoded as a byte string
-   */
   constructor(data: T) {
     this.#data = data;
-    this.#buffer = encode(this.#data.esMap);
+    this.#buffer = encodeCbor(this.#data.esMap);
   }
 
   /**
@@ -50,10 +33,13 @@ export class ByteString<T extends TypedMap<KVMap<any>>> {
    * @param buffer - The Uint8Array containing CBOR-encoded data
    * @returns A new ByteString instance containing the decoded data
    */
-  public static fromBuffer(buffer: Uint8Array): ByteString<any> {
-    const map = decode(buffer) as Map<any, any>;
-    const tMap = new TypedMap<[any, any]>(map);
-    return new ByteString(tMap);
+  public static fromBuffer<T extends TypedMap<[string, any]>>(
+    buffer: Uint8Array
+  ): ByteString<T> {
+    const data = decodeCbor(buffer) as Map<string, unknown>;
+    const map = new TypedMap<[string, unknown]>(data);
+
+    return new ByteString<T>(map as T);
   }
 }
 
@@ -66,6 +52,7 @@ export class ByteString<T extends TypedMap<KVMap<any>>> {
 addExtension({
   Class: ByteString,
   tag: 24,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   encode: (instance: ByteString<any>, encode) => {
     return encode(instance.buffer);
   },

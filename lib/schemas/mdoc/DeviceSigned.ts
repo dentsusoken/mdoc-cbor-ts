@@ -8,6 +8,13 @@ import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
  * Represents the portion of the mdoc that is signed by the device.
  * This schema validates the structure of device-signed data including namespaces and authentication.
  *
+ * ```cddl
+ * DeviceSigned = {
+ *  "nameSpaces": DeviceNameSpacesBytes,
+ *  "deviceAuth": DeviceAuth
+ * }
+ * ```
+ *
  * @example
  * ```typescript
  * const deviceSigned = {
@@ -31,12 +38,6 @@ export const deviceSignedSchema = z.map(z.any(), z.any()).transform((v) => {
  * @description
  * Represents a validated device-signed data structure
  *
- * ```cddl
- * DeviceSigned = {
- *  "nameSpaces": DeviceNameSpacesBytes,
- *  "deviceAuth": DeviceAuth
- * }
- * ```
  * @see {@link DeviceNameSpacesBytes}
  * @see {@link DeviceAuth}
  */
