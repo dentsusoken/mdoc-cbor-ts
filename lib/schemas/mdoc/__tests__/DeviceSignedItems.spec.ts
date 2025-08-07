@@ -4,150 +4,127 @@ import { z } from 'zod';
 import { deviceSignedItemsSchema } from '../DeviceSignedItems';
 
 describe('DeviceSignedItems', () => {
-  it('should accept valid device signed items', () => {
-    const validItems = [
+  describe('should accept valid device signed items', () => {
+    const testCases = [
       {
-        given_name: 'John',
-        family_name: 'Doe',
+        name: 'personal information',
+        input: {
+          given_name: 'John',
+          family_name: 'Doe',
+        },
       },
       {
-        age: 30,
-        height: 180.5,
+        name: 'numeric data',
+        input: {
+          age: 30,
+          height: 180.5,
+        },
       },
       {
-        photo: new Tag(24, 0),
-        signature: new Tag(24, 123),
+        name: 'tagged data',
+        input: {
+          photo: new Tag(24, 0),
+          signature: new Tag(24, 123),
+        },
       },
     ];
 
-    validItems.forEach((items) => {
-      expect(() => deviceSignedItemsSchema.parse(items)).not.toThrow();
-      const result = deviceSignedItemsSchema.parse(items);
-      expect(result).toEqual(items);
+    testCases.forEach(({ name, input }) => {
+      it(`should accept ${name}`, () => {
+        const result = deviceSignedItemsSchema.parse(input);
+        expect(result).toEqual(input);
+      });
     });
   });
 
-  it('should throw error for null input', () => {
-    try {
-      deviceSignedItemsSchema.parse(null);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe('Expected object, received null');
-    }
+  describe('should throw error for invalid type inputs', () => {
+    const testCases = [
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage:
+          'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage:
+          'DeviceSignedItems: This field is required. Please provide a device-signed items mapping object.',
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage:
+          'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expectedMessage:
+          'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expectedMessage:
+          'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+      },
+      {
+        name: 'array input',
+        input: [],
+        expectedMessage:
+          'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+      },
+    ];
+
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceSignedItemsSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 
-  it('should throw error for undefined input', () => {
-    try {
-      deviceSignedItemsSchema.parse(undefined);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe('Required');
-    }
-  });
+  describe('should throw error for invalid objects', () => {
+    const testCases = [
+      {
+        name: 'empty object',
+        input: {},
+        expectedMessage:
+          'DeviceSignedItems: At least one data element must be provided. The object cannot be empty.',
+      },
 
-  it('should throw error for boolean input', () => {
-    try {
-      deviceSignedItemsSchema.parse(true);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Expected object, received boolean'
-      );
-    }
-  });
+      {
+        name: 'object with empty string key',
+        input: { '': 'value' },
+        expectedMessage:
+          'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
+      },
+      {
+        name: 'object with whitespace-only key',
+        input: { '   ': 'value' },
+        expectedMessage:
+          'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
+      },
+    ];
 
-  it('should throw error for number input', () => {
-    try {
-      deviceSignedItemsSchema.parse(123);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Expected object, received number'
-      );
-    }
-  });
-
-  it('should throw error for string input', () => {
-    try {
-      deviceSignedItemsSchema.parse('string');
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Expected object, received string'
-      );
-    }
-  });
-
-  it('should throw error for array input', () => {
-    try {
-      deviceSignedItemsSchema.parse([]);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Expected object, received array'
-      );
-    }
-  });
-
-  it('should throw error for empty object', () => {
-    const emptyObject = {};
-
-    try {
-      deviceSignedItemsSchema.parse(emptyObject);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'DeviceSignedItems: At least one data element must be provided. The object cannot be empty.'
-      );
-    }
-  });
-
-  it('should throw error for object with invalid keys', () => {
-    const invalidKeysObject = {
-      123: 'value', // number key
-      '': 'value', // empty string key
-    };
-
-    try {
-      deviceSignedItemsSchema.parse(invalidKeysObject);
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")'
-      );
-    }
-  });
-
-  it('should throw error for object with whitespace-only keys', () => {
-    const whitespaceKeysObject = {
-      '   ': 'value', // whitespace-only key
-    };
-
-    expect(() => deviceSignedItemsSchema.parse(whitespaceKeysObject)).toThrow();
-
-    try {
-      deviceSignedItemsSchema.parse(whitespaceKeysObject);
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")'
-      );
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceSignedItemsSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 });

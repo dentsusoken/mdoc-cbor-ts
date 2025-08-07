@@ -41,4 +41,4 @@ export const deviceSignedSchema = z.map(z.any(), z.any()).transform((v) => {
  * @see {@link DeviceNameSpacesBytes}
  * @see {@link DeviceAuth}
  */
-export type DeviceSigned = z.infer<typeof deviceSignedSchema>;
+export type DeviceSigned = z.output<typeof deviceSignedSchema>;

@@ -1,7 +1,6 @@
 import { Mac0 } from '@auth0/cose';
 import { z } from 'zod';
 import {
-  bytesSchema,
   createBytesSchema,
   GENERIC_ERROR_MESSAGE as BYTES_GENERIC_ERROR_MESSAGE,
 } from '../common/Bytes';
@@ -47,12 +46,20 @@ const tagSchema = createBytesSchema(`Tag: ${BYTES_GENERIC_ERROR_MESSAGE}`);
  * ```
  */
 export const deviceMacSchema = z
-  .tuple([
-    protectedHeadersSchema, // protected headers (Bytes)
-    unprotectedHeadersSchema, // unprotected headers (NumberMap)
-    payloadSchema, // payload (Bytes)
-    tagSchema, // tag (Bytes)
-  ])
+  .tuple(
+    [
+      protectedHeadersSchema, // protected headers (Bytes)
+      unprotectedHeadersSchema, // unprotected headers (NumberMap)
+      payloadSchema, // payload (Bytes)
+      tagSchema, // tag (Bytes)
+    ],
+    {
+      invalid_type_error:
+        'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+      required_error:
+        'DeviceMac: This field is required. Please provide a COSE_Mac0 MAC array.',
+    }
+  )
   .transform(([protectedHeaders, unprotectedHeaders, payload, tag]) => {
     return new Mac0(protectedHeaders, unprotectedHeaders, payload, tag);
   });

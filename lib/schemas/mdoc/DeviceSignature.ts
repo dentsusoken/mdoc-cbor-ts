@@ -48,12 +48,20 @@ const signatureSchema = createBytesSchema(
  * ```
  */
 export const deviceSignatureSchema = z
-  .tuple([
-    protectedHeadersSchema, // protected headers (Bytes)
-    unprotectedHeadersSchema, // unprotected headers (NumberMap)
-    payloadSchema, // payload (Bytes)
-    signatureSchema, // signature (Bytes)
-  ])
+  .tuple(
+    [
+      protectedHeadersSchema, // protected headers (Bytes)
+      unprotectedHeadersSchema, // unprotected headers (NumberMap)
+      payloadSchema, // payload (Bytes)
+      signatureSchema, // signature (Bytes)
+    ],
+    {
+      invalid_type_error:
+        'DeviceSignature: Expected an array with 4 elements (protected headers, unprotected headers, payload, signature). Please provide a valid COSE_Sign1 structure.',
+      required_error:
+        'DeviceSignature: This field is required. Please provide a COSE_Sign1 signature array.',
+    }
+  )
   .transform(([protectedHeaders, unprotectedHeaders, payload, signature]) => {
     return new Sign1(protectedHeaders, unprotectedHeaders, payload, signature);
   });

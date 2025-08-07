@@ -24,115 +24,101 @@ describe('DeviceMac', () => {
     expect(result.tag).toEqual(mac0.tag);
   });
 
-  it('should throw error for null input', () => {
-    try {
-      deviceMacSchema.parse(null);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe('Expected array, received null');
-    }
-  });
-
-  it('should throw error for undefined input', () => {
-    try {
-      deviceMacSchema.parse(undefined);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe('Required');
-    }
-  });
-
-  it('should throw error for boolean input', () => {
-    try {
-      deviceMacSchema.parse(true);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Expected array, received boolean'
-      );
-    }
-  });
-
-  it('should throw error for number input', () => {
-    try {
-      deviceMacSchema.parse(123);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Invalid input: expected tuple, received number'
-      );
-    }
-  });
-
-  it('should throw error for string input', () => {
-    try {
-      deviceMacSchema.parse('string');
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Invalid input: expected tuple, received string'
-      );
-    }
-  });
-
-  it('should throw error for object input', () => {
-    try {
-      deviceMacSchema.parse({});
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Invalid input: expected tuple, received object'
-      );
-    }
-  });
-
-  it('should throw error for array with too few elements', () => {
+  describe('should throw error for invalid type inputs', () => {
     const testCases = [
       {
-        input: [],
-        expectedMessage: 'Too small: expected array to have >4 items',
-      },
-      {
-        input: [Buffer.from([])],
-        expectedMessage: 'Too small: expected array to have >4 items',
-      },
-      {
-        input: [Buffer.from([]), new Map()],
-        expectedMessage: 'Too small: expected array to have >4 items',
-      },
-      {
-        input: [Buffer.from([]), new Map(), Buffer.from([])],
+        name: 'null input',
+        input: null,
         expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage:
+          'DeviceMac: This field is required. Please provide a COSE_Mac0 MAC array.',
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage:
+          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expectedMessage:
+          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expectedMessage:
+          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+      },
+      {
+        name: 'object input',
+        input: {},
+        expectedMessage:
+          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
       },
     ];
 
-    for (const testCase of testCases) {
-      try {
-        deviceMacSchema.parse(testCase.input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(testCase.expectedMessage);
-      }
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceMacSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 
-  it('should throw error for array with too many elements', () => {
+  describe('should throw error for array with too few elements', () => {
     const testCases = [
       {
+        name: 'empty array',
+        input: [],
+        expectedMessage: 'Array must contain at least 4 element(s)',
+      },
+      {
+        name: 'array with 1 element',
+        input: [Buffer.from([])],
+        expectedMessage: 'Array must contain at least 4 element(s)',
+      },
+      {
+        name: 'array with 2 elements',
+        input: [Buffer.from([]), new Map()],
+        expectedMessage: 'Array must contain at least 4 element(s)',
+      },
+      {
+        name: 'array with 3 elements',
+        input: [Buffer.from([]), new Map(), Buffer.from([])],
+        expectedMessage: 'Array must contain at least 4 element(s)',
+      },
+    ];
+
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceMacSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
+  });
+
+  describe('should throw error for array with too many elements', () => {
+    const testCases = [
+      {
+        name: 'array with 5 elements',
         input: [
           Buffer.from([]),
           new Map(),
@@ -140,138 +126,160 @@ describe('DeviceMac', () => {
           Buffer.from([]),
           Buffer.from([]), // 5 elements
         ],
-        expectedMessage: 'Too big: expected array to have <4 items',
+        expectedMessage: 'Array must contain at most 4 element(s)',
       },
     ];
 
-    for (const testCase of testCases) {
-      try {
-        deviceMacSchema.parse(testCase.input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(testCase.expectedMessage);
-      }
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceMacSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 
-  it('should throw error for array with invalid protected headers', () => {
+  describe('should throw error for array with invalid protected headers', () => {
     const testCases = [
       {
-        input: ['string', new Map(), Buffer.from([]), Buffer.from([])], // string instead of Buffer
+        name: 'string instead of Buffer',
+        input: ['string', new Map(), Buffer.from([]), Buffer.from([])],
         expectedMessage:
           'ProtectedHeaders: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
       {
-        input: [123, new Map(), Buffer.from([]), Buffer.from([])], // number instead of Buffer
+        name: 'number instead of Buffer',
+        input: [123, new Map(), Buffer.from([]), Buffer.from([])],
         expectedMessage:
           'ProtectedHeaders: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
       {
-        input: [true, new Map(), Buffer.from([]), Buffer.from([])], // boolean instead of Buffer
+        name: 'boolean instead of Buffer',
+        input: [true, new Map(), Buffer.from([]), Buffer.from([])],
         expectedMessage:
           'ProtectedHeaders: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
     ];
 
-    for (const testCase of testCases) {
-      try {
-        deviceMacSchema.parse(testCase.input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(testCase.expectedMessage);
-      }
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceMacSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 
-  it('should throw error for array with invalid unprotected headers', () => {
+  describe('should throw error for array with invalid unprotected headers', () => {
     const testCases = [
       {
-        input: [Buffer.from([]), 'string', Buffer.from([]), Buffer.from([])], // string instead of Map
+        name: 'string instead of Map',
+        input: [Buffer.from([]), 'string', Buffer.from([]), Buffer.from([])],
         expectedMessage:
           'UnprotectedHeaders: Please provide a valid number map (object or Map)',
       },
       {
-        input: [Buffer.from([]), 123, Buffer.from([]), Buffer.from([])], // number instead of Map
+        name: 'number instead of Map',
+        input: [Buffer.from([]), 123, Buffer.from([]), Buffer.from([])],
         expectedMessage:
           'UnprotectedHeaders: Please provide a valid number map (object or Map)',
       },
       {
-        input: [Buffer.from([]), true, Buffer.from([]), Buffer.from([])], // boolean instead of Map
+        name: 'boolean instead of Map',
+        input: [Buffer.from([]), true, Buffer.from([]), Buffer.from([])],
         expectedMessage:
           'UnprotectedHeaders: Please provide a valid number map (object or Map)',
       },
     ];
 
-    for (const testCase of testCases) {
-      try {
-        deviceMacSchema.parse(testCase.input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(testCase.expectedMessage);
-      }
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceMacSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 
-  it('should throw error for array with invalid payload', () => {
+  describe('should throw error for array with invalid payload', () => {
     const testCases = [
       {
-        input: [Buffer.from([]), new Map(), 'string', Buffer.from([])], // string instead of Buffer
+        name: 'string instead of Buffer',
+        input: [Buffer.from([]), new Map(), 'string', Buffer.from([])],
         expectedMessage:
           'Payload: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
       {
-        input: [Buffer.from([]), new Map(), 123, Buffer.from([])], // number instead of Buffer
+        name: 'number instead of Buffer',
+        input: [Buffer.from([]), new Map(), 123, Buffer.from([])],
         expectedMessage:
           'Payload: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
       {
-        input: [Buffer.from([]), new Map(), true, Buffer.from([])], // boolean instead of Buffer
+        name: 'boolean instead of Buffer',
+        input: [Buffer.from([]), new Map(), true, Buffer.from([])],
         expectedMessage:
           'Payload: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
     ];
 
-    for (const testCase of testCases) {
-      try {
-        deviceMacSchema.parse(testCase.input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(testCase.expectedMessage);
-      }
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceMacSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 
-  it('should throw error for array with invalid tag', () => {
+  describe('should throw error for array with invalid tag', () => {
     const testCases = [
       {
-        input: [Buffer.from([]), new Map(), Buffer.from([]), 'string'], // string instead of Buffer
+        name: 'string instead of Buffer',
+        input: [Buffer.from([]), new Map(), Buffer.from([]), 'string'],
         expectedMessage:
           'Tag: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
       {
-        input: [Buffer.from([]), new Map(), Buffer.from([]), 123], // number instead of Buffer
+        name: 'number instead of Buffer',
+        input: [Buffer.from([]), new Map(), Buffer.from([]), 123],
         expectedMessage:
           'Tag: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
       {
-        input: [Buffer.from([]), new Map(), Buffer.from([]), true], // boolean instead of Buffer
+        name: 'boolean instead of Buffer',
+        input: [Buffer.from([]), new Map(), Buffer.from([]), true],
         expectedMessage:
           'Tag: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
       },
     ];
 
-    for (const testCase of testCases) {
-      try {
-        deviceMacSchema.parse(testCase.input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(testCase.expectedMessage);
-      }
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          deviceMacSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 });

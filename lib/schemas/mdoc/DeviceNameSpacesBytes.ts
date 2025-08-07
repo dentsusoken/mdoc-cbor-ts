@@ -36,4 +36,6 @@ export const deviceNameSpacesBytesSchema = z
  *
  * @see {@link DeviceNameSpaces}
  */
-export type DeviceNameSpacesBytes = z.infer<typeof deviceNameSpacesBytesSchema>;
+export type DeviceNameSpacesBytes = z.output<
+  typeof deviceNameSpacesBytesSchema
+>;
