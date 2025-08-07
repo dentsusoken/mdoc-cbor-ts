@@ -17,7 +17,7 @@ export class DateOnly extends Date {
    * Returns the date in ISO 8601 format (YYYY-MM-DD)
    * @returns ISO 8601 date string
    */
-  toISOString() {
+  toISOString(): string {
     return super.toISOString().split('T')[0];
   }
 
@@ -25,7 +25,7 @@ export class DateOnly extends Date {
    * Returns the date as a string in ISO 8601 format
    * @returns ISO 8601 date string
    */
-  toString() {
+  toString(): string {
     return this.toISOString();
   }
 
@@ -33,7 +33,7 @@ export class DateOnly extends Date {
    * Returns the date as a JSON string in ISO 8601 format
    * @returns ISO 8601 date string
    */
-  toJSON() {
+  toJSON(): string {
     return this.toISOString();
   }
 }
