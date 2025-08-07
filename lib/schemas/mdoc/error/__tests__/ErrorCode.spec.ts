@@ -3,115 +3,82 @@ import { errorCodeSchema } from '../ErrorCode';
 import { z } from 'zod';
 
 describe('ErrorCode', () => {
-  it('should accept valid error codes', () => {
-    const validCodes = [0, 1, 2, 100, -1, -2, -100];
+  describe('should accept valid error codes', () => {
+    const testCases = [
+      { name: 'zero', input: 0 },
+      { name: 'positive integer', input: 1 },
+      { name: 'positive integer 2', input: 2 },
+      { name: 'large positive integer', input: 100 },
+      { name: 'negative integer', input: -1 },
+      { name: 'negative integer 2', input: -2 },
+      { name: 'large negative integer', input: -100 },
+    ];
 
-    validCodes.forEach((code) => {
-      const result = errorCodeSchema.parse(code);
-      expect(result).toBe(code);
+    testCases.forEach(({ name, input }) => {
+      it(`should accept ${name}`, () => {
+        const result = errorCodeSchema.parse(input);
+        expect(result).toBe(input);
+      });
     });
   });
 
-  it('should throw invalid_type error for non-number inputs', () => {
-    const invalidInputs = [true, 'string', [], {}, null];
+  describe('should throw error for invalid inputs', () => {
+    const testCases = [
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage:
+          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage:
+          'ErrorCode: This field is required. Please provide a valid integer.',
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage:
+          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expectedMessage:
+          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+      },
+      {
+        name: 'array input',
+        input: [],
+        expectedMessage:
+          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+      },
+      {
+        name: 'object input',
+        input: {},
+        expectedMessage:
+          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+      },
+      {
+        name: 'decimal number',
+        input: 1.5,
+        expectedMessage:
+          'ErrorCode: Please provide an integer (no decimal places).',
+      },
+    ];
 
-    for (const input of invalidInputs) {
-      try {
-        errorCodeSchema.parse(input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.'
-        );
-      }
-    }
-  });
-
-  it('should throw error for decimal numbers', () => {
-    try {
-      errorCodeSchema.parse(1.5);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: Please provide an integer (no decimal places).'
-      );
-    }
-  });
-
-  it('should throw error for undefined input', () => {
-    try {
-      errorCodeSchema.parse(undefined);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: This field is required. Please provide a valid integer.'
-      );
-    }
-  });
-
-  it('should throw error for boolean inputs', () => {
-    try {
-      errorCodeSchema.parse(true);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.'
-      );
-    }
-  });
-
-  it('should throw error for string inputs', () => {
-    try {
-      errorCodeSchema.parse('string');
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.'
-      );
-    }
-  });
-
-  it('should throw error for object inputs', () => {
-    try {
-      errorCodeSchema.parse({});
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.'
-      );
-    }
-  });
-
-  it('should throw error for array inputs', () => {
-    try {
-      errorCodeSchema.parse([]);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.'
-      );
-    }
-  });
-
-  it('should throw error for invalid input', () => {
-    const invalidInputs = [null, undefined, true, 'string', [], {}, 1.5];
-
-    invalidInputs.forEach((input) => {
-      expect(() => errorCodeSchema.parse(input)).toThrow();
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          errorCodeSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
     });
   });
 });

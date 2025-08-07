@@ -3,119 +3,123 @@ import { errorsSchema } from '../Errors';
 import { z } from 'zod';
 
 describe('Errors', () => {
-  it('should accept valid errors', () => {
-    const validErrors = [
+  describe('should accept valid errors', () => {
+    const testCases = [
       {
-        'org.iso.18013.5.1': {
-          given_name: 0,
+        name: 'single namespace with single error',
+        input: {
+          'org.iso.18013.5.1': {
+            given_name: 0,
+          },
         },
       },
       {
-        'com.example.namespace': {
-          item1: 1,
-          item2: -1,
-        },
-        'test.namespace': {
-          item3: 2,
+        name: 'multiple namespaces with multiple errors',
+        input: {
+          'com.example.namespace': {
+            item1: 1,
+            item2: -1,
+          },
+          'test.namespace': {
+            item3: 2,
+          },
         },
       },
     ];
 
-    validErrors.forEach((errors) => {
-      const result = errorsSchema.parse(errors);
-      expect(result).toEqual(errors);
+    testCases.forEach(({ name, input }) => {
+      it(`should accept ${name}`, () => {
+        const result = errorsSchema.parse(input);
+        expect(result).toEqual(input);
+      });
     });
   });
 
-  it('should throw error for empty record', () => {
-    try {
-      errorsSchema.parse({});
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Errors: At least one namespace and error items pair is required.'
-      );
-    }
-  });
-
-  it('should throw invalid_type error for non-object inputs', () => {
-    const invalidInputs = [null, true, 123, 'string', []];
-
-    for (const input of invalidInputs) {
-      try {
-        errorsSchema.parse(input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'Errors: Expected an object with namespaces as keys and error items as values.'
-        );
-      }
-    }
-  });
-
-  it('should throw error for undefined input', () => {
-    try {
-      errorsSchema.parse(undefined);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'Errors: This field is required. Please provide a valid errors object.'
-      );
-    }
-  });
-
-  it('should throw error for object with null error items value', () => {
-    try {
-      errorsSchema.parse({
-        'org.iso.18013.5.1': null,
-      });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorItems: Expected an object with data element identifiers as keys and error codes as values.'
-      );
-    }
-  });
-
-  it('should throw error for object with null error code value', () => {
-    try {
-      errorsSchema.parse({
-        'org.iso.18013.5.1': {
-          valid_identifier: null,
+  describe('should throw error for invalid inputs', () => {
+    const testCases = [
+      {
+        name: 'empty record',
+        input: {},
+        expectedMessage:
+          'Errors: At least one namespace and error items pair is required.',
+      },
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage:
+          'Errors: Expected an object with namespaces as keys and error items as values.',
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage:
+          'Errors: Expected an object with namespaces as keys and error items as values.',
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expectedMessage:
+          'Errors: Expected an object with namespaces as keys and error items as values.',
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expectedMessage:
+          'Errors: Expected an object with namespaces as keys and error items as values.',
+      },
+      {
+        name: 'array input',
+        input: [],
+        expectedMessage:
+          'Errors: Expected an object with namespaces as keys and error items as values.',
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage:
+          'Errors: This field is required. Please provide a valid errors object.',
+      },
+      {
+        name: 'object with null error items value',
+        input: {
+          'org.iso.18013.5.1': null,
         },
-      });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.'
-      );
-    }
-  });
-
-  it('should throw error for object with decimal error code value', () => {
-    try {
-      errorsSchema.parse({
-        'org.iso.18013.5.1': {
-          valid_identifier: 1.5,
+        expectedMessage:
+          'ErrorItems: Expected an object with data element identifiers as keys and error codes as values.',
+      },
+      {
+        name: 'object with null error code value',
+        input: {
+          'org.iso.18013.5.1': {
+            valid_identifier: null,
+          },
         },
+        expectedMessage:
+          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+      },
+      {
+        name: 'object with decimal error code value',
+        input: {
+          'org.iso.18013.5.1': {
+            valid_identifier: 1.5,
+          },
+        },
+        expectedMessage:
+          'ErrorCode: Please provide an integer (no decimal places).',
+      },
+    ];
+
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          errorsSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
       });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'ErrorCode: Please provide an integer (no decimal places).'
-      );
-    }
+    });
   });
 });
