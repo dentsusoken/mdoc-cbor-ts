@@ -26,7 +26,12 @@ import type { Entry } from '../common/Entry';
  * ```
  */
 export const deviceSignedItemsSchema = z
-  .record(dataElementIdentifierSchema, dataElementValueSchema)
+  .record(dataElementIdentifierSchema, dataElementValueSchema, {
+    invalid_type_error:
+      'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+    required_error:
+      'DeviceSignedItems: This field is required. Please provide a device-signed items mapping object.',
+  })
   .refine(
     (data) => {
       return Object.keys(data).length > 0;
