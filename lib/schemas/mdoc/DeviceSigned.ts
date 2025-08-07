@@ -3,10 +3,27 @@ import { deviceAuthSchema } from './DeviceAuth';
 import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
 
 /**
+ * Object schema for device-signed data validation
+ * @description
+ * Validates that a device-signed object has the required properties and types.
+ * This object schema is used internally by {@link deviceSignedSchema} after transforming
+ * the input Map into a plain object.
+ *
+ * Properties:
+ * - nameSpaces: {@link DeviceNameSpacesBytes}
+ * - deviceAuth: {@link DeviceAuth}
+ */
+export const deviceSignedObjectSchema = z.object({
+  nameSpaces: deviceNameSpacesBytesSchema,
+  deviceAuth: deviceAuthSchema,
+});
+
+/**
  * Schema for device-signed data in mdoc
  * @description
  * Represents the portion of the mdoc that is signed by the device.
  * This schema validates the structure of device-signed data including namespaces and authentication.
+ * The schema accepts a Map input and transforms it to a plain object for validation.
  *
  * ```cddl
  * DeviceSigned = {
@@ -17,21 +34,26 @@ import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
  *
  * @example
  * ```typescript
- * const deviceSigned = {
- *   nameSpaces: new Tag(24, Buffer.from([])),
- *   deviceAuth: { deviceSignature: sign1 }
- * };
+ * const deviceSigned = new Map([
+ *   ['nameSpaces', byteString],
+ *   ['deviceAuth', new Map([['deviceSignature', sign1.getContentForEncoding()]])]
+ * ]);
  * const result = deviceSignedSchema.parse(deviceSigned); // Returns DeviceSigned
  * ```
+ *
+ * @see {@link DeviceNameSpacesBytes}
+ * @see {@link DeviceAuth}
  */
-export const deviceSignedSchema = z.map(z.any(), z.any()).transform((v) => {
-  return z
-    .object({
-      nameSpaces: deviceNameSpacesBytesSchema,
-      deviceAuth: deviceAuthSchema,
-    })
-    .parse(Object.fromEntries(v));
-});
+export const deviceSignedSchema = z
+  .map(z.any(), z.any(), {
+    invalid_type_error:
+      'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
+    required_error:
+      'DeviceSigned: This field is required. Please provide a device-signed mapping.',
+  })
+  .transform((v) => {
+    return deviceSignedObjectSchema.parse(Object.fromEntries(v));
+  });
 
 /**
  * Type definition for device-signed data
