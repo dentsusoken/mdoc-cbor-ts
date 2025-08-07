@@ -17,7 +17,7 @@ export class DateTime extends Date {
    * Returns the date-time in ISO 8601 format without milliseconds
    * @returns ISO 8601 date-time string
    */
-  toISOString() {
+  toISOString(): string {
     return `${super.toISOString().split('.')[0]}Z`;
   }
 
@@ -25,7 +25,7 @@ export class DateTime extends Date {
    * Returns the date-time as a string in ISO 8601 format
    * @returns ISO 8601 date-time string
    */
-  toString() {
+  toString(): string {
     return this.toISOString();
   }
 
@@ -33,7 +33,7 @@ export class DateTime extends Date {
    * Returns the date-time as a JSON string in ISO 8601 format
    * @returns ISO 8601 date-time string
    */
-  toJSON() {
+  toJSON(): string {
     return this.toISOString();
   }
 }
