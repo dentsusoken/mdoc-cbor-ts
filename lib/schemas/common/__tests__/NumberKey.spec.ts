@@ -3,210 +3,200 @@ import { numberKeySchema } from '../NumberKey';
 import { z } from 'zod';
 
 describe('NumberKey', () => {
-  it('should accept valid number inputs', () => {
-    const validNumbers = [1, 123, 999, 1000];
+  describe('should accept valid number inputs', () => {
+    const testCases = [
+      {
+        name: 'small positive integer',
+        input: 1,
+      },
+      {
+        name: 'medium positive integer',
+        input: 123,
+      },
+      {
+        name: 'large positive integer',
+        input: 999,
+      },
+      {
+        name: 'very large positive integer',
+        input: 1000,
+      },
+      {
+        name: 'maximum safe integer',
+        input: 2147483647,
+      },
+    ];
 
-    validNumbers.forEach((number) => {
-      expect(numberKeySchema.parse(number)).toBe(number);
+    testCases.forEach(({ name, input }) => {
+      it(`should accept ${name}`, () => {
+        const result = numberKeySchema.parse(input);
+        expect(result).toBe(input);
+      });
     });
   });
 
-  it('should accept valid string inputs and transform to number', () => {
-    const validStrings = ['1', '123', '999', '1000'];
+  describe('should accept valid string inputs and transform to number', () => {
+    const testCases = [
+      {
+        name: 'single digit string',
+        input: '1',
+      },
+      {
+        name: 'multi-digit string',
+        input: '123',
+      },
+      {
+        name: 'large number string',
+        input: '999',
+      },
+      {
+        name: 'very large number string',
+        input: '1000',
+      },
+      {
+        name: 'maximum safe integer string',
+        input: '2147483647',
+      },
+    ];
 
-    validStrings.forEach((string) => {
-      const result = numberKeySchema.parse(string);
-      expect(typeof result).toBe('number');
-      expect(result).toBe(Number(string));
+    testCases.forEach(({ name, input }) => {
+      it(`should accept ${name}`, () => {
+        const result = numberKeySchema.parse(input);
+        expect(typeof result).toBe('number');
+        expect(result).toBe(Number(input));
+      });
     });
   });
 
-  it('should throw invalid_union error for non-number/non-string inputs', () => {
-    const invalidInputs = [true, { key: 'value' }, [1, 2, 3], null, undefined];
-    for (const input of invalidInputs) {
-      try {
-        numberKeySchema.parse(input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'NumberKey: Please provide a positive integer (as number or string)'
-        );
-      }
-    }
-  });
+  describe('should throw error for invalid inputs', () => {
+    const testCases = [
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'object input',
+        input: { key: 'value' },
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'array input',
+        input: [1, 2, 3],
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'decimal number',
+        input: 1.5,
+        expectedMessage:
+          'NumberKey: Please provide an integer (no decimal places)',
+      },
+      {
+        name: 'negative number',
+        input: -1,
+        expectedMessage:
+          'NumberKey: Please provide a positive integer greater than 0',
+      },
+      {
+        name: 'zero',
+        input: 0,
+        expectedMessage:
+          'NumberKey: Please provide a positive integer greater than 0',
+      },
+      {
+        name: 'non-digit string',
+        input: 'abc',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'mixed string with letters',
+        input: '123abc',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'string with decimal',
+        input: '12.34',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'string with comma',
+        input: '12,34',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'zero as string',
+        input: '0',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer greater than 0',
+      },
+      {
+        name: 'negative number as string',
+        input: '-1',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'large negative number',
+        input: -123,
+        expectedMessage:
+          'NumberKey: Please provide a positive integer greater than 0',
+      },
+      {
+        name: 'very large negative number',
+        input: -999,
+        expectedMessage:
+          'NumberKey: Please provide a positive integer greater than 0',
+      },
+      {
+        name: 'negative string with large number',
+        input: '-123',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'negative string with very large number',
+        input: '-999',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+      {
+        name: 'string with letters at end',
+        input: 'abc123',
+        expectedMessage:
+          'NumberKey: Please provide a positive integer (as number or string)',
+      },
+    ];
 
-  it('should throw error for boolean inputs', () => {
-    try {
-      numberKeySchema.parse(true);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer (as number or string)'
-      );
-    }
-  });
-
-  it('should throw error for null input', () => {
-    try {
-      numberKeySchema.parse(null);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer (as number or string)'
-      );
-    }
-  });
-
-  it('should throw error for undefined input', () => {
-    try {
-      numberKeySchema.parse(undefined);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer (as number or string)'
-      );
-    }
-  });
-
-  it('should throw error for object inputs', () => {
-    try {
-      numberKeySchema.parse({ key: 'value' });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer (as number or string)'
-      );
-    }
-  });
-
-  it('should throw error for array inputs', () => {
-    try {
-      numberKeySchema.parse([1, 2, 3]);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer (as number or string)'
-      );
-    }
-  });
-
-  it('should throw error for decimal numbers', () => {
-    try {
-      numberKeySchema.parse(1.5);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide an integer (no decimal places)'
-      );
-    }
-  });
-
-  it('should throw error for negative numbers', () => {
-    const negativeNumbers = [-1, -123, -999];
-
-    for (const number of negativeNumbers) {
-      try {
-        numberKeySchema.parse(number);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'NumberKey: Please provide a positive integer greater than 0'
-        );
-      }
-    }
-  });
-
-  it('should throw error for zero', () => {
-    try {
-      numberKeySchema.parse(0);
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer greater than 0'
-      );
-    }
-  });
-
-  it('should throw error for non-digit strings', () => {
-    const invalidStrings = ['abc', '123abc', 'abc123', '12.34', '12,34'];
-
-    for (const string of invalidStrings) {
-      try {
-        numberKeySchema.parse(string);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'NumberKey: Please provide a string containing only digits (e.g., "123")'
-        );
-      }
-    }
-  });
-
-  it('should throw error for zero as string', () => {
-    try {
-      numberKeySchema.parse('0');
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberKey: Please provide a positive integer greater than 0'
-      );
-    }
-  });
-
-  it('should throw error for negative numbers as strings', () => {
-    const negativeStrings = ['-1', '-123', '-999'];
-
-    for (const string of negativeStrings) {
-      try {
-        numberKeySchema.parse(string);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'NumberKey: Please provide a string containing only digits (e.g., "123")'
-        );
-      }
-    }
-  });
-
-  it('should handle large numbers correctly', () => {
-    const largeNumbers = [999999, 1000000, 2147483647];
-
-    largeNumbers.forEach((number) => {
-      expect(numberKeySchema.parse(number)).toBe(number);
-    });
-  });
-
-  it('should handle large numbers as strings correctly', () => {
-    const largeStrings = ['999999', '1000000', '2147483647'];
-
-    largeStrings.forEach((string) => {
-      const result = numberKeySchema.parse(string);
-      expect(typeof result).toBe('number');
-      expect(result).toBe(Number(string));
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          numberKeySchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
     });
   });
 });

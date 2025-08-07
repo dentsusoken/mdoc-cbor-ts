@@ -3,130 +3,148 @@ import { numberMapSchema } from '../NumberMap';
 import { z } from 'zod';
 
 describe('NumberMap', () => {
-  it('should accept object with numeric keys and transform to Map', () => {
-    const input = {
-      '1': 'value1',
-      '2': 'value2',
-      '3': 'value3',
-    };
-    const result = numberMapSchema.parse(input);
+  describe('should accept valid number maps', () => {
+    const testCases = [
+      {
+        name: 'object with string keys',
+        input: {
+          '1': 'value1',
+          '2': 'value2',
+          '3': 'value3',
+        },
+        expectedEntries: [
+          [1, 'value1'],
+          [2, 'value2'],
+          [3, 'value3'],
+        ],
+      },
+      {
+        name: 'object with mixed string/number keys',
+        input: {
+          '1': 'value1',
+          2: 'value2',
+          '3': 'value3',
+        },
+        expectedEntries: [
+          [1, 'value1'],
+          [2, 'value2'],
+          [3, 'value3'],
+        ],
+      },
+      {
+        name: 'existing Map',
+        input: new Map([
+          [1, 'value1'],
+          [2, 'value2'],
+          [3, 'value3'],
+        ]),
+        expectedEntries: [
+          [1, 'value1'],
+          [2, 'value2'],
+          [3, 'value3'],
+        ],
+      },
+      {
+        name: 'empty object',
+        input: {},
+        expectedEntries: [],
+      },
+      {
+        name: 'empty Map',
+        input: new Map(),
+        expectedEntries: [],
+      },
+    ];
 
-    expect(result).toBeInstanceOf(Map);
-    expect(result.get(1)).toBe('value1');
-    expect(result.get(2)).toBe('value2');
-    expect(result.get(3)).toBe('value3');
+    testCases.forEach(({ name, input, expectedEntries }) => {
+      it(`should accept ${name}`, () => {
+        const result = numberMapSchema.parse(input);
+
+        expect(result).toBeInstanceOf(Map);
+        expect(result.size).toBe(expectedEntries.length);
+
+        expectedEntries.forEach(([key, value]) => {
+          expect(result.get(key as number)).toBe(value);
+        });
+      });
+    });
   });
 
-  it('should accept object with mixed string/number keys', () => {
-    const input = {
-      '1': 'value1',
-      2: 'value2',
-      '3': 'value3',
-    };
-    const result = numberMapSchema.parse(input);
+  describe('should throw error for invalid inputs', () => {
+    const testCases = [
+      {
+        name: 'object with invalid string keys',
+        input: { abc: 'value' },
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'object with negative number keys',
+        input: { '-1': 'value' },
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'object with zero keys',
+        input: { '0': 'value' },
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'object with decimal keys',
+        input: { '1.5': 'value' },
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+      {
+        name: 'array input',
+        input: [],
+        expectedMessage:
+          'NumberMap: Please provide a valid number map (object or Map)',
+      },
+    ];
 
-    expect(result).toBeInstanceOf(Map);
-    expect(result.get(1)).toBe('value1');
-    expect(result.get(2)).toBe('value2');
-    expect(result.get(3)).toBe('value3');
-  });
-
-  it('should accept existing Map', () => {
-    const input = new Map([
-      [1, 'value1'],
-      [2, 'value2'],
-      [3, 'value3'],
-    ]);
-    const result = numberMapSchema.parse(input);
-
-    expect(result).toBeInstanceOf(Map);
-    expect(result.get(1)).toBe('value1');
-    expect(result.get(2)).toBe('value2');
-    expect(result.get(3)).toBe('value3');
-  });
-
-  it('should handle empty object', () => {
-    const input = {};
-    const result = numberMapSchema.parse(input);
-
-    expect(result).toBeInstanceOf(Map);
-    expect(result.size).toBe(0);
-  });
-
-  it('should handle empty Map', () => {
-    const input = new Map();
-    const result = numberMapSchema.parse(input);
-
-    expect(result).toBeInstanceOf(Map);
-    expect(result.size).toBe(0);
-  });
-
-  it('should throw NumberMap error for object with invalid string keys', () => {
-    try {
-      numberMapSchema.parse({ abc: 'value' });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberMap: Please provide a valid number map (object or Map)'
-      );
-    }
-  });
-
-  it('should throw NumberMap error for object with negative number keys', () => {
-    try {
-      numberMapSchema.parse({ '-1': 'value' });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberMap: Please provide a valid number map (object or Map)'
-      );
-    }
-  });
-
-  it('should throw NumberMap error for object with zero keys', () => {
-    try {
-      numberMapSchema.parse({ '0': 'value' });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberMap: Please provide a valid number map (object or Map)'
-      );
-    }
-  });
-
-  it('should throw NumberMap error for object with decimal keys', () => {
-    try {
-      numberMapSchema.parse({ '1.5': 'value' });
-      throw new Error('Should have thrown');
-    } catch (error) {
-      expect(error).toBeInstanceOf(z.ZodError);
-      const zodError = error as z.ZodError;
-      expect(zodError.issues[0].message).toBe(
-        'NumberMap: Please provide a valid number map (object or Map)'
-      );
-    }
-  });
-
-  it('should throw invalid_union error for non-object/non-Map inputs', () => {
-    const invalidInputs = ['string', 123, true, null, undefined, []];
-
-    for (const input of invalidInputs) {
-      try {
-        numberMapSchema.parse(input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'NumberMap: Please provide a valid number map (object or Map)'
-        );
-      }
-    }
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          numberMapSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 });

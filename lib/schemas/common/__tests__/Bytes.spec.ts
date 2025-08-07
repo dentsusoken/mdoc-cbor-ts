@@ -3,103 +3,147 @@ import { bytesSchema, createBytesSchema } from '../Bytes';
 import { z } from 'zod';
 
 describe('Bytes', () => {
-  it('should accept and transform Uint8Array to Buffer', () => {
-    const uint8Array = new Uint8Array([1, 2, 3]);
-    const result = bytesSchema.parse(uint8Array);
-
-    expect(Buffer.isBuffer(result)).toBe(true);
-    expect(result.equals(Buffer.from([1, 2, 3]))).toBe(true);
-  });
-
-  it('should accept and return Buffer as is', () => {
-    const buffer = Buffer.from([1, 2, 3]);
-    const result = bytesSchema.parse(buffer);
-
-    expect(Buffer.isBuffer(result)).toBe(true);
-    expect(result.equals(buffer)).toBe(true);
-  });
-
-  it('should throw invalid_union error for invalid input with unified message', () => {
-    const invalidInputs = [
-      'not bytes',
-      123,
-      true,
-      null,
-      undefined,
-      { key: 'value' },
-      [1, 2, 3],
+  describe('should accept valid bytes', () => {
+    const testCases = [
+      {
+        name: 'Uint8Array to Buffer',
+        input: new Uint8Array([1, 2, 3]),
+        expectedLength: 3,
+      },
+      {
+        name: 'Buffer as is',
+        input: Buffer.from([1, 2, 3]),
+        expectedLength: 3,
+      },
+      {
+        name: 'empty Buffer',
+        input: Buffer.from([]),
+        expectedLength: 0,
+      },
+      {
+        name: 'empty Uint8Array',
+        input: new Uint8Array([]),
+        expectedLength: 0,
+      },
+      {
+        name: 'large Buffer',
+        input: Buffer.alloc(1000, 1),
+        expectedLength: 1000,
+      },
+      {
+        name: 'large Uint8Array',
+        input: new Uint8Array(1000).fill(1),
+        expectedLength: 1000,
+      },
     ];
 
-    for (const input of invalidInputs) {
-      try {
-        bytesSchema.parse(input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        // Verify it's a ZodError
-        expect(error).toBeInstanceOf(z.ZodError);
+    testCases.forEach(({ name, input, expectedLength }) => {
+      it(`should accept ${name}`, () => {
+        const result = bytesSchema.parse(input);
 
-        // Check the unified error message
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.'
-        );
-      }
-    }
+        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result.length).toBe(expectedLength);
+      });
+    });
   });
 
-  it('should handle empty Buffer and Uint8Array', () => {
-    const emptyBuffer = Buffer.from([]);
-    const emptyUint8Array = new Uint8Array([]);
+  describe('should throw error for invalid inputs', () => {
+    const testCases = [
+      {
+        name: 'string input',
+        input: 'not bytes',
+        expectedMessage:
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expectedMessage:
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage:
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+      },
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage:
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage:
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+      },
+      {
+        name: 'object input',
+        input: { key: 'value' },
+        expectedMessage:
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+      },
+      {
+        name: 'array input',
+        input: [1, 2, 3],
+        expectedMessage:
+          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+      },
+    ];
 
-    const result1 = bytesSchema.parse(emptyBuffer);
-    const result2 = bytesSchema.parse(emptyUint8Array);
-
-    expect(Buffer.isBuffer(result1)).toBe(true);
-    expect(Buffer.isBuffer(result2)).toBe(true);
-    expect(result1.length).toBe(0);
-    expect(result2.length).toBe(0);
-  });
-
-  it('should handle large Buffer and Uint8Array', () => {
-    const largeBuffer = Buffer.alloc(1000, 1);
-    const largeUint8Array = new Uint8Array(1000).fill(1);
-
-    const result1 = bytesSchema.parse(largeBuffer);
-    const result2 = bytesSchema.parse(largeUint8Array);
-
-    expect(Buffer.isBuffer(result1)).toBe(true);
-    expect(Buffer.isBuffer(result2)).toBe(true);
-    expect(result1.length).toBe(1000);
-    expect(result2.length).toBe(1000);
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
+        try {
+          bytesSchema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage);
+        }
+      });
+    });
   });
 
   describe('createBytesSchema', () => {
-    it('should create schema with custom error message', () => {
-      const customSchema = createBytesSchema('Custom error message');
+    describe('should create schema with custom error message', () => {
+      it('should throw custom error message for invalid input', () => {
+        const customSchema = createBytesSchema('Custom error message');
 
-      try {
-        customSchema.parse('invalid');
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe('Custom error message');
-      }
+        try {
+          customSchema.parse('invalid');
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe('Custom error message');
+        }
+      });
     });
 
-    it('should accept valid inputs with custom schema', () => {
-      const customSchema = createBytesSchema('Custom error message');
+    describe('should accept valid inputs with custom schema', () => {
+      const testCases = [
+        {
+          name: 'Buffer with custom schema',
+          input: Buffer.from([1, 2, 3]),
+        },
+        {
+          name: 'Uint8Array with custom schema',
+          input: new Uint8Array([1, 2, 3]),
+        },
+      ];
 
-      const buffer = Buffer.from([1, 2, 3]);
-      const uint8Array = new Uint8Array([1, 2, 3]);
+      testCases.forEach(({ name, input }) => {
+        it(`should accept ${name}`, () => {
+          const customSchema = createBytesSchema('Custom error message');
+          const result = customSchema.parse(input);
 
-      const result1 = customSchema.parse(buffer);
-      const result2 = customSchema.parse(uint8Array);
-
-      expect(Buffer.isBuffer(result1)).toBe(true);
-      expect(Buffer.isBuffer(result2)).toBe(true);
-      expect(result1.equals(Buffer.from([1, 2, 3]))).toBe(true);
-      expect(result2.equals(Buffer.from([1, 2, 3]))).toBe(true);
+          expect(Buffer.isBuffer(result)).toBe(true);
+          expect(result.equals(Buffer.from([1, 2, 3]))).toBe(true);
+        });
+      });
     });
   });
 });
