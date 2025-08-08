@@ -8,6 +8,13 @@ import { deviceSignatureSchema } from './DeviceSignature';
  * Validates that the device authentication object has at least one authentication method.
  * Both deviceSignature and deviceMac are optional, but at least one must be present.
  *
+ * ```cddl
+ * DeviceAuth = {
+ *  ? deviceSignature: DeviceSignature, // optional, but at least one is required
+ *  ? deviceMac: DeviceMac             // optional, but at least one is required
+ * }
+ * ```
+ *
  * @example
  * ```typescript
  * const auth = { deviceSignature: sign1.getContentForEncoding() };
@@ -40,13 +47,6 @@ export const deviceAuthObjectSchema = z
  * This schema validates that at least one authentication method is provided.
  *
  * The schema accepts a Map input and transforms it to an object for validation.
- *
- * ```cddl
- * DeviceAuth = {
- *  ? deviceSignature: DeviceSignature, // optional, but at least one is required
- *  ? deviceMac: DeviceMac             // optional, but at least one is required
- * }
- * ```
  *
  * @example
  * ```typescript

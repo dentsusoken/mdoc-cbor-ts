@@ -9,6 +9,13 @@ import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
  * This object schema is used internally by {@link deviceSignedSchema} after transforming
  * the input Map into a plain object.
  *
+ * ```cddl
+ * DeviceSigned = {
+ *  "nameSpaces": DeviceNameSpacesBytes,
+ *  "deviceAuth": DeviceAuth
+ * }
+ * ```
+ *
  * Properties:
  * - nameSpaces: {@link DeviceNameSpacesBytes}
  * - deviceAuth: {@link DeviceAuth}
@@ -25,13 +32,6 @@ export const deviceSignedObjectSchema = z.object({
  * This schema validates the structure of device-signed data including namespaces and authentication.
  * The schema accepts a Map input and transforms it to a plain object for validation.
  *
- * ```cddl
- * DeviceSigned = {
- *  "nameSpaces": DeviceNameSpacesBytes,
- *  "deviceAuth": DeviceAuth
- * }
- * ```
- *
  * @example
  * ```typescript
  * const deviceSigned = new Map([
@@ -43,6 +43,7 @@ export const deviceSignedObjectSchema = z.object({
  *
  * @see {@link DeviceNameSpacesBytes}
  * @see {@link DeviceAuth}
+ * @see {@link deviceSignedObjectSchema}
  */
 export const deviceSignedSchema = z
   .map(z.any(), z.any(), {
