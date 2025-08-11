@@ -57,7 +57,7 @@ export const deviceSignedItemsSchema = z
  * @see {@link DataElementIdentifier}
  * @see {@link DataElementValue}
  */
-export type DeviceSignedItems = z.infer<typeof deviceSignedItemsSchema>;
+export type DeviceSignedItems = z.output<typeof deviceSignedItemsSchema>;
 
 /**
  * Type definition for device-signed items entries

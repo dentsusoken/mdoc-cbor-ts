@@ -1,8 +1,7 @@
 import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
 import { ByteString } from '@/cbor/ByteString';
-import { KVMap } from '@/types';
-import { DeviceNameSpaces, deviceNameSpacesSchema } from './DeviceNameSpaces';
+import { deviceNameSpacesSchema } from './DeviceNameSpaces';
 
 /**
  * Schema for CBOR-encoded device-signed namespaces
@@ -23,7 +22,7 @@ import { DeviceNameSpaces, deviceNameSpacesSchema } from './DeviceNameSpaces';
  * ```
  */
 export const deviceNameSpacesBytesSchema = z
-  .instanceof(ByteString<TypedMap<KVMap<DeviceNameSpaces>>>, {
+  .instanceof(ByteString<TypedMap<[string, unknown]>>, {
     message:
       'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
   })
