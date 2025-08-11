@@ -40,8 +40,7 @@ describe('Bytes', () => {
     testCases.forEach(({ name, input, expectedLength }) => {
       it(`should accept ${name}`, () => {
         const result = bytesSchema.parse(input);
-
-        expect(Buffer.isBuffer(result)).toBe(true);
+        expect(result).toBeInstanceOf(Uint8Array);
         expect(result.length).toBe(expectedLength);
       });
     });
@@ -139,9 +138,8 @@ describe('Bytes', () => {
         it(`should accept ${name}`, () => {
           const customSchema = createBytesSchema('Custom error message');
           const result = customSchema.parse(input);
-
-          expect(Buffer.isBuffer(result)).toBe(true);
-          expect(result.equals(Buffer.from([1, 2, 3]))).toBe(true);
+          expect(result).toBeInstanceOf(Uint8Array);
+          expect(Array.from(result)).toEqual([1, 2, 3]);
         });
       });
     });

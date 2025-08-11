@@ -23,8 +23,10 @@ export const GENERIC_ERROR_MESSAGE =
 export const createBytesSchema = (errorMessage: string) =>
   z.union(
     [
-      z.instanceof(Buffer),
-      z.instanceof(Uint8Array).transform((v) => Buffer.from(v)),
+      z.instanceof(Uint8Array),
+      z
+        .instanceof(Buffer)
+        .transform((v) => new Uint8Array(v.buffer, v.byteOffset, v.byteLength)),
     ],
     {
       errorMap: () => ({ message: errorMessage }),

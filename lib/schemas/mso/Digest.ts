@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { bytesSchema } from '../common';
+import { bytesSchema } from '@/schemas/common/Bytes';
 
 /**
  * Schema for digest in MSO
@@ -7,10 +7,14 @@ import { bytesSchema } from '../common';
  * Represents a binary string containing a digest value.
  * This schema validates that the digest is a valid binary string.
  *
+ * ```cddl
+ * Digest = bstr
+ * ```
+ *
  * @example
  * ```typescript
- * const digest = Buffer.from([]);
- * const result = digestSchema.parse(digest); // Returns Digest
+ * const digest = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
+ * const result = digestSchema.parse(digest); // Returns Digest (Buffer)
  * ```
  */
 export const digestSchema = bytesSchema;
@@ -20,8 +24,5 @@ export const digestSchema = bytesSchema;
  * @description
  * Represents a validated binary string containing a digest value
  *
- * ```cddl
- * Digest = bstr
- * ```
  */
-export type Digest = z.infer<typeof digestSchema>;
+export type Digest = z.output<typeof digestSchema>;
