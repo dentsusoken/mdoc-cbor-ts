@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestIDsSchema, DIGEST_IDS_NON_EMPTY_MESSAGE } from '../DigestIDs';
-import { DIGEST_ID_UNION_MESSAGE } from '../DigestID';
-import { typedMap } from '@/utils/typedMap';
+import { DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE } from '../DigestID';
 
 describe('DigestIDs', () => {
   describe('valid inputs', () => {
     it('should accept a Map with valid DigestID keys and Digest values', () => {
-      const input = typedMap({ 1: new Uint8Array([1, 2, 3]) });
+      const input = new Map<number, Uint8Array>([
+        [1, new Uint8Array([1, 2, 3])],
+      ]);
       const result = digestIDsSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
       expect(result.size).toBe(1);
@@ -18,9 +19,8 @@ describe('DigestIDs', () => {
   describe('error messages', () => {
     it('should throw for empty map with specific message', () => {
       try {
-        const empty = typedMap<Record<string, never>>({});
-        const mapInput = new Map(empty.entries());
-        digestIDsSchema.parse(mapInput);
+        const empty = new Map();
+        digestIDsSchema.parse(empty);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -29,24 +29,26 @@ describe('DigestIDs', () => {
       }
     });
 
-    it('should throw for invalid key with DigestID union message', () => {
+    it('should throw for invalid key with number invalid type message', () => {
       try {
-        const input = typedMap({ invalid: new Uint8Array([1]) });
-        const mapInput = new Map(input.entries());
-        digestIDsSchema.parse(mapInput);
+        const input = new Map<unknown, Uint8Array>([
+          ['invalid', new Uint8Array([1])],
+        ]);
+        digestIDsSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(DIGEST_ID_UNION_MESSAGE);
+        expect(zodError.issues[0].message).toBe(
+          DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE
+        );
       }
     });
 
     it('should throw for invalid value with Bytes schema message', () => {
       try {
-        const input = typedMap({ '1': 'not-bytes' });
-        const mapInput = new Map(input.entries());
-        digestIDsSchema.parse(mapInput);
+        const input = new Map<number, unknown>([[1, 'not-bytes']]);
+        digestIDsSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
