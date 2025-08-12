@@ -1,14 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { TypedMap } from '@jfromaniello/typedmap';
 
+/**
+ * Converts a readonly entry tuple to a mutable form.
+ * @description
+ * Some generics (like the one used by `TypedMap`) require tuples assignable to
+ * `any[]`. This helper preserves the tuple's key/value types while removing
+ * the `readonly` constraint.
+ *
+ * @typeParam T - Tuple type to convert
+ */
 type MutableTuple<T> = T extends readonly [infer A extends PropertyKey, infer B]
   ? [A, B]
-  : never;
+  : T;
 
 /**
- * Recursively transform an entries array type E into a union of
- * mutable [Key, Value] tuples where nested entry-array values
- * become TypedMap of their recursively transformed entries.
+ * Recursively transforms an array of entry tuples into a union of tuples,
+ * wrapping any nested entry-array values as `TypedMap` recursively.
+ *
+ * @typeParam E - Readonly array of entry tuples to transform
+ *
+ * @example
+ * ```ts
+ * type In = [
+ *   ['a', [['b', 1]]],
+ *   ['x', string],
+ * ];
+ * // Out: ['a', TypedMap<['b', 1]>] | ['x', string]
+ * type Out = EntriesToTypedMap<In>;
+ * ```
  */
 type EntriesToTypedMap<E> = E extends readonly (infer Elem)[]
   ? Elem extends readonly [infer K extends PropertyKey, infer V]
@@ -16,7 +36,7 @@ type EntriesToTypedMap<E> = E extends readonly (infer Elem)[]
         [
           K,
           V extends readonly unknown[]
-            ? V[number] extends readonly [PropertyKey, unknown]
+            ? V[number] extends Readonly<[PropertyKey, unknown]>
               ? TypedMap<EntriesToTypedMap<V>>
               : V
             : V,
@@ -26,32 +46,28 @@ type EntriesToTypedMap<E> = E extends readonly (infer Elem)[]
   : never;
 
 /**
- * Type-level transformer for heterogeneous arrays of entries
+ * Type-level transformer for heterogeneous entry arrays.
  * @description
- * Converts an array type that may contain entry tuples, plain keys, and nested arrays
- * into a union of entry tuples. The transformation is recursive.
+ * Produces a union of entry tuples from a readonly entry array. Handles three
+ * patterns:
+ * - `[K, V]` tuples are emitted as-is (with nested entry arrays in `V` turned
+ *   into `TypedMap` recursively)
+ * - A nested array value is traversed recursively
+ * - A bare key `K` followed by an entries array `E` becomes `[K, TypedMap<...>]`
+ *   where the `...` is the recursive transformation of `E`
  *
- * Rules:
- * - If an element is a tuple [K, V] where K is a PropertyKey, include it in the union
- * - If an element is a nested array, recurse into it and include its results
- * - If an element is a bare key K and the next element is a single-level array of entry tuples,
- *   emit [K, [K2, V2]] using the first-level nested tuple type; then continue with the remaining tail
+ * @typeParam T - Readonly array type to transform
  *
  * @example
  * ```ts
- * type Input = [
- *   ['aaa', number],
- *   [1, string],
- *   ['bbb', boolean],
- *   2,
- *   [['extra', string], ['extra2', number]]
+ * type In = [
+ *   ['s', string],
+ *   ['a', [['b', 1]]],
  * ];
- *
- * type Output = KVArray<Input>;
- * // Result: ['aaa', number] | [1, string] | ['bbb', boolean] | [2, (['extra', string] | ['extra2', number])]
+ * // Out: ['s', string] | ['a', TypedMap<['b', 1]>]
+ * type Out = KVArray<In>;
  * ```
  */
-// Only accept array types at the top-level. Non-array inputs resolve to never.
 export type KVArray<T> = T extends readonly []
   ? never
   : T extends readonly [infer Head, ...infer Tail]
@@ -60,7 +76,7 @@ export type KVArray<T> = T extends readonly []
           | [
               K,
               V extends readonly unknown[]
-                ? V[number] extends readonly [PropertyKey, unknown]
+                ? V[number] extends Readonly<[PropertyKey, unknown]>
                   ? TypedMap<EntriesToTypedMap<V>>
                   : V
                 : V,
@@ -71,7 +87,7 @@ export type KVArray<T> = T extends readonly []
         : Head extends PropertyKey
           ? Tail extends readonly [infer Next, ...infer Rest]
             ? Next extends readonly unknown[]
-              ? Next[number] extends readonly [PropertyKey, unknown]
+              ? Next[number] extends Readonly<[PropertyKey, unknown]>
                 ? [Head, TypedMap<EntriesToTypedMap<Next>>] | KVArray<Rest>
                 : KVArray<Tail>
               : KVArray<Tail>
