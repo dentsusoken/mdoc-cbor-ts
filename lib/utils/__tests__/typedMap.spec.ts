@@ -1,6 +1,6 @@
 import { describe, it, expect, expectTypeOf } from 'vitest';
 import { TypedMap } from '@jfromaniello/typedmap';
-import { typedMap, typedMapFromObject } from '@/utils/typedMap';
+import { typedMap } from '@/utils/typedMap';
 import type { KVObjectToTypedMap } from '@/types';
 
 describe('typedMap', () => {
