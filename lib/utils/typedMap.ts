@@ -1,30 +1,57 @@
 import { TypedMap } from '@jfromaniello/typedmap';
-import type { KVObjectToTypedMap } from '@/types';
+import type { KVArray } from '@/types';
 
-/**
- * Builds a TypedMap from a plain object with precise key/value typing.
- * Arrays are preserved; nested plain objects become nested TypedMap.
- */
-export const typedMap = <T>(obj: T): TypedMap<KVObjectToTypedMap<T>> => {
-  const entries = Object.entries(obj as Record<string, unknown>).map(
-    ([key, value]) => {
-      if (isPlainObject(value)) {
-        const nested = typedMap(value);
-        return [key, nested] as const;
-      }
-      return [key, value] as const;
-    }
+export const typedMap = <E extends readonly unknown[]>(
+  input: E
+): TypedMap<KVArray<E>> => {
+  if (!Array.isArray(input)) {
+    throw new TypeError('typedMap: input must be an entries array');
+  }
+  const normalizedEntries = (
+    input as Array<readonly [PropertyKey, unknown]>
+  ).map(normalizeEntry);
+
+  return new TypedMap(
+    normalizedEntries as Iterable<[PropertyKey, unknown]>
+  ) as unknown as TypedMap<KVArray<E>>;
+};
+
+// Helpers
+const isEntryTuple = (value: unknown): value is [PropertyKey, unknown] => {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    (typeof value[0] === 'string' ||
+      typeof value[0] === 'number' ||
+      typeof value[0] === 'symbol')
   );
-  // Typing the constructor input precisely is not feasible without per-key generics.
-  // We rely on the TypedMap generic KVObjectToTypedMap<T> to enforce correct get/set types.
-  return new TypedMap(entries as unknown as Array<KVObjectToTypedMap<T>>);
 };
 
-const isPlainObject = (value: unknown): value is Record<string, unknown> => {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+const isEntriesArray = (
+  value: unknown
+): value is Array<[PropertyKey, unknown]> => {
+  return Array.isArray(value) && value.every(isEntryTuple);
 };
 
-/**
- * @deprecated Use `typedMap` instead. This alias remains for backward compatibility.
- */
-export const typedMapFromObject = typedMap;
+const isPlainObject = (value: unknown): value is object => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Object.getPrototypeOf(value) === Object.prototype
+  );
+};
+
+const normalizeEntry = (
+  entry: readonly [PropertyKey, unknown]
+): [PropertyKey, unknown] => {
+  const [key, value] = entry;
+  if (isEntriesArray(value)) {
+    return [key, typedMap(value)];
+  }
+  if (isPlainObject(value)) {
+    throw new TypeError(
+      `typedMap: plain objects are not supported at key "${String(key)}"`
+    );
+  }
+  return [key, value];
+};

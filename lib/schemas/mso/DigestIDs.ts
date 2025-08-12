@@ -1,6 +1,9 @@
 import { z } from 'zod';
-import { Digest, digestSchema } from './Digest';
-import { DigestID, digestIDSchema } from './DigestID';
+import { digestSchema } from './Digest';
+import { digestIDSchema } from './DigestID';
+
+export const DIGEST_IDS_NON_EMPTY_MESSAGE =
+  'DigestIDs: Please provide at least one {DigestID => Digest} entry';
 
 /**
  * Schema for digest IDs in MSO
@@ -8,28 +11,28 @@ import { DigestID, digestIDSchema } from './DigestID';
  * Represents a record of digest IDs and their corresponding digest values.
  * This schema validates that each digest ID maps to a valid digest.
  *
+ * ```cddl
+ * DigestIDs = {+ DigestID => Digest}
+ * ```
+ *
  * @example
  * ```typescript
- * const digests = {
- *   1: Buffer.from('0123456789abcdef')
- * };
- * const result = digestIDsSchema.parse(digests); // Returns DigestIDs
+ * const digests = new Map<number, Uint8Array>([
+ *   [1, new Uint8Array([0xde, 0xad, 0xbe, 0xef])],
+ * ]);
+ * const result = digestIDsSchema.parse(digests); // Returns DigestIDs (Map)
  * ```
  */
 export const digestIDsSchema = z
   .map(digestIDSchema, digestSchema)
-  .refine((data) => data.size > 0)
-  .transform((data) => Object.fromEntries(data));
+  .refine((data) => data.size > 0, { message: DIGEST_IDS_NON_EMPTY_MESSAGE });
 
 /**
  * Type definition for digest IDs
  * @description
  * Represents a validated record of digest IDs and their digest values
  *
- * ```cddl
- * DigestIDs = {+ DigestID => Digest}
- * ```
- * @see {@link DigestID}
- * @see {@link Digest}
+ * @see digestIDSchema
+ * @see digestSchema
  */
-export type DigestIDs = z.infer<typeof digestIDsSchema>;
+export type DigestIDs = z.output<typeof digestIDsSchema>;

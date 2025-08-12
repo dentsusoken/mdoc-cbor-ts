@@ -33,7 +33,7 @@ export type KVObjectToTypedMap<T> = {
     K,
     T[K] extends any[]
       ? T[K]
-      : T[K] extends Record<string, any>
+      : T[K] extends Record<PropertyKey, any>
         ? TypedMap<KVObjectToTypedMap<T[K]>>
         : T[K],
   ];

@@ -36,6 +36,18 @@ describe('KVObjectToTypedMap', () => {
       expect(test3).toBeDefined();
     });
 
+    it('should handle Record<number, any> types', () => {
+      type RecordNumberKV = KVObjectToTypedMap<Record<number, any>>;
+
+      const test: RecordNumberKV = [1, 'value'];
+      const test1: RecordNumberKV = [2, 42];
+      const test2: RecordNumberKV = [3, true];
+
+      expect(test).toBeDefined();
+      expect(test1).toBeDefined();
+      expect(test2).toBeDefined();
+    });
+
     it('should handle nested object types', () => {
       interface NestedObject {
         user: {
@@ -183,6 +195,16 @@ describe('KVObjectToTypedMap', () => {
 
       expect(data.get('key1')).toBe('value1');
       expect(data.get('key2')).toBe('value2');
+    });
+
+    it('should work with dynamic numeric Record types', () => {
+      const data = new TypedMap<KVObjectToTypedMap<Record<number, string>>>([
+        [1, 'value1'],
+        [2, 'value2'],
+      ]);
+
+      expect(data.get(1)).toBe('value1');
+      expect(data.get(2)).toBe('value2');
     });
   });
 });
