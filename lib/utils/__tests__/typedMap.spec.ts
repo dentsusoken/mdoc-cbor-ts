@@ -33,11 +33,11 @@ describe('typedMap', () => {
   it('should handle deeper nesting', () => {
     const entries = [['a', [['b', [['c', 99]]]]]] as const;
     const tm = typedMap(entries);
-    const a = tm.get('a') as unknown as TypedMap<any>;
+    const a = tm.get('a');
     if (!a) {
       throw new Error('a is undefined');
     }
-    const b = a.get('b') as unknown as TypedMap<any>;
+    const b = a.get('b');
     if (!b) {
       throw new Error('b is undefined');
     }

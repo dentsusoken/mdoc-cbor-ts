@@ -26,4 +26,17 @@ describe('KVArray', () => {
     type Test = KVArray<{ aaa: string }>;
     expectTypeOf<Test>(null as unknown as Test).toEqualTypeOf<never>();
   });
+
+  it('should handle two-level nested entries under a key', () => {
+    type Input = ['a', [['b', [['c', number]]]]];
+
+    type Output = KVArray<Input>;
+
+    // Desired deep-nested mapping (two levels):
+    // ['a', TypedMap< ['b', TypedMap< ['c', number ] > ] >]
+    type Expected = ['a', TypedMap<['b', TypedMap<['c', number]>]>];
+
+    // This may currently fail if KVArray only wraps one nesting level
+    expectTypeOf<Output>().toEqualTypeOf<Expected>();
+  });
 });

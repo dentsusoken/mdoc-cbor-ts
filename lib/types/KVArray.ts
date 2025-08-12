@@ -6,6 +6,26 @@ type MutableTuple<T> = T extends readonly [infer A extends PropertyKey, infer B]
   : never;
 
 /**
+ * Recursively transform an entries array type E into a union of
+ * mutable [Key, Value] tuples where nested entry-array values
+ * become TypedMap of their recursively transformed entries.
+ */
+type EntriesToTypedMap<E> = E extends readonly (infer Elem)[]
+  ? Elem extends readonly [infer K extends PropertyKey, infer V]
+    ? MutableTuple<
+        [
+          K,
+          V extends readonly unknown[]
+            ? V[number] extends readonly [PropertyKey, unknown]
+              ? TypedMap<EntriesToTypedMap<V>>
+              : V
+            : V,
+        ]
+      >
+    : never
+  : never;
+
+/**
  * Type-level transformer for heterogeneous arrays of entries
  * @description
  * Converts an array type that may contain entry tuples, plain keys, and nested arrays
@@ -41,7 +61,7 @@ export type KVArray<T> = T extends readonly []
               K,
               V extends readonly unknown[]
                 ? V[number] extends readonly [PropertyKey, unknown]
-                  ? TypedMap<MutableTuple<V[number]>>
+                  ? TypedMap<EntriesToTypedMap<V>>
                   : V
                 : V,
             ]
@@ -52,7 +72,7 @@ export type KVArray<T> = T extends readonly []
           ? Tail extends readonly [infer Next, ...infer Rest]
             ? Next extends readonly unknown[]
               ? Next[number] extends readonly [PropertyKey, unknown]
-                ? [Head, TypedMap<MutableTuple<Next[number]>>] | KVArray<Rest>
+                ? [Head, TypedMap<EntriesToTypedMap<Next>>] | KVArray<Rest>
                 : KVArray<Tail>
               : KVArray<Tail>
             : KVArray<Tail>
