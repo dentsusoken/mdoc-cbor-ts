@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { digestIDSchema } from '../DigestID';
+import {
+  digestIDSchema,
+  DIGEST_ID_UNION_MESSAGE,
+  DIGEST_ID_POSITIVE_MESSAGE,
+  DIGEST_ID_INTEGER_MESSAGE,
+} from '../DigestID';
 
 describe('DigestID', () => {
   describe('valid inputs', () => {
@@ -20,8 +25,7 @@ describe('DigestID', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const unionMessage =
-      'DigestID: Please provide a positive integer (as number or string of digits)';
+    const unionMessage = DIGEST_ID_UNION_MESSAGE;
     const testCases: Array<{ name: string; input: unknown; expected: string }> =
       [
         { name: 'boolean', input: true, expected: unionMessage },
@@ -52,9 +56,7 @@ describe('DigestID', () => {
         throw new Error('Should have thrown');
       } catch (error) {
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'DigestID: Please provide a positive integer greater than 0'
-        );
+        expect(zodError.issues[0].message).toBe(DIGEST_ID_POSITIVE_MESSAGE);
       }
     });
 
@@ -64,9 +66,7 @@ describe('DigestID', () => {
         throw new Error('Should have thrown');
       } catch (error) {
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'DigestID: Please provide a positive integer greater than 0'
-        );
+        expect(zodError.issues[0].message).toBe(DIGEST_ID_POSITIVE_MESSAGE);
       }
     });
 
@@ -76,16 +76,13 @@ describe('DigestID', () => {
         throw new Error('Should have thrown');
       } catch (error) {
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'DigestID: Please provide an integer (no decimal places)'
-        );
+        expect(zodError.issues[0].message).toBe(DIGEST_ID_INTEGER_MESSAGE);
       }
     });
   });
 
   describe('string branch validations', () => {
-    const unionMessage =
-      'DigestID: Please provide a positive integer (as number or string of digits)';
+    const unionMessage = DIGEST_ID_UNION_MESSAGE;
 
     it('should throw for non-digit string', () => {
       try {
@@ -113,9 +110,7 @@ describe('DigestID', () => {
         throw new Error('Should have thrown');
       } catch (error) {
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          'DigestID: Please provide a positive integer greater than 0'
-        );
+        expect(zodError.issues[0].message).toBe(DIGEST_ID_POSITIVE_MESSAGE);
       }
     });
   });
