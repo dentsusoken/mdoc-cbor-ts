@@ -26,7 +26,7 @@ export const deviceNameSpacesBytesSchema = z
     message:
       'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
   })
-  .refine((v) => deviceNameSpacesSchema.parse(Object.fromEntries(v.data)));
+  .refine((v) => deviceNameSpacesSchema.parse(v.data.esMap));
 
 /**
  * Type definition for CBOR-encoded device-signed namespaces

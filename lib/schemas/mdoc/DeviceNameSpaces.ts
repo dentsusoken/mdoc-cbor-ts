@@ -3,6 +3,15 @@ import { Entry } from '@/schemas/common/Entry';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { deviceSignedItemsSchema } from './DeviceSignedItems';
 
+export const DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE =
+  'DeviceNameSpaces: Expected a Map with namespace keys and device-signed items values. Please provide a valid namespace mapping.';
+
+export const DEVICE_NAMESPACES_REQUIRED_MESSAGE =
+  'DeviceNameSpaces: This field is required. Please provide a namespace mapping Map.';
+
+export const DEVICE_NAMESPACES_EMPTY_MESSAGE =
+  'DeviceNameSpaces: At least one namespace must be provided. The Map cannot be empty.';
+
 /**
  * Schema for device-signed namespaces in mdoc
  * @description
@@ -22,19 +31,16 @@ import { deviceSignedItemsSchema } from './DeviceSignedItems';
  * ```
  */
 export const deviceNameSpacesSchema = z
-  .record(nameSpaceSchema, deviceSignedItemsSchema, {
-    invalid_type_error:
-      'DeviceNameSpaces: Expected an object with namespace keys and device-signed items values. Please provide a valid namespace mapping.',
-    required_error:
-      'DeviceNameSpaces: This field is required. Please provide a namespace mapping object.',
+  .map(nameSpaceSchema, deviceSignedItemsSchema, {
+    invalid_type_error: DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
+    required_error: DEVICE_NAMESPACES_REQUIRED_MESSAGE,
   })
   .refine(
     (data) => {
-      return Object.keys(data).length >= 0;
+      return data.size > 0;
     },
     {
-      message:
-        'DeviceNameSpaces: At least one namespace must be provided. The object cannot be empty.',
+      message: DEVICE_NAMESPACES_EMPTY_MESSAGE,
     }
   );
 

@@ -3,6 +3,15 @@ import { dataElementIdentifierSchema } from '../common/DataElementIdentifier';
 import { dataElementValueSchema } from '../common/DataElementValue';
 import type { Entry } from '../common/Entry';
 
+export const DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE =
+  'DeviceSignedItems: Expected a Map with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.';
+
+export const DEVICE_SIGNED_ITEMS_REQUIRED_MESSAGE =
+  'DeviceSignedItems: This field is required. Please provide a device-signed items Map.';
+
+export const DEVICE_SIGNED_ITEMS_EMPTY_MESSAGE =
+  'DeviceSignedItems: At least one data element must be provided. The Map cannot be empty.';
+
 /**
  * Schema for device-signed items in mdoc
  * @description
@@ -18,29 +27,28 @@ import type { Entry } from '../common/Entry';
  *
  * @example
  * ```typescript
- * const items = {
- *   "given_name": "John",
- *   "family_name": "Doe"
- * };
- * const result = deviceSignedItemsSchema.parse(items); // Returns DeviceSignedItems
+ * const items = new Map<string, unknown>([
+ *   ['given_name', 'John'],
+ *   ['family_name', 'Doe']
+ * ]);
+ * const result = deviceSignedItemsSchema.parse(items); // Returns Map<string, unknown>
  * ```
  */
 export const deviceSignedItemsSchema = z
-  .record(dataElementIdentifierSchema, dataElementValueSchema, {
-    invalid_type_error:
-      'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
-    required_error:
-      'DeviceSignedItems: This field is required. Please provide a device-signed items mapping object.',
+  .map(dataElementIdentifierSchema, dataElementValueSchema, {
+    invalid_type_error: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+    required_error: DEVICE_SIGNED_ITEMS_REQUIRED_MESSAGE,
   })
   .refine(
     (data) => {
-      return Object.keys(data).length > 0;
+      return data.size > 0;
     },
     {
-      message:
-        'DeviceSignedItems: At least one data element must be provided. The object cannot be empty.',
+      message: DEVICE_SIGNED_ITEMS_EMPTY_MESSAGE,
     }
   );
+
+// constants are declared above
 
 /**
  * Type definition for device-signed items

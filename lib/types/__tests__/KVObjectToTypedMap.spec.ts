@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TypedMap } from '@jfromaniello/typedmap';
-import { describe, expect, it } from 'vitest';
-import { KVObjectToTypedMap } from '../KVObjectToTypedMap';
+import { describe, expect, it, expectTypeOf } from 'vitest';
+import { KVObjectToTypedMap } from '@/types';
 
 describe('KVObjectToTypedMap', () => {
   describe('type behavior', () => {
@@ -111,6 +111,43 @@ describe('KVObjectToTypedMap', () => {
   });
 
   describe('runtime behavior', () => {
+    it('should build a proper TypedMap for the given Example shape', () => {
+      interface Example {
+        aaa: number;
+        bbb: boolean;
+        ccc: number[];
+        ddd: {
+          ddd1: number;
+          ddd2: boolean;
+        };
+      }
+
+      const map = new TypedMap<KVObjectToTypedMap<Example>>([
+        ['aaa', 10],
+        ['bbb', true],
+        ['ccc', [1, 2, 3]],
+        [
+          'ddd',
+          new TypedMap<KVObjectToTypedMap<Example['ddd']>>([
+            ['ddd1', 5],
+            ['ddd2', false],
+          ]),
+        ],
+      ]);
+
+      // runtime checks
+      expect(map.get('aaa')).toBe(10);
+      expect(map.get('bbb')).toBe(true);
+      expect(map.get('ccc')).toEqual([1, 2, 3]);
+      const ddd = map.get('ddd');
+      expect(ddd).toBeInstanceOf(TypedMap);
+      const dddMap = ddd as TypedMap<KVObjectToTypedMap<Example['ddd']>>;
+      expect(dddMap.get('ddd1')).toBe(5);
+      expect(dddMap.get('ddd2')).toBe(false);
+
+      // compile-time checks
+      expectTypeOf(map).toEqualTypeOf<TypedMap<KVObjectToTypedMap<Example>>>();
+    });
     it('should work with TypedMap constructor', () => {
       interface TestObject {
         name: string;

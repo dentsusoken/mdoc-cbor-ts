@@ -2,32 +2,37 @@ import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { ByteString } from '@/cbor/ByteString';
-import { KVMap } from '@/types/KVMap';
 import { deviceNameSpacesBytesSchema } from '../DeviceNameSpacesBytes';
+import { DEVICE_NAMESPACES_EMPTY_MESSAGE } from '../DeviceNameSpaces';
+import { DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE } from '../DeviceSignedItems';
 
 describe('DeviceNameSpacesBytes', () => {
   describe('should accept valid CBOR tags', () => {
-    const testCases = [
-      {
-        name: 'empty TypedMap',
-        input: new ByteString(new TypedMap<KVMap<Record<string, never>>>()),
-      },
-      {
-        name: 'TypedMap with data',
-        input: new ByteString(
-          new TypedMap<KVMap<Record<string, unknown>>>([
-            ['org.iso.18013.5.1', { given_name: 'John' }],
-          ])
-        ),
-      },
-    ];
+    it('should accept TypedMap with data', () => {
+      const input = new ByteString(
+        new TypedMap<[string, unknown]>([
+          [
+            'org.iso.18013.5.1',
+            new Map<string, unknown>([['given_name', 'John']]),
+          ],
+        ])
+      );
+      const result = deviceNameSpacesBytesSchema.parse(input);
+      expect(result).toBeInstanceOf(ByteString);
+      expect(result.data).toEqual(input.data);
+    });
 
-    testCases.forEach(({ name, input }) => {
-      it(`should accept ${name}`, () => {
-        const result = deviceNameSpacesBytesSchema.parse(input);
-        expect(result).toBeInstanceOf(ByteString);
-        expect(result.data).toEqual(input.data);
-      });
+    it('should throw for empty TypedMap', () => {
+      const input = new ByteString(new TypedMap<[string, unknown]>());
+      try {
+        deviceNameSpacesBytesSchema.parse(input);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          DEVICE_NAMESPACES_EMPTY_MESSAGE
+        );
+      }
     });
   });
 
@@ -102,22 +107,23 @@ describe('DeviceNameSpacesBytes', () => {
       {
         name: 'null value',
         input: new ByteString(
-          new TypedMap<KVMap<Record<string, unknown>>>([
-            ['org.iso.18013.5.1', null],
+          new TypedMap<[string, unknown]>([
+            ['org.iso.18013.5.1', null as unknown as Map<string, unknown>],
           ])
         ),
-        expectedMessage:
-          'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'string value',
         input: new ByteString(
-          new TypedMap<KVMap<Record<string, unknown>>>([
-            ['org.iso.18013.5.1', 'invalid-string-value'],
+          new TypedMap<[string, unknown]>([
+            [
+              'org.iso.18013.5.1',
+              'invalid-string-value' as unknown as Map<string, unknown>,
+            ],
           ])
         ),
-        expectedMessage:
-          'DeviceSignedItems: Expected an object with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.',
+        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
       },
     ];
 
