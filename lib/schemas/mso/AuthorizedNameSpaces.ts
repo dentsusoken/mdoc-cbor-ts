@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { nameSpaceSchema } from '@/schemas/common';
+import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { createArraySchema } from '@/schemas/common/Array';
 
 /**

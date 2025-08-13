@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema } from '@/schemas/common';
+import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
 import { createArraySchema } from '@/schemas/common/Array';
 
 /**

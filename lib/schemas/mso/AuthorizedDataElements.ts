@@ -1,46 +1,63 @@
 import { z } from 'zod';
-import { Entry, nameSpaceSchema } from '../common';
-import {
-  DataElementsArray,
-  dataElementsArraySchema,
-} from './DataElementsArray';
+import { nameSpaceSchema } from '@/schemas/common/NameSpace';
+import { createMapSchema } from '@/schemas/common/Map';
+import { dataElementsArraySchema } from '@/schemas/mso/DataElementsArray';
 
 /**
  * Schema for authorized data elements in MSO
  * @description
- * Represents a record of namespaces and their corresponding authorized data elements.
- * This schema validates that each namespace maps to valid data element arrays.
+ * Validates a required non-empty mapping from `NameSpace` to `DataElementsArray`.
+ * Error messages are prefixed with `AuthorizedNameSpaces: ...` and follow
+ * the standardized validations provided by `nameSpaceSchema` and
+ * `dataElementsArraySchema`.
  *
- * @example
- * ```typescript
- * const elements = {
- *   "org.iso.18013.5.1": ["given_name", "family_name"]
- * };
- * const result = authorizedDataElementsSchema.parse(elements); // Returns AuthorizedDataElements
- * ```
- */
-export const authorizedDataElementsSchema = z
-  .map(nameSpaceSchema, dataElementsArraySchema)
-  .refine((data) => data.size > 0)
-  .transform((data) => Object.fromEntries(data));
-
-/**
- * Type definition for authorized data elements
- * @description
- * Represents a validated record of namespaces and their authorized data elements
+ * Validation rules:
+ * - Requires a Map-like object (record) type
+ * - Requires at least one entry (non-empty)
+ * - Each key must satisfy `nameSpaceSchema` (text)
+ * - Each value must satisfy `dataElementsArraySchema` (non-empty array of identifiers)
  *
  * ```cddl
  * AuthorizedDataElements = {+ NameSpace => DataElementsArray}
  * ```
- * @see {@link DataElementsArray}
+ *
+ * @example
+ * ```typescript
+ * const elements = {
+ *   "org.iso.18013.5.1": ["given_name", "family_name"],
+ * };
+ * const result = authorizedDataElementsSchema.parse(elements); // AuthorizedDataElements
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (empty record is not allowed)
+ * // authorizedDataElementsSchema.parse({});
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (invalid key or value types)
+ * // authorizedDataElementsSchema.parse({ 123: ["given_name"] });
+ * // authorizedDataElementsSchema.parse({ "org.iso.18013.5.1": [123] });
+ * ```
+ *
+ * @see nameSpaceSchema
+ * @see dataElementsArraySchema
  */
-export type AuthorizedDataElements = z.infer<
-  typeof authorizedDataElementsSchema
->;
+export const authorizedDataElementsSchema = createMapSchema({
+  target: 'AuthorizedDataElements',
+  keySchema: nameSpaceSchema,
+  valueSchema: dataElementsArraySchema,
+});
 
 /**
- * Type definition for authorized data elements entries
+ * Type definition for authorized data elements
  * @description
- * Represents a key-value pair from the authorized data elements record
+ * Represents a validated record of namespaces and their authorized data elements.
+ *
+ * @see {@link DataElementsArray}
  */
-export type AuthorizedDataElementsEntry = Entry<AuthorizedDataElements>;
+export type AuthorizedDataElements = z.output<
+  typeof authorizedDataElementsSchema
+>;

@@ -5,7 +5,8 @@ export const ARRAY_INVALID_TYPE_MESSAGE_SUFFIX =
   'Expected an array, but received a different type. Please provide an array.';
 export const ARRAY_REQUIRED_MESSAGE_SUFFIX =
   'This field is required. Please provide an array.';
-export const ARRAY_EMPTY_MESSAGE_SUFFIX = 'Please provide at least one item.';
+export const ARRAY_EMPTY_MESSAGE_SUFFIX =
+  'At least one entry must be provided. The array cannot be empty.';
 
 type CreateArraySchemaParams<T> = {
   target: string;

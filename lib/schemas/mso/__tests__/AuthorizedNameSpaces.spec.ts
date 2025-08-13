@@ -56,7 +56,7 @@ describe('AuthorizedNameSpaces', () => {
     cases.forEach(({ name, input, expected }) => {
       it(`should reject ${name}`, () => {
         try {
-          authorizedNameSpacesSchema.parse(input as string[]);
+          authorizedNameSpacesSchema.parse(input);
           throw new Error('Should have thrown');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createUintSchema } from '../common/Uint';
+import { createUintSchema } from '@/schemas/common/Uint';
 
 /**
  * Schema for digest ID in MSO

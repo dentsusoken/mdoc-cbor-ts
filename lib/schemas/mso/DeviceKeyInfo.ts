@@ -1,41 +1,25 @@
 import { z } from 'zod';
-import { DeviceKey, deviceKeySchema } from './DeviceKey';
-import {
-  KeyAuthorizations,
-  keyAuthorizationsSchema,
-} from './KeyAuthorizations';
-import { KeyInfo, keyInfoSchema } from './KeyInfo';
+import { deviceKeySchema } from './DeviceKey';
+import { keyAuthorizationsSchema } from './KeyAuthorizations';
+import { keyInfoSchema } from './KeyInfo';
+import { createStructSchema } from '@/schemas/common/Struct';
+
+export const deviceKeyInfoObjectSchema = z.object({
+  deviceKey: deviceKeySchema,
+  keyAuthorizations: keyAuthorizationsSchema.optional(),
+  keyInfo: keyInfoSchema.optional(),
+});
 
 /**
  * Schema for device key information in MSO
  * @description
- * Represents information about a device key including the key itself and optional
- * authorizations and metadata. This schema validates the structure of device key information.
+ * Validates a Map<string, unknown> that is transformed into a plain object and
+ * checked against `deviceKeyInfoObjectSchema`. It describes a device key along
+ * with optional authorizations and metadata.
  *
- * @example
- * ```typescript
- * const keyInfo = {
- *   deviceKey: new COSEKey({}),
- *   keyAuthorizations: {},
- *   keyInfo: {}
- * };
- * const result = deviceKeyInfoSchema.parse(keyInfo); // Returns DeviceKeyInfo
- * ```
- */
-export const deviceKeyInfoSchema = z.map(z.any(), z.any()).transform((data) => {
-  return z
-    .object({
-      deviceKey: deviceKeySchema,
-      keyAuthorizations: keyAuthorizationsSchema.optional(),
-      keyInfo: keyInfoSchema.optional(),
-    })
-    .parse(Object.fromEntries(data));
-});
-
-/**
- * Type definition for device key information
- * @description
- * Represents a validated device key information structure
+ * Container type/required errors are prefixed with `DeviceKeyInfo: ...` and follow
+ * the shared Map message suffixes. Field-level validation is delegated to
+ * `deviceKeySchema`, `keyAuthorizationsSchema`, and `keyInfoSchema`.
  *
  * ```cddl
  * DeviceKeyInfo = {
@@ -44,8 +28,34 @@ export const deviceKeyInfoSchema = z.map(z.any(), z.any()).transform((data) => {
  *  ? "keyInfo": KeyInfo
  * }
  * ```
+ *
+ * @example
+ * Map-based input (converted to object before validation):
+ * - deviceKey: COSE_Key as Map (e.g., new Map([[1, 2]]))
+ * - keyAuthorizations: see KeyAuthorizations (e.g., new Map([["nameSpaces", ["org.iso.18013.5.1"]]]))
+ * - keyInfo: see KeyInfo (e.g., new Map([[1, "value"]]))
+ * Parse with the schema to get DeviceKeyInfo.
+ *
+ * @example
+ * Throws ZodError for invalid container type (object instead of Map).
+ *
+ * @see createStructSchema
+ * @see deviceKeySchema
+ * @see keyAuthorizationsSchema
+ * @see keyInfoSchema
+ */
+export const deviceKeyInfoSchema = createStructSchema({
+  target: 'DeviceKeyInfo',
+  objectSchema: deviceKeyInfoObjectSchema,
+});
+
+/**
+ * Type definition for device key information
+ * @description
+ * Represents a validated device key information structure.
+ *
  * @see {@link DeviceKey}
  * @see {@link KeyAuthorizations}
  * @see {@link KeyInfo}
  */
-export type DeviceKeyInfo = z.infer<typeof deviceKeyInfoSchema>;
+export type DeviceKeyInfo = z.output<typeof deviceKeyInfoSchema>;
