@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { nameSpaceSchema } from '../NameSpace';
+import {
+  TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
+  TEXT_REQUIRED_MESSAGE_SUFFIX,
+  TEXT_NON_EMPTY_MESSAGE_SUFFIX,
+} from '../Text';
 import { z } from 'zod';
 
 describe('NameSpace', () => {
@@ -40,66 +45,57 @@ describe('NameSpace', () => {
   });
 
   describe('should throw error for invalid inputs', () => {
+    const prefix = 'NameSpace: ';
     const testCases = [
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'NameSpace: Expected a string, but received a different type. Please provide a string identifier.',
+        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'NameSpace: Expected a string, but received a different type. Please provide a string identifier.',
+        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expectedMessage:
-          'NameSpace: Expected a string, but received a different type. Please provide a string identifier.',
+        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'array input',
         input: [1, 2, 3],
-        expectedMessage:
-          'NameSpace: Expected a string, but received a different type. Please provide a string identifier.',
+        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'NameSpace: Expected a string, but received a different type. Please provide a string identifier.',
+        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'NameSpace: This field is required. Please provide a string identifier.',
+        expectedMessage: `${prefix}${TEXT_REQUIRED_MESSAGE_SUFFIX}`,
       },
       {
         name: 'empty string',
         input: '',
-        expectedMessage:
-          'NameSpace: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
+        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
       },
       {
         name: 'whitespace-only string',
         input: '   ',
-        expectedMessage:
-          'NameSpace: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
+        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
       },
       {
         name: 'string with only tabs',
         input: '\t\t\t',
-        expectedMessage:
-          'NameSpace: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
+        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
       },
       {
         name: 'string with only newlines',
         input: '\n\n\n',
-        expectedMessage:
-          'NameSpace: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
+        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
       },
     ];
 

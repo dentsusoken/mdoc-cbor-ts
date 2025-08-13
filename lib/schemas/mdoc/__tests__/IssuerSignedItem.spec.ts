@@ -2,6 +2,23 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { issuerSignedItemSchema } from '../IssuerSignedItem';
+import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Bytes';
+import { TEXT_NON_EMPTY_MESSAGE_SUFFIX } from '../../common/Text';
+
+// Constants for expected error messages
+const ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE =
+  'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.';
+const ISSUER_SIGNED_ITEM_REQUIRED_MESSAGE =
+  'IssuerSignedItem: This field is required. Please provide an issuer-signed item object.';
+
+const DIGEST_ID_INVALID_TYPE_MESSAGE =
+  'IssuerSignedItem.digestID: Expected a non-negative integer number.';
+const DIGEST_ID_REQUIRED_MESSAGE =
+  'IssuerSignedItem.digestID: This field is required. Please provide a non-negative integer number.';
+const DIGEST_ID_MIN_MESSAGE =
+  'IssuerSignedItem.digestID: Must be greater than or equal to 0.';
+const DIGEST_ID_INT_MESSAGE =
+  'IssuerSignedItem.digestID: Expected an integer number.';
 
 describe('IssuerSignedItem', () => {
   describe('valid issuer signed items', () => {
@@ -48,38 +65,32 @@ describe('IssuerSignedItem', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.',
+        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'IssuerSignedItem: This field is required. Please provide an issuer-signed item object.',
+        expectedMessage: ISSUER_SIGNED_ITEM_REQUIRED_MESSAGE,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.',
+        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.',
+        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage:
-          'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.',
+        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage:
-          'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.',
+        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
       },
     ];
 
@@ -112,7 +123,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
           expect(zodError.issues[0].message).toBe(
-            'IssuerSignedItem.digestID: Expected a non-negative integer number.'
+            DIGEST_ID_INVALID_TYPE_MESSAGE
           );
         }
       });
@@ -130,9 +141,7 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(
-            'IssuerSignedItem.digestID: This field is required. Please provide a non-negative integer number.'
-          );
+          expect(zodError.issues[0].message).toBe(DIGEST_ID_REQUIRED_MESSAGE);
         }
       });
 
@@ -148,9 +157,7 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(
-            'IssuerSignedItem.digestID: Must be greater than or equal to 0.'
-          );
+          expect(zodError.issues[0].message).toBe(DIGEST_ID_MIN_MESSAGE);
         }
       });
 
@@ -166,9 +173,7 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(
-            'IssuerSignedItem.digestID: Expected an integer number.'
-          );
+          expect(zodError.issues[0].message).toBe(DIGEST_ID_INT_MESSAGE);
         }
       });
     });
@@ -187,7 +192,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['random']);
           expect(zodError.issues[0].message).toBe(
-            'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.'
+            `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`
           );
         }
       });
@@ -207,7 +212,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")'
+            `DataElementIdentifier: ${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`
           );
         }
       });
@@ -225,7 +230,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")'
+            `DataElementIdentifier: ${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`
           );
         }
       });

@@ -1,7 +1,14 @@
 import { Mac0 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { deviceMacSchema } from '../DeviceMac';
+import {
+  deviceMacSchema,
+  DEVICE_MAC_INVALID_TYPE_MESSAGE,
+  DEVICE_MAC_REQUIRED_MESSAGE,
+  DEVICE_MAC_TOO_FEW_MESSAGE,
+  DEVICE_MAC_TOO_MANY_MESSAGE,
+} from '../DeviceMac';
+import { MAP_INVALID_TYPE_MESSAGE_SUFFIX } from '@/schemas/common/Map';
 
 describe('DeviceMac', () => {
   it('should accept valid Mac0 objects', () => {
@@ -29,38 +36,32 @@ describe('DeviceMac', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+        expectedMessage: DEVICE_MAC_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'DeviceMac: This field is required. Please provide a COSE_Mac0 MAC array.',
+        expectedMessage: DEVICE_MAC_REQUIRED_MESSAGE,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+        expectedMessage: DEVICE_MAC_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+        expectedMessage: DEVICE_MAC_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage:
-          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+        expectedMessage: DEVICE_MAC_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage:
-          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+        expectedMessage: DEVICE_MAC_INVALID_TYPE_MESSAGE,
       },
     ];
 
@@ -83,22 +84,22 @@ describe('DeviceMac', () => {
       {
         name: 'empty array',
         input: [],
-        expectedMessage: 'Array must contain at least 4 element(s)',
+        expectedMessage: DEVICE_MAC_TOO_FEW_MESSAGE,
       },
       {
         name: 'array with 1 element',
         input: [Buffer.from([])],
-        expectedMessage: 'Array must contain at least 4 element(s)',
+        expectedMessage: DEVICE_MAC_TOO_FEW_MESSAGE,
       },
       {
         name: 'array with 2 elements',
         input: [Buffer.from([]), new Map()],
-        expectedMessage: 'Array must contain at least 4 element(s)',
+        expectedMessage: DEVICE_MAC_TOO_FEW_MESSAGE,
       },
       {
         name: 'array with 3 elements',
         input: [Buffer.from([]), new Map(), Buffer.from([])],
-        expectedMessage: 'Array must contain at least 4 element(s)',
+        expectedMessage: DEVICE_MAC_TOO_FEW_MESSAGE,
       },
     ];
 
@@ -126,7 +127,7 @@ describe('DeviceMac', () => {
           Buffer.from([]),
           Buffer.from([]), // 5 elements
         ],
-        expectedMessage: 'Array must contain at most 4 element(s)',
+        expectedMessage: DEVICE_MAC_TOO_MANY_MESSAGE,
       },
     ];
 
@@ -183,20 +184,17 @@ describe('DeviceMac', () => {
       {
         name: 'string instead of Map',
         input: [Buffer.from([]), 'string', Buffer.from([]), Buffer.from([])],
-        expectedMessage:
-          'UnprotectedHeaders: Please provide a valid number map (object or Map)',
+        expectedMessage: `UnprotectedHeaders: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'number instead of Map',
         input: [Buffer.from([]), 123, Buffer.from([]), Buffer.from([])],
-        expectedMessage:
-          'UnprotectedHeaders: Please provide a valid number map (object or Map)',
+        expectedMessage: `UnprotectedHeaders: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'boolean instead of Map',
         input: [Buffer.from([]), true, Buffer.from([]), Buffer.from([])],
-        expectedMessage:
-          'UnprotectedHeaders: Please provide a valid number map (object or Map)',
+        expectedMessage: `UnprotectedHeaders: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
     ];
 

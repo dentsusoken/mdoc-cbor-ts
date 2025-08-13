@@ -3,6 +3,10 @@ import { z } from 'zod';
 import { ByteString } from '@/cbor/ByteString';
 import { deviceNameSpacesSchema } from './DeviceNameSpaces';
 
+// Standardized error message for invalid ByteString input
+export const DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE =
+  'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.';
+
 /**
  * Schema for CBOR-encoded device-signed namespaces
  * @description
@@ -23,8 +27,7 @@ import { deviceNameSpacesSchema } from './DeviceNameSpaces';
  */
 export const deviceNameSpacesBytesSchema = z
   .instanceof(ByteString<TypedMap<[string, unknown]>>, {
-    message:
-      'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+    message: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
   })
   .refine((v) => deviceNameSpacesSchema.parse(v.data.esMap));
 

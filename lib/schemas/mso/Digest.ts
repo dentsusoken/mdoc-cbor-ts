@@ -1,11 +1,12 @@
 import { z } from 'zod';
-import { bytesSchema } from '@/schemas/common/Bytes';
+import { createBytesSchema } from '../common/Bytes';
 
 /**
  * Schema for digest in MSO
  * @description
- * Represents a binary string containing a digest value.
- * This schema validates that the digest is a valid binary string.
+ * Validates a required binary value (`bstr`) for a digest. Accepts `Uint8Array`
+ * or `Buffer` as input and produces a `Uint8Array`. Error messages are
+ * prefixed with `Digest: ...`.
  *
  * ```cddl
  * Digest = bstr
@@ -14,10 +15,18 @@ import { bytesSchema } from '@/schemas/common/Bytes';
  * @example
  * ```typescript
  * const digest = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
- * const result = digestSchema.parse(digest); // Returns Digest (Buffer)
+ * const result = digestSchema.parse(digest); // Uint8Array
  * ```
+ *
+ * @example
+ * ```typescript
+ * const digestFromBuffer = Buffer.from([0xde, 0xad, 0xbe, 0xef]);
+ * const result = digestSchema.parse(digestFromBuffer); // Uint8Array
+ * ```
+ *
+ * @see createBytesSchema
  */
-export const digestSchema = bytesSchema;
+export const digestSchema = createBytesSchema('Digest');
 
 /**
  * Type definition for digest

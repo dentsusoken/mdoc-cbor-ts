@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { documentErrorSchema } from '../DocumentError';
+import {
+  MAP_EMPTY_MESSAGE_SUFFIX,
+  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
+  MAP_REQUIRED_MESSAGE_SUFFIX,
+} from '@/schemas/common/Map';
+import {
+  INT_INVALID_TYPE_MESSAGE_SUFFIX,
+  INT_INTEGER_MESSAGE_SUFFIX,
+} from '@/schemas/common/Int';
 import { z } from 'zod';
 
 describe('DocumentError', () => {
@@ -7,16 +16,14 @@ describe('DocumentError', () => {
     const testCases = [
       {
         name: 'single document error',
-        input: {
-          'org.iso.18013.5.1.mDL': 0,
-        },
+        input: new Map<string, number>([['org.iso.18013.5.1.mDL', 0]]),
       },
       {
         name: 'multiple document errors',
-        input: {
-          'com.example.document': 1,
-          'test.document': -1,
-        },
+        input: new Map<string, number>([
+          ['com.example.document', 1],
+          ['test.document', -1],
+        ]),
       },
     ];
 
@@ -29,64 +36,53 @@ describe('DocumentError', () => {
   });
 
   describe('should throw error for invalid inputs', () => {
+    const prefix = 'DocumentError: ';
+    const DOCUMENT_ERROR_EMPTY_MESSAGE = `${prefix}${MAP_EMPTY_MESSAGE_SUFFIX}`;
     const testCases = [
       {
         name: 'empty record',
-        input: {},
-        expectedMessage:
-          'DocumentError: At least one document type and error code pair is required.',
+        input: new Map(),
+        expectedMessage: DOCUMENT_ERROR_EMPTY_MESSAGE,
       },
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'DocumentError: Expected an object with document types as keys and error codes as values.',
+        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'DocumentError: Expected an object with document types as keys and error codes as values.',
+        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'DocumentError: Expected an object with document types as keys and error codes as values.',
+        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage:
-          'DocumentError: Expected an object with document types as keys and error codes as values.',
+        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage:
-          'DocumentError: Expected an object with document types as keys and error codes as values.',
+        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'DocumentError: This field is required. Please provide a valid document error object.',
+        expectedMessage: `${prefix}${MAP_REQUIRED_MESSAGE_SUFFIX}`,
       },
       {
         name: 'object with null error code value',
-        input: {
-          'org.iso.18013.5.1.mDL': null,
-        },
-        expectedMessage:
-          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+        input: new Map<string, unknown>([['org.iso.18013.5.1.mDL', null]]),
+        expectedMessage: `ErrorCode: ${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'object with decimal error code value',
-        input: {
-          'org.iso.18013.5.1.mDL': 1.5,
-        },
-        expectedMessage:
-          'ErrorCode: Please provide an integer (no decimal places).',
+        input: new Map<string, number>([['org.iso.18013.5.1.mDL', 1.5]]),
+        expectedMessage: `ErrorCode: ${INT_INTEGER_MESSAGE_SUFFIX}`,
       },
     ];
 
@@ -101,6 +97,17 @@ describe('DocumentError', () => {
           expect(zodError.issues[0].message).toBe(expectedMessage);
         }
       });
+    });
+
+    it('should throw EMPTY_MESSAGE for empty map', () => {
+      try {
+        documentErrorSchema.parse(new Map());
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(DOCUMENT_ERROR_EMPTY_MESSAGE);
+      }
     });
   });
 });

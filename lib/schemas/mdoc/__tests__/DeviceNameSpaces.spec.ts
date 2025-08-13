@@ -2,13 +2,15 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
+  deviceNameSpacesSchema,
   DEVICE_NAMESPACES_EMPTY_MESSAGE,
   DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
   DEVICE_NAMESPACES_REQUIRED_MESSAGE,
-  deviceNameSpacesSchema,
 } from '../DeviceNameSpaces';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE } from '../DeviceSignedItems';
+
+// Constants are imported from the schema for consistency
 
 describe('DeviceNameSpaces', () => {
   describe('should accept valid device name spaces records', () => {

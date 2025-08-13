@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { digestIDsSchema, DIGEST_IDS_NON_EMPTY_MESSAGE } from '../DigestIDs';
-import { DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE } from '../DigestID';
+import { digestIDsSchema } from '../DigestIDs';
+import { MAP_EMPTY_MESSAGE_SUFFIX } from '../../common/Map';
+import { UINT_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Uint';
+import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Bytes';
+
+const DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE = `DigestID: ${UINT_INVALID_TYPE_MESSAGE_SUFFIX}`;
+const DIGEST_IDS_EMPTY_MESSAGE = `DigestIDs: ${MAP_EMPTY_MESSAGE_SUFFIX}`;
 
 describe('DigestIDs', () => {
   describe('valid inputs', () => {
@@ -11,8 +16,7 @@ describe('DigestIDs', () => {
       ]);
       const result = digestIDsSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
-      expect(result.size).toBe(1);
-      expect(result.has(1)).toBe(true);
+      expect(result).toEqual(input);
     });
   });
 
@@ -25,7 +29,7 @@ describe('DigestIDs', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(DIGEST_IDS_NON_EMPTY_MESSAGE);
+        expect(zodError.issues[0].message).toBe(DIGEST_IDS_EMPTY_MESSAGE);
       }
     });
 
@@ -54,7 +58,7 @@ describe('DigestIDs', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.'
+          `Digest: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`
         );
       }
     });

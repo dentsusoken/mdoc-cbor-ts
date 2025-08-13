@@ -1,33 +1,35 @@
 import { z } from 'zod';
 import { deviceMacSchema } from './DeviceMac';
 import { deviceSignatureSchema } from './DeviceSignature';
+import { createStructSchema } from '@/schemas/common/Struct';
+
+export const DEVICE_AUTH_AT_LEAST_ONE_MESSAGE =
+  'DeviceAuth: At least one authentication method (deviceSignature or deviceMac) must be provided.';
 
 /**
- * Object schema for device authentication validation
+ * Builds the object schema for device authentication validation.
  * @description
- * Validates that the device authentication object has at least one authentication method.
- * Both deviceSignature and deviceMac are optional, but at least one must be present.
+ * Validates an object with optional `deviceSignature` and `deviceMac` fields and
+ * enforces that at least one of them is present.
  *
  * ```cddl
  * DeviceAuth = {
- *  ? deviceSignature: DeviceSignature, // optional, but at least one is required
- *  ? deviceMac: DeviceMac             // optional, but at least one is required
+ *  ? deviceSignature: DeviceSignature,
+ *  ? deviceMac: DeviceMac
  * }
  * ```
  *
+ * Validation rule:
+ * - Requires at least one of `deviceSignature` or `deviceMac` to be provided
+ *
  * @example
  * ```typescript
- * const auth = { deviceSignature: sign1.getContentForEncoding() };
- * const result = deviceAuthObjectSchema.parse(auth); // Returns DeviceAuth
- *
- * const auth2 = { deviceMac: mac0.getContentForEncoding() };
- * const result2 = deviceAuthObjectSchema.parse(auth2); // Returns DeviceAuth
- *
- * const auth3 = {
+ * const ok1 = deviceAuthObjectSchema.parse({ deviceSignature: sign1.getContentForEncoding() });
+ * const ok2 = deviceAuthObjectSchema.parse({ deviceMac: mac0.getContentForEncoding() });
+ * const ok3 = deviceAuthObjectSchema.parse({
  *   deviceSignature: sign1.getContentForEncoding(),
- *   deviceMac: mac0.getContentForEncoding()
- * };
- * const result3 = deviceAuthObjectSchema.parse(auth3); // Returns DeviceAuth
+ *   deviceMac: mac0.getContentForEncoding(),
+ * });
  * ```
  */
 export const deviceAuthObjectSchema = z
@@ -36,43 +38,40 @@ export const deviceAuthObjectSchema = z
     deviceMac: deviceMacSchema.optional(),
   })
   .refine((obj) => obj.deviceSignature || obj.deviceMac, {
-    message:
-      'DeviceAuth: At least one authentication method (deviceSignature or deviceMac) must be provided.',
+    message: DEVICE_AUTH_AT_LEAST_ONE_MESSAGE,
   });
 
 /**
- * Schema for device authentication in mdoc
+ * Map schema for device authentication in mdoc.
  * @description
- * Represents the device's authentication mechanism, which can be either a signature, a MAC, or both.
- * This schema validates that at least one authentication method is provided.
+ * Accepts a `Map<string, unknown>` and validates it using
+ * {@link deviceAuthObjectSchema}. Input is converted to a plain object for
+ * validation and the parsed result is returned as a new `Map`.
  *
- * The schema accepts a Map input and transforms it to an object for validation.
+ * Represents the device's authentication mechanism, which can be either a
+ * signature, a MAC, or both.
  *
  * @example
  * ```typescript
- * const auth = new Map([['deviceSignature', sign1.getContentForEncoding()]]);
- * const result = deviceAuthSchema.parse(auth); // Returns DeviceAuth
+ * const auth1 = new Map([['deviceSignature', sign1.getContentForEncoding()]]);
+ * const result1 = deviceAuthSchema.parse(auth1); // Map<string, unknown>
  *
  * const auth2 = new Map([['deviceMac', mac0.getContentForEncoding()]]);
- * const result2 = deviceAuthSchema.parse(auth2); // Returns DeviceAuth
+ * const result2 = deviceAuthSchema.parse(auth2); // Map<string, unknown>
  *
  * const auth3 = new Map([
  *   ['deviceSignature', sign1.getContentForEncoding()],
- *   ['deviceMac', mac0.getContentForEncoding()]
+ *   ['deviceMac', mac0.getContentForEncoding()],
  * ]);
- * const result3 = deviceAuthSchema.parse(auth3); // Returns DeviceAuth
+ * const result3 = deviceAuthSchema.parse(auth3); // Map<string, unknown>
  * ```
+ *
+ * @see {@link createStructSchema}
  */
-export const deviceAuthSchema = z
-  .map(z.any(), z.any(), {
-    invalid_type_error:
-      'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
-    required_error:
-      'DeviceAuth: This field is required. Please provide an authentication mapping.',
-  })
-  .transform((v) => {
-    return deviceAuthObjectSchema.parse(Object.fromEntries(v));
-  });
+export const deviceAuthSchema = createStructSchema({
+  target: 'DeviceAuth',
+  objectSchema: deviceAuthObjectSchema,
+});
 
 /**
  * Type definition for device authentication

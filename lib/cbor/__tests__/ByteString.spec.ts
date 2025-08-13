@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import { TypedMap } from '@jfromaniello/typedmap';
 import { ByteString } from '../ByteString';
 import { typedMap } from '@/utils/typedMap';
 
@@ -35,7 +34,12 @@ describe('ByteString', () => {
 
         const byteString = new ByteString(data);
         expect(byteString).toBeInstanceOf(ByteString);
-        expect(byteString.data).toBe(data);
+        expect(byteString.data.get('string')).toBe('test');
+        expect(byteString.data.get('number')).toBe(42);
+        expect(byteString.data.get('boolean')).toBe(true);
+        expect(byteString.data.get('array')).toEqual([1, 2, 3]);
+        const obj = byteString.data.get('object');
+        expect(obj?.get('nested')).toBe('value');
       });
     });
   });

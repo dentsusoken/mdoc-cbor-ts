@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { bytesSchema, createBytesSchema } from '../Bytes';
+import { createBytesSchema, BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../Bytes';
 import { z } from 'zod';
 
 describe('Bytes', () => {
+  const bytesSchema = createBytesSchema('Bytes');
   describe('should accept valid bytes', () => {
     const testCases = [
       {
@@ -51,44 +52,37 @@ describe('Bytes', () => {
       {
         name: 'string input',
         input: 'not bytes',
-        expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'array input',
         input: [1, 2, 3],
-        expectedMessage:
-          'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.',
+        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
     ];
 
@@ -107,9 +101,9 @@ describe('Bytes', () => {
   });
 
   describe('createBytesSchema', () => {
-    describe('should create schema with custom error message', () => {
-      it('should throw custom error message for invalid input', () => {
-        const customSchema = createBytesSchema('Custom error message');
+    describe('should create schema with custom target prefix', () => {
+      it('should throw message prefixed by target and fixed suffix for invalid input', () => {
+        const customSchema = createBytesSchema('CustomTarget');
 
         try {
           customSchema.parse('invalid');
@@ -117,30 +111,28 @@ describe('Bytes', () => {
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
-          expect(zodError.issues[0].message).toBe('Custom error message');
+          expect(zodError.issues[0].message).toBe(
+            `CustomTarget: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`
+          );
         }
       });
     });
 
     describe('should accept valid inputs with custom schema', () => {
-      const testCases = [
-        {
-          name: 'Buffer with custom schema',
-          input: Buffer.from([1, 2, 3]),
-        },
-        {
-          name: 'Uint8Array with custom schema',
-          input: new Uint8Array([1, 2, 3]),
-        },
-      ];
+      it('should accept Buffer with custom schema', () => {
+        const customSchema = createBytesSchema('CustomTarget');
+        const input = Buffer.from([1, 2, 3]);
+        const result = customSchema.parse(input);
+        expect(result).toBeInstanceOf(Uint8Array);
+        expect(result).toEqual(input);
+      });
 
-      testCases.forEach(({ name, input }) => {
-        it(`should accept ${name}`, () => {
-          const customSchema = createBytesSchema('Custom error message');
-          const result = customSchema.parse(input);
-          expect(result).toBeInstanceOf(Uint8Array);
-          expect(Array.from(result)).toEqual([1, 2, 3]);
-        });
+      it('should accept Uint8Array with custom schema', () => {
+        const customSchema = createBytesSchema('CustomTarget');
+        const input = new Uint8Array([1, 2, 3]);
+        const result = customSchema.parse(input);
+        expect(result).toBeInstanceOf(Uint8Array);
+        expect(result).toEqual(input);
       });
     });
   });

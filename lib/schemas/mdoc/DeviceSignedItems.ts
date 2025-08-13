@@ -1,23 +1,21 @@
 import { z } from 'zod';
 import { dataElementIdentifierSchema } from '../common/DataElementIdentifier';
 import { dataElementValueSchema } from '../common/DataElementValue';
-import type { Entry } from '../common/Entry';
-
-export const DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE =
-  'DeviceSignedItems: Expected a Map with data element identifiers as keys and valid data element values. Please provide a valid device-signed items mapping.';
-
-export const DEVICE_SIGNED_ITEMS_REQUIRED_MESSAGE =
-  'DeviceSignedItems: This field is required. Please provide a device-signed items Map.';
-
-export const DEVICE_SIGNED_ITEMS_EMPTY_MESSAGE =
-  'DeviceSignedItems: At least one data element must be provided. The Map cannot be empty.';
+import { createMapSchema } from '@/schemas/common/Map';
 
 /**
  * Schema for device-signed items in mdoc
  * @description
- * Represents a record of data element identifiers and their corresponding values
- * that are signed by the device. This schema validates that each identifier maps
- * to a valid data element value.
+ * Validates a required, non-empty `Map` of `DataElementIdentifier` to `DataElementValue`
+ * representing the data elements signed by the device.
+ *
+ * Validation rules:
+ * - Requires input to be a `Map`
+ * - Disallows empty maps (at least one entry is required)
+ * - Keys must satisfy {@link DataElementIdentifier}
+ * - Values must satisfy {@link DataElementValue}
+ *
+ * Error messages are prefixed with the target name: `DeviceSignedItems: ...`.
  *
  * ```cddl
  * DeviceSignedItems = {
@@ -33,43 +31,20 @@ export const DEVICE_SIGNED_ITEMS_EMPTY_MESSAGE =
  * ]);
  * const result = deviceSignedItemsSchema.parse(items); // Returns Map<string, unknown>
  * ```
+ *
+ * @see {@link DataElementIdentifier}
+ * @see {@link DataElementValue}
  */
-export const deviceSignedItemsSchema = z
-  .map(dataElementIdentifierSchema, dataElementValueSchema, {
-    invalid_type_error: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
-    required_error: DEVICE_SIGNED_ITEMS_REQUIRED_MESSAGE,
-  })
-  .refine(
-    (data) => {
-      return data.size > 0;
-    },
-    {
-      message: DEVICE_SIGNED_ITEMS_EMPTY_MESSAGE,
-    }
-  );
-
-// constants are declared above
+export const deviceSignedItemsSchema = createMapSchema({
+  target: 'DeviceSignedItems',
+  keySchema: dataElementIdentifierSchema,
+  valueSchema: dataElementValueSchema,
+});
 
 /**
  * Type definition for device-signed items
  * @description
- * Represents a validated record of data element identifiers and their values
- * that are signed by the device. This follows the ISO/IEC 18013-5 standard
- * for device-signed data elements.
- *
- * ```cddl
- * DeviceSignedItems = {
- *   + DataElementIdentifier => DataElementValue
- * }
- * ```
- * @see {@link DataElementIdentifier}
- * @see {@link DataElementValue}
+ * A validated, non-empty mapping of {@link DataElementIdentifier} to
+ * {@link DataElementValue} that are signed by the device (ISO/IEC 18013-5).
  */
 export type DeviceSignedItems = z.output<typeof deviceSignedItemsSchema>;
-
-/**
- * Type definition for device-signed items entries
- * @description
- * Represents a key-value pair from the device-signed items record
- */
-export type DeviceSignedItemsEntry = Entry<DeviceSignedItems>;

@@ -2,21 +2,19 @@ import { z } from 'zod';
 import { Entry } from '@/schemas/common/Entry';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { deviceSignedItemsSchema } from './DeviceSignedItems';
-
-export const DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE =
-  'DeviceNameSpaces: Expected a Map with namespace keys and device-signed items values. Please provide a valid namespace mapping.';
-
-export const DEVICE_NAMESPACES_REQUIRED_MESSAGE =
-  'DeviceNameSpaces: This field is required. Please provide a namespace mapping Map.';
-
-export const DEVICE_NAMESPACES_EMPTY_MESSAGE =
-  'DeviceNameSpaces: At least one namespace must be provided. The Map cannot be empty.';
+import {
+  MAP_EMPTY_MESSAGE_SUFFIX,
+  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
+  MAP_REQUIRED_MESSAGE_SUFFIX,
+  createMapSchema,
+} from '@/schemas/common/Map';
 
 /**
  * Schema for device-signed namespaces in mdoc
  * @description
- * Represents a record of namespaces and their corresponding device-signed items.
- * This schema validates that each namespace maps to valid device-signed items.
+ * Represents a mapping of `NameSpace` to `DeviceSignedItems`.
+ * This schema validates that each namespace key maps to valid device-signed items
+ * and that the mapping is non-empty.
  *
  * ```cddl
  * DeviceNameSpaces = {* NameSpace => DeviceSignedItems}
@@ -24,25 +22,22 @@ export const DEVICE_NAMESPACES_EMPTY_MESSAGE =
  *
  * @example
  * ```typescript
- * const namespaces = {
- *   "org.iso.18013.5.1": {}
- * };
- * const result = deviceNameSpacesSchema.parse(namespaces);
+ * const namespaces = new Map<string, unknown>([
+ *   ["org.iso.18013.5.1", new Map()],
+ * ]);
+ * const result = deviceNameSpacesSchema.parse(namespaces); // Returns Map<NameSpace, DeviceSignedItems>
  * ```
  */
-export const deviceNameSpacesSchema = z
-  .map(nameSpaceSchema, deviceSignedItemsSchema, {
-    invalid_type_error: DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
-    required_error: DEVICE_NAMESPACES_REQUIRED_MESSAGE,
-  })
-  .refine(
-    (data) => {
-      return data.size > 0;
-    },
-    {
-      message: DEVICE_NAMESPACES_EMPTY_MESSAGE,
-    }
-  );
+export const deviceNameSpacesSchema = createMapSchema({
+  target: 'DeviceNameSpaces',
+  keySchema: nameSpaceSchema,
+  valueSchema: deviceSignedItemsSchema,
+});
+
+// Standardized error messages (built from common Map suffixes)
+export const DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE = `DeviceNameSpaces: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`;
+export const DEVICE_NAMESPACES_REQUIRED_MESSAGE = `DeviceNameSpaces: ${MAP_REQUIRED_MESSAGE_SUFFIX}`;
+export const DEVICE_NAMESPACES_EMPTY_MESSAGE = `DeviceNameSpaces: ${MAP_EMPTY_MESSAGE_SUFFIX}`;
 
 /**
  * Type definition for device-signed namespaces

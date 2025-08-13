@@ -1,29 +1,30 @@
 import { Sign1 } from '@auth0/cose';
 import { z } from 'zod';
-import {
-  createBytesSchema,
-  GENERIC_ERROR_MESSAGE as BYTES_GENERIC_ERROR_MESSAGE,
-} from '@/schemas/common/Bytes';
-import {
-  createNumberMapSchema,
-  GENERIC_ERROR_MESSAGE as NUMBER_MAP_GENERIC_ERROR_MESSAGE,
-} from '@/schemas/common/NumberMap';
+import { createBytesSchema } from '@/schemas/common/Bytes';
+import { createUintSchema } from '@/schemas/common/Uint';
+import { createMapSchema } from '@/schemas/common/Map';
 
-const protectedHeadersSchema = createBytesSchema(
-  `ProtectedHeaders: ${BYTES_GENERIC_ERROR_MESSAGE}`
-);
+const protectedHeadersSchema = createBytesSchema('ProtectedHeaders');
 
-const unprotectedHeadersSchema = createNumberMapSchema(
-  `UnprotectedHeaders: ${NUMBER_MAP_GENERIC_ERROR_MESSAGE}`
-);
+const unprotectedHeadersSchema = createMapSchema({
+  target: 'UnprotectedHeaders',
+  keySchema: createUintSchema('UnprotectedHeaders.Key'),
+  valueSchema: z.any(),
+  allowEmpty: true,
+});
 
-const payloadSchema = createBytesSchema(
-  `Payload: ${BYTES_GENERIC_ERROR_MESSAGE}`
-);
+const payloadSchema = createBytesSchema('Payload');
 
-const signatureSchema = createBytesSchema(
-  `Signature: ${BYTES_GENERIC_ERROR_MESSAGE}`
-);
+const signatureSchema = createBytesSchema('Signature');
+
+export const DEVICE_SIGNATURE_INVALID_TYPE_MESSAGE =
+  'DeviceSignature: Expected an array with 4 elements (protected headers, unprotected headers, payload, signature). Please provide a valid COSE_Sign1 structure.';
+export const DEVICE_SIGNATURE_REQUIRED_MESSAGE =
+  'DeviceSignature: This field is required. Please provide a COSE_Sign1 signature array.';
+export const DEVICE_SIGNATURE_TOO_FEW_MESSAGE =
+  'DeviceSignature: Array must contain at least 4 element(s)';
+export const DEVICE_SIGNATURE_TOO_MANY_MESSAGE =
+  'DeviceSignature: Array must contain at most 4 element(s)';
 
 /**
  * Schema for device signatures in mdoc
@@ -47,21 +48,44 @@ const signatureSchema = createBytesSchema(
  * const result = deviceSignatureSchema.parse(sign1); // Returns Sign1
  * ```
  */
+const deviceSignatureTuple = z.tuple(
+  [
+    protectedHeadersSchema, // protected headers (Bytes)
+    unprotectedHeadersSchema, // unprotected headers (NumberMap)
+    payloadSchema, // payload (Bytes)
+    signatureSchema, // signature (Bytes)
+  ],
+  {
+    invalid_type_error: DEVICE_SIGNATURE_INVALID_TYPE_MESSAGE,
+    required_error: DEVICE_SIGNATURE_REQUIRED_MESSAGE,
+  }
+);
+
 export const deviceSignatureSchema = z
-  .tuple(
-    [
-      protectedHeadersSchema, // protected headers (Bytes)
-      unprotectedHeadersSchema, // unprotected headers (NumberMap)
-      payloadSchema, // payload (Bytes)
-      signatureSchema, // signature (Bytes)
-    ],
-    {
-      invalid_type_error:
-        'DeviceSignature: Expected an array with 4 elements (protected headers, unprotected headers, payload, signature). Please provide a valid COSE_Sign1 structure.',
-      required_error:
-        'DeviceSignature: This field is required. Please provide a COSE_Sign1 signature array.',
+  .any()
+  .superRefine((val, ctx) => {
+    if (!Array.isArray(val)) return;
+    if (val.length < 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.too_small,
+        type: 'array',
+        minimum: 4,
+        inclusive: true,
+        exact: false,
+        message: DEVICE_SIGNATURE_TOO_FEW_MESSAGE,
+      });
+    } else if (val.length > 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.too_big,
+        type: 'array',
+        maximum: 4,
+        inclusive: true,
+        exact: false,
+        message: DEVICE_SIGNATURE_TOO_MANY_MESSAGE,
+      });
     }
-  )
+  })
+  .pipe(deviceSignatureTuple)
   .transform(([protectedHeaders, unprotectedHeaders, payload, signature]) => {
     return new Sign1(protectedHeaders, unprotectedHeaders, payload, signature);
   });

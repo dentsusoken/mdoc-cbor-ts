@@ -1,19 +1,17 @@
 import { z } from 'zod';
-
-export const DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE =
-  'DigestID: Expected a number. Please provide a positive integer.';
-export const DIGEST_ID_NUMBER_REQUIRED_MESSAGE =
-  'DigestID: This field is required. Please provide a positive integer.';
-export const DIGEST_ID_INTEGER_MESSAGE =
-  'DigestID: Please provide an integer (no decimal places)';
-export const DIGEST_ID_POSITIVE_MESSAGE =
-  'DigestID: Please provide a positive integer greater than 0';
+import { createUintSchema } from '../common/Uint';
 
 /**
  * Schema for digest ID in MSO
  * @description
- * Represents a unique identifier for a digest.
- * This schema validates that the ID is a positive integer (number).
+ * Validates a required positive integer (`uint`) identifier for a digest. All
+ * error messages are prefixed with `DigestID: ...` and follow the standardized
+ * unsigned integer messaging provided by the common `Uint` schema.
+ *
+ * Validation rules:
+ * - Requires a number type
+ * - Requires an integer (no decimal places)
+ * - Requires a strictly positive value (> 0)
  *
  * ```cddl
  * DigestID = uint
@@ -22,31 +20,22 @@ export const DIGEST_ID_POSITIVE_MESSAGE =
  * @example
  * ```typescript
  * const id = 1;
- * const result = digestIDSchema.parse(id); // Returns DigestID (number)
+ * const result = digestIDSchema.parse(id); // number
  *
- * // Fails with DIGEST_ID_INTEGER_MESSAGE (must be an integer)
+ * // Throws ZodError (not an integer)
  * // digestIDSchema.parse(1.5);
  *
- * // Fails with DIGEST_ID_POSITIVE_MESSAGE (must be > 0)
+ * // Throws ZodError (not positive)
  * // digestIDSchema.parse(0);
  * ```
+ *
+ * @see {@link createUintSchema}
  */
-export const digestIDSchema = z
-  .number({
-    invalid_type_error: DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE,
-    required_error: DIGEST_ID_NUMBER_REQUIRED_MESSAGE,
-  })
-  .int({
-    message: DIGEST_ID_INTEGER_MESSAGE,
-  })
-  .positive({
-    message: DIGEST_ID_POSITIVE_MESSAGE,
-  });
+export const digestIDSchema = createUintSchema('DigestID');
 
 /**
  * Type definition for digest ID
  * @description
- * Represents a validated digest identifier
- *
+ * Represents a validated positive integer digest identifier
  */
 export type DigestID = z.output<typeof digestIDSchema>;

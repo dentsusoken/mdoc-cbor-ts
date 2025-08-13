@@ -2,7 +2,10 @@ import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { ByteString } from '@/cbor/ByteString';
-import { deviceNameSpacesBytesSchema } from '../DeviceNameSpacesBytes';
+import {
+  DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
+  deviceNameSpacesBytesSchema,
+} from '../DeviceNameSpacesBytes';
 import { DEVICE_NAMESPACES_EMPTY_MESSAGE } from '../DeviceNameSpaces';
 import { DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE } from '../DeviceSignedItems';
 
@@ -41,50 +44,42 @@ describe('DeviceNameSpacesBytes', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
       {
         name: 'tag object input',
         input: { tag: 24, value: 0 },
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
       },
     ];
 

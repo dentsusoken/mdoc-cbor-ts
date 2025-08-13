@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createTextSchema } from './Text';
 
 /**
  * Schema for data element identifiers
@@ -16,21 +17,9 @@ import { z } from 'zod';
  * const result = dataElementIdentifierSchema.parse(validId); // Returns string
  * ```
  */
-export const dataElementIdentifierSchema = z
-  .string({
-    required_error:
-      'DataElementIdentifier: This field is required. Please provide a string identifier.',
-    invalid_type_error:
-      'DataElementIdentifier: Expected a string, but received a different type. Please provide a string identifier.',
-  })
-  .min(1, {
-    message:
-      'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
-  })
-  .refine((val) => val.trim().length > 0, {
-    message:
-      'DataElementIdentifier: Please provide a non-empty string identifier (e.g., "org.iso.18013.5.1")',
-  });
+export const dataElementIdentifierSchema = createTextSchema(
+  'DataElementIdentifier'
+);
 
 /**
  * Type definition for data element identifiers

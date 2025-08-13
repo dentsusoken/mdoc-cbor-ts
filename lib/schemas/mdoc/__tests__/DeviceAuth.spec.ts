@@ -9,7 +9,7 @@ describe('DeviceAuth', () => {
     const testCases = [
       {
         name: 'device signature only',
-        input: (() => {
+        input: ((): Map<string, unknown> => {
           const sign1 = new Sign1(
             Buffer.from([]),
             new Map<number, string>([[1, 'value']]),
@@ -23,7 +23,7 @@ describe('DeviceAuth', () => {
       },
       {
         name: 'device MAC only',
-        input: (() => {
+        input: ((): Map<string, unknown> => {
           const mac0 = new Mac0(
             Buffer.from([]),
             new Map<number, string>([[1, 'value']]),
@@ -37,7 +37,7 @@ describe('DeviceAuth', () => {
       },
       {
         name: 'both device signature and MAC',
-        input: (() => {
+        input: ((): Map<string, unknown> => {
           const sign1 = new Sign1(
             Buffer.from([]),
             new Map<number, string>([[1, 'value']]),
@@ -63,17 +63,19 @@ describe('DeviceAuth', () => {
     testCases.forEach(({ name, input, expectedSignature, expectedMac }) => {
       it(`should accept ${name}`, () => {
         const result = deviceAuthSchema.parse(input);
+        const signature = result.deviceSignature;
+        const mac = result.deviceMac;
 
         if (expectedSignature) {
-          expect(result.deviceSignature).toBeInstanceOf(Sign1);
+          expect(signature).toBeInstanceOf(Sign1);
         } else {
-          expect(result.deviceSignature).toBeUndefined();
+          expect(signature).toBeUndefined();
         }
 
         if (expectedMac) {
-          expect(result.deviceMac).toBeInstanceOf(Mac0);
+          expect(mac).toBeInstanceOf(Mac0);
         } else {
-          expect(result.deviceMac).toBeUndefined();
+          expect(mac).toBeUndefined();
         }
       });
     });
@@ -85,43 +87,43 @@ describe('DeviceAuth', () => {
         name: 'null input',
         input: null,
         expectedMessage:
-          'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
+          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
       },
       {
         name: 'undefined input',
         input: undefined,
         expectedMessage:
-          'DeviceAuth: This field is required. Please provide an authentication mapping.',
+          'DeviceAuth: This field is required. Please provide a Map.',
       },
       {
         name: 'boolean input',
         input: true,
         expectedMessage:
-          'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
+          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
       },
       {
         name: 'number input',
         input: 123,
         expectedMessage:
-          'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
+          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
       },
       {
         name: 'string input',
         input: 'string',
         expectedMessage:
-          'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
+          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
       },
       {
         name: 'array input',
         input: [],
         expectedMessage:
-          'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
+          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
       },
       {
         name: 'object input',
         input: {},
         expectedMessage:
-          'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
+          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
       },
       {
         name: 'Map with null deviceSignature',

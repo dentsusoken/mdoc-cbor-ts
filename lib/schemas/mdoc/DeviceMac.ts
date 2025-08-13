@@ -1,27 +1,30 @@
 import { Mac0 } from '@auth0/cose';
 import { z } from 'zod';
-import {
-  createBytesSchema,
-  GENERIC_ERROR_MESSAGE as BYTES_GENERIC_ERROR_MESSAGE,
-} from '../common/Bytes';
-import {
-  createNumberMapSchema,
-  GENERIC_ERROR_MESSAGE as NUMBER_MAP_GENERIC_ERROR_MESSAGE,
-} from '../common/NumberMap';
+import { createBytesSchema } from '@/schemas/common/Bytes';
+import { createUintSchema } from '@/schemas/common/Uint';
+import { createMapSchema } from '@/schemas/common/Map';
 
-const protectedHeadersSchema = createBytesSchema(
-  `ProtectedHeaders: ${BYTES_GENERIC_ERROR_MESSAGE}`
-);
+const protectedHeadersSchema = createBytesSchema('ProtectedHeaders');
 
-const unprotectedHeadersSchema = createNumberMapSchema(
-  `UnprotectedHeaders: ${NUMBER_MAP_GENERIC_ERROR_MESSAGE}`
-);
+const unprotectedHeadersSchema = createMapSchema({
+  target: 'UnprotectedHeaders',
+  keySchema: createUintSchema('UnprotectedHeaders.Key'),
+  valueSchema: z.any(),
+  allowEmpty: true,
+});
 
-const payloadSchema = createBytesSchema(
-  `Payload: ${BYTES_GENERIC_ERROR_MESSAGE}`
-);
+const payloadSchema = createBytesSchema('Payload');
 
-const tagSchema = createBytesSchema(`Tag: ${BYTES_GENERIC_ERROR_MESSAGE}`);
+const tagSchema = createBytesSchema('Tag');
+
+export const DEVICE_MAC_INVALID_TYPE_MESSAGE =
+  'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.';
+export const DEVICE_MAC_REQUIRED_MESSAGE =
+  'DeviceMac: This field is required. Please provide a COSE_Mac0 MAC array.';
+export const DEVICE_MAC_TOO_FEW_MESSAGE =
+  'DeviceMac: Array must contain at least 4 element(s)';
+export const DEVICE_MAC_TOO_MANY_MESSAGE =
+  'DeviceMac: Array must contain at most 4 element(s)';
 
 /**
  * Schema for device MAC in mdoc
@@ -45,21 +48,44 @@ const tagSchema = createBytesSchema(`Tag: ${BYTES_GENERIC_ERROR_MESSAGE}`);
  * const result = deviceMacSchema.parse(mac0); // Returns Mac0
  * ```
  */
+const deviceMacTuple = z.tuple(
+  [
+    protectedHeadersSchema, // protected headers (Bytes)
+    unprotectedHeadersSchema, // unprotected headers (NumberMap)
+    payloadSchema, // payload (Bytes)
+    tagSchema, // tag (Bytes)
+  ],
+  {
+    invalid_type_error: DEVICE_MAC_INVALID_TYPE_MESSAGE,
+    required_error: DEVICE_MAC_REQUIRED_MESSAGE,
+  }
+);
+
 export const deviceMacSchema = z
-  .tuple(
-    [
-      protectedHeadersSchema, // protected headers (Bytes)
-      unprotectedHeadersSchema, // unprotected headers (NumberMap)
-      payloadSchema, // payload (Bytes)
-      tagSchema, // tag (Bytes)
-    ],
-    {
-      invalid_type_error:
-        'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
-      required_error:
-        'DeviceMac: This field is required. Please provide a COSE_Mac0 MAC array.',
+  .any()
+  .superRefine((val, ctx) => {
+    if (!Array.isArray(val)) return;
+    if (val.length < 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.too_small,
+        type: 'array',
+        minimum: 4,
+        inclusive: true,
+        exact: false,
+        message: DEVICE_MAC_TOO_FEW_MESSAGE,
+      });
+    } else if (val.length > 4) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.too_big,
+        type: 'array',
+        maximum: 4,
+        inclusive: true,
+        exact: false,
+        message: DEVICE_MAC_TOO_MANY_MESSAGE,
+      });
     }
-  )
+  })
+  .pipe(deviceMacTuple)
   .transform(([protectedHeaders, unprotectedHeaders, payload, tag]) => {
     return new Mac0(protectedHeaders, unprotectedHeaders, payload, tag);
   });

@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { errorCodeSchema } from '../ErrorCode';
+import {
+  INT_INVALID_TYPE_MESSAGE_SUFFIX,
+  INT_REQUIRED_MESSAGE_SUFFIX,
+  INT_INTEGER_MESSAGE_SUFFIX,
+} from '../../../common/Int';
 import { z } from 'zod';
 
 describe('ErrorCode', () => {
@@ -23,48 +28,42 @@ describe('ErrorCode', () => {
   });
 
   describe('should throw error for invalid inputs', () => {
+    const prefix = 'ErrorCode: ';
     const testCases = [
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'ErrorCode: This field is required. Please provide a valid integer.',
+        expectedMessage: `${prefix}${INT_REQUIRED_MESSAGE_SUFFIX}`,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage:
-          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage:
-          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage:
-          'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
+        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
       },
       {
         name: 'decimal number',
         input: 1.5,
-        expectedMessage:
-          'ErrorCode: Please provide an integer (no decimal places).',
+        expectedMessage: `${prefix}${INT_INTEGER_MESSAGE_SUFFIX}`,
       },
     ];
 

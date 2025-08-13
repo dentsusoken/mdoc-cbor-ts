@@ -1,34 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestSchema } from '../Digest';
+import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Bytes';
 
 describe('Digest', () => {
   describe('valid digest values', () => {
     it('should accept Buffer (empty)', () => {
       const input = Buffer.from([]);
       const result = digestSchema.parse(input);
-      expect(Buffer.isBuffer(result)).toBe(true);
-      expect(result).toEqual(Buffer.from(input));
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(Buffer.from(result)).toEqual(input);
     });
 
     it('should accept Buffer (non-empty)', () => {
       const input = Buffer.from([1, 2, 3]);
       const result = digestSchema.parse(input);
-      expect(Buffer.isBuffer(result)).toBe(true);
-      expect(result).toEqual(Buffer.from(input));
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(Buffer.from(result)).toEqual(input);
     });
 
     it('should accept Uint8Array', () => {
       const input = new Uint8Array([1, 2, 3]);
       const result = digestSchema.parse(input);
-      expect(Buffer.isBuffer(result)).toBe(true);
-      expect(result).toEqual(Buffer.from(input));
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(result).toEqual(input);
     });
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const schemaMessage =
-      'Bytes: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.';
+    const schemaMessage = `Digest: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`;
     const testCases: Array<{ name: string; input: unknown; expected: string }> =
       [
         { name: 'string', input: 'not bytes', expected: schemaMessage },

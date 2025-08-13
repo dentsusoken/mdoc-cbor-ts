@@ -3,7 +3,7 @@ import { TypedMap } from '@jfromaniello/typedmap';
 import { addExtension } from 'cbor-x';
 import { decodeCbor, encodeCbor } from './codec';
 
-export class ByteString<T extends TypedMap<[string, any]>> {
+export class ByteString<T extends TypedMap<[PropertyKey, unknown]>> {
   #data: T;
   #buffer: Uint8Array;
 
@@ -33,11 +33,11 @@ export class ByteString<T extends TypedMap<[string, any]>> {
    * @param buffer - The Uint8Array containing CBOR-encoded data
    * @returns A new ByteString instance containing the decoded data
    */
-  public static fromBuffer<T extends TypedMap<[string, any]>>(
+  public static fromBuffer<T extends TypedMap<[PropertyKey, unknown]>>(
     buffer: Uint8Array
   ): ByteString<T> {
-    const data = decodeCbor(buffer) as Map<string, unknown>;
-    const map = new TypedMap<[string, unknown]>(data);
+    const data = decodeCbor(buffer) as Map<PropertyKey, unknown>;
+    const map = new TypedMap<[PropertyKey, unknown]>(data);
 
     return new ByteString<T>(map as T);
   }

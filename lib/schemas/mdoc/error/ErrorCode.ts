@@ -1,10 +1,16 @@
 import { z } from 'zod';
+import { createIntSchema } from '@/schemas/common/Int';
 
 /**
  * Schema for error codes in MDOC
  * @description
- * Represents an integer value that indicates the type of error that occurred.
- * This schema validates that the error code is a valid integer.
+ * Validates a required integer (`int`) value indicating the type of error that
+ * occurred. Error messages are prefixed with `ErrorCode: ...` and follow the
+ * standardized integer validation provided by the common `Int` schema.
+ *
+ * Validation rules:
+ * - Requires a number type
+ * - Requires an integer (no decimal places)
  *
  * ```cddl
  * ErrorCode = int
@@ -12,25 +18,33 @@ import { z } from 'zod';
  *
  * @example
  * ```typescript
- * const code = 0;
- * const result = errorCodeSchema.parse(code); // Returns ErrorCode
+ * const code = -1;
+ * const result = errorCodeSchema.parse(code); // number (integers: negative/zero/positive)
  * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (not an integer)
+ * // Message: "ErrorCode: Please provide an integer (no decimal places)"
+ * errorCodeSchema.parse(1.5);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (invalid type)
+ * // Message: "ErrorCode: Expected a number, but received a different type. Please provide an integer."
+ * // @ts-expect-error
+ * errorCodeSchema.parse('1');
+ * ```
+ *
+ * @see createIntSchema
  */
-export const errorCodeSchema = z
-  .number({
-    invalid_type_error:
-      'ErrorCode: Expected a number, but received a different type. Please provide a valid integer.',
-    required_error:
-      'ErrorCode: This field is required. Please provide a valid integer.',
-  })
-  .int({
-    message: 'ErrorCode: Please provide an integer (no decimal places).',
-  });
+export const errorCodeSchema = createIntSchema('ErrorCode');
 
 /**
  * Type definition for error codes
  * @description
- * Represents a validated error code value
+ * Represents a validated integer error code value
  *
  * ```cddl
  * ErrorCode = int
