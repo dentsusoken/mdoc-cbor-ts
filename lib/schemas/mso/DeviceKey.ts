@@ -13,8 +13,18 @@ export const DEVICE_KEY_MISSING_KTY_MESSAGE =
 /**
  * Schema for device key in MSO
  * @description
- * Represents a COSE_Key used for device authentication.
- * This schema validates and transforms COSE_Key objects while preserving their structure.
+ * Validates a required COSE_Key mapping represented as a `Map<label, value>`
+ * where labels are integers or text. Ensures the presence of the key type
+ * label (`1` or `'kty'`) and transforms the validated Map into a `COSEKey`
+ * instance while preserving structure.
+ *
+ * Error messages are prefixed with `DeviceKey: ...` and standardized via the
+ * exported message constants.
+ *
+ * Validation rules:
+ * - Requires a `Map` instance with numeric or string labels
+ * - Requires presence (non-undefined)
+ * - Requires that label `1` (kty) or `'kty'` is present
  *
  * ```cddl
  * DeviceKey = COSE_Key
@@ -40,8 +50,34 @@ export const DEVICE_KEY_MISSING_KTY_MESSAGE =
  * @example
  * ```typescript
  * const keyMap = new Map<unknown, unknown>([[1, 2]]); // 1 => kty (e.g., 2 for EC2)
- * const result = deviceKeySchema.parse(keyMap); // Returns COSEKey
+ * const result = deviceKeySchema.parse(keyMap); // COSEKey
  * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (missing kty)
+ * // Message: DeviceKey: COSE_Key must include label 1 (kty) or "kty".
+ * const missingKty = new Map<unknown, unknown>([[3, 'ES256']]);
+ * deviceKeySchema.parse(missingKty);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (invalid type)
+ * // Message: DeviceKey: Expected a Map with numeric or string labels for COSE_Key parameters.
+ * // @ts-expect-error
+ * deviceKeySchema.parse({ 1: 2 });
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (required)
+ * // Message: DeviceKey: This field is required. Please provide a COSE_Key mapping.
+ * // @ts-expect-error
+ * deviceKeySchema.parse(undefined);
+ * ```
+ *
+ * @see COSEKey
  */
 export const deviceKeySchema = z
   .map(

@@ -4,7 +4,7 @@ import {
   dataElementsArraySchema,
   DATA_ELEMENTS_ARRAY_INVALID_TYPE_MESSAGE,
   DATA_ELEMENTS_ARRAY_REQUIRED_MESSAGE,
-  DATA_ELEMENTS_ARRAY_NON_EMPTY_MESSAGE,
+  DATA_ELEMENTS_ARRAY_EMPTY_MESSAGE,
 } from '../DataElementsArray';
 
 describe('DataElementsArray', () => {
@@ -23,7 +23,7 @@ describe('DataElementsArray', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        DATA_ELEMENTS_ARRAY_NON_EMPTY_MESSAGE
+        DATA_ELEMENTS_ARRAY_EMPTY_MESSAGE
       );
     }
   });
