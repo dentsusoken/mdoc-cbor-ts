@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { NameSpace, nameSpaceSchema } from '../common';
+import { nameSpaceSchema } from '@/schemas/common';
+import { createArraySchema } from '@/schemas/common/Array';
 
 /**
  * Schema for authorized namespaces in MSO
@@ -7,22 +8,26 @@ import { NameSpace, nameSpaceSchema } from '../common';
  * Represents an array of authorized namespaces.
  * This schema validates that the array contains at least one valid namespace.
  *
+ * ```cddl
+ * AuthorizedNameSpaces = [+ NameSpace]
+ * ```
+ *
  * @example
  * ```typescript
  * const namespaces = ["org.iso.18013.5.1"];
  * const result = authorizedNameSpacesSchema.parse(namespaces); // Returns AuthorizedNameSpaces
  * ```
  */
-export const authorizedNameSpacesSchema = z.array(nameSpaceSchema).nonempty();
+export const authorizedNameSpacesSchema = createArraySchema({
+  target: 'AuthorizedNameSpaces',
+  itemSchema: nameSpaceSchema,
+});
 
 /**
  * Type definition for authorized namespaces
  * @description
  * Represents a validated array of authorized namespaces
  *
- * ```cddl
- * AuthorizedNameSpaces = [+ NameSpace]
- * ```
  * @see {@link NameSpace}
  */
-export type AuthorizedNameSpaces = z.infer<typeof authorizedNameSpacesSchema>;
+export type AuthorizedNameSpaces = z.output<typeof authorizedNameSpacesSchema>;
