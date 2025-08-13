@@ -4,7 +4,7 @@ export const TEXT_INVALID_TYPE_MESSAGE_SUFFIX =
   'Expected a string, but received a different type. Please provide a string identifier.';
 export const TEXT_REQUIRED_MESSAGE_SUFFIX =
   'This field is required. Please provide a string identifier.';
-export const TEXT_NON_EMPTY_MESSAGE_SUFFIX =
+export const TEXT_EMPTY_MESSAGE_SUFFIX =
   'Please provide a non-empty string identifier';
 
 /**
@@ -28,5 +28,5 @@ export const createTextSchema = (target: string): z.ZodType<string> =>
       required_error: `${target}: ${TEXT_REQUIRED_MESSAGE_SUFFIX}`,
     })
     .refine((val) => val.trim().length > 0, {
-      message: `${target}: ${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
+      message: `${target}: ${TEXT_EMPTY_MESSAGE_SUFFIX}`,
     });

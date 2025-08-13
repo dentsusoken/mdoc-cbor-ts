@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   createTextSchema,
   TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
-  TEXT_NON_EMPTY_MESSAGE_SUFFIX,
+  TEXT_EMPTY_MESSAGE_SUFFIX,
   TEXT_REQUIRED_MESSAGE_SUFFIX,
 } from '../Text';
 
@@ -43,7 +43,7 @@ describe('createTextSchema', () => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].message).toBe(
-            `Target: ${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`
+            `Target: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
           );
         }
       });

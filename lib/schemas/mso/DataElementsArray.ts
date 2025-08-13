@@ -1,13 +1,6 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema } from '../common';
-
-// Error messages
-export const DATA_ELEMENTS_ARRAY_INVALID_TYPE_MESSAGE =
-  'DataElementsArray: Expected an array of DataElementIdentifier (strings)';
-export const DATA_ELEMENTS_ARRAY_REQUIRED_MESSAGE =
-  'DataElementsArray: This field is required. Please provide an array of DataElementIdentifier (strings).';
-export const DATA_ELEMENTS_ARRAY_EMPTY_MESSAGE =
-  'DataElementsArray: Please provide at least one DataElementIdentifier';
+import { dataElementIdentifierSchema } from '@/schemas/common';
+import { createArraySchema } from '@/schemas/common/Array';
 
 /**
  * Schema for data elements array in MSO
@@ -52,14 +45,10 @@ export const DATA_ELEMENTS_ARRAY_EMPTY_MESSAGE =
  *
  * @see dataElementIdentifierSchema
  */
-export const dataElementsArraySchema = z
-  .array(dataElementIdentifierSchema, {
-    invalid_type_error: DATA_ELEMENTS_ARRAY_INVALID_TYPE_MESSAGE,
-    required_error: DATA_ELEMENTS_ARRAY_REQUIRED_MESSAGE,
-  })
-  .nonempty({
-    message: DATA_ELEMENTS_ARRAY_EMPTY_MESSAGE,
-  });
+export const dataElementsArraySchema = createArraySchema({
+  target: 'DataElementsArray',
+  itemSchema: dataElementIdentifierSchema,
+});
 
 /**
  * Type definition for data elements array

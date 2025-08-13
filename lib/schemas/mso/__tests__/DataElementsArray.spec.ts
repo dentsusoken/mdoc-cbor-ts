@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
+import { dataElementsArraySchema } from '../DataElementsArray';
 import {
-  dataElementsArraySchema,
-  DATA_ELEMENTS_ARRAY_INVALID_TYPE_MESSAGE,
-  DATA_ELEMENTS_ARRAY_REQUIRED_MESSAGE,
-  DATA_ELEMENTS_ARRAY_EMPTY_MESSAGE,
-} from '../DataElementsArray';
+  ARRAY_INVALID_TYPE_MESSAGE_SUFFIX,
+  ARRAY_REQUIRED_MESSAGE_SUFFIX,
+  ARRAY_EMPTY_MESSAGE_SUFFIX,
+} from '@/schemas/common/Array';
+import { TEXT_EMPTY_MESSAGE_SUFFIX } from '@/schemas/common/Text';
 
 describe('DataElementsArray', () => {
   it('should accept a non-empty array of identifiers', () => {
@@ -23,7 +24,7 @@ describe('DataElementsArray', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toBe(
-        DATA_ELEMENTS_ARRAY_EMPTY_MESSAGE
+        `DataElementsArray: ${ARRAY_EMPTY_MESSAGE_SUFFIX}`
       );
     }
   });
@@ -41,8 +42,8 @@ describe('DataElementsArray', () => {
         const zodError = error as z.ZodError;
         const expected =
           input === undefined
-            ? DATA_ELEMENTS_ARRAY_REQUIRED_MESSAGE
-            : DATA_ELEMENTS_ARRAY_INVALID_TYPE_MESSAGE;
+            ? `DataElementsArray: ${ARRAY_REQUIRED_MESSAGE_SUFFIX}`
+            : `DataElementsArray: ${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`;
         expect(zodError.issues[0].message).toBe(expected);
       }
     });
@@ -55,8 +56,9 @@ describe('DataElementsArray', () => {
     } catch (error) {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
-      // The message comes from DataElementIdentifier
-      expect(zodError.issues[0].message).toMatch('DataElementIdentifier:');
+      expect(zodError.issues[0].message).toBe(
+        `DataElementIdentifier: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
+      );
     }
   });
 });

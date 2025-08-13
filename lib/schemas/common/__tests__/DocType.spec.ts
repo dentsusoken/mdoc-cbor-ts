@@ -3,7 +3,7 @@ import { docTypeSchema } from '../DocType';
 import {
   TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
   TEXT_REQUIRED_MESSAGE_SUFFIX,
-  TEXT_NON_EMPTY_MESSAGE_SUFFIX,
+  TEXT_EMPTY_MESSAGE_SUFFIX,
 } from '../Text';
 import { z } from 'zod';
 
@@ -80,22 +80,22 @@ describe('DocType', () => {
       {
         name: 'empty string',
         input: '',
-        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
       },
       {
         name: 'whitespace-only string',
         input: '   ',
-        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
       },
       {
         name: 'string with only tabs',
         input: '\t\t\t',
-        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
       },
       {
         name: 'string with only newlines',
         input: '\n\n\n',
-        expectedMessage: `${prefix}${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
       },
     ];
 

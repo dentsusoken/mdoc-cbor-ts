@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { issuerSignedItemSchema } from '../IssuerSignedItem';
 import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Bytes';
-import { TEXT_NON_EMPTY_MESSAGE_SUFFIX } from '../../common/Text';
+import { TEXT_EMPTY_MESSAGE_SUFFIX } from '../../common/Text';
 
 // Constants for expected error messages
 const ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE =
@@ -212,7 +212,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            `DataElementIdentifier: ${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`
+            `DataElementIdentifier: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
           );
         }
       });
@@ -230,7 +230,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            `DataElementIdentifier: ${TEXT_NON_EMPTY_MESSAGE_SUFFIX}`
+            `DataElementIdentifier: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
           );
         }
       });
