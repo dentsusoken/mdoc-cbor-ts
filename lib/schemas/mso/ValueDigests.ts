@@ -1,37 +1,54 @@
 import { z } from 'zod';
-import { NameSpace, nameSpaceSchema } from '../common';
-import { DigestIDs, digestIDsSchema } from './DigestIDs';
+import { nameSpaceSchema } from '@/schemas/common/NameSpace';
+import { digestIDsSchema } from './DigestIDs';
+import { createMapSchema } from '@/schemas/common/Map';
 
 /**
  * Schema for value digests in MSO
  * @description
- * Represents a record of namespaces and their corresponding digest IDs.
- * This schema validates that each namespace maps to valid digest IDs.
- *
- * @example
- * ```typescript
- * const digests = {
- *   "org.iso.18013.5.1": {
- *     0: Buffer.from('0123456789abcdef')
- *   }
- * };
- * const result = valueDigestsSchema.parse(digests); // Returns ValueDigests
- * ```
- */
-export const valueDigestsSchema = z
-  .map(nameSpaceSchema, digestIDsSchema)
-  .refine((data) => data.size > 0)
-  .transform((data) => Object.fromEntries(data));
-
-/**
- * Type definition for value digests
- * @description
- * Represents a validated record of namespaces and their digest IDs
+ * Validates a Map of namespaces to digest ID collections.
+ * Input is a `Map<string, unknown>` (CBOR-decoded) that maps:
+ * - key: `NameSpace` (validated by `nameSpaceSchema`)
+ * - value: `DigestIDs` (validated by `digestIDsSchema`)
  *
  * ```cddl
  * ValueDigests = {+ NameSpace => DigestIDs}
  * ```
+ *
+ * Notes:
+ * - Uses `createMapSchema` which enforces Map type, non-emptiness by default,
+ *   and prefixes errors with the target name (`ValueDigests`).
+ * - Intended to be used with CBOR-decoded Maps; plain JS objects should be
+ *   converted to Maps prior to validation if needed.
+ *
+ * @example
+ * ```typescript
+ * import { valueDigestsSchema } from '@/schemas/mso/ValueDigests';
+ *
+ * const input = new Map<string, unknown>([
+ *   [
+ *     'org.iso.18013.5.1',
+ *     new Map<number, unknown>([[0, new Uint8Array([0x01, 0x02])]])
+ *   ],
+ * ]);
+ *
+ * const value = valueDigestsSchema.parse(input);
+ * // value is a validated Map<NameSpace, DigestIDs>
+ * ```
+ */
+export const valueDigestsSchema = createMapSchema({
+  target: 'ValueDigests',
+  keySchema: nameSpaceSchema,
+  valueSchema: digestIDsSchema,
+});
+
+/**
+ * Type definition for value digests
+ * @description
+ * Represents a validated record of namespaces and their digest IDs.
+ * The output type corresponds to the parsed Map structure.
+ *
  * @see {@link NameSpace}
  * @see {@link DigestIDs}
  */
-export type ValueDigests = z.infer<typeof valueDigestsSchema>;
+export type ValueDigests = z.output<typeof valueDigestsSchema>;

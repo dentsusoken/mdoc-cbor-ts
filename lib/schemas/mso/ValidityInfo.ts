@@ -1,40 +1,28 @@
 import { z } from 'zod';
-import { DateTime } from '../../cbor';
+import { createDateTimeSchema } from '@/schemas/common/DateTime';
+import { createStructSchema } from '../common/Struct';
 
-// TODO: z.date() should be CborDateTime
+export const validityInfoObjectSchema = z.object({
+  signed: createDateTimeSchema('ValidityInfo.signed'),
+  validFrom: createDateTimeSchema('ValidityInfo.validFrom'),
+  validUntil: createDateTimeSchema('ValidityInfo.validUntil'),
+  expectedUpdate: createDateTimeSchema(
+    'ValidityInfo.expectedUpdate'
+  ).optional(),
+});
 /**
  * Schema for validity information in MSO
  * @description
- * Represents the validity period of a mobile security object.
- * This schema validates the structure of validity information including signed date,
- * valid from date, valid until date, and optional expected update date.
+ * Validates the structure and field types for validity information.
+ * Each date-time field is validated using `createDateTimeSchema`, which expects
+ * a `DateTime` instance (created via CBOR decoding of tag 0), and rejects
+ * invalid dates (where `toISOString()` would throw a RangeError).
  *
- * @example
- * ```typescript
- * const info = {
- *   signed: new Date(),
- *   validFrom: new Date(),
- *   validUntil: new Date(),
- *   expectedUpdate: new Date()
- * };
- * const result = validityInfoSchema.parse(info); // Returns ValidityInfo
- * ```
- */
-export const validityInfoSchema = z.map(z.any(), z.any()).transform((data) => {
-  return z
-    .object({
-      signed: z.instanceof(DateTime),
-      validFrom: z.instanceof(DateTime),
-      validUntil: z.instanceof(DateTime),
-      expectedUpdate: z.instanceof(DateTime).optional(),
-    })
-    .parse(Object.fromEntries(data));
-});
-
-/**
- * Type definition for validity information
- * @description
- * Represents a validated validity information structure
+ * Fields:
+ * - `signed`: DateTime (required)
+ * - `validFrom`: DateTime (required)
+ * - `validUntil`: DateTime (required)
+ * - `expectedUpdate`: DateTime (optional)
  *
  * ```cddl
  * ValidityInfo = {
@@ -44,5 +32,32 @@ export const validityInfoSchema = z.map(z.any(), z.any()).transform((data) => {
  *  ? "expectedUpdate": tdate
  * }
  * ```
+ *
+ * @example
+ * ```typescript
+ * import { DateTime } from '@/cbor/DateTime';
+ * import { validityInfoSchema } from '@/schemas/mso/ValidityInfo';
+ *
+ * const info = {
+ *   signed: new DateTime('2024-03-20T10:00:00Z'),
+ *   validFrom: new DateTime('2024-03-20T10:00:00Z'),
+ *   validUntil: new DateTime('2025-03-20T10:00:00Z'),
+ *   expectedUpdate: new DateTime('2024-09-20T10:00:00Z'),
+ * };
+ *
+ * const result = validityInfoSchema.parse(info);
+ * // result is a validated structure with DateTime instances
+ * ```
  */
-export type ValidityInfo = z.infer<typeof validityInfoSchema>;
+export const validityInfoSchema = createStructSchema({
+  target: 'ValidityInfo',
+  objectSchema: validityInfoObjectSchema,
+});
+
+/**
+ * Type definition for validity information
+ * @description
+ * Represents a validated validity information structure where all date-time
+ * fields are `DateTime` instances (validated via `createDateTimeSchema`).
+ */
+export type ValidityInfo = z.output<typeof validityInfoSchema>;
