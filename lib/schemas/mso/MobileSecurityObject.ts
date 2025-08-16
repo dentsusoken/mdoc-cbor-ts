@@ -1,58 +1,38 @@
 import { z } from 'zod';
 import { docTypeSchema } from '../common';
-import { DeviceKeyInfo, deviceKeyInfoSchema } from './DeviceKeyInfo';
+import { deviceKeyInfoSchema } from './DeviceKeyInfo';
 import { digestAlgorithmSchema } from './DigestAlgorithm';
-import { ValidityInfo, validityInfoSchema } from './ValidityInfo';
-import { ValueDigests, valueDigestsSchema } from './ValueDigests';
+import { validityInfoSchema } from './ValidityInfo';
+import { valueDigestsSchema } from './ValueDigests';
+import { createStructSchema } from '../common/Struct';
+
+export const VERSION_INVALID_VALUE_MESSAGE =
+  'MobileSecurityObject: Version must be "1.0"';
+
+export const mobileSecurityObjectObjectSchema = z.object({
+  version: z.literal('1.0', {
+    errorMap: () => ({ message: VERSION_INVALID_VALUE_MESSAGE }),
+  }),
+  digestAlgorithm: digestAlgorithmSchema,
+  valueDigests: valueDigestsSchema,
+  deviceKeyInfo: deviceKeyInfoSchema,
+  docType: docTypeSchema,
+  validityInfo: validityInfoSchema,
+});
 
 /**
  * Schema for mobile security object in MSO
  * @description
- * Represents the core security object containing version, digest algorithm,
- * value digests, device key information, document type, and validity information.
- * This schema validates the structure of the mobile security object.
+ * Validates a `Map<string, unknown>` (e.g., CBOR-decoded) that is transformed into
+ * a plain object and checked against `mobileSecurityObjectObjectSchema`.
  *
- * @example
- * ```typescript
- * const mso = {
- *   version: "1.0",
- *   digestAlgorithm: "SHA-256",
- *   valueDigests: {},
- *   deviceKeyInfo: {},
- *   docType: "org.iso.18013.5.1.mDL",
- *   validityInfo: {}
- * };
- * const result = mobileSecurityObjectSchema.parse(mso); // Returns MobileSecurityObject
- * ```
- */
-export const mobileSecurityObjectSchema = z
-  .map(z.any(), z.any())
-  .transform((v) => {
-    return z
-      .object({
-        version: z.literal('1.0'),
-        digestAlgorithm: digestAlgorithmSchema,
-        valueDigests: valueDigestsSchema,
-        deviceKeyInfo: deviceKeyInfoSchema,
-        docType: docTypeSchema,
-        validityInfo: validityInfoSchema,
-      })
-      .parse(Object.fromEntries(v));
-  });
-
-// z.object({
-//   version: z.literal('1.0'),
-//   digestAlgorithm: digestAlgorithmSchema,
-//   valueDigests: valueDigestsSchema,
-//   deviceKeyInfo: deviceKeyInfoSchema,
-//   docType: docTypeSchema,
-//   validityInfo: validityInfoSchema,
-// });
-
-/**
- * Type definition for mobile security object
- * @description
- * Represents a validated mobile security object structure
+ * Container errors are prefixed with `MobileSecurityObject: ...` by `createStructSchema`.
+ * Field-level validation is delegated to:
+ * - `digestAlgorithmSchema`
+ * - `valueDigestsSchema` (Map<NameSpace, DigestIDs>)
+ * - `deviceKeyInfoSchema` (Map-based COSE key info)
+ * - `docTypeSchema`
+ * - `validityInfoSchema` (DateTime instances via CBOR tag 0)
  *
  * ```cddl
  * MobileSecurityObject = {
@@ -64,8 +44,46 @@ export const mobileSecurityObjectSchema = z
  *  "validityInfo": ValidityInfo
  * }
  * ```
+ *
+ * @example
+ * ```typescript
+ * import { typedMap } from '@/utils/typedMap';
+ * import { mobileSecurityObjectSchema } from '@/schemas/mso/MobileSecurityObject';
+ * import { DateTime } from '@/cbor/DateTime';
+ *
+ * const input = typedMap([
+ *   ['version', '1.0'],
+ *   ['digestAlgorithm', 'SHA-256'],
+ *   ['valueDigests', [
+ *     ['org.iso.18013.5.1', [[1, new Uint8Array([1])]]],
+ *   ]],
+ *   ['deviceKeyInfo', [
+ *     ['deviceKey', [[1, 2]]],
+ *   ]],
+ *   ['docType', 'org.iso.18013.5.1.mDL'],
+ *   ['validityInfo', [
+ *     ['signed', new DateTime('2024-03-20T10:00:00Z')],
+ *     ['validFrom', new DateTime('2024-03-20T10:00:00Z')],
+ *     ['validUntil', new DateTime('2025-03-20T10:00:00Z')],
+ *   ]],
+ * ]);
+ *
+ * const mso = mobileSecurityObjectSchema.parse(input); // mso is a MobileSecurityObject
+ * // mso is a validated object with typed fields
+ * ```
+ */
+export const mobileSecurityObjectSchema = createStructSchema({
+  target: 'MobileSecurityObject',
+  objectSchema: mobileSecurityObjectObjectSchema,
+});
+
+/**
+ * Type definition for mobile security object
+ * @description
+ * Represents a validated mobile security object structure
+ *
  * @see {@link ValueDigests}
  * @see {@link DeviceKeyInfo}
  * @see {@link ValidityInfo}
  */
-export type MobileSecurityObject = z.infer<typeof mobileSecurityObjectSchema>;
+export type MobileSecurityObject = z.output<typeof mobileSecurityObjectSchema>;

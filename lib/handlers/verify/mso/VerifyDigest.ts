@@ -41,7 +41,7 @@ export const verifyDigest: VerifyDigest = async (
 ) => {
   const payload = issuerAuth[2];
   const msoByte = mobileSecurityObjectBytesSchema.parse(decode(payload));
-  const mso = mobileSecurityObjectSchema.parse(msoByte.data.esMap);
+  const mso = mobileSecurityObjectSchema.parse(msoByte.value);
   const { digestAlgorithm, valueDigests } = mso;
   for (const [namespace, issuerSignedItems] of Object.entries(
     issuerNameSpaces

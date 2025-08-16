@@ -23,13 +23,11 @@ import { createMapSchema } from '@/schemas/common/Map';
  *
  * @example
  * ```typescript
+ * import { typedMap } from '@/utils/typedMap';
  * import { valueDigestsSchema } from '@/schemas/mso/ValueDigests';
  *
- * const input = new Map<string, unknown>([
- *   [
- *     'org.iso.18013.5.1',
- *     new Map<number, unknown>([[0, new Uint8Array([0x01, 0x02])]])
- *   ],
+ * const input = typedMap([
+ *   ['org.iso.18013.5.1', [[1, new Uint8Array([0x01, 0x02])]]],
  * ]);
  *
  * const value = valueDigestsSchema.parse(input);

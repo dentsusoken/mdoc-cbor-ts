@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestSchema } from '../Digest';
-import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Bytes';
+import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '@/schemas/common/Bytes';
 
 describe('Digest', () => {
   describe('valid digest values', () => {

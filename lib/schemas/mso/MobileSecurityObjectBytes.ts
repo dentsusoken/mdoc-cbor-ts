@@ -1,9 +1,9 @@
-import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
-import { ByteString } from '../../cbor';
-import { KVMap } from '../../types';
-import { MobileSecurityObject } from './MobileSecurityObject';
-// TODO: instanceof ByteString is correct
+import { Tag } from 'cbor-x';
+
+export const MOBILE_SECURITY_OBJECT_INVALID_TYPE_MESSAGE =
+  'MobileSecurityObject: Please provide a Tag with tag 24 and a Map value.';
+
 /**
  * Schema for CBOR-encoded mobile security object
  * @description
@@ -16,9 +16,13 @@ import { MobileSecurityObject } from './MobileSecurityObject';
  * const result = mobileSecurityObjectBytesSchema.parse(bytes); // Returns MobileSecurityObjectBytes
  * ```
  */
-export const mobileSecurityObjectBytesSchema = z.instanceof(
-  ByteString<TypedMap<KVMap<MobileSecurityObject>>>
-);
+export const mobileSecurityObjectBytesSchema = z
+  .instanceof(Tag, {
+    message: MOBILE_SECURITY_OBJECT_INVALID_TYPE_MESSAGE,
+  })
+  .refine((tag) => tag.tag === 24 && tag.value instanceof Map, {
+    message: MOBILE_SECURITY_OBJECT_INVALID_TYPE_MESSAGE,
+  });
 
 /**
  * Type definition for CBOR-encoded mobile security object
@@ -30,6 +34,6 @@ export const mobileSecurityObjectBytesSchema = z.instanceof(
  * ```
  * @see {@link MobileSecurityObject}
  */
-export type MobileSecurityObjectBytes = z.infer<
+export type MobileSecurityObjectBytes = z.output<
   typeof mobileSecurityObjectBytesSchema
 >;

@@ -30,11 +30,20 @@ export const deviceKeyInfoObjectSchema = z.object({
  * ```
  *
  * @example
- * Map-based input (converted to object before validation):
- * - deviceKey: COSE_Key as Map (e.g., new Map([[1, 2]]))
- * - keyAuthorizations: see KeyAuthorizations (e.g., new Map([["nameSpaces", ["org.iso.18013.5.1"]]]))
- * - keyInfo: see KeyInfo (e.g., new Map([[1, "value"]]))
- * Parse with the schema to get DeviceKeyInfo.
+ * ```typescript
+ * import { typedMap } from '@/utils/typedMap';
+ *
+ * // Map-based input (converted to object before validation)
+ * const input = typedMap([
+ *   ['deviceKey', [[1, 2]]],
+ *   ['keyAuthorizations', [
+ *     ['nameSpaces', ['org.iso.18013.5.1']],
+ *   ]],
+ *   ['keyInfo', [[1, 'value']]],
+ * ]);
+ *
+ * const value = deviceKeyInfoSchema.parse(input);
+ * ```
  *
  * @example
  * Throws ZodError for invalid container type (object instead of Map).

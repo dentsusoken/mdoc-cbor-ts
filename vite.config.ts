@@ -19,14 +19,7 @@ export default defineConfig({
       },
     },
     rollupOptions: {
-      external: [
-        '@auth0/cose',
-        'cbor-x',
-        'zod',
-        'node:crypto',
-        'node:buffer',
-        'node:crypto',
-      ],
+      external: ['@auth0/cose', 'cbor-x', 'zod', 'node:crypto', 'node:buffer'],
     },
   },
 });
