@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { dataElementIdentifierSchema } from '../DataElementIdentifier';
 import {
-  TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
-  TEXT_REQUIRED_MESSAGE_SUFFIX,
-  TEXT_EMPTY_MESSAGE_SUFFIX,
+  nonEmptyTextInvalidTypeMessage,
+  nonEmptyTextRequiredMessage,
+  nonEmptyTextEmptyMessage,
 } from '../NonEmptyText';
 import { z } from 'zod';
 
@@ -45,57 +45,66 @@ describe('DataElementIdentifier', () => {
   });
 
   describe('should throw error for invalid inputs', () => {
-    const prefix = 'DataElementIdentifier: ';
     const testCases = [
       {
         name: 'number input',
         input: 123,
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage(
+          'DataElementIdentifier'
+        ),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage(
+          'DataElementIdentifier'
+        ),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage(
+          'DataElementIdentifier'
+        ),
       },
       {
         name: 'array input',
         input: [1, 2, 3],
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage(
+          'DataElementIdentifier'
+        ),
       },
       {
         name: 'null input',
         input: null,
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage(
+          'DataElementIdentifier'
+        ),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: `${prefix}${TEXT_REQUIRED_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextRequiredMessage('DataElementIdentifier'),
       },
       {
         name: 'empty string',
         input: '',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
       },
       {
         name: 'whitespace-only string',
         input: '   ',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
       },
       {
         name: 'string with only tabs',
         input: '\t\t\t',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
       },
       {
         name: 'string with only newlines',
         input: '\n\n\n',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
       },
     ];
 
