@@ -42,4 +42,23 @@ describe('Cbor Tag', () => {
     expect(decoded).toBeInstanceOf(Tag);
     expect(decoded.value).toEqual(new Date('2025-01-01T10:00:00.123Z'));
   });
+
+  it('should decode raw Tag24("hello") binary into Tag instance (without using Tag class on encode)', () => {
+    // Tag 24 (embedded CBOR data item) wrapping the CBOR for text string "hello"
+    // Inner CBOR for "hello": 0x65 68 65 6c 6c 6f
+    // Full: d8 18 46 65 68 65 6c 6c 6f
+    const raw = new Uint8Array([
+      0xd8, 0x18, 0x46, 0x65, 0x68, 0x65, 0x6c, 0x6c, 0x6f,
+    ]);
+
+    const decoded = decodeCbor(raw) as Tag;
+    console.log(decoded);
+
+    expect(decoded).toBeInstanceOf(Tag);
+    // cbor-x represents Tag 24 value as the raw embedded CBOR bytes when decoding from raw bytes
+    expect(decoded.value).toBeInstanceOf(Uint8Array);
+    expect(decoded.value).toEqual(
+      new Uint8Array([0x65, 0x68, 0x65, 0x6c, 0x6c, 0x6f])
+    );
+  });
 });

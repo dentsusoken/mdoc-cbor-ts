@@ -4,7 +4,9 @@ import {
   decodeCbor,
   defaultOptions,
   AdvancedOptions,
+  encodeCborWithTag24,
 } from '../codec';
+import { Tag } from 'cbor-x';
 
 describe('codec', () => {
   describe('round-trip encoding/decoding', () => {
@@ -243,6 +245,49 @@ describe('codec', () => {
       const encoded = encodeCbor(data);
       const decoded = decodeCbor(encoded);
       expect(decoded).toEqual(new Map([['test', 'data']]));
+    });
+  });
+
+  describe('Tag 24 decoding without Tag class on encode', () => {
+    it('should decode Tag24 wrapping number 123 into Tag with embedded CBOR bytes', () => {
+      // Tag 24 (embedded CBOR) wrapping inner CBOR for number 123
+      // Inner CBOR for 123: 0x18 0x7b
+      // Full encoded: d8 18 42 18 7b
+      const raw = new Uint8Array([0xd8, 0x18, 0x42, 0x18, 0x7b]);
+
+      const decoded = decodeCbor(raw) as Tag;
+
+      expect(decoded).toBeInstanceOf(Tag);
+      expect(decoded.tag).toBe(24);
+      expect(decoded.value).toBeInstanceOf(Uint8Array);
+      expect(decoded.value).toEqual(new Uint8Array([0x18, 0x7b]));
+    });
+
+    it('should decode Tag24 wrapping string "hello" into Tag with embedded CBOR bytes', () => {
+      // Tag 24 (embedded CBOR) wrapping inner CBOR for text string "hello"
+      // Inner CBOR for "hello": 0x65 68 65 6c 6c 6f
+      // Full encoded: d8 18 46 65 68 65 6c 6c 6f
+      const raw = new Uint8Array([
+        0xd8, 0x18, 0x46, 0x65, 0x68, 0x65, 0x6c, 0x6c, 0x6f,
+      ]);
+
+      const decoded = decodeCbor(raw) as Tag;
+
+      expect(decoded).toBeInstanceOf(Tag);
+      expect(decoded.tag).toBe(24);
+      expect(decoded.value).toBeInstanceOf(Uint8Array);
+      expect(decoded.value).toEqual(
+        new Uint8Array([0x65, 0x68, 0x65, 0x6c, 0x6c, 0x6f])
+      );
+    });
+  });
+
+  describe('Tag 24 encoding binary equality', () => {
+    it('should produce identical binary for Tag(123, 24) and direct Tag24 bytes', () => {
+      const fromTag = encodeCbor(new Tag(encodeCbor(123), 24));
+      const direct = new Uint8Array([0xd8, 0x18, 0x42, 0x18, 0x7b]);
+
+      expect(fromTag).toEqual(direct);
     });
   });
 
