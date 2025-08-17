@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createdHeadersSchema } from '../Headers';
 import { z } from 'zod';
 import { mapInvalidTypeMessage, mapRequiredMessage } from '../Map';
+import { uintIntegerMessage } from '../Uint';
 
 describe('Headers schema', () => {
   describe('success', () => {
@@ -57,9 +58,7 @@ describe('Headers schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         // Error should come from uint key schema with the configured target "Key"
-        expect(zodError.issues[0].message).toBe(
-          'Key: Please provide an integer (no decimal places)'
-        );
+        expect(zodError.issues[0].message).toBe(uintIntegerMessage('Key'));
       }
     });
   });
