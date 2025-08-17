@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createBytesSchema, BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../Bytes';
+import { createBytesSchema, bytesInvalidTypeMessage } from '../Bytes';
 import { z } from 'zod';
 
 describe('Bytes', () => {
@@ -52,37 +52,37 @@ describe('Bytes', () => {
       {
         name: 'string input',
         input: 'not bytes',
-        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: bytesInvalidTypeMessage('Bytes'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: bytesInvalidTypeMessage('Bytes'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: bytesInvalidTypeMessage('Bytes'),
       },
       {
         name: 'null input',
         input: null,
-        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: bytesInvalidTypeMessage('Bytes'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: bytesInvalidTypeMessage('Bytes'),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: bytesInvalidTypeMessage('Bytes'),
       },
       {
         name: 'array input',
         input: [1, 2, 3],
-        expectedMessage: `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: bytesInvalidTypeMessage('Bytes'),
       },
     ];
 
@@ -112,7 +112,7 @@ describe('Bytes', () => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].message).toBe(
-            `CustomTarget: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`
+            bytesInvalidTypeMessage('CustomTarget')
           );
         }
       });
@@ -124,7 +124,12 @@ describe('Bytes', () => {
         const input = Buffer.from([1, 2, 3]);
         const result = customSchema.parse(input);
         expect(result).toBeInstanceOf(Uint8Array);
-        expect(result).toEqual(input);
+        const expected = new Uint8Array(
+          input.buffer,
+          input.byteOffset,
+          input.byteLength
+        );
+        expect(result).toEqual(expected);
       });
 
       it('should accept Uint8Array with custom schema', () => {

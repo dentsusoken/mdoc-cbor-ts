@@ -1,8 +1,24 @@
 import { Buffer } from 'node:buffer';
 import { z } from 'zod';
 
-export const BYTES_INVALID_TYPE_MESSAGE_SUFFIX =
-  'Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.';
+/**
+ * Creates an error message for invalid bytes types
+ * @description
+ * Generates a standardized error message when a bytes validation fails due to invalid type.
+ * The message indicates the expected target name and that the value should be a Buffer or Uint8Array.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = bytesInvalidTypeMessage('Signature');
+ * // Returns: "Signature: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid."
+ * ```
+ */
+export const bytesInvalidTypeMessage = (target: string): string =>
+  `${target}: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.`;
+
 /**
  * Schema for handling binary data in the form of Uint8Array or Buffer
  * @description
@@ -29,7 +45,7 @@ export const createBytesSchema = (target: string): z.ZodType<Uint8Array> =>
     ],
     {
       errorMap: () => ({
-        message: `${target}: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        message: bytesInvalidTypeMessage(target),
       }),
     }
   );
