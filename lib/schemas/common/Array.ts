@@ -1,12 +1,58 @@
 import { z } from 'zod';
 
-// Error messages
-export const ARRAY_INVALID_TYPE_MESSAGE_SUFFIX =
-  'Expected an array, but received a different type. Please provide an array.';
-export const ARRAY_REQUIRED_MESSAGE_SUFFIX =
-  'This field is required. Please provide an array.';
-export const ARRAY_EMPTY_MESSAGE_SUFFIX =
-  'At least one entry must be provided. The array cannot be empty.';
+/**
+ * Creates an error message for invalid array types
+ * @description
+ * Generates a standardized error message when an array validation fails due to invalid type.
+ * The message indicates the expected target name and that the value should be an array.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = arrayInvalidTypeMessage('Tags');
+ * // Returns: "Tags: Expected an array, but received a different type. Please provide an array."
+ * ```
+ */
+export const arrayInvalidTypeMessage = (target: string): string =>
+  `${target}: Expected an array, but received a different type. Please provide an array.`;
+
+/**
+ * Creates an error message for required array fields
+ * @description
+ * Generates a standardized error message when a required array field is missing.
+ * The message indicates the expected target name and that the field is required.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = arrayRequiredMessage('Tags');
+ * // Returns: "Tags: This field is required. Please provide an array."
+ * ```
+ */
+export const arrayRequiredMessage = (target: string): string =>
+  `${target}: This field is required. Please provide an array.`;
+
+/**
+ * Creates an error message for empty array validation
+ * @description
+ * Generates a standardized error message when an array validation fails because
+ * the array is empty but non-empty arrays are required.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = arrayEmptyMessage('Tags');
+ * // Returns: "Tags: At least one entry must be provided. The array cannot be empty."
+ * ```
+ */
+export const arrayEmptyMessage = (target: string): string =>
+  `${target}: At least one entry must be provided. The array cannot be empty.`;
 
 type CreateArraySchemaParams<T> = {
   target: string;
@@ -67,14 +113,14 @@ export const createArraySchema = <T>({
 }: CreateArraySchemaParams<T>): z.ZodType<T[]> =>
   z
     .array(itemSchema, {
-      invalid_type_error: `${target}: ${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`,
-      required_error: `${target}: ${ARRAY_REQUIRED_MESSAGE_SUFFIX}`,
+      invalid_type_error: arrayInvalidTypeMessage(target),
+      required_error: arrayRequiredMessage(target),
     })
     .refine(
       (data) => {
         return allowEmpty || data.length > 0;
       },
       {
-        message: `${target}: ${ARRAY_EMPTY_MESSAGE_SUFFIX}`,
+        message: arrayEmptyMessage(target),
       }
     );

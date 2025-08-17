@@ -38,10 +38,10 @@ export const bytesInvalidTypeMessage = (target: string): string =>
 export const createBytesSchema = (target: string): z.ZodType<Uint8Array> =>
   z.union(
     [
-      z.instanceof(Uint8Array),
       z
         .instanceof(Buffer)
         .transform((v) => new Uint8Array(v.buffer, v.byteOffset, v.byteLength)),
+      z.instanceof(Uint8Array),
     ],
     {
       errorMap: () => ({

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   createArraySchema,
-  ARRAY_INVALID_TYPE_MESSAGE_SUFFIX,
-  ARRAY_REQUIRED_MESSAGE_SUFFIX,
-  ARRAY_EMPTY_MESSAGE_SUFFIX,
+  arrayInvalidTypeMessage,
+  arrayRequiredMessage,
+  arrayEmptyMessage,
 } from '../Array';
 import { z } from 'zod';
 
@@ -28,27 +28,26 @@ describe('createArraySchema', () => {
   });
 
   describe('should reject invalid types with consistent message', () => {
-    const prefix = `${TARGET}: `;
     const cases: { name: string; input: unknown; expected: string }[] = [
       {
         name: 'boolean input',
         input: true,
-        expected: `${prefix}${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: arrayInvalidTypeMessage(TARGET),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expected: `${prefix}${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: arrayInvalidTypeMessage(TARGET),
       },
       {
         name: 'null input',
         input: null,
-        expected: `${prefix}${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: arrayInvalidTypeMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: `${prefix}${ARRAY_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: arrayRequiredMessage(TARGET),
       },
     ];
 
@@ -67,8 +66,6 @@ describe('createArraySchema', () => {
   });
 
   describe('should enforce non-empty by default and allow empty with flag', () => {
-    const prefix = `${TARGET}: `;
-
     it('should reject empty array by default', () => {
       try {
         schema.parse([]);
@@ -76,9 +73,7 @@ describe('createArraySchema', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          `${prefix}${ARRAY_EMPTY_MESSAGE_SUFFIX}`
-        );
+        expect(zodError.issues[0].message).toBe(arrayEmptyMessage(TARGET));
       }
     });
 
