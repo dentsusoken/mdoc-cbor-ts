@@ -5,7 +5,7 @@ import {
   MAP_INVALID_TYPE_MESSAGE_SUFFIX,
   MAP_EMPTY_MESSAGE_SUFFIX,
 } from '@/schemas/common/Map';
-import { TEXT_EMPTY_MESSAGE_SUFFIX } from '@/schemas/common/Text';
+import { TEXT_EMPTY_MESSAGE_SUFFIX } from '@/schemas/common/NonEmptyText';
 
 // Helper to build a valid DigestIDs map (DigestID must be > 0)
 const buildDigestIDs = (): Map<number, Uint8Array> =>

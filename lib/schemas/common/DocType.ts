@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createTextSchema } from './Text';
+import { createNonEmptyTextSchema } from './NonEmptyText';
 
 /**
  * Schema for document type identifiers
@@ -17,7 +17,7 @@ import { createTextSchema } from './Text';
  * const result = docTypeSchema.parse(validDocType); // Returns string
  * ```
  */
-export const docTypeSchema = createTextSchema('DocType');
+export const docTypeSchema = createNonEmptyTextSchema('DocType');
 
 /**
  * Type definition for document types

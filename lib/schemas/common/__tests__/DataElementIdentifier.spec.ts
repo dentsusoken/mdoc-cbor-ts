@@ -4,7 +4,7 @@ import {
   TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
   TEXT_REQUIRED_MESSAGE_SUFFIX,
   TEXT_EMPTY_MESSAGE_SUFFIX,
-} from '../Text';
+} from '../NonEmptyText';
 import { z } from 'zod';
 
 describe('DataElementIdentifier', () => {

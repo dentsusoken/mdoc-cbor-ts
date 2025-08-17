@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { issuerSignedItemSchema } from '../IssuerSignedItem';
 import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Bytes';
-import { TEXT_EMPTY_MESSAGE_SUFFIX } from '../../common/Text';
+import { TEXT_EMPTY_MESSAGE_SUFFIX } from '../../common/NonEmptyText';
 
 // Constants for expected error messages
 const ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE =

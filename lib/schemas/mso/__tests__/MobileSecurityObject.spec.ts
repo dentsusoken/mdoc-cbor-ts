@@ -7,7 +7,7 @@ import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
 import { ExactKeyMap, TransformNestedEntries } from 'exact-key-map';
 import { deviceKeySchema } from '../DeviceKey';
 import { VERSION_INVALID_VALUE_MESSAGE } from '../MobileSecurityObject';
-import { TEXT_REQUIRED_MESSAGE_SUFFIX } from '@/schemas/common/Text';
+import { TEXT_REQUIRED_MESSAGE_SUFFIX } from '@/schemas/common/NonEmptyText';
 
 const validMSO = [
   ['version', '1.0'],

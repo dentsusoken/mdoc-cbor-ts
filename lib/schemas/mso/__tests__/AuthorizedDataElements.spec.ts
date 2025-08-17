@@ -10,7 +10,7 @@ import { ARRAY_EMPTY_MESSAGE_SUFFIX } from '@/schemas/common/Array';
 import {
   TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
   TEXT_EMPTY_MESSAGE_SUFFIX,
-} from '@/schemas/common/Text';
+} from '@/schemas/common/NonEmptyText';
 
 describe('AuthorizedDataElements', () => {
   const TARGET = 'AuthorizedDataElements';

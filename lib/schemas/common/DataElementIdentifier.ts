@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createTextSchema } from './Text';
+import { createNonEmptyTextSchema } from './NonEmptyText';
 
 /**
  * Schema for data element identifiers
@@ -17,7 +17,7 @@ import { createTextSchema } from './Text';
  * const result = dataElementIdentifierSchema.parse(validId); // Returns string
  * ```
  */
-export const dataElementIdentifierSchema = createTextSchema(
+export const dataElementIdentifierSchema = createNonEmptyTextSchema(
   'DataElementIdentifier'
 );
 

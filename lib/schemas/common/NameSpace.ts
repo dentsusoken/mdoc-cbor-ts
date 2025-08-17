@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createTextSchema } from './Text';
+import { createNonEmptyTextSchema } from './NonEmptyText';
 
 /**
  * Schema for namespace identifiers
@@ -17,7 +17,7 @@ import { createTextSchema } from './Text';
  * const result = nameSpaceSchema.parse(validNamespace); // Returns string
  * ```
  */
-export const nameSpaceSchema = createTextSchema('NameSpace');
+export const nameSpaceSchema = createNonEmptyTextSchema('NameSpace');
 
 /**
  * Type definition for namespaces

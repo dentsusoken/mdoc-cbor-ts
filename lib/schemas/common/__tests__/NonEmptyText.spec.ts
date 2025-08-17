@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 import {
-  createTextSchema,
-  TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
-  TEXT_EMPTY_MESSAGE_SUFFIX,
-  TEXT_REQUIRED_MESSAGE_SUFFIX,
-} from '../Text';
+  createNonEmptyTextSchema,
+  nonEmptyTextInvalidTypeMessage,
+  nonEmptyTextEmptyMessage,
+  nonEmptyTextRequiredMessage,
+} from '../NonEmptyText';
 
-describe('createTextSchema', () => {
+describe('createNonEmptyTextSchema', () => {
   describe('should accept valid non-empty strings (trimmed)', () => {
     const cases = [
       { name: 'plain string', input: 'abc' },
@@ -17,7 +17,7 @@ describe('createTextSchema', () => {
 
     cases.forEach(({ name, input }) => {
       it(`should accept ${name}`, () => {
-        const schema = createTextSchema('Target');
+        const schema = createNonEmptyTextSchema('Target');
         const result = schema.parse(input);
         expect(typeof result).toBe('string');
         expect(result).toBe(input);
@@ -35,7 +35,7 @@ describe('createTextSchema', () => {
 
     cases.forEach(({ name, input }) => {
       it(`should reject ${name}`, () => {
-        const schema = createTextSchema('Target');
+        const schema = createNonEmptyTextSchema('Target');
         try {
           schema.parse(input);
           throw new Error('Should have thrown');
@@ -43,7 +43,7 @@ describe('createTextSchema', () => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].message).toBe(
-            `Target: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
+            nonEmptyTextEmptyMessage('Target')
           );
         }
       });
@@ -62,7 +62,7 @@ describe('createTextSchema', () => {
 
     cases.forEach(({ name, input }) => {
       it(`should reject ${name}`, () => {
-        const schema = createTextSchema('Target');
+        const schema = createNonEmptyTextSchema('Target');
         try {
           schema.parse(input);
           throw new Error('Should have thrown');
@@ -71,8 +71,8 @@ describe('createTextSchema', () => {
           const zodError = error as z.ZodError;
           const expected =
             input === undefined
-              ? `Target: ${TEXT_REQUIRED_MESSAGE_SUFFIX}`
-              : `Target: ${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`;
+              ? nonEmptyTextRequiredMessage('Target')
+              : nonEmptyTextInvalidTypeMessage('Target');
           expect(zodError.issues[0].message).toBe(expected);
         }
       });

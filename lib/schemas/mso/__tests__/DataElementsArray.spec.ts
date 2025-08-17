@@ -6,7 +6,7 @@ import {
   ARRAY_REQUIRED_MESSAGE_SUFFIX,
   ARRAY_EMPTY_MESSAGE_SUFFIX,
 } from '@/schemas/common/Array';
-import { TEXT_EMPTY_MESSAGE_SUFFIX } from '@/schemas/common/Text';
+import { TEXT_EMPTY_MESSAGE_SUFFIX } from '@/schemas/common/NonEmptyText';
 
 describe('DataElementsArray', () => {
   it('should accept a non-empty array of identifiers', () => {
