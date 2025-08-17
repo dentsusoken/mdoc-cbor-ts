@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   createMapSchema,
-  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
-  MAP_REQUIRED_MESSAGE_SUFFIX,
-  MAP_EMPTY_MESSAGE_SUFFIX,
+  mapEmptyMessage,
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
 } from '../Map';
 import { z } from 'zod';
 
@@ -59,16 +59,13 @@ describe('createMapSchema', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          `Target: ${MAP_EMPTY_MESSAGE_SUFFIX}`
-        );
+        expect(zodError.issues[0].message).toBe(mapEmptyMessage('Target'));
       }
     });
   });
 
   describe('should reject invalid types with consistent message', () => {
     const target = 'Target';
-    const prefix = `${target}: `;
     const schema = createMapSchema<string, number>({
       target,
       keySchema: z.string(),
@@ -79,42 +76,42 @@ describe('createMapSchema', () => {
       {
         name: 'string input',
         input: 'not a map',
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(target),
       },
       {
         name: 'number input',
         input: 123,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(target),
       },
       {
         name: 'boolean input',
         input: true,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(target),
       },
       {
         name: 'null input',
         input: null,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(target),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: `${prefix}${MAP_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: mapRequiredMessage(target),
       },
       {
         name: 'plain object input',
         input: { a: 1 },
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(target),
       },
       {
         name: 'array input',
         input: [['a', 1]],
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(target),
       },
       {
         name: 'set input',
         input: new Set([1, 2, 3]),
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(target),
       },
     ];
 

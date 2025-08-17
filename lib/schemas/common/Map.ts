@@ -1,13 +1,58 @@
 import { z } from 'zod';
 
-export const MAP_INVALID_TYPE_MESSAGE_SUFFIX =
-  'Expected a Map with keys and values. Please provide a valid Map.';
+/**
+ * Creates an error message for invalid Map types
+ * @description
+ * Generates a standardized error message when a Map validation fails due to invalid type.
+ * The message indicates the expected target name and that the value should be a Map.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = mapInvalidTypeMessage('DeviceNameSpaces');
+ * // Returns: "DeviceNameSpaces: Expected a map, but received a different type. Please provide a map."
+ * ```
+ */
+export const mapInvalidTypeMessage = (target: string): string =>
+  `${target}: Expected a map, but received a different type. Please provide a map.`;
 
-export const MAP_REQUIRED_MESSAGE_SUFFIX =
-  'This field is required. Please provide a Map.';
+/**
+ * Creates an error message for required Map fields
+ * @description
+ * Generates a standardized error message when a required Map field is missing.
+ * The message indicates the expected target name and that the field is required.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = mapRequiredMessage('DeviceNameSpaces');
+ * // Returns: "DeviceNameSpaces: This field is required. Please provide a map."
+ * ```
+ */
+export const mapRequiredMessage = (target: string): string =>
+  `${target}: This field is required. Please provide a map.`;
 
-export const MAP_EMPTY_MESSAGE_SUFFIX =
-  'At least one entry must be provided. The Map cannot be empty.';
+/**
+ * Creates an error message for empty Map validation
+ * @description
+ * Generates a standardized error message when a Map validation fails because
+ * the map is empty but non-empty maps are required.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = mapEmptyMessage('DeviceNameSpaces');
+ * // Returns: "DeviceNameSpaces: At least one entry must be provided. The map cannot be empty."
+ * ```
+ */
+export const mapEmptyMessage = (target: string): string =>
+  `${target}: At least one entry must be provided. The map cannot be empty.`;
 
 type MapSchemaParams<K, V> = {
   target: string;
@@ -47,14 +92,14 @@ export const createMapSchema = <K, V>({
 }: MapSchemaParams<K, V>): z.ZodType<Map<K, V>> =>
   z
     .map(keySchema, valueSchema, {
-      invalid_type_error: `${target}: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
-      required_error: `${target}: ${MAP_REQUIRED_MESSAGE_SUFFIX}`,
+      invalid_type_error: mapInvalidTypeMessage(target),
+      required_error: mapRequiredMessage(target),
     })
     .refine(
       (data) => {
         return allowEmpty || data.size > 0;
       },
       {
-        message: `${target}: ${MAP_EMPTY_MESSAGE_SUFFIX}`,
+        message: mapEmptyMessage(target),
       }
     );

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   createUintSchema,
-  UINT_INVALID_TYPE_MESSAGE_SUFFIX,
-  UINT_REQUIRED_MESSAGE_SUFFIX,
-  UINT_INTEGER_MESSAGE_SUFFIX,
-  UINT_POSITIVE_MESSAGE_SUFFIX,
+  uintInvalidTypeMessage,
+  uintRequiredMessage,
+  uintIntegerMessage,
+  uintPositiveMessage,
 } from '../Uint';
 import { z } from 'zod';
 
@@ -31,32 +31,31 @@ describe('createUintSchema', () => {
   });
 
   describe('should reject invalid types with consistent message', () => {
-    const prefix = `${TARGET}: `;
     const cases: { name: string; input: unknown; expected: string }[] = [
       {
         name: 'boolean input',
         input: true,
-        expected: `${prefix}${UINT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: uintInvalidTypeMessage(TARGET),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expected: `${prefix}${UINT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: uintInvalidTypeMessage(TARGET),
       },
       {
         name: 'array input',
         input: [1, 2, 3],
-        expected: `${prefix}${UINT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: uintInvalidTypeMessage(TARGET),
       },
       {
         name: 'null input',
         input: null,
-        expected: `${prefix}${UINT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: uintInvalidTypeMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: `${prefix}${UINT_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: uintRequiredMessage(TARGET),
       },
     ];
 
@@ -75,22 +74,21 @@ describe('createUintSchema', () => {
   });
 
   describe('should enforce integer and positivity', () => {
-    const prefix = `${TARGET}: `;
     const cases: { name: string; input: number; expected: string }[] = [
       {
         name: 'decimal number',
         input: 1.5,
-        expected: `${prefix}${UINT_INTEGER_MESSAGE_SUFFIX}`,
+        expected: uintIntegerMessage(TARGET),
       },
       {
         name: 'zero',
         input: 0,
-        expected: `${prefix}${UINT_POSITIVE_MESSAGE_SUFFIX}`,
+        expected: uintPositiveMessage(TARGET),
       },
       {
         name: 'negative number',
         input: -1,
-        expected: `${prefix}${UINT_POSITIVE_MESSAGE_SUFFIX}`,
+        expected: uintPositiveMessage(TARGET),
       },
     ];
 
