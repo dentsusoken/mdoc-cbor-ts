@@ -4,8 +4,8 @@ import { DateTime } from '@/cbor/DateTime';
 import { decodeCbor } from '@/cbor/codec';
 import {
   createDateTimeSchema,
-  DATETIME_INVALID_TYPE_MESSAGE_SUFFIX,
-  DATETIME_INVALID_DATE_MESSAGE_SUFFIX,
+  dateTimeInvalidTypeMessage,
+  dateTimeInvalidDateMessage,
 } from '../DateTime';
 
 describe('DateTime Schema', () => {
@@ -29,7 +29,7 @@ describe('DateTime Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `TestTarget: ${DATETIME_INVALID_TYPE_MESSAGE_SUFFIX}`
+            dateTimeInvalidTypeMessage('TestTarget')
           );
         }
       }
@@ -43,7 +43,7 @@ describe('DateTime Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `TestTarget: ${DATETIME_INVALID_TYPE_MESSAGE_SUFFIX}`
+            dateTimeInvalidTypeMessage('TestTarget')
           );
         }
       }
@@ -70,7 +70,7 @@ describe('DateTime Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `TestTarget: ${DATETIME_INVALID_DATE_MESSAGE_SUFFIX}`
+            dateTimeInvalidDateMessage('TestTarget')
           );
         }
       }

@@ -1,10 +1,41 @@
 import { z } from 'zod';
 import { DateTime } from '@/cbor/DateTime';
 
-export const DATETIME_INVALID_TYPE_MESSAGE_SUFFIX =
-  'Expected a DateTime instance, but received a different type.';
-export const DATETIME_INVALID_DATE_MESSAGE_SUFFIX =
-  'The DateTime instance contains an invalid date.';
+/**
+ * Creates an error message for invalid DateTime types
+ * @description
+ * Generates a standardized error message when a DateTime validation fails due to invalid type.
+ * The message indicates the expected target name and that the value should be a DateTime instance.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = dateTimeInvalidTypeMessage('ValidityInfo');
+ * // Returns: "ValidityInfo: Expected a DateTime instance, but received a different type."
+ * ```
+ */
+export const dateTimeInvalidTypeMessage = (target: string): string =>
+  `${target}: Expected a DateTime instance, but received a different type.`;
+
+/**
+ * Creates an error message for invalid DateTime instances
+ * @description
+ * Generates a standardized error message when a DateTime validation fails because
+ * the DateTime instance contains an invalid date.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = dateTimeInvalidDateMessage('ValidityInfo');
+ * // Returns: "ValidityInfo: The DateTime instance contains an invalid date."
+ * ```
+ */
+export const dateTimeInvalidDateMessage = (target: string): string =>
+  `${target}: The DateTime instance contains an invalid date.`;
 
 /**
  * Builds a date-time schema that validates DateTime instances.
@@ -53,7 +84,7 @@ export const DATETIME_INVALID_DATE_MESSAGE_SUFFIX =
 export const createDateTimeSchema = (target: string): z.ZodType<DateTime> =>
   z
     .instanceof(DateTime, {
-      message: `${target}: ${DATETIME_INVALID_TYPE_MESSAGE_SUFFIX}`,
+      message: dateTimeInvalidTypeMessage(target),
     })
     .refine(
       (date) => {
@@ -65,6 +96,6 @@ export const createDateTimeSchema = (target: string): z.ZodType<DateTime> =>
         }
       },
       {
-        message: `${target}: ${DATETIME_INVALID_DATE_MESSAGE_SUFFIX}`,
+        message: dateTimeInvalidDateMessage(target),
       }
     );
