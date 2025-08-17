@@ -7,4 +7,5 @@ export * from './Int';
 export * from './Map';
 export * from './NameSpace';
 export * from './Text';
+export * from './TextIdentifier';
 export * from './Uint';
