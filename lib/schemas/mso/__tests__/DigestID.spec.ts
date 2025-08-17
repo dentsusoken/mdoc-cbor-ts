@@ -2,17 +2,17 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestIDSchema } from '../DigestID';
 import {
-  UINT_INVALID_TYPE_MESSAGE_SUFFIX,
-  UINT_REQUIRED_MESSAGE_SUFFIX,
-  UINT_INTEGER_MESSAGE_SUFFIX,
-  UINT_POSITIVE_MESSAGE_SUFFIX,
+  uintInvalidTypeMessage,
+  uintRequiredMessage,
+  uintIntegerMessage,
+  uintPositiveMessage,
 } from '../../common/Uint';
 
 // Expected messages built from common uint message suffixes
-const DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE = `DigestID: ${UINT_INVALID_TYPE_MESSAGE_SUFFIX}`;
-const DIGEST_ID_NUMBER_REQUIRED_MESSAGE = `DigestID: ${UINT_REQUIRED_MESSAGE_SUFFIX}`;
-const DIGEST_ID_INTEGER_MESSAGE = `DigestID: ${UINT_INTEGER_MESSAGE_SUFFIX}`;
-const DIGEST_ID_POSITIVE_MESSAGE = `DigestID: ${UINT_POSITIVE_MESSAGE_SUFFIX}`;
+const DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE = uintInvalidTypeMessage('DigestID');
+const DIGEST_ID_NUMBER_REQUIRED_MESSAGE = uintRequiredMessage('DigestID');
+const DIGEST_ID_INTEGER_MESSAGE = uintIntegerMessage('DigestID');
+const DIGEST_ID_POSITIVE_MESSAGE = uintPositiveMessage('DigestID');
 
 describe('DigestID', () => {
   describe('valid inputs', () => {

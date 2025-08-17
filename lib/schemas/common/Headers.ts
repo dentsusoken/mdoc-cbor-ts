@@ -21,7 +21,7 @@ import { z } from 'zod';
  * const result = protectedHeadersSchema.parse(headers); // Returns Map<number, unknown>
  * ```
  */
-export const createdHeadersSchema = (
+export const createHeadersSchema = (
   target: string
 ): z.ZodType<Map<number, unknown>> =>
   createMapSchema({

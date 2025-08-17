@@ -1,17 +1,11 @@
 import { Mac0 } from '@auth0/cose';
 import { z } from 'zod';
 import { createBytesSchema } from '@/schemas/common/Bytes';
-import { createUintSchema } from '@/schemas/common/Uint';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createHeadersSchema } from '@/schemas/common/Headers';
 
 const protectedHeadersSchema = createBytesSchema('ProtectedHeaders');
 
-const unprotectedHeadersSchema = createMapSchema({
-  target: 'UnprotectedHeaders',
-  keySchema: createUintSchema('UnprotectedHeaders.Key'),
-  valueSchema: z.any(),
-  allowEmpty: true,
-});
+const unprotectedHeadersSchema = createHeadersSchema('UnprotectedHeaders');
 
 const payloadSchema = createBytesSchema('Payload');
 

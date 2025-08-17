@@ -8,18 +8,18 @@ import {
   DEVICE_MAC_TOO_FEW_MESSAGE,
   DEVICE_MAC_TOO_MANY_MESSAGE,
 } from '../DeviceMac';
-import { MAP_INVALID_TYPE_MESSAGE_SUFFIX } from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 
 describe('DeviceMac', () => {
   it('should accept valid Mac0 objects', () => {
     const mac0 = new Mac0(
-      Buffer.from([]), // protected headers (empty for test)
+      Uint8Array.from([]), // protected headers (empty for test)
       new Map<number, string>([
         [1, 'value'],
         [2, 'another'],
       ]), // unprotected headers
-      Buffer.from([0x48, 0x65, 0x6c, 0x6c, 0x6f]), // payload ("Hello")
-      Buffer.from([0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]) // tag (MAC)
+      Uint8Array.from([0x48, 0x65, 0x6c, 0x6c, 0x6f]), // payload ("Hello")
+      Uint8Array.from([0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde, 0xf0]) // tag (MAC)
     );
     const validMac = mac0.getContentForEncoding();
 
@@ -184,17 +184,17 @@ describe('DeviceMac', () => {
       {
         name: 'string instead of Map',
         input: [Buffer.from([]), 'string', Buffer.from([]), Buffer.from([])],
-        expectedMessage: `UnprotectedHeaders: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: mapInvalidTypeMessage('UnprotectedHeaders'),
       },
       {
         name: 'number instead of Map',
         input: [Buffer.from([]), 123, Buffer.from([]), Buffer.from([])],
-        expectedMessage: `UnprotectedHeaders: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: mapInvalidTypeMessage('UnprotectedHeaders'),
       },
       {
         name: 'boolean instead of Map',
         input: [Buffer.from([]), true, Buffer.from([]), Buffer.from([])],
-        expectedMessage: `UnprotectedHeaders: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: mapInvalidTypeMessage('UnprotectedHeaders'),
       },
     ];
 

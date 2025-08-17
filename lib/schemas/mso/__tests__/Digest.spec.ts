@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestSchema } from '../Digest';
-import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '@/schemas/common/Bytes';
+import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
 
 describe('Digest', () => {
   describe('valid digest values', () => {
@@ -28,7 +28,7 @@ describe('Digest', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const schemaMessage = `Digest: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`;
+    const schemaMessage = bytesInvalidTypeMessage('Digest');
     const testCases: Array<{ name: string; input: unknown; expected: string }> =
       [
         { name: 'string', input: 'not bytes', expected: schemaMessage },

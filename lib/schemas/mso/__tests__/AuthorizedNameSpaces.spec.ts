@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { authorizedNameSpacesSchema } from '../AuthorizedNameSpaces';
 import {
-  ARRAY_INVALID_TYPE_MESSAGE_SUFFIX,
-  ARRAY_REQUIRED_MESSAGE_SUFFIX,
-  ARRAY_EMPTY_MESSAGE_SUFFIX,
+  arrayInvalidTypeMessage,
+  arrayRequiredMessage,
+  arrayEmptyMessage,
 } from '@/schemas/common/Array';
 
 describe('AuthorizedNameSpaces', () => {
@@ -34,22 +34,22 @@ describe('AuthorizedNameSpaces', () => {
       {
         name: 'boolean input',
         input: true,
-        expected: `${prefix}${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: arrayInvalidTypeMessage(TARGET),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expected: `${prefix}${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: arrayInvalidTypeMessage(TARGET),
       },
       {
         name: 'null input',
         input: null,
-        expected: `${prefix}${ARRAY_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: arrayInvalidTypeMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: `${prefix}${ARRAY_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: arrayRequiredMessage(TARGET),
       },
     ];
 
@@ -76,7 +76,7 @@ describe('AuthorizedNameSpaces', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          `${prefix}${ARRAY_EMPTY_MESSAGE_SUFFIX}`
+          arrayEmptyMessage(TARGET)
         );
       }
     });
