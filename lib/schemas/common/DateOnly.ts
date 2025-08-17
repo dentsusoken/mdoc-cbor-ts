@@ -1,10 +1,41 @@
 import { z } from 'zod';
 import { DateOnly } from '@/cbor/DateOnly';
 
-export const DATEONLY_INVALID_TYPE_MESSAGE_SUFFIX =
-  'Expected a DateOnly instance, but received a different type.';
-export const DATEONLY_INVALID_DATE_MESSAGE_SUFFIX =
-  'The DateOnly instance contains an invalid date.';
+/**
+ * Creates an error message for invalid DateOnly types
+ * @description
+ * Generates a standardized error message when a DateOnly validation fails due to invalid type.
+ * The message indicates the expected target name and that the value should be a DateOnly instance.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = dateOnlyInvalidTypeMessage('ValidityInfo');
+ * // Returns: "ValidityInfo: Expected a DateOnly instance, but received a different type."
+ * ```
+ */
+export const dateOnlyInvalidTypeMessage = (target: string): string =>
+  `${target}: Expected a DateOnly instance, but received a different type.`;
+
+/**
+ * Creates an error message for invalid DateOnly instances
+ * @description
+ * Generates a standardized error message when a DateOnly validation fails because
+ * the DateOnly instance contains an invalid date.
+ *
+ * @param target - The name of the target schema being validated
+ * @returns A formatted error message string
+ *
+ * @example
+ * ```typescript
+ * const message = dateOnlyInvalidDateMessage('ValidityInfo');
+ * // Returns: "ValidityInfo: The DateOnly instance contains an invalid date."
+ * ```
+ */
+export const dateOnlyInvalidDateMessage = (target: string): string =>
+  `${target}: The DateOnly instance contains an invalid date.`;
 
 /**
  * Builds a date-only schema that validates DateOnly instances.
@@ -53,7 +84,7 @@ export const DATEONLY_INVALID_DATE_MESSAGE_SUFFIX =
 export const createDateOnlySchema = (target: string): z.ZodType<DateOnly> =>
   z
     .instanceof(DateOnly, {
-      message: `${target}: ${DATEONLY_INVALID_TYPE_MESSAGE_SUFFIX}`,
+      message: dateOnlyInvalidTypeMessage(target),
     })
     .refine(
       (date) => {
@@ -65,6 +96,6 @@ export const createDateOnlySchema = (target: string): z.ZodType<DateOnly> =>
         }
       },
       {
-        message: `${target}: ${DATEONLY_INVALID_DATE_MESSAGE_SUFFIX}`,
+        message: dateOnlyInvalidDateMessage(target),
       }
     );

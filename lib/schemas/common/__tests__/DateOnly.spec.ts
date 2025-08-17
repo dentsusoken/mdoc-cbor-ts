@@ -4,8 +4,8 @@ import { DateOnly } from '@/cbor/DateOnly';
 import { decodeCbor } from '@/cbor/codec';
 import {
   createDateOnlySchema,
-  DATEONLY_INVALID_TYPE_MESSAGE_SUFFIX,
-  DATEONLY_INVALID_DATE_MESSAGE_SUFFIX,
+  dateOnlyInvalidTypeMessage,
+  dateOnlyInvalidDateMessage,
 } from '../DateOnly';
 
 describe('DateOnly Schema', () => {
@@ -29,7 +29,7 @@ describe('DateOnly Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `TestTarget: ${DATEONLY_INVALID_TYPE_MESSAGE_SUFFIX}`
+            dateOnlyInvalidTypeMessage('TestTarget')
           );
         }
       }
@@ -43,7 +43,7 @@ describe('DateOnly Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `TestTarget: ${DATEONLY_INVALID_TYPE_MESSAGE_SUFFIX}`
+            dateOnlyInvalidTypeMessage('TestTarget')
           );
         }
       }
@@ -84,7 +84,7 @@ describe('DateOnly Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `TestTarget: ${DATEONLY_INVALID_DATE_MESSAGE_SUFFIX}`
+            dateOnlyInvalidDateMessage('TestTarget')
           );
         }
       }
