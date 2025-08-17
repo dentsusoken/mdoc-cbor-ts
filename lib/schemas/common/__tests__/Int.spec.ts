@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   createIntSchema,
-  INT_INVALID_TYPE_MESSAGE_SUFFIX,
-  INT_REQUIRED_MESSAGE_SUFFIX,
-  INT_INTEGER_MESSAGE_SUFFIX,
+  intInvalidTypeMessage,
+  intRequiredMessage,
+  intIntegerMessage,
 } from '../Int';
 import { z } from 'zod';
 
@@ -31,32 +31,31 @@ describe('createIntSchema', () => {
   });
 
   describe('should reject invalid types with consistent message', () => {
-    const prefix = `${TARGET}: `;
     const cases: { name: string; input: unknown; expected: string }[] = [
       {
         name: 'boolean input',
         input: true,
-        expected: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: intInvalidTypeMessage(TARGET),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expected: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: intInvalidTypeMessage(TARGET),
       },
       {
         name: 'array input',
         input: [1, 2, 3],
-        expected: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: intInvalidTypeMessage(TARGET),
       },
       {
         name: 'null input',
         input: null,
-        expected: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: intInvalidTypeMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: `${prefix}${INT_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: intRequiredMessage(TARGET),
       },
     ];
 
@@ -75,17 +74,16 @@ describe('createIntSchema', () => {
   });
 
   describe('should enforce integer (no decimals)', () => {
-    const prefix = `${TARGET}: `;
     const cases: { name: string; input: number; expected: string }[] = [
       {
         name: 'positive decimal number',
         input: 1.5,
-        expected: `${prefix}${INT_INTEGER_MESSAGE_SUFFIX}`,
+        expected: intIntegerMessage(TARGET),
       },
       {
         name: 'negative decimal number',
         input: -3.14,
-        expected: `${prefix}${INT_INTEGER_MESSAGE_SUFFIX}`,
+        expected: intIntegerMessage(TARGET),
       },
     ];
 
