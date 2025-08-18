@@ -62,26 +62,56 @@ type MapSchemaParams<K, V> = {
 };
 
 /**
- * Builds a Map schema with typed keys and values.
+ * Creates a schema for validating Map structures with typed keys and values
  * @description
- * Returns a Zod schema that validates a required `Map<K, V>` where each key and
- * value is validated against the provided `keySchema` and `valueSchema`.
- * Error messages are prefixed with the provided `target` and use the suffix
- * constants from this module.
+ * Generates a Zod schema that validates Map<K, V> structures where each key and
+ * value is validated against the provided schemas. Error messages are prefixed
+ * with the target name for consistency across the codebase.
  *
  * Validation rules:
- * - Requires a Map type with a target-prefixed invalid type message
- * - Requires presence with a target-prefixed required message
+ * - Requires a Map type with target-prefixed invalid type message
+ * - Requires presence with target-prefixed required message
  * - Enforces non-empty by default; pass `allowEmpty: true` to allow empty Map
+ * - Each key must satisfy the provided `keySchema`
+ * - Each value must satisfy the provided `valueSchema`
+ *
+ * @param target - The name of the target schema (used in error messages)
+ * @param keySchema - Zod schema for validating map keys
+ * @param valueSchema - Zod schema for validating map values
+ * @param allowEmpty - When true, allows an empty map (default: false)
+ * @returns A Zod schema that validates Map<K, V> structures
  *
  * @example
  * ```typescript
- * const schema = createMapSchema({
+ * const nameSpacesSchema = createMapSchema({
  *   target: 'DeviceNameSpaces',
  *   keySchema: z.string(),
  *   valueSchema: z.any(),
- *   allowEmpty: false,
  * });
+ * const result = nameSpacesSchema.parse(new Map([['key', 'value']])); // Returns Map<string, any>
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (empty map is not allowed)
+ * const schema = createMapSchema({
+ *   target: 'Headers',
+ *   keySchema: z.number(),
+ *   valueSchema: z.string(),
+ * });
+ * schema.parse(new Map());
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Allows empty map with allowEmpty
+ * const schema = createMapSchema({
+ *   target: 'Headers',
+ *   keySchema: z.number(),
+ *   valueSchema: z.string(),
+ *   allowEmpty: true,
+ * });
+ * const result = schema.parse(new Map()); // Returns Map<number, string>
  * ```
  */
 export const createMapSchema = <K, V>({
@@ -91,7 +121,7 @@ export const createMapSchema = <K, V>({
   allowEmpty = false,
 }: MapSchemaParams<K, V>): z.ZodType<Map<K, V>> =>
   z
-    .map(keySchema, valueSchema, {
+    .map(z.any(), z.any(), {
       invalid_type_error: mapInvalidTypeMessage(target),
       required_error: mapRequiredMessage(target),
     })
@@ -102,4 +132,5 @@ export const createMapSchema = <K, V>({
       {
         message: mapEmptyMessage(target),
       }
-    );
+    )
+    .pipe(z.map(keySchema, valueSchema));

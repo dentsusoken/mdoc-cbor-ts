@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createStructSchema } from '../Struct';
-import {
-  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
-  MAP_REQUIRED_MESSAGE_SUFFIX,
-} from '../Map';
+import { mapInvalidTypeMessage, mapRequiredMessage } from '../Map';
 
 describe('createStructSchema', () => {
   it('should accept valid Map and return parsed object (object schema passes)', () => {
@@ -22,52 +19,49 @@ describe('createStructSchema', () => {
 
   describe('should reject invalid input types with prefixed messages', () => {
     const target = 'Target';
-    const prefix = `${target}: `;
+    const invalidType = mapInvalidTypeMessage(target);
+    const requiredMsg = mapRequiredMessage(target);
     const schema = createStructSchema({
       target,
       objectSchema: z.object({}),
     });
 
     const cases: { name: string; input: unknown; expected: string }[] = [
-      {
-        name: 'string input',
-        input: 'not a map',
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
-      },
+      { name: 'string input', input: 'not a map', expected: invalidType },
       {
         name: 'number input',
         input: 123,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: invalidType,
       },
       {
         name: 'boolean input',
         input: true,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: invalidType,
       },
       {
         name: 'null input',
         input: null,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: invalidType,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: `${prefix}${MAP_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: requiredMsg,
       },
       {
         name: 'plain object input',
         input: { a: 1 },
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: invalidType,
       },
       {
         name: 'array input',
         input: [['a', 1]],
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: invalidType,
       },
       {
         name: 'set input',
         input: new Set([1, 2, 3]),
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: invalidType,
       },
     ];
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { deviceAuthSchema } from './DeviceAuth';
 import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
+import { createStructSchema } from '@/schemas/common/Struct';
 
 /**
  * Object schema for device-signed data validation
@@ -45,16 +46,10 @@ export const deviceSignedObjectSchema = z.object({
  * @see {@link DeviceAuth}
  * @see {@link deviceSignedObjectSchema}
  */
-export const deviceSignedSchema = z
-  .map(z.any(), z.any(), {
-    invalid_type_error:
-      'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
-    required_error:
-      'DeviceSigned: This field is required. Please provide a device-signed mapping.',
-  })
-  .transform((v) => {
-    return deviceSignedObjectSchema.parse(Object.fromEntries(v));
-  });
+export const deviceSignedSchema = createStructSchema({
+  target: 'DeviceSigned',
+  objectSchema: deviceSignedObjectSchema,
+});
 
 /**
  * Type definition for device-signed data

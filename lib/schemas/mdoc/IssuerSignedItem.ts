@@ -1,10 +1,12 @@
 import { z } from 'zod';
-import { bytesSchema } from '@/schemas/common/Bytes';
+import { createBytesSchema } from '@/schemas/common/Bytes';
 import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
 import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
+import { digestIDSchema } from '@/index';
+import { createStructSchema } from '../common/Struct';
 
 /**
- * Schema for issuer-signed items in mdoc
+ * Object schema for issuer-signed items in mdoc
  * @description
  * Represents a single issuer-signed data element with its identifier, value, and metadata.
  * This schema validates the structure of issuer-signed items including digest ID, random value,
@@ -19,44 +21,47 @@ import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
  * }
  * ```
  *
+ * Properties:
+ * - digestID: {@link DigestID} - Unique identifier for the digest
+ * - random: Byte string containing random data
+ * - elementIdentifier: {@link DataElementIdentifier} - Identifier for the data element
+ * - elementValue: {@link DataElementValue} - The actual data element value
+ */
+export const issuerSignedItemObjectSchema = z.object({
+  digestID: digestIDSchema,
+  random: createBytesSchema('random'),
+  elementIdentifier: dataElementIdentifierSchema,
+  elementValue: dataElementValueSchema,
+});
+
+/**
+ * Schema for issuer-signed items in mdoc
+ * @description
+ * Represents a single issuer-signed data element that has been signed by the issuer.
+ * This schema accepts a Map input and transforms it to a plain object for validation.
+ * The schema validates the structure of issuer-signed items including digest ID, random value,
+ * element identifier, and element value.
+ *
  * @example
  * ```typescript
- * const item = {
- *   digestID: 1,
- *   random: new Uint8Array([]),
- *   elementIdentifier: "given_name",
- *   elementValue: "John"
- * };
+ * const item = new Map([
+ *   ['digestID', 1],
+ *   ['random', new Uint8Array([1, 2, 3])],
+ *   ['elementIdentifier', 'given_name'],
+ *   ['elementValue', 'John']
+ * ]);
  * const result = issuerSignedItemSchema.parse(item); // Returns IssuerSignedItem
  * ```
+ *
+ * @see {@link DigestID}
+ * @see {@link DataElementIdentifier}
+ * @see {@link DataElementValue}
+ * @see {@link issuerSignedItemObjectSchema}
  */
-export const issuerSignedItemSchema = z.object(
-  {
-    digestID: z
-      .number({
-        invalid_type_error:
-          'IssuerSignedItem.digestID: Expected a non-negative integer number.',
-        required_error:
-          'IssuerSignedItem.digestID: This field is required. Please provide a non-negative integer number.',
-      })
-      .int({
-        message: 'IssuerSignedItem.digestID: Expected an integer number.',
-      })
-      .min(0, {
-        message:
-          'IssuerSignedItem.digestID: Must be greater than or equal to 0.',
-      }),
-    random: bytesSchema,
-    elementIdentifier: dataElementIdentifierSchema,
-    elementValue: dataElementValueSchema,
-  },
-  {
-    invalid_type_error:
-      'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.',
-    required_error:
-      'IssuerSignedItem: This field is required. Please provide an issuer-signed item object.',
-  }
-);
+export const issuerSignedItemSchema = createStructSchema({
+  target: 'IssuerSignedItem',
+  objectSchema: issuerSignedItemObjectSchema,
+});
 
 /**
  * Type definition for issuer-signed items

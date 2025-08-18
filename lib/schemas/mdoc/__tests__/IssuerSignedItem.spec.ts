@@ -1,31 +1,26 @@
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { issuerSignedItemSchema } from '../IssuerSignedItem';
-import { BYTES_INVALID_TYPE_MESSAGE_SUFFIX } from '../../common/Bytes';
-import { TEXT_EMPTY_MESSAGE_SUFFIX } from '../../common/NonEmptyText';
-
-// Constants for expected error messages
-const ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE =
-  'IssuerSignedItem: Expected an object with fields "digestID", "random", "elementIdentifier", "elementValue". Please provide a valid issuer-signed item object.';
-const ISSUER_SIGNED_ITEM_REQUIRED_MESSAGE =
-  'IssuerSignedItem: This field is required. Please provide an issuer-signed item object.';
-
-const DIGEST_ID_INVALID_TYPE_MESSAGE =
-  'IssuerSignedItem.digestID: Expected a non-negative integer number.';
-const DIGEST_ID_REQUIRED_MESSAGE =
-  'IssuerSignedItem.digestID: This field is required. Please provide a non-negative integer number.';
-const DIGEST_ID_MIN_MESSAGE =
-  'IssuerSignedItem.digestID: Must be greater than or equal to 0.';
-const DIGEST_ID_INT_MESSAGE =
-  'IssuerSignedItem.digestID: Expected an integer number.';
+import {
+  issuerSignedItemSchema,
+  ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
+  ISSUER_SIGNED_ITEM_REQUIRED_MESSAGE,
+} from '../IssuerSignedItem';
+import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
+import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
+import {
+  uintIntegerMessage,
+  uintInvalidTypeMessage,
+  uintPositiveMessage,
+  uintRequiredMessage,
+} from '@/schemas/common/Uint';
 
 describe('IssuerSignedItem', () => {
   describe('valid issuer signed items', () => {
     it('should accept string elementValue', () => {
       const item = {
         digestID: 1,
-        random: Buffer.from([]),
+        random: Uint8Array.from([]),
         elementIdentifier: 'given_name',
         elementValue: 'John',
       };
@@ -36,7 +31,7 @@ describe('IssuerSignedItem', () => {
     it('should accept number elementValue', () => {
       const item = {
         digestID: 2,
-        random: Buffer.from([]),
+        random: Uint8Array.from([]),
         elementIdentifier: 'age',
         elementValue: 30,
       };
@@ -47,7 +42,7 @@ describe('IssuerSignedItem', () => {
     it('should accept tagged elementValue', () => {
       const item = {
         digestID: 3,
-        random: Buffer.from([]),
+        random: Uint8Array.from([]),
         elementIdentifier: 'photo',
         elementValue: new Tag(0, 24),
       };
@@ -114,7 +109,7 @@ describe('IssuerSignedItem', () => {
         try {
           issuerSignedItemSchema.parse({
             digestID: '1' as unknown as number,
-            random: Buffer.from([]),
+            random: Uint8Array.from([]),
             elementIdentifier: 'given_name',
             elementValue: 'John',
           });
@@ -123,7 +118,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
           expect(zodError.issues[0].message).toBe(
-            DIGEST_ID_INVALID_TYPE_MESSAGE
+            uintInvalidTypeMessage('DigestID')
           );
         }
       });
@@ -133,7 +128,7 @@ describe('IssuerSignedItem', () => {
           issuerSignedItemSchema.parse({
             // explicit undefined to trigger field required_error
             digestID: undefined as unknown as number,
-            random: Buffer.from([]),
+            random: Uint8Array.from([]),
             elementIdentifier: 'given_name',
             elementValue: 'John',
           });
@@ -141,7 +136,9 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(DIGEST_ID_REQUIRED_MESSAGE);
+          expect(zodError.issues[0].message).toBe(
+            uintRequiredMessage('DigestID')
+          );
         }
       });
 
@@ -149,7 +146,7 @@ describe('IssuerSignedItem', () => {
         try {
           issuerSignedItemSchema.parse({
             digestID: -1,
-            random: Buffer.from([]),
+            random: Uint8Array.from([]),
             elementIdentifier: 'given_name',
             elementValue: 'John',
           });
@@ -157,7 +154,9 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(DIGEST_ID_MIN_MESSAGE);
+          expect(zodError.issues[0].message).toBe(
+            uintPositiveMessage('DigestID')
+          );
         }
       });
 
@@ -165,7 +164,7 @@ describe('IssuerSignedItem', () => {
         try {
           issuerSignedItemSchema.parse({
             digestID: 1.5,
-            random: Buffer.from([]),
+            random: Uint8Array.from([]),
             elementIdentifier: 'given_name',
             elementValue: 'John',
           });
@@ -173,7 +172,9 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(DIGEST_ID_INT_MESSAGE);
+          expect(zodError.issues[0].message).toBe(
+            uintIntegerMessage('DigestID')
+          );
         }
       });
     });
@@ -192,7 +193,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['random']);
           expect(zodError.issues[0].message).toBe(
-            `Bytes: ${BYTES_INVALID_TYPE_MESSAGE_SUFFIX}`
+            bytesInvalidTypeMessage('random')
           );
         }
       });
@@ -203,7 +204,7 @@ describe('IssuerSignedItem', () => {
         try {
           issuerSignedItemSchema.parse({
             digestID: 1,
-            random: Buffer.from([]),
+            random: Uint8Array.from([]),
             elementIdentifier: '',
             elementValue: 'John',
           });
@@ -212,7 +213,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            `DataElementIdentifier: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
+            nonEmptyTextEmptyMessage('DataElementIdentifier')
           );
         }
       });
@@ -221,7 +222,7 @@ describe('IssuerSignedItem', () => {
         try {
           issuerSignedItemSchema.parse({
             digestID: 1,
-            random: Buffer.from([]),
+            random: Uint8Array.from([]),
             elementIdentifier: '   ',
             elementValue: 'John',
           });
@@ -230,7 +231,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            `DataElementIdentifier: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
+            nonEmptyTextEmptyMessage('DataElementIdentifier')
           );
         }
       });

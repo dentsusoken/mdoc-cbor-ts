@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { Document, documentSchema } from './Document';
-import { DocumentError, documentErrorSchema } from './error';
+import { documentSchema } from './Document';
+import { documentErrorSchema } from '@/schemas/error';
 import { statusSchema } from './Status';
 
 /**

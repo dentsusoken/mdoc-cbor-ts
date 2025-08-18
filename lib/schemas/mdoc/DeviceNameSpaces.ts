@@ -2,12 +2,7 @@ import { z } from 'zod';
 import { Entry } from '@/schemas/common/Entry';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { deviceSignedItemsSchema } from './DeviceSignedItems';
-import {
-  MAP_EMPTY_MESSAGE_SUFFIX,
-  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
-  MAP_REQUIRED_MESSAGE_SUFFIX,
-  createMapSchema,
-} from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/Map';
 
 /**
  * Schema for device-signed namespaces in mdoc
@@ -33,11 +28,6 @@ export const deviceNameSpacesSchema = createMapSchema({
   keySchema: nameSpaceSchema,
   valueSchema: deviceSignedItemsSchema,
 });
-
-// Standardized error messages (built from common Map suffixes)
-export const DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE = `DeviceNameSpaces: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`;
-export const DEVICE_NAMESPACES_REQUIRED_MESSAGE = `DeviceNameSpaces: ${MAP_REQUIRED_MESSAGE_SUFFIX}`;
-export const DEVICE_NAMESPACES_EMPTY_MESSAGE = `DeviceNameSpaces: ${MAP_EMPTY_MESSAGE_SUFFIX}`;
 
 /**
  * Type definition for device-signed namespaces

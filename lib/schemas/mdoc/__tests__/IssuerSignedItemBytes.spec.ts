@@ -1,58 +1,54 @@
-import { TypedMap } from '@jfromaniello/typedmap';
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { ByteString } from '@/cbor/ByteString';
+import { createTag24 } from '@/cbor';
 import { issuerSignedItemBytesSchema } from '../IssuerSignedItemBytes';
 
 describe('IssuerSignedItemBytes', () => {
-  describe('valid ByteString inputs', () => {
+  describe('valid Tag24 inputs', () => {
     it('should accept item with string elementValue', () => {
-      const item = new ByteString(
-        new TypedMap([
-          ['digestID', 1],
-          ['random', Buffer.from([])],
-          ['elementIdentifier', 'given_name'],
-          ['elementValue', 'John'],
-        ])
-      );
-      const result = issuerSignedItemBytesSchema.parse(item);
-      expect(result).toBeInstanceOf(ByteString);
-      expect(result.data).toEqual(item.data);
+      const inner = {
+        digestID: 1,
+        random: Uint8Array.from([]),
+        elementIdentifier: 'given_name',
+        elementValue: 'John',
+      };
+      const tag = createTag24(inner);
+      const result = issuerSignedItemBytesSchema.parse(tag);
+      expect(result).toBeInstanceOf(Tag);
+      expect(result.value).toEqual(tag.value);
     });
 
     it('should accept item with number elementValue', () => {
-      const item = new ByteString(
-        new TypedMap([
-          ['digestID', 2],
-          ['random', Buffer.from([])],
-          ['elementIdentifier', 'age'],
-          ['elementValue', 30],
-        ])
-      );
-      const result = issuerSignedItemBytesSchema.parse(item);
-      expect(result).toBeInstanceOf(ByteString);
-      expect(result.data).toEqual(item.data);
+      const inner = {
+        digestID: 2,
+        random: Uint8Array.from([]),
+        elementIdentifier: 'age',
+        elementValue: 30,
+      };
+      const tag = createTag24(inner);
+      const result = issuerSignedItemBytesSchema.parse(tag);
+      expect(result).toBeInstanceOf(Tag);
+      expect(result.value).toEqual(tag.value);
     });
 
     it('should accept item with tagged elementValue', () => {
-      const item = new ByteString(
-        new TypedMap([
-          ['digestID', 3],
-          ['random', Buffer.from([])],
-          ['elementIdentifier', 'photo'],
-          ['elementValue', new Tag(0, 24)],
-        ])
-      );
-      const result = issuerSignedItemBytesSchema.parse(item);
-      expect(result).toBeInstanceOf(ByteString);
-      expect(result.data).toEqual(item.data);
+      const inner = {
+        digestID: 3,
+        random: Uint8Array.from([]),
+        elementIdentifier: 'photo',
+        elementValue: new Tag(0, 24),
+      };
+      const tag = createTag24(inner);
+      const result = issuerSignedItemBytesSchema.parse(tag);
+      expect(result).toBeInstanceOf(Tag);
+      expect(result.value).toEqual(tag.value);
     });
   });
 
   describe('should throw error for invalid type inputs', () => {
     const schemaMessage =
-      'IssuerSignedItemBytes: Expected a ByteString instance containing issuer-signed item. Please provide a valid CBOR-encoded issuer-signed item.';
+      'IssuerSignedItemBytes: Please provide a Tag 24 with value type Uint8Array.';
     const testCases: Array<{
       name: string;
       input: unknown;

@@ -62,6 +62,22 @@ describe('createMapSchema', () => {
         expect(zodError.issues[0].message).toBe(mapEmptyMessage('Target'));
       }
     });
+
+    it('should emit empty-map message before key/value schema errors', () => {
+      const schema = createMapSchema<string, number>({
+        target: 'Target',
+        keySchema: z.string().min(3, 'key constraint failed'),
+        valueSchema: z.number().int('value constraint failed'),
+      });
+      try {
+        schema.parse(new Map());
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(mapEmptyMessage('Target'));
+      }
+    });
   });
 
   describe('should reject invalid types with consistent message', () => {

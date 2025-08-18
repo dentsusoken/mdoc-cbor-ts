@@ -1,25 +1,15 @@
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { deviceSignedItemsSchema } from '../DeviceSignedItems';
 import {
-  DEVICE_SIGNED_ITEMS_EMPTY_MESSAGE,
-  DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
-  DEVICE_SIGNED_ITEMS_REQUIRED_MESSAGE,
-  deviceSignedItemsSchema,
-} from '../DeviceSignedItems';
-import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
+  mapEmptyMessage,
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
+} from '@/schemas/common/Map';
+import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
 describe('DeviceSignedItems', () => {
-  const getIdentifierErrorMessage = (value: string): string => {
-    try {
-      dataElementIdentifierSchema.parse(value);
-      return '';
-    } catch (error) {
-      const zodError = error as z.ZodError;
-      return zodError.issues[0].message;
-    }
-  };
-
   describe('should accept valid device signed items', () => {
     const testCases = [
       {
@@ -61,37 +51,37 @@ describe('DeviceSignedItems', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: DEVICE_SIGNED_ITEMS_REQUIRED_MESSAGE,
+        expectedMessage: mapRequiredMessage('DeviceSignedItems'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
       },
       {
         name: 'plain object (not Map)',
         input: {},
-        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
       },
     ];
     it('should throw the expected message for all invalid type inputs', () => {
@@ -113,17 +103,17 @@ describe('DeviceSignedItems', () => {
       {
         name: 'empty Map',
         input: new Map<string, unknown>([]),
-        expectedMessage: DEVICE_SIGNED_ITEMS_EMPTY_MESSAGE,
+        expectedMessage: mapEmptyMessage('DeviceSignedItems'),
       },
       {
         name: 'empty string key',
         input: new Map<string, unknown>([['', 'value']]),
-        expectedMessage: getIdentifierErrorMessage(''),
+        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
       },
       {
         name: 'whitespace-only key',
         input: new Map<string, unknown>([['   ', 'value']]),
-        expectedMessage: getIdentifierErrorMessage('   '),
+        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
       },
     ];
 

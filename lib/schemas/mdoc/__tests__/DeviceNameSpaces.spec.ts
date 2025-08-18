@@ -1,14 +1,13 @@
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { deviceNameSpacesSchema } from '../DeviceNameSpaces';
 import {
-  deviceNameSpacesSchema,
-  DEVICE_NAMESPACES_EMPTY_MESSAGE,
-  DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
-  DEVICE_NAMESPACES_REQUIRED_MESSAGE,
-} from '../DeviceNameSpaces';
-import { nameSpaceSchema } from '@/schemas/common/NameSpace';
-import { DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE } from '../DeviceSignedItems';
+  mapEmptyMessage,
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
+} from '@/schemas/common/Map';
+import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
 // Constants are imported from the schema for consistency
 
@@ -51,32 +50,32 @@ describe('DeviceNameSpaces', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: DEVICE_NAMESPACES_REQUIRED_MESSAGE,
+        expectedMessage: mapRequiredMessage('DeviceNameSpaces'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: DEVICE_NAMESPACES_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
       },
     ];
 
@@ -95,33 +94,23 @@ describe('DeviceNameSpaces', () => {
   });
 
   describe('should throw error for invalid map entries', () => {
-    const emptyNamespaceMessage: string = ((): string => {
-      try {
-        nameSpaceSchema.parse('');
-        return '';
-      } catch (error) {
-        const zodError = error as z.ZodError;
-        return zodError.issues[0].message;
-      }
-    })();
-
     const testCases = [
       {
         name: 'empty Map',
         input: new Map<string, Map<string, unknown>>([]),
-        expectedMessage: DEVICE_NAMESPACES_EMPTY_MESSAGE,
+        expectedMessage: mapEmptyMessage('DeviceNameSpaces'),
       },
       {
         name: 'empty namespace key',
         input: new Map<string, unknown>([['', new Map([['item', 'value']])]]),
-        expectedMessage: emptyNamespaceMessage,
+        expectedMessage: nonEmptyTextEmptyMessage('NameSpace'),
       },
       {
         name: 'null value for items',
         input: new Map<string, unknown>([
           ['org.iso.18013.5.1', null as unknown as Map<string, unknown>],
         ]),
-        expectedMessage: DEVICE_SIGNED_ITEMS_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
       },
     ];
 

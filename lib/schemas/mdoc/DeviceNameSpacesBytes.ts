@@ -1,11 +1,5 @@
-import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
-import { ByteString } from '@/cbor/ByteString';
-import { deviceNameSpacesSchema } from './DeviceNameSpaces';
-
-// Standardized error message for invalid ByteString input
-export const DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE =
-  'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.';
+import { createTag24Schema } from '@/schemas/common/Tag24';
 
 /**
  * Schema for CBOR-encoded device-signed namespaces
@@ -16,20 +10,19 @@ export const DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE =
  * ```cddl
  * DeviceNameSpacesBytes = #6.24(bstr .cbor DeviceNameSpaces)
  * ```
+ *
  * @example
  * ```typescript
- * const deviceNameSpaces = new TypedMap([
- *   ['org.iso.18013.5.1', {}]
- * ]);
- * const bytes = new ByteString(deviceNameSpaces);
- * const result = deviceNameSpacesBytesSchema.parse(bytes);
+ * import { Tag } from 'cbor-x';
+ *
+ * // CBOR-encoded device namespaces as a Tag 24
+ * const tag = new Tag(encodeCbor(deviceNameSpaces), 24);
+ * const result = deviceNameSpacesBytesSchema.parse(tag); // Returns Tag
  * ```
  */
-export const deviceNameSpacesBytesSchema = z
-  .instanceof(ByteString<TypedMap<[string, unknown]>>, {
-    message: DEVICE_NAMESPACES_BYTES_INVALID_TYPE_MESSAGE,
-  })
-  .refine((v) => deviceNameSpacesSchema.parse(v.data.esMap));
+export const deviceNameSpacesBytesSchema = createTag24Schema(
+  'DeviceNameSpacesBytes'
+);
 
 /**
  * Type definition for CBOR-encoded device-signed namespaces

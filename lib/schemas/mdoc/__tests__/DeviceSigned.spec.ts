@@ -1,28 +1,32 @@
 import { Mac0, Sign1 } from '@auth0/cose';
-import { TypedMap } from '@jfromaniello/typedmap';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { ByteString } from '@/cbor';
 import { deviceSignedSchema } from '../DeviceSigned';
+import {
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
+} from '@/schemas/common/Map';
+import { tag24InvalidTypeMessage } from '@/schemas/common/Tag24';
+import { createTag24 } from '@/cbor';
 
 describe('DeviceSigned', () => {
   describe('valid device signed data', () => {
     const sign1 = new Sign1(
-      Buffer.from([]),
+      new Uint8Array([]),
       new Map<number, string>([[1, 'value']]),
-      Buffer.from([]),
-      Buffer.from([])
+      new Uint8Array([]),
+      new Uint8Array([])
     );
     const mac0 = new Mac0(
-      Buffer.from([]),
+      new Uint8Array([]),
       new Map<number, string>([[1, 'value']]),
-      Buffer.from([]),
-      Buffer.from([])
+      new Uint8Array([]),
+      new Uint8Array([])
     );
 
     it('should accept device signed data with deviceSignature', () => {
       const data = new Map<string, unknown>([
-        ['nameSpaces', new ByteString(new TypedMap([]))],
+        ['nameSpaces', createTag24(new Map())],
         [
           'deviceAuth',
           new Map([['deviceSignature', sign1.getContentForEncoding()]]),
@@ -32,23 +36,19 @@ describe('DeviceSigned', () => {
       const result = deviceSignedSchema.parse(data);
       expect(result.nameSpaces).toEqual(data.get('nameSpaces'));
       expect(result.deviceAuth.deviceSignature).toBeInstanceOf(Sign1);
-      expect(result.deviceAuth.deviceSignature?.protectedHeaders).toEqual(
-        sign1.protectedHeaders
-      );
+      expect(result.deviceAuth.deviceSignature).toEqual(sign1);
     });
 
     it('should accept device signed data with deviceMac', () => {
       const data = new Map<string, unknown>([
-        ['nameSpaces', new ByteString(new TypedMap([]))],
+        ['nameSpaces', createTag24(new Map())],
         ['deviceAuth', new Map([['deviceMac', mac0.getContentForEncoding()]])],
       ]);
 
       const result = deviceSignedSchema.parse(data);
       expect(result.nameSpaces).toEqual(data.get('nameSpaces'));
       expect(result.deviceAuth.deviceMac).toBeInstanceOf(Mac0);
-      expect(result.deviceAuth.deviceMac?.protectedHeaders).toEqual(
-        mac0.protectedHeaders
-      );
+      expect(result.deviceAuth.deviceMac).toEqual(mac0);
     });
   });
 
@@ -61,44 +61,37 @@ describe('DeviceSigned', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
+        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'DeviceSigned: This field is required. Please provide a device-signed mapping.',
+        expectedMessage: mapRequiredMessage('DeviceSigned'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
+        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
+        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage:
-          'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
+        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage:
-          'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
+        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage:
-          'DeviceSigned: Expected a Map with keys "nameSpaces" and "deviceAuth". Please provide a valid device-signed mapping.',
+        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
       },
     ];
 
@@ -118,12 +111,12 @@ describe('DeviceSigned', () => {
 
   describe('should throw error for invalid map entries', () => {
     const sign1 = new Sign1(
-      Buffer.from([]),
+      Uint8Array.from([]),
       new Map<number, string>([[1, 'value']]),
-      Buffer.from([]),
-      Buffer.from([])
+      Uint8Array.from([]),
+      Uint8Array.from([])
     );
-    const byteString = new ByteString(new TypedMap([]));
+    const tag24 = createTag24(new Map());
 
     const testCases = [
       {
@@ -135,22 +128,20 @@ describe('DeviceSigned', () => {
             new Map([['deviceSignature', sign1.getContentForEncoding()]]),
           ],
         ]),
-        expectedMessage:
-          'DeviceNameSpacesBytes: Expected a ByteString instance containing device-signed namespaces. Please provide a valid CBOR-encoded device namespaces.',
+        expectedMessage: tag24InvalidTypeMessage('DeviceNameSpacesBytes'),
       },
       {
         name: 'null deviceAuth',
         input: new Map<string, unknown>([
-          ['nameSpaces', byteString],
+          ['nameSpaces', tag24],
           ['deviceAuth', null],
         ]),
-        expectedMessage:
-          'DeviceAuth: Expected a Map with authentication method keys and values. Please provide a valid authentication mapping.',
+        expectedMessage: mapInvalidTypeMessage('DeviceAuth'),
       },
       {
         name: 'null deviceSignature in deviceAuth',
         input: new Map<string, unknown>([
-          ['nameSpaces', byteString],
+          ['nameSpaces', tag24],
           ['deviceAuth', new Map([['deviceSignature', null]])],
         ]),
         expectedMessage:

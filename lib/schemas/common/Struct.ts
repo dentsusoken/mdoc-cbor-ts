@@ -1,8 +1,5 @@
 import { z } from 'zod';
-import {
-  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
-  MAP_REQUIRED_MESSAGE_SUFFIX,
-} from './Map';
+import { mapInvalidTypeMessage, mapRequiredMessage } from './Map';
 
 type CreateStructParams<O extends Record<string, unknown>, I = unknown> = {
   target: string;
@@ -10,32 +7,27 @@ type CreateStructParams<O extends Record<string, unknown>, I = unknown> = {
 };
 
 /**
- * Builds a Map-to-Object schema validated by an object schema.
+ * Creates a schema that validates a Map input against an object schema
  * @description
- * Accepts a `Map<string, unknown>`, converts it to a plain object, validates it
- * using the provided object schema, and returns the parsed object. Map
- * type/required errors are prefixed with `target` and use shared Map message
- * suffixes.
+ * This function creates a Zod schema that accepts a `Map<string, unknown>`, converts it to a plain object,
+ * validates it using the provided object schema, and returns the parsed object. Map validation errors
+ * are prefixed with the target name and use shared Map message suffixes.
  *
- * Generics:
- * - O: Output object type produced by `objectSchema` (must extend `Record<string, unknown>`)
- * - I: Input type consumed by `objectSchema` (defaults to `unknown`), useful when the
- *      object schema performs transforms/refinements from a broader input
+ * @template O - Output object type produced by `objectSchema` (must extend `Record<string, unknown>`)
+ * @template I - Input type consumed by `objectSchema` (defaults to `unknown`), useful when the
+ *               object schema performs transforms/refinements from a broader input type
  *
- * Validation steps:
- * - Ensures input is a Map with string keys
- * - Converts Map -> plain object
- * - Validates using the provided object schema
- * - Returns the parsed object (type O)
+ * @param params - Configuration object
+ * @param params.target - Name used in error messages (e.g., "DeviceAuth")
+ * @param params.objectSchema - Zod object schema used for validation (may transform input I to output O)
  *
- * @param target - Prefix used in error messages (e.g., "DeviceAuth")
- * @param objectSchema - Zod object schema used for validation (may transform input I to output O)
+ * @returns A Zod schema that validates Map<string, unknown> input and returns type O
  *
  * @example
  * ```typescript
  * const objSchema = z.object({ a: z.string(), b: z.number() });
  *
- * const schema = createStructSchema<{ a: string; b: number }, { a?: unknown; b?: unknown}>({
+ * const schema = createStructSchema({
  *   target: 'MyStruct',
  *   objectSchema: objSchema,
  * });
@@ -60,8 +52,8 @@ export const createStructSchema = <
 > =>
   z
     .map(z.string(), z.any(), {
-      invalid_type_error: `${target}: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
-      required_error: `${target}: ${MAP_REQUIRED_MESSAGE_SUFFIX}`,
+      invalid_type_error: mapInvalidTypeMessage(target),
+      required_error: mapRequiredMessage(target),
     })
     .transform((valueMap) => {
       const asObject = Object.fromEntries(valueMap);

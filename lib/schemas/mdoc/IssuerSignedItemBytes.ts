@@ -1,7 +1,5 @@
-import { TypedMap } from '@jfromaniello/typedmap';
 import { z } from 'zod';
-import { ByteString } from '@/cbor/ByteString';
-import { issuerSignedItemSchema } from './IssuerSignedItem';
+import { createTag24Schema } from '@/schemas/common/Tag24';
 
 /**
  * Schema for CBOR-encoded issuer-signed items
@@ -15,28 +13,16 @@ import { issuerSignedItemSchema } from './IssuerSignedItem';
  *
  * @example
  * ```typescript
- * const item = {
- *   digestID: 1,
- *   random: new Uint8Array([]),
- *   elementIdentifier: 'given_name',
- *   elementValue: 'John'
- * };
- * const itemKV = new TypedMap([
- *   ['digestID', item.digestID],
- *   ['random', item.random],
- *   ['elementIdentifier', item.elementIdentifier],
- *   ['elementValue', item.elementValue]
- * ]);
- * const bytes = new ByteString(itemKV);
- * const result = issuerSignedItemBytesSchema.parse(bytes); // Returns ByteString
+ * import { Tag } from 'cbor-x';
+ *
+ * // CBOR-encoded issuer-signed item as a Tag 24
+ * const tag = new Tag(encodeCbor(issueSignedItems), 24);
+ * const result = issuerSignedItemBytesSchema.parse(tag); // Returns Tag
  * ```
  */
-export const issuerSignedItemBytesSchema = z
-  .instanceof(ByteString<TypedMap<[string, unknown]>>, {
-    message:
-      'IssuerSignedItemBytes: Expected a ByteString instance containing issuer-signed item. Please provide a valid CBOR-encoded issuer-signed item.',
-  })
-  .refine((v) => issuerSignedItemSchema.parse(Object.fromEntries(v.data)));
+export const issuerSignedItemBytesSchema = createTag24Schema(
+  'IssuerSignedItemBytes'
+);
 
 /**
  * Type definition for CBOR-encoded issuer-signed items

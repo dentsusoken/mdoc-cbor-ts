@@ -9,7 +9,6 @@ import {
 
 describe('AuthorizedNameSpaces', () => {
   const TARGET = 'AuthorizedNameSpaces';
-  const prefix = `${TARGET}: `;
 
   describe('should accept valid non-empty arrays', () => {
     const cases: Array<{ name: string; input: string[] }> = [
@@ -75,9 +74,7 @@ describe('AuthorizedNameSpaces', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          arrayEmptyMessage(TARGET)
-        );
+        expect(zodError.issues[0].message).toBe(arrayEmptyMessage(TARGET));
       }
     });
   });

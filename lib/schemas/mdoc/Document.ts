@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { DocType, docTypeSchema } from '../common';
-import { DeviceSigned, deviceSignedSchema } from './DeviceSigned';
-import { Errors, errorsSchema } from './error';
-import { IssuerSigned, issuerSignedSchema } from './IssuerSigned';
+import { docTypeSchema } from '../common';
+import { deviceSignedSchema } from './DeviceSigned';
+import { errorsSchema } from '@/schemas/error';
+import { issuerSignedSchema } from './IssuerSigned';
 
 /**
  * Schema for mdoc document
