@@ -81,7 +81,7 @@ export const DEVICE_KEY_MISSING_KTY_MESSAGE =
  */
 export const deviceKeySchema = z
   .map(
-    z.union([z.number(), z.string()]), // label = int / tstr
+    z.union([z.number().int(), z.string().nonempty()]), // label = int / tstr
     z.any(),
     {
       invalid_type_error: DEVICE_KEY_INVALID_TYPE_MESSAGE,

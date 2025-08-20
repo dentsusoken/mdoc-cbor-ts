@@ -121,7 +121,7 @@ export const createMapSchema = <K, V>({
   allowEmpty = false,
 }: MapSchemaParams<K, V>): z.ZodType<Map<K, V>> =>
   z
-    .map(z.any(), z.any(), {
+    .map(keySchema, valueSchema, {
       invalid_type_error: mapInvalidTypeMessage(target),
       required_error: mapRequiredMessage(target),
     })
@@ -132,5 +132,18 @@ export const createMapSchema = <K, V>({
       {
         message: mapEmptyMessage(target),
       }
-    )
-    .pipe(z.map(keySchema, valueSchema));
+    );
+// z
+//   .map(z.any(), z.any(), {
+//     invalid_type_error: mapInvalidTypeMessage(target),
+//     required_error: mapRequiredMessage(target),
+//   })
+//   .refine(
+//     (data) => {
+//       return allowEmpty || data.size > 0;
+//     },
+//     {
+//       message: mapEmptyMessage(target),
+//     }
+//   )
+//   .pipe(z.map(keySchema, valueSchema));

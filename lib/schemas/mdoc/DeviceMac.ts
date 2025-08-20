@@ -1,97 +1,37 @@
-import { Mac0 } from '@auth0/cose';
 import { z } from 'zod';
-import { createBytesSchema } from '@/schemas/common/Bytes';
-import { createHeadersSchema } from '@/schemas/common/Headers';
-
-const protectedHeadersSchema = createBytesSchema('ProtectedHeaders');
-
-const unprotectedHeadersSchema = createHeadersSchema('UnprotectedHeaders');
-
-const payloadSchema = createBytesSchema('Payload');
-
-const tagSchema = createBytesSchema('Tag');
-
-export const DEVICE_MAC_INVALID_TYPE_MESSAGE =
-  'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.';
-export const DEVICE_MAC_REQUIRED_MESSAGE =
-  'DeviceMac: This field is required. Please provide a COSE_Mac0 MAC array.';
-export const DEVICE_MAC_TOO_FEW_MESSAGE =
-  'DeviceMac: Array must contain at least 4 element(s)';
-export const DEVICE_MAC_TOO_MANY_MESSAGE =
-  'DeviceMac: Array must contain at most 4 element(s)';
+import { createMac0Schema } from '../cose/Mac0';
 
 /**
  * Schema for device MAC in mdoc
  * @description
- * Represents a COSE_Mac0 MAC created by the device.
- * This schema validates and transforms COSE_Mac0 objects while preserving their structure.
+ * Represents a COSE_Mac0 MAC created by the device for mdoc authentication.
+ * This schema validates COSE_Mac0 arrays and transforms them into Mac0 objects.
+ * The device MAC provides integrity protection and authentication for mdoc data.
  *
  * ```cddl
  * DeviceMac = COSE_Mac0
- * COSE_Mac0 = [
- *   protected:   bstr,
- *   unprotected: map,
- *   payload:     bstr,
- *   tag:         bstr
- * ]
  * ```
  *
  * @example
  * ```typescript
- * const mac0 = [protectedHeaders, unprotectedHeaders, payload, tag];
- * const result = deviceMacSchema.parse(mac0); // Returns Mac0
+ * const protectedHeaders = new Uint8Array([0xa1, 0x01, 0x26]); // CBOR-encoded {1: -7}
+ * const unprotectedHeaders = new Map<number, unknown>([[4, new Uint8Array([1, 2, 3])]]);
+ * const payload = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // "Hello"
+ * const tag = new Uint8Array([0x12, 0x34, 0x56, 0x78]); // MAC tag
+ *
+ * const mac0Array = [protectedHeaders, unprotectedHeaders, payload, tag];
+ * const result = deviceMacSchema.parse(mac0Array); // Returns Mac0 instance
  * ```
  */
-const deviceMacTuple = z.tuple(
-  [
-    protectedHeadersSchema, // protected headers (Bytes)
-    unprotectedHeadersSchema, // unprotected headers (NumberMap)
-    payloadSchema, // payload (Bytes)
-    tagSchema, // tag (Bytes)
-  ],
-  {
-    invalid_type_error: DEVICE_MAC_INVALID_TYPE_MESSAGE,
-    required_error: DEVICE_MAC_REQUIRED_MESSAGE,
-  }
-);
-
-export const deviceMacSchema = z
-  .any()
-  .superRefine((val, ctx) => {
-    if (!Array.isArray(val)) return;
-    if (val.length < 4) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.too_small,
-        type: 'array',
-        minimum: 4,
-        inclusive: true,
-        exact: false,
-        message: DEVICE_MAC_TOO_FEW_MESSAGE,
-      });
-    } else if (val.length > 4) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.too_big,
-        type: 'array',
-        maximum: 4,
-        inclusive: true,
-        exact: false,
-        message: DEVICE_MAC_TOO_MANY_MESSAGE,
-      });
-    }
-  })
-  .pipe(deviceMacTuple)
-  .transform(([protectedHeaders, unprotectedHeaders, payload, tag]) => {
-    return new Mac0(protectedHeaders, unprotectedHeaders, payload, tag);
-  });
+export const deviceMacSchema = createMac0Schema('DeviceMac');
 
 /**
  * Type definition for device MAC
  * @description
- * Represents a validated COSE_Mac0 MAC from the device
+ * Represents a validated COSE_Mac0 MAC from the device.
+ * This type is inferred from the deviceMacSchema and represents a Mac0 instance
+ * that has been validated according to the COSE_Mac0 specification.
  *
- * ```cddl
- * DeviceMac = COSE_Mac0
- * ```
- * @see {@link Mac0}
+ * @see {@link Mac0} - The Mac0 class from @auth0/cose library
  */
 export type DeviceMac = z.output<typeof deviceMacSchema>;
