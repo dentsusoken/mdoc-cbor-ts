@@ -123,6 +123,17 @@ const createMac0TupleSchema = (
  * The schema enforces the exact structure required for COSE_Mac0: a 4-element array containing
  * protected headers, unprotected headers, payload, and tag.
  *
+ * ```cddl
+ * COSE_Mac0 = [
+ *   protected:   bstr,
+ *   unprotected: {
+ *     * uint => any
+ *   },
+ *   payload:     bstr,
+ *   tag:         bstr
+ * ]
+ * ```
+ *
  * Validation rules:
  * - Must be an array with exactly 4 elements
  * - Element 0: Protected headers (Uint8Array)
