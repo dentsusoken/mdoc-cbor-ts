@@ -11,18 +11,31 @@ import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
 describe('Label', () => {
   describe('should accept valid labels', () => {
-    it('should accept valid integers', () => {
-      const inputs = [-100, -1, 0, 1, 123];
-      inputs.forEach((input) => {
+    const integerCases = [
+      { name: 'large negative integer', input: -100 },
+      { name: 'small negative integer', input: -1 },
+      { name: 'zero', input: 0 },
+      { name: 'small positive integer', input: 1 },
+      { name: 'medium positive integer', input: 123 },
+    ];
+
+    integerCases.forEach(({ name, input }) => {
+      it(`should accept ${name}`, () => {
         const result = labelSchema.parse(input);
         expect(typeof result).toBe('number');
         expect(result).toBe(input);
       });
     });
 
-    it('should accept valid non-empty strings', () => {
-      const inputs = ['kty', 'alg', 'x', '  spaced  '];
-      inputs.forEach((input) => {
+    const stringCases = [
+      { name: 'plain string', input: 'kty' },
+      { name: 'another string', input: 'alg' },
+      { name: 'single character', input: 'x' },
+      { name: 'string with spaces', input: '  spaced  ' },
+    ];
+
+    stringCases.forEach(({ name, input }) => {
+      it(`should accept ${name}`, () => {
         const result = labelSchema.parse(input);
         expect(typeof result).toBe('string');
         expect(result).toBe(input);
