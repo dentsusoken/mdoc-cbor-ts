@@ -3,10 +3,9 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceKeyInfoSchema } from '../DeviceKeyInfo';
 import {
-  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
-  MAP_REQUIRED_MESSAGE_SUFFIX,
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
 } from '@/schemas/common/Map';
-import { DEVICE_KEY_INVALID_TYPE_MESSAGE } from '../DeviceKey';
 
 describe('DeviceKeyInfo', () => {
   describe('valid inputs', () => {
@@ -33,47 +32,46 @@ describe('DeviceKeyInfo', () => {
   });
 
   describe('invalid container types', () => {
-    const prefix = 'DeviceKeyInfo: ';
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
       {
         name: 'string',
         input: 'not-a-map',
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
       },
       {
         name: 'number',
         input: 123,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
       },
       {
         name: 'boolean',
         input: true,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
       },
       {
         name: 'null',
         input: null,
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
       },
       {
         name: 'plain object',
         input: { deviceKey: new Map([[1, 2]]) },
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
       },
       {
         name: 'array',
         input: [['deviceKey', new Map([[1, 2]])]],
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
       },
       {
         name: 'set',
         input: new Set([1]),
-        expected: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
       },
       {
         name: 'undefined',
         input: undefined,
-        expected: `${prefix}${MAP_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: mapRequiredMessage('DeviceKeyInfo'),
       },
     ];
 
@@ -104,7 +102,7 @@ describe('DeviceKeyInfo', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          DEVICE_KEY_INVALID_TYPE_MESSAGE
+          mapInvalidTypeMessage('DeviceKey')
         );
       }
     });

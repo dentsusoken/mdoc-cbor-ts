@@ -1,11 +1,6 @@
 import { COSEKey } from '@auth0/cose';
 import { z } from 'zod';
-
-export const DEVICE_KEY_INVALID_TYPE_MESSAGE =
-  'DeviceKey: Expected a Map with numeric or string labels for COSE_Key parameters.';
-
-export const DEVICE_KEY_REQUIRED_MESSAGE =
-  'DeviceKey: This field is required. Please provide a COSE_Key mapping.';
+import { createLabelKeyMapSchema } from '@/schemas/cose/LabelKeyMap';
 
 export const DEVICE_KEY_MISSING_KTY_MESSAGE =
   'DeviceKey: COSE_Key must include label 1 (kty) or "kty".';
@@ -77,17 +72,9 @@ export const DEVICE_KEY_MISSING_KTY_MESSAGE =
  * deviceKeySchema.parse(undefined);
  * ```
  *
- * @see COSEKey
+ * @see {@link COSEKey}
  */
-export const deviceKeySchema = z
-  .map(
-    z.union([z.number().int(), z.string().nonempty()]), // label = int / tstr
-    z.any(),
-    {
-      invalid_type_error: DEVICE_KEY_INVALID_TYPE_MESSAGE,
-      required_error: DEVICE_KEY_REQUIRED_MESSAGE,
-    }
-  )
+export const deviceKeySchema = createLabelKeyMapSchema('DeviceKey', false)
   .superRefine((map, ctx) => {
     if (!map.has(1) && !map.has('kty')) {
       ctx.addIssue({

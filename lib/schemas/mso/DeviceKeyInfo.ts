@@ -4,6 +4,17 @@ import { keyAuthorizationsSchema } from './KeyAuthorizations';
 import { keyInfoSchema } from './KeyInfo';
 import { createStructSchema } from '@/schemas/common/Struct';
 
+/**
+ * Object schema for device key information validation
+ * @description
+ * Defines the structure for device key information with a required `deviceKey`
+ * and optional `keyAuthorizations` and `keyInfo` fields. This schema is used
+ * internally by `deviceKeyInfoSchema` after Map-to-object transformation.
+ *
+ * @see deviceKeySchema
+ * @see keyAuthorizationsSchema
+ * @see keyInfoSchema
+ */
 export const deviceKeyInfoObjectSchema = z.object({
   deviceKey: deviceKeySchema,
   keyAuthorizations: keyAuthorizationsSchema.optional(),
@@ -42,7 +53,7 @@ export const deviceKeyInfoObjectSchema = z.object({
  *   ['keyInfo', [[1, 'value']]],
  * ]);
  *
- * const value = deviceKeyInfoSchema.parse(input);
+ * const value = deviceKeyInfoSchema.parse(input); // DeviceKeyInfo
  * ```
  *
  * @example

@@ -1,12 +1,11 @@
 import { COSEKey } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { deviceKeySchema, DEVICE_KEY_MISSING_KTY_MESSAGE } from '../DeviceKey';
 import {
-  deviceKeySchema,
-  DEVICE_KEY_INVALID_TYPE_MESSAGE,
-  DEVICE_KEY_REQUIRED_MESSAGE,
-  DEVICE_KEY_MISSING_KTY_MESSAGE,
-} from '../DeviceKey';
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
+} from '@/schemas/common/Map';
 
 describe('DeviceKey', () => {
   describe('valid inputs', () => {
@@ -19,7 +18,7 @@ describe('DeviceKey', () => {
     it('should accept Map with additional labels', () => {
       const key = new Map<number, unknown>([
         [1, 2], // kty
-        [-2, Buffer.from([1, 2, 3])],
+        [-2, Uint8Array.from([1, 2, 3])],
       ]);
       const result = deviceKeySchema.parse(key);
       expect(result).toBeInstanceOf(COSEKey);
@@ -27,7 +26,7 @@ describe('DeviceKey', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const schemaMessage = DEVICE_KEY_INVALID_TYPE_MESSAGE;
+    const schemaMessage = mapInvalidTypeMessage('DeviceKey');
     const testCases: Array<{ name: string; input: unknown; expected: string }> =
       [
         { name: 'null', input: null, expected: schemaMessage },
@@ -63,7 +62,9 @@ describe('DeviceKey', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(DEVICE_KEY_REQUIRED_MESSAGE);
+        expect(zodError.issues[0].message).toBe(
+          mapRequiredMessage('DeviceKey')
+        );
       }
     });
   });

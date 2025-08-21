@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { unprotectedHeadersSchema } from '../UnprotectedHeaders';
+import { labelInvalidTypeMessage } from '../Label';
 import {
   mapInvalidTypeMessage,
   mapRequiredMessage,
@@ -20,6 +21,16 @@ describe('UnprotectedHeaders', () => {
         [1, 'algo'],
         [2, 42],
         [4, Uint8Array.from([1, 2])],
+      ]);
+      const result = unprotectedHeadersSchema.parse(input);
+      expect(result).toBeInstanceOf(Map);
+      expect(result).toEqual(input);
+    });
+
+    it('should accept map with string labels and any values', () => {
+      const input = new Map<string, unknown>([
+        ['alg', 'ES256'],
+        ['kid', 'key-1'],
       ]);
       const result = unprotectedHeadersSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
@@ -53,6 +64,22 @@ describe('UnprotectedHeaders', () => {
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
+    });
+  });
+
+  describe('should reject invalid label types in keys', () => {
+    it('should report label error message from Label schema', () => {
+      const input = new Map<unknown, unknown>([[{}, 'value']]);
+      try {
+        unprotectedHeadersSchema.parse(input as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          labelInvalidTypeMessage('Label')
+        );
+      }
     });
   });
 });

@@ -1,29 +1,29 @@
 import { z } from 'zod';
-import { createMapSchema } from '@/schemas/common/Map';
-import { createIntSchema } from '@/schemas/common/Int';
+import { createLabelKeyMapSchema } from '@/schemas/cose/LabelKeyMap';
 
 /**
  * Schema for key information in MSO
  * @description
- * Validates a Map-like structure where each key is an integer and each value is arbitrary (`any`).
+ * Validates a Map where keys are COSE labels (integers or non-empty strings) and values are arbitrary.
  * Error messages are prefixed with `KeyInfo: ...` for container-level issues and
- * `KeyInfo.Key: ...` for key validation issues.
+ * `Label: ...` for key validation issues.
  *
  * Validation rules:
  * - Requires a Map type with a target-prefixed invalid type message
  * - Allows empty Map (`allowEmpty: true`)
- * - Each key must satisfy `int` via `createIntSchema('KeyInfo.Key')`
- * - Each value can be any type (`z.any()`)
+ * - Each key must be a valid COSE label (integer or non-empty string)
+ * - Each value can be any type (`unknown`)
  *
  * ```cddl
- * KeyInfo = {* int => any}
+ * KeyInfo = {* label => any}
+ * label = int / tstr
  * ```
  *
  * @example
  * ```typescript
- * const info = new Map<number, unknown>([
+ * const info = new Map<number | string, unknown>([
  *   [1, 'value1'],
- *   [-1, 123],
+ *   ['custom', 123],
  * ]);
  * const result = keyInfoSchema.parse(info); // KeyInfo
  * ```
@@ -34,21 +34,9 @@ import { createIntSchema } from '@/schemas/common/Int';
  * const empty = keyInfoSchema.parse(new Map()); // Map(0)
  * ```
  *
- * @example
- * ```typescript
- * // Throws ZodError (invalid container type)
- * // keyInfoSchema.parse({ 1: 'value' });
- * ```
- *
- * @see createMapSchema
- * @see createIntSchema
+ * @see createLabelKeyMapSchema
  */
-export const keyInfoSchema = createMapSchema({
-  target: 'KeyInfo',
-  keySchema: createIntSchema('KeyInfo.Key'),
-  valueSchema: z.any(),
-  allowEmpty: true,
-});
+export const keyInfoSchema = createLabelKeyMapSchema('KeyInfo');
 
 /**
  * Type definition for key information
