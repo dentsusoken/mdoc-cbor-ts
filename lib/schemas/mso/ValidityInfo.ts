@@ -3,12 +3,10 @@ import { createDateTimeSchema } from '@/schemas/common/DateTime';
 import { createStructSchema } from '../common/Struct';
 
 export const validityInfoObjectSchema = z.object({
-  signed: createDateTimeSchema('ValidityInfo.signed'),
-  validFrom: createDateTimeSchema('ValidityInfo.validFrom'),
-  validUntil: createDateTimeSchema('ValidityInfo.validUntil'),
-  expectedUpdate: createDateTimeSchema(
-    'ValidityInfo.expectedUpdate'
-  ).optional(),
+  signed: createDateTimeSchema('Signed'),
+  validFrom: createDateTimeSchema('ValidFrom'),
+  validUntil: createDateTimeSchema('ValidUntil'),
+  expectedUpdate: createDateTimeSchema('ExpectedUpdate').optional(),
 });
 /**
  * Schema for validity information in MSO

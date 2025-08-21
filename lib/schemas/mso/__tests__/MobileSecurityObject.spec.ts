@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { mobileSecurityObjectSchema } from '../MobileSecurityObject';
 import { DateTime } from '@/cbor/DateTime';
-import { MAP_INVALID_TYPE_MESSAGE_SUFFIX } from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
-import { ExactKeyMap, TransformNestedEntries } from 'exact-key-map';
+import { ExactKeyMap } from 'exact-key-map';
 import { deviceKeySchema } from '../DeviceKey';
 import { VERSION_INVALID_VALUE_MESSAGE } from '../MobileSecurityObject';
-import { TEXT_REQUIRED_MESSAGE_SUFFIX } from '@/schemas/common/NonEmptyText';
+import { nonEmptyTextRequiredMessage } from '@/schemas/common/NonEmptyText';
 
 const validMSO = [
   ['version', '1.0'],
@@ -25,14 +25,12 @@ const validMSO = [
   ],
 ] as const;
 
-const buildValidMSOMap = (): ExactKeyMap<
-  TransformNestedEntries<typeof validMSO>
-> => ExactKeyMap.fromEntries(validMSO);
+const validMSOMap = ExactKeyMap.fromEntries(validMSO);
 
 describe('MobileSecurityObject Schema', () => {
   describe('valid cases', () => {
     it('should validate a complete MobileSecurityObject', () => {
-      const input = buildValidMSOMap();
+      const input = validMSOMap;
       const result = mobileSecurityObjectSchema.parse(input);
 
       expect(result.version).toBe('1.0');
@@ -71,7 +69,7 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `MobileSecurityObject: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`
+            mapInvalidTypeMessage('MobileSecurityObject')
           );
         }
       }
@@ -123,7 +121,7 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            `DocType: ${TEXT_REQUIRED_MESSAGE_SUFFIX}`
+            nonEmptyTextRequiredMessage('DocType')
           );
         }
       }
@@ -157,7 +155,7 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            `ValueDigests: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`
+            mapInvalidTypeMessage('ValueDigests')
           );
         }
       }
@@ -175,7 +173,7 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            `DeviceKeyInfo: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`
+            mapInvalidTypeMessage('DeviceKeyInfo')
           );
         }
       }
@@ -193,7 +191,7 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            `ValidityInfo: ${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`
+            mapInvalidTypeMessage('ValidityInfo')
           );
         }
       }
