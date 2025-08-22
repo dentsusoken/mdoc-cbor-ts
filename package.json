@@ -17,9 +17,9 @@
     }
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && tsc --project tsconfig.build.json",
-    "prepare": "npm run build",
+    "build": "npm run typecheck && vite build",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm test && npm run build",
     "test": "vitest run",
     "test:coverage": "vitest --coverage",
     "lint": "eslint ./lib --ext .ts",
@@ -28,7 +28,6 @@
   "devDependencies": {
     "@auth0/cose": "^1.0.2",
     "@edge-runtime/vm": "^5.0.0",
-    "@types/luxon": "^3.4.2",
     "@types/node": "^22.5.5",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",

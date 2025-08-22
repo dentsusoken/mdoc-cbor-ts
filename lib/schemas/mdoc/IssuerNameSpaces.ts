@@ -1,31 +1,45 @@
 import { z } from 'zod';
-import { Entry, NameSpace, nameSpaceSchema } from '../common';
-import {
-  IssuerSignedItemBytes,
-  issuerSignedItemBytesSchema,
-} from './IssuerSignedItemBytes';
+import { nameSpaceSchema } from '@/schemas/common/NameSpace';
+import { issuerSignedItemBytesSchema } from './IssuerSignedItemBytes';
+import { createMapSchema } from '@/schemas/common/Map';
+import { createArraySchema } from '@/schemas/common/Array';
 
 /**
  * Schema for issuer-signed namespaces in mdoc
  * @description
- * Represents a record of namespaces and their corresponding issuer-signed items.
- * This schema validates that each namespace maps to an array of valid issuer-signed items.
+ * Validates a mapping from `NameSpace` to an array of CBOR-encoded issuer-signed items
+ * (`IssuerSignedItemBytes`). Each value in the array is a Tag 24 wrapping a CBOR bstr
+ * of an `IssuerSignedItem`.
+ *
+ * ```cddl
+ * IssuerNameSpaces = {+ NameSpace => [+ IssuerSignedItemBytes]}
+ * IssuerSignedItemBytes = #6.24(bstr .cbor IssuerSignedItem)
+ * ```
  *
  * @example
  * ```typescript
- * const namespaces = {
- *   "org.iso.18013.5.1": [new Tag(24, Buffer.from([]))]
- * };
- * const result = issuerNameSpacesSchema.parse(namespaces); // Returns IssuerNameSpaces
+ * import { createTag24 } from 'mdoc-cbor-ts';
+ *
+ * // Example with a single namespace containing one IssuerSignedItemBytes (Tag 24)
+ * const tag24 = createTag24(new Uint8Array([]));
+ * const input = new Map<string, unknown>([[
+ *   'org.iso.18013.5.1',
+ *   [tag24],
+ * ]]);
+ *
+ * const result = issuerNameSpacesSchema.parse(input); // Returns IssuerNameSpaces
  * ```
+ *
+ * @see {@link NameSpace}
+ * @see {@link IssuerSignedItemBytes}
  */
-export const issuerNameSpacesSchema = z.map(z.any(), z.any()).transform((v) => {
-  return z
-    .record(nameSpaceSchema, z.array(issuerSignedItemBytesSchema).nonempty())
-    .refine((data) => {
-      return Object.keys(data).length > 0;
-    })
-    .parse(Object.fromEntries(v));
+export const issuerNameSpacesSchema = createMapSchema({
+  target: 'IssuerNameSpaces',
+  keySchema: nameSpaceSchema,
+  valueSchema: createArraySchema({
+    target: 'IssuerSignedItemBytesArray',
+    itemSchema: issuerSignedItemBytesSchema,
+  }),
 });
 
 /**
@@ -33,17 +47,7 @@ export const issuerNameSpacesSchema = z.map(z.any(), z.any()).transform((v) => {
  * @description
  * Represents a validated record of namespaces and their issuer-signed items
  *
- * ```cddl
- * IssuerNameSpaces = {+ NameSpace => [+ IssuerSignedItemBytes]}
- * ```
  * @see {@link NameSpace}
  * @see {@link IssuerSignedItemBytes}
  */
-export type IssuerNameSpaces = z.infer<typeof issuerNameSpacesSchema>;
-
-/**
- * Type definition for issuer-signed namespace entries
- * @description
- * Represents a key-value pair from the issuer-signed namespaces record
- */
-export type IssuerNameSpacesEntry = Entry<IssuerNameSpaces>;
+export type IssuerNameSpaces = z.output<typeof issuerNameSpacesSchema>;

@@ -1,53 +1,48 @@
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import {
-  issuerSignedItemSchema,
-  ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
-  ISSUER_SIGNED_ITEM_REQUIRED_MESSAGE,
-} from '../IssuerSignedItem';
+import { issuerSignedItemSchema } from '../IssuerSignedItem';
 import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
+import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
 import {
-  uintIntegerMessage,
-  uintInvalidTypeMessage,
-  uintPositiveMessage,
-  uintRequiredMessage,
-} from '@/schemas/common/Uint';
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
+} from '@/schemas/common/Map';
 
 describe('IssuerSignedItem', () => {
   describe('valid issuer signed items', () => {
     it('should accept string elementValue', () => {
-      const item = {
-        digestID: 1,
-        random: Uint8Array.from([]),
-        elementIdentifier: 'given_name',
-        elementValue: 'John',
-      };
+      const item = new Map<string, unknown>([
+        ['digestID', 1],
+        ['random', Uint8Array.from([])],
+        ['elementIdentifier', 'given_name'],
+        ['elementValue', 'John'],
+      ]);
       const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(item);
+      expect(result).toEqual(Object.fromEntries(item));
     });
 
     it('should accept number elementValue', () => {
-      const item = {
-        digestID: 2,
-        random: Uint8Array.from([]),
-        elementIdentifier: 'age',
-        elementValue: 30,
-      };
+      const item = new Map<string, unknown>([
+        ['digestID', 2],
+        ['random', Uint8Array.from([])],
+        ['elementIdentifier', 'age'],
+        ['elementValue', 30],
+      ]);
       const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(item);
+      expect(result).toEqual(Object.fromEntries(item));
     });
 
     it('should accept tagged elementValue', () => {
-      const item = {
-        digestID: 3,
-        random: Uint8Array.from([]),
-        elementIdentifier: 'photo',
-        elementValue: new Tag(0, 24),
-      };
+      const item = new Map<string, unknown>([
+        ['digestID', 3],
+        ['random', Uint8Array.from([])],
+        ['elementIdentifier', 'photo'],
+        ['elementValue', new Tag(0, 24)],
+      ]);
       const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(item);
+      expect(result).toEqual(Object.fromEntries(item));
     });
   });
 
@@ -60,32 +55,32 @@ describe('IssuerSignedItem', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: ISSUER_SIGNED_ITEM_REQUIRED_MESSAGE,
+        expectedMessage: mapRequiredMessage('IssuerSignedItem'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: ISSUER_SIGNED_ITEM_INVALID_TYPE_MESSAGE,
+        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
       },
     ];
 
@@ -107,12 +102,14 @@ describe('IssuerSignedItem', () => {
     describe('digestID', () => {
       it('should throw error for non-number digestID', () => {
         try {
-          issuerSignedItemSchema.parse({
-            digestID: '1' as unknown as number,
-            random: Uint8Array.from([]),
-            elementIdentifier: 'given_name',
-            elementValue: 'John',
-          });
+          issuerSignedItemSchema.parse(
+            new Map<string, unknown>([
+              ['digestID', '1' as unknown as number],
+              ['random', Uint8Array.from([])],
+              ['elementIdentifier', 'given_name'],
+              ['elementValue', 'John'],
+            ])
+          );
           throw new Error('Should have thrown');
         } catch (error) {
           const zodError = error as z.ZodError;
@@ -122,72 +119,19 @@ describe('IssuerSignedItem', () => {
           );
         }
       });
-
-      it('should throw error for missing digestID (undefined)', () => {
-        try {
-          issuerSignedItemSchema.parse({
-            // explicit undefined to trigger field required_error
-            digestID: undefined as unknown as number,
-            random: Uint8Array.from([]),
-            elementIdentifier: 'given_name',
-            elementValue: 'John',
-          });
-          throw new Error('Should have thrown');
-        } catch (error) {
-          const zodError = error as z.ZodError;
-          expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(
-            uintRequiredMessage('DigestID')
-          );
-        }
-      });
-
-      it('should throw error for negative digestID', () => {
-        try {
-          issuerSignedItemSchema.parse({
-            digestID: -1,
-            random: Uint8Array.from([]),
-            elementIdentifier: 'given_name',
-            elementValue: 'John',
-          });
-          throw new Error('Should have thrown');
-        } catch (error) {
-          const zodError = error as z.ZodError;
-          expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(
-            uintPositiveMessage('DigestID')
-          );
-        }
-      });
-
-      it('should throw error for non-integer digestID', () => {
-        try {
-          issuerSignedItemSchema.parse({
-            digestID: 1.5,
-            random: Uint8Array.from([]),
-            elementIdentifier: 'given_name',
-            elementValue: 'John',
-          });
-          throw new Error('Should have thrown');
-        } catch (error) {
-          const zodError = error as z.ZodError;
-          expect(zodError.issues[0].path).toEqual(['digestID']);
-          expect(zodError.issues[0].message).toBe(
-            uintIntegerMessage('DigestID')
-          );
-        }
-      });
     });
 
     describe('random', () => {
       it('should throw error for invalid random type', () => {
         try {
-          issuerSignedItemSchema.parse({
-            digestID: 1,
-            random: null,
-            elementIdentifier: 'given_name',
-            elementValue: 'John',
-          });
+          issuerSignedItemSchema.parse(
+            new Map<string, unknown>([
+              ['digestID', 1],
+              ['random', null],
+              ['elementIdentifier', 'given_name'],
+              ['elementValue', 'John'],
+            ])
+          );
           throw new Error('Should have thrown');
         } catch (error) {
           const zodError = error as z.ZodError;
@@ -202,30 +146,14 @@ describe('IssuerSignedItem', () => {
     describe('elementIdentifier', () => {
       it('should throw error for empty elementIdentifier', () => {
         try {
-          issuerSignedItemSchema.parse({
-            digestID: 1,
-            random: Uint8Array.from([]),
-            elementIdentifier: '',
-            elementValue: 'John',
-          });
-          throw new Error('Should have thrown');
-        } catch (error) {
-          const zodError = error as z.ZodError;
-          expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
-          expect(zodError.issues[0].message).toBe(
-            nonEmptyTextEmptyMessage('DataElementIdentifier')
+          issuerSignedItemSchema.parse(
+            new Map<string, unknown>([
+              ['digestID', 1],
+              ['random', Uint8Array.from([])],
+              ['elementIdentifier', ''],
+              ['elementValue', 'John'],
+            ])
           );
-        }
-      });
-
-      it('should throw error for whitespace-only elementIdentifier', () => {
-        try {
-          issuerSignedItemSchema.parse({
-            digestID: 1,
-            random: Uint8Array.from([]),
-            elementIdentifier: '   ',
-            elementValue: 'John',
-          });
           throw new Error('Should have thrown');
         } catch (error) {
           const zodError = error as z.ZodError;

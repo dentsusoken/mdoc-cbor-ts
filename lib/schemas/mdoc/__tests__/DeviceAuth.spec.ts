@@ -2,7 +2,13 @@ import { Mac0, Sign1 } from '@auth0/cose';
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { deviceAuthSchema } from '../DeviceAuth';
+import {
+  deviceAuthSchema,
+  DEVICE_AUTH_AT_LEAST_ONE_MESSAGE,
+} from '../DeviceAuth';
+import { mapInvalidTypeMessage, mapRequiredMessage } from '../../common/Map';
+import { sign1InvalidTypeMessage } from '../../cose/Sign1';
+import { mac0InvalidTypeMessage } from '../../cose/Mac0';
 
 describe('DeviceAuth', () => {
   describe('should accept valid device authentication', () => {
@@ -82,78 +88,70 @@ describe('DeviceAuth', () => {
   });
 
   describe('should throw error for invalid input', () => {
+    const mapInvalid = mapInvalidTypeMessage('DeviceAuth');
+    const mapRequired = mapRequiredMessage('DeviceAuth');
+    const dsInvalid = sign1InvalidTypeMessage('DeviceSignature');
+    const macInvalid = mac0InvalidTypeMessage('DeviceMac');
     const testCases = [
       {
         name: 'null input',
         input: null,
-        expectedMessage:
-          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
+        expectedMessage: mapInvalid,
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage:
-          'DeviceAuth: This field is required. Please provide a Map.',
+        expectedMessage: mapRequired,
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage:
-          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
+        expectedMessage: mapInvalid,
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage:
-          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
+        expectedMessage: mapInvalid,
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage:
-          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
+        expectedMessage: mapInvalid,
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage:
-          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
+        expectedMessage: mapInvalid,
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage:
-          'DeviceAuth: Expected a Map with keys and values. Please provide a valid Map.',
+        expectedMessage: mapInvalid,
       },
       {
         name: 'Map with null deviceSignature',
         input: new Map([['deviceSignature', null]]),
-        expectedMessage:
-          'DeviceSignature: Expected an array with 4 elements (protected headers, unprotected headers, payload, signature). Please provide a valid COSE_Sign1 structure.',
+        expectedMessage: dsInvalid,
       },
       {
         name: 'Map with null deviceMac',
         input: new Map([['deviceMac', null]]),
-        expectedMessage:
-          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+        expectedMessage: macInvalid,
       },
       {
         name: 'Map with Tag deviceSignature',
         input: new Map([['deviceSignature', new Tag(0, 17)]]),
-        expectedMessage:
-          'DeviceSignature: Expected an array with 4 elements (protected headers, unprotected headers, payload, signature). Please provide a valid COSE_Sign1 structure.',
+        expectedMessage: dsInvalid,
       },
       {
         name: 'Map with Tag deviceMac',
         input: new Map([['deviceMac', new Tag(0, 18)]]),
-        expectedMessage:
-          'DeviceMac: Expected an array with 4 elements (protected headers, unprotected headers, payload, tag). Please provide a valid COSE_Mac0 structure.',
+        expectedMessage: macInvalid,
       },
       {
         name: 'empty Map',
         input: new Map(),
-        expectedMessage:
-          'DeviceAuth: At least one authentication method (deviceSignature or deviceMac) must be provided.',
+        expectedMessage: DEVICE_AUTH_AT_LEAST_ONE_MESSAGE,
       },
     ];
 

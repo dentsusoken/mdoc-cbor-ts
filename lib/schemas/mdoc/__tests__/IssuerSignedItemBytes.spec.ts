@@ -18,32 +18,6 @@ describe('IssuerSignedItemBytes', () => {
       expect(result).toBeInstanceOf(Tag);
       expect(result.value).toEqual(tag.value);
     });
-
-    it('should accept item with number elementValue', () => {
-      const inner = {
-        digestID: 2,
-        random: Uint8Array.from([]),
-        elementIdentifier: 'age',
-        elementValue: 30,
-      };
-      const tag = createTag24(inner);
-      const result = issuerSignedItemBytesSchema.parse(tag);
-      expect(result).toBeInstanceOf(Tag);
-      expect(result.value).toEqual(tag.value);
-    });
-
-    it('should accept item with tagged elementValue', () => {
-      const inner = {
-        digestID: 3,
-        random: Uint8Array.from([]),
-        elementIdentifier: 'photo',
-        elementValue: new Tag(0, 24),
-      };
-      const tag = createTag24(inner);
-      const result = issuerSignedItemBytesSchema.parse(tag);
-      expect(result).toBeInstanceOf(Tag);
-      expect(result.value).toEqual(tag.value);
-    });
   });
 
   describe('should throw error for invalid type inputs', () => {

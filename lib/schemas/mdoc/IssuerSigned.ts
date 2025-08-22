@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { issuerAuthSchema } from '../mso';
-import { issuerNameSpacesSchema } from './IssuerNameSpaces';
+import { createStructSchema } from '@/schemas/common/Struct';
+import { issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
+import { issuerNameSpacesSchema } from '@/schemas/mdoc/IssuerNameSpaces';
 
 /**
  * Object schema for issuer-signed data validation
@@ -17,8 +18,8 @@ import { issuerNameSpacesSchema } from './IssuerNameSpaces';
  * ```
  *
  * Properties:
- * - nameSpaces: {@link IssuerNameSpaces}
- * - issuerAuth: {@link IssuerAuth}
+ * - nameSpaces: {@link IssuerNameSpaces} - Mapping of namespaces to issuer-signed items
+ * - issuerAuth: {@link IssuerAuth} - Issuer authentication data
  */
 export const issuerSignedObjectSchema = z.object({
   nameSpaces: issuerNameSpacesSchema,
@@ -34,27 +35,44 @@ export const issuerSignedObjectSchema = z.object({
  *
  * @example
  * ```typescript
+ * import { createTag24 } from '@/cbor/createTag24';
+ *
  * const issuerSigned = new Map([
- *   ['nameSpaces', {}],
- *   ['issuerAuth', new Map()]
+ *   ['nameSpaces', new Map([
+ *     ['org.iso.18013.5.1', [
+ *       createTag24(new Map([
+ *         ['digestID', 1],
+ *         ['random', new Uint8Array([])],
+ *         ['elementIdentifier', 'given_name'],
+ *         ['elementValue', 'John']
+ *       ]))
+ *     ]]
+ *   ])],
+ *   ['issuerAuth', new Map([
+ *     ['protected', new Uint8Array([])],
+ *     ['unprotected', new Map()],
+ *     ['payload', new Uint8Array([])],
+ *     ['signature', new Uint8Array([])]
+ *   ])]
  * ]);
  * const result = issuerSignedSchema.parse(issuerSigned); // Returns IssuerSigned
  * ```
  *
+ * @see {@link IssuerNameSpaces}
+ * @see {@link IssuerAuth}
  * @see {@link issuerSignedObjectSchema}
  */
-export const issuerSignedSchema = z
-  .map(z.any(), z.any(), {
-    invalid_type_error:
-      'IssuerSigned: Expected a Map with keys "nameSpaces" and "issuerAuth". Please provide a valid issuer-signed mapping.',
-    required_error:
-      'IssuerSigned: This field is required. Please provide an issuer-signed mapping.',
-  })
-  .transform((v) => issuerSignedObjectSchema.parse(Object.fromEntries(v)));
+export const issuerSignedSchema = createStructSchema({
+  target: 'IssuerSigned',
+  objectSchema: issuerSignedObjectSchema,
+});
 
 /**
  * Type definition for issuer-signed data
  * @description
- * Represents validated issuer-signed data structure
+ * Represents a validated issuer-signed data structure containing namespaces and authentication
+ *
+ * @see {@link IssuerNameSpaces}
+ * @see {@link IssuerAuth}
  */
 export type IssuerSigned = z.output<typeof issuerSignedSchema>;
