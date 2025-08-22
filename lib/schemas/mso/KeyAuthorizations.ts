@@ -3,6 +3,16 @@ import { authorizedDataElementsSchema } from './AuthorizedDataElements';
 import { authorizedNameSpacesSchema } from './AuthorizedNameSpaces';
 import { createStructSchema } from '@/schemas/common/Struct';
 
+/**
+ * Object schema for key authorizations validation
+ * @description
+ * Defines the structure for key authorizations with optional `nameSpaces`
+ * and `dataElements` fields. This schema is used internally by
+ * `keyAuthorizationsSchema` after Map-to-object transformation.
+ *
+ * @see authorizedNameSpacesSchema
+ * @see authorizedDataElementsSchema
+ */
 export const keyAuthorizationsObjectSchema = z.object({
   nameSpaces: authorizedNameSpacesSchema.optional(),
   dataElements: authorizedDataElementsSchema.optional(),
@@ -64,4 +74,4 @@ export const keyAuthorizationsSchema = createStructSchema({
  * @see {@link AuthorizedNameSpaces}
  * @see {@link AuthorizedDataElements}
  */
-export type KeyAuthorizations = z.infer<typeof keyAuthorizationsSchema>;
+export type KeyAuthorizations = z.output<typeof keyAuthorizationsSchema>;
