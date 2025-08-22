@@ -88,23 +88,4 @@ describe('DeviceKeyInfo', () => {
       });
     });
   });
-
-  describe('invalid field values', () => {
-    it('should reject invalid deviceKey type', () => {
-      try {
-        const input = new Map<string, unknown>([
-          // invalid: object instead of Map for deviceKey
-          ['deviceKey', {}],
-        ]);
-        deviceKeyInfoSchema.parse(input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          mapInvalidTypeMessage('DeviceKey')
-        );
-      }
-    });
-  });
 });

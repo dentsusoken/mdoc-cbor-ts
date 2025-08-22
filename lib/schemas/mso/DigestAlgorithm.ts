@@ -21,7 +21,7 @@ export const ALLOWED_DIGEST_ALGORITHMS = [
 export const DIGEST_ALGORITHM_INVALID_TYPE_MESSAGE =
   'DigestAlgorithm: Expected a string value ("SHA-256", "SHA-384", or "SHA-512").';
 export const DIGEST_ALGORITHM_REQUIRED_MESSAGE =
-  'DigestAlgorithm: This field is required. Please provide a digest algorithm.';
+  'DigestAlgorithm: This field is required. Please provide a digest algorithm("SHA-256", "SHA-384", or "SHA-512").';
 export const DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE =
   'DigestAlgorithm: Invalid algorithm. Allowed values are "SHA-256", "SHA-384", "SHA-512".';
 

@@ -2,21 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { authorizedDataElementsSchema } from '../AuthorizedDataElements';
 import {
-  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
-  MAP_REQUIRED_MESSAGE_SUFFIX,
-  MAP_EMPTY_MESSAGE_SUFFIX,
+  mapInvalidTypeMessage,
+  mapRequiredMessage,
+  mapEmptyMessage,
 } from '@/schemas/common/Map';
-import { ARRAY_EMPTY_MESSAGE_SUFFIX } from '@/schemas/common/Array';
+import { arrayEmptyMessage } from '@/schemas/common/Array';
 import {
-  TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
-  TEXT_EMPTY_MESSAGE_SUFFIX,
+  nonEmptyTextInvalidTypeMessage,
+  nonEmptyTextEmptyMessage,
 } from '@/schemas/common/NonEmptyText';
 
 describe('AuthorizedDataElements', () => {
   const TARGET = 'AuthorizedDataElements';
-  const PREFIX = `${TARGET}: `;
 
-  describe('valid inputs', () => {
+  describe('success cases', () => {
     const cases: Array<{ name: string; input: Map<string, string[]> }> = [
       {
         name: 'single namespace with single element',
@@ -44,114 +43,68 @@ describe('AuthorizedDataElements', () => {
     });
   });
 
-  describe('invalid types', () => {
+  describe('error cases', () => {
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
+      // invalid types for the map itself
       {
         name: 'boolean input',
         input: true,
-        expected: `${PREFIX}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(TARGET),
       },
       {
         name: 'null input',
         input: null,
-        expected: `${PREFIX}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(TARGET),
       },
       {
         name: 'plain object input',
         input: {},
-        expected: `${PREFIX}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expected: mapInvalidTypeMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: `${PREFIX}${MAP_REQUIRED_MESSAGE_SUFFIX}`,
+        expected: mapRequiredMessage(TARGET),
+      },
+      // content validations
+      {
+        name: 'empty map',
+        input: new Map(),
+        expected: mapEmptyMessage(TARGET),
+      },
+      {
+        name: 'invalid namespace key type',
+        input: new Map([[123 as unknown as string, ['given_name']]]),
+        expected: nonEmptyTextInvalidTypeMessage('NameSpace'),
+      },
+      {
+        name: 'empty elements array',
+        input: new Map([[`org.iso.18013.5.1`, []]]),
+        expected: arrayEmptyMessage('DataElementsArray'),
+      },
+      {
+        name: 'invalid element type inside array',
+        input: new Map([[`org.iso.18013.5.1`, [123 as unknown as string]]]),
+        expected: nonEmptyTextInvalidTypeMessage('DataElementIdentifier'),
+      },
+      {
+        name: 'empty string element identifier',
+        input: new Map([[`org.iso.18013.5.1`, ['']]]),
+        expected: nonEmptyTextEmptyMessage('DataElementIdentifier'),
       },
     ];
 
     cases.forEach(({ name, input, expected }) => {
       it(`should reject ${name}`, () => {
         try {
-          authorizedDataElementsSchema.parse(input);
-          throw new Error('Should have thrown');
+          authorizedDataElementsSchema.parse(input as never);
+          expect.unreachable('Expected parsing to throw');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
-    });
-  });
-
-  describe('content validation', () => {
-    it('should reject empty map', () => {
-      try {
-        authorizedDataElementsSchema.parse(new Map());
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          `${PREFIX}${MAP_EMPTY_MESSAGE_SUFFIX}`
-        );
-      }
-    });
-
-    it('should reject invalid namespace key type', () => {
-      try {
-        authorizedDataElementsSchema.parse(new Map([[123, ['given_name']]]));
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          `NameSpace: ${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`
-        );
-      }
-    });
-
-    it('should reject empty elements array', () => {
-      try {
-        authorizedDataElementsSchema.parse(
-          new Map([[`org.iso.18013.5.1`, []]])
-        );
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          `DataElementsArray: ${ARRAY_EMPTY_MESSAGE_SUFFIX}`
-        );
-      }
-    });
-
-    it('should reject invalid element type inside array', () => {
-      try {
-        authorizedDataElementsSchema.parse(
-          new Map([['org.iso.18013.5.1', [123]]])
-        );
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          `DataElementIdentifier: ${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`
-        );
-      }
-    });
-
-    it('should reject empty string element identifier', () => {
-      try {
-        authorizedDataElementsSchema.parse(
-          new Map([[`org.iso.18013.5.1`, ['']]])
-        );
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          `DataElementIdentifier: ${TEXT_EMPTY_MESSAGE_SUFFIX}`
-        );
-      }
     });
   });
 });
