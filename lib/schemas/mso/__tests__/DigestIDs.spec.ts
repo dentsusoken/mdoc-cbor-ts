@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestIDsSchema } from '../DigestIDs';
-import { mapEmptyMessage } from '../../common/Map';
-import { uintInvalidTypeMessage } from '../../common/Uint';
-import { bytesInvalidTypeMessage } from '../../common/Bytes';
-
-const DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE = uintInvalidTypeMessage('DigestID');
-const DIGEST_IDS_EMPTY_MESSAGE = mapEmptyMessage('DigestIDs');
+import { mapEmptyMessage } from '@/schemas/common/Map';
+import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
+import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
 
 describe('DigestIDs', () => {
   describe('valid inputs', () => {
@@ -29,7 +26,7 @@ describe('DigestIDs', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(DIGEST_IDS_EMPTY_MESSAGE);
+        expect(zodError.issues[0].message).toBe(mapEmptyMessage('DigestIDs'));
       }
     });
 
@@ -44,7 +41,7 @@ describe('DigestIDs', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          DIGEST_ID_NUMBER_INVALID_TYPE_MESSAGE
+          uintInvalidTypeMessage('DigestID')
         );
       }
     });
