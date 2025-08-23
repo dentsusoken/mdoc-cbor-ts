@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { protectedHeadersSchema } from '../ProtectedHeaders';
 import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('ProtectedHeaders', () => {
   describe('should accept valid byte inputs', () => {
@@ -21,19 +22,50 @@ describe('ProtectedHeaders', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const expectedMessage = bytesInvalidTypeMessage('ProtectedHeaders');
-    const cases: Array<{ name: string; input: unknown }> = [
-      { name: 'null input', input: null },
-      { name: 'undefined input', input: undefined },
-      { name: 'boolean input', input: true },
-      { name: 'number input', input: 123 },
-      { name: 'string input', input: 'string' },
-      { name: 'array input', input: [] },
-      { name: 'plain object input', input: {} },
-      { name: 'set input', input: new Set([1, 2]) },
+    const testCases = [
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage: requiredMessage('ProtectedHeaders'),
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage: requiredMessage('ProtectedHeaders'),
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage: bytesInvalidTypeMessage('ProtectedHeaders'),
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expectedMessage: bytesInvalidTypeMessage('ProtectedHeaders'),
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expectedMessage: bytesInvalidTypeMessage('ProtectedHeaders'),
+      },
+      {
+        name: 'array input',
+        input: [],
+        expectedMessage: bytesInvalidTypeMessage('ProtectedHeaders'),
+      },
+      {
+        name: 'plain object input',
+        input: {},
+        expectedMessage: bytesInvalidTypeMessage('ProtectedHeaders'),
+      },
+      {
+        name: 'set input',
+        input: new Set([1, 2]),
+        expectedMessage: bytesInvalidTypeMessage('ProtectedHeaders'),
+      },
     ];
 
-    cases.forEach(({ name, input }) => {
+    testCases.forEach(({ name, input, expectedMessage }) => {
       it(`should reject ${name}`, () => {
         try {
           protectedHeadersSchema.parse(input as never);

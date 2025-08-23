@@ -1,13 +1,13 @@
 import { Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { createSign1Schema } from '../Sign1';
+import { requiredMessage } from '@/schemas/common/Required';
 import {
-  createSign1Schema,
-  sign1InvalidTypeMessage,
-  sign1RequiredMessage,
-  sign1TooFewMessage,
-  sign1TooManyMessage,
-} from '../Sign1';
+  fixedTupleLengthInvalidTypeMessage,
+  fixedTupleLengthTooFewMessage,
+  fixedTupleLengthTooManyMessage,
+} from '@/schemas/common/FixedTupleLength';
 
 describe('Sign1', () => {
   const schema = createSign1Schema('DeviceSignature');
@@ -70,19 +70,40 @@ describe('Sign1', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const invalidMessage = sign1InvalidTypeMessage('DeviceSignature');
-    const requiredMessage = sign1RequiredMessage('DeviceSignature');
-
-    const cases: Array<{ name: string; input: unknown; expected: string }> = [
-      { name: 'null input', input: null, expected: invalidMessage },
-      { name: 'boolean input', input: true, expected: invalidMessage },
-      { name: 'number input', input: 123, expected: invalidMessage },
-      { name: 'string input', input: 'string', expected: invalidMessage },
-      { name: 'plain object input', input: {}, expected: invalidMessage },
-      { name: 'undefined input', input: undefined, expected: requiredMessage },
+    const testCases = [
+      {
+        name: 'null input',
+        input: null,
+        expected: requiredMessage('DeviceSignature'),
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expected: requiredMessage('DeviceSignature'),
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+      },
+      {
+        name: 'plain object input',
+        input: {},
+        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+      },
     ];
 
-    cases.forEach(({ name, input, expected }) => {
+    testCases.forEach(({ name, input, expected }) => {
       it(`should reject ${name}`, () => {
         try {
           schema.parse(input as never);
@@ -110,7 +131,7 @@ describe('Sign1', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          sign1TooFewMessage('DeviceSignature')
+          fixedTupleLengthTooFewMessage('DeviceSignature', 4)
         );
       }
     });
@@ -130,7 +151,7 @@ describe('Sign1', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          sign1TooManyMessage('DeviceSignature')
+          fixedTupleLengthTooManyMessage('DeviceSignature', 4)
         );
       }
     });

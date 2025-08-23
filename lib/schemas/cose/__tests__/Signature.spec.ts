@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { signatureSchema } from '../Signature';
 import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('Signature', () => {
   describe('should accept valid byte inputs', () => {
@@ -21,19 +22,50 @@ describe('Signature', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const expectedMessage = bytesInvalidTypeMessage('Signature');
-    const cases: Array<{ name: string; input: unknown }> = [
-      { name: 'null input', input: null },
-      { name: 'undefined input', input: undefined },
-      { name: 'boolean input', input: true },
-      { name: 'number input', input: 123 },
-      { name: 'string input', input: 'string' },
-      { name: 'array input', input: [] },
-      { name: 'plain object input', input: {} },
-      { name: 'set input', input: new Set([1, 2]) },
+    const testCases = [
+      {
+        name: 'null input',
+        input: null,
+        expectedMessage: requiredMessage('Signature'),
+      },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expectedMessage: requiredMessage('Signature'),
+      },
+      {
+        name: 'boolean input',
+        input: true,
+        expectedMessage: bytesInvalidTypeMessage('Signature'),
+      },
+      {
+        name: 'number input',
+        input: 123,
+        expectedMessage: bytesInvalidTypeMessage('Signature'),
+      },
+      {
+        name: 'string input',
+        input: 'string',
+        expectedMessage: bytesInvalidTypeMessage('Signature'),
+      },
+      {
+        name: 'array input',
+        input: [],
+        expectedMessage: bytesInvalidTypeMessage('Signature'),
+      },
+      {
+        name: 'plain object input',
+        input: {},
+        expectedMessage: bytesInvalidTypeMessage('Signature'),
+      },
+      {
+        name: 'set input',
+        input: new Set([1, 2]),
+        expectedMessage: bytesInvalidTypeMessage('Signature'),
+      },
     ];
 
-    cases.forEach(({ name, input }) => {
+    testCases.forEach(({ name, input, expectedMessage }) => {
       it(`should reject ${name}`, () => {
         try {
           signatureSchema.parse(input as never);
