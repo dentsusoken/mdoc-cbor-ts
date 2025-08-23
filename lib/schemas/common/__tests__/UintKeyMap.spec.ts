@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createUintKeyMapSchema } from '../UintKeyMap';
 import { z } from 'zod';
-import { mapInvalidTypeMessage, mapRequiredMessage } from '../Map';
+import { mapInvalidTypeMessage } from '../Map';
 import { uintIntegerMessage } from '../Uint';
+import { requiredMessage } from '../Required';
 
 describe('UintKeyMap schema', () => {
   describe('success', () => {
@@ -31,10 +32,10 @@ describe('UintKeyMap schema', () => {
         { input: 'x', expected: mapInvalidTypeMessage('Headers') },
         { input: 1, expected: mapInvalidTypeMessage('Headers') },
         { input: true, expected: mapInvalidTypeMessage('Headers') },
-        { input: null, expected: mapInvalidTypeMessage('Headers') },
+        { input: null, expected: requiredMessage('Headers') },
         { input: {}, expected: mapInvalidTypeMessage('Headers') },
         { input: [], expected: mapInvalidTypeMessage('Headers') },
-        { input: undefined, expected: mapRequiredMessage('Headers') },
+        { input: undefined, expected: requiredMessage('Headers') },
       ];
       cases.forEach(({ input, expected }) => {
         try {

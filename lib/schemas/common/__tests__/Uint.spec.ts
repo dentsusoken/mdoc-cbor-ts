@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   createUintSchema,
   uintInvalidTypeMessage,
-  uintRequiredMessage,
   uintIntegerMessage,
   uintPositiveMessage,
 } from '../Uint';
 import { z } from 'zod';
+import { requiredMessage } from '../Required';
 
 describe('createUintSchema', () => {
   const TARGET = 'DigestID';
@@ -50,12 +50,12 @@ describe('createUintSchema', () => {
       {
         name: 'null input',
         input: null,
-        expected: uintInvalidTypeMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: uintRequiredMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
     ];
 

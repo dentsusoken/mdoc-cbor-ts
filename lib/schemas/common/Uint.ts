@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createRequiredSchema } from './Required';
 
 /**
  * Creates an error message for invalid uint types
@@ -17,24 +18,6 @@ import { z } from 'zod';
  */
 export const uintInvalidTypeMessage = (target: string): string =>
   `${target}: Expected a number, but received a different type. Please provide a positive integer.`;
-
-/**
- * Creates an error message for required uint fields
- * @description
- * Generates a standardized error message when a required uint field is missing.
- * The message indicates the expected target name and that the field is required.
- *
- * @param target - The name of the target schema being validated
- * @returns A formatted error message string
- *
- * @example
- * ```typescript
- * const message = uintRequiredMessage('DigestID');
- * // Returns: "DigestID: This field is required. Please provide a positive integer."
- * ```
- */
-export const uintRequiredMessage = (target: string): string =>
-  `${target}: This field is required. Please provide a positive integer.`;
 
 /**
  * Creates an error message for uint integer validation
@@ -72,12 +55,24 @@ export const uintIntegerMessage = (target: string): string =>
 export const uintPositiveMessage = (target: string): string =>
   `${target}: Please provide a positive integer greater than 0`;
 
+const createUintInnerSchema = (target: string): z.ZodType<number> =>
+  z
+    .number({
+      invalid_type_error: uintInvalidTypeMessage(target),
+    })
+    .int({
+      message: uintIntegerMessage(target),
+    })
+    .positive({
+      message: uintPositiveMessage(target),
+    });
+
 /**
- * Builds a number schema for unsigned integers (uint).
+ * Builds a number schema for unsigned integers (uint)
  * @description
  * Returns a Zod schema that validates a required positive integer (uint) value.
  * All validation error messages are prefixed with the provided `target` name
- * and use the message suffix constants exported from this module.
+ * and use the message constants exported from this module.
  *
  * Validation rules:
  * - Requires a number type with a target-prefixed invalid type message
@@ -90,26 +85,47 @@ export const uintPositiveMessage = (target: string): string =>
  * ```
  *
  * @param target - Prefix used in error messages (e.g., "DigestID")
+ * @returns A Zod schema that validates positive integer values
+ *
  * @example
  * ```typescript
  * const digestIDSchema = createUintSchema('DigestID');
- *
  * const digestID = digestIDSchema.parse(123); // number
+ * ```
  *
- * // Throws ZodError with message:
- * // "DigestID: Please provide an integer (no decimal places)"
+ * @example
+ * ```typescript
+ * // Throws ZodError (decimal places)
+ * // Message: "DigestID: Please provide an integer (no decimal places)"
+ * const digestIDSchema = createUintSchema('DigestID');
  * digestIDSchema.parse(1.5);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (not positive)
+ * // Message: "DigestID: Please provide a positive integer greater than 0"
+ * const digestIDSchema = createUintSchema('DigestID');
+ * digestIDSchema.parse(0);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (invalid type)
+ * // Message: "DigestID: Expected a number, but received a different type. Please provide a positive integer."
+ * const digestIDSchema = createUintSchema('DigestID');
+ * // @ts-expect-error
+ * digestIDSchema.parse('123');
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (required)
+ * // Message: "DigestID: This field is required"
+ * const digestIDSchema = createUintSchema('DigestID');
+ * // @ts-expect-error
+ * digestIDSchema.parse(undefined);
  * ```
  */
 export const createUintSchema = (target: string): z.ZodType<number> =>
-  z
-    .number({
-      invalid_type_error: uintInvalidTypeMessage(target),
-      required_error: uintRequiredMessage(target),
-    })
-    .int({
-      message: uintIntegerMessage(target),
-    })
-    .positive({
-      message: uintPositiveMessage(target),
-    });
+  createRequiredSchema(target).pipe(createUintInnerSchema(target));

@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { nameSpaceSchema } from '../NameSpace';
 import {
-  TEXT_INVALID_TYPE_MESSAGE_SUFFIX,
-  TEXT_REQUIRED_MESSAGE_SUFFIX,
-  TEXT_EMPTY_MESSAGE_SUFFIX,
+  nonEmptyTextInvalidTypeMessage,
+  nonEmptyTextEmptyMessage,
 } from '../NonEmptyText';
 import { z } from 'zod';
+import { requiredMessage } from '../Required';
 
 describe('NameSpace', () => {
   describe('should accept valid string namespaces', () => {
@@ -45,57 +45,56 @@ describe('NameSpace', () => {
   });
 
   describe('should throw error for invalid inputs', () => {
-    const prefix = 'NameSpace: ';
     const testCases = [
       {
         name: 'number input',
         input: 123,
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage('NameSpace'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage('NameSpace'),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage('NameSpace'),
       },
       {
         name: 'array input',
         input: [1, 2, 3],
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextInvalidTypeMessage('NameSpace'),
       },
       {
         name: 'null input',
         input: null,
-        expectedMessage: `${prefix}${TEXT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: requiredMessage('NameSpace'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: `${prefix}${TEXT_REQUIRED_MESSAGE_SUFFIX}`,
+        expectedMessage: requiredMessage('NameSpace'),
       },
       {
         name: 'empty string',
         input: '',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('NameSpace'),
       },
       {
         name: 'whitespace-only string',
         input: '   ',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('NameSpace'),
       },
       {
         name: 'string with only tabs',
         input: '\t\t\t',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('NameSpace'),
       },
       {
         name: 'string with only newlines',
         input: '\n\n\n',
-        expectedMessage: `${prefix}${TEXT_EMPTY_MESSAGE_SUFFIX}`,
+        expectedMessage: nonEmptyTextEmptyMessage('NameSpace'),
       },
     ];
 
