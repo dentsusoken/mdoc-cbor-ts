@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createRequiredSchema } from './Required';
 
 /**
  * Creates an error message for invalid int types
@@ -19,24 +20,6 @@ export const intInvalidTypeMessage = (target: string): string =>
   `${target}: Expected a number, but received a different type. Please provide an integer.`;
 
 /**
- * Creates an error message for required int fields
- * @description
- * Generates a standardized error message when a required int field is missing.
- * The message indicates the expected target name and that the field is required.
- *
- * @param target - The name of the target schema being validated
- * @returns A formatted error message string
- *
- * @example
- * ```typescript
- * const message = intRequiredMessage('ErrorCode');
- * // Returns: "ErrorCode: This field is required. Please provide an integer."
- * ```
- */
-export const intRequiredMessage = (target: string): string =>
-  `${target}: This field is required. Please provide an integer.`;
-
-/**
  * Creates an error message for int integer validation
  * @description
  * Generates a standardized error message when an int validation fails because
@@ -53,6 +36,15 @@ export const intRequiredMessage = (target: string): string =>
  */
 export const intIntegerMessage = (target: string): string =>
   `${target}: Please provide an integer (no decimal places)`;
+
+const createIntInnerSchema = (target: string): z.ZodType<number> =>
+  z
+    .number({
+      invalid_type_error: intInvalidTypeMessage(target),
+    })
+    .int({
+      message: intIntegerMessage(target),
+    });
 
 /**
  * Builds a number schema for integers (int).
@@ -105,11 +97,4 @@ export const intIntegerMessage = (target: string): string =>
  * ```
  */
 export const createIntSchema = (target: string): z.ZodType<number> =>
-  z
-    .number({
-      invalid_type_error: intInvalidTypeMessage(target),
-      required_error: intRequiredMessage(target),
-    })
-    .int({
-      message: intIntegerMessage(target),
-    });
+  createRequiredSchema(target).pipe(createIntInnerSchema(target));

@@ -7,6 +7,7 @@ import {
   dateOnlyInvalidTypeMessage,
   dateOnlyInvalidDateMessage,
 } from '../DateOnly';
+import { requiredMessage } from '../Required';
 
 describe('DateOnly Schema', () => {
   const testSchema = createDateOnlySchema('TestTarget');
@@ -21,16 +22,26 @@ describe('DateOnly Schema', () => {
   });
 
   describe('invalid cases', () => {
-    it('should throw error for undefined', () => {
+    it('should throw required error for undefined', () => {
       try {
         testSchema.parse(undefined);
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
-          expect(error.errors[0].message).toBe(
-            dateOnlyInvalidTypeMessage('TestTarget')
-          );
+          expect(error.errors[0].message).toBe(requiredMessage('TestTarget'));
+        }
+      }
+    });
+
+    it('should throw required error for null', () => {
+      try {
+        testSchema.parse(null);
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        if (error instanceof z.ZodError) {
+          expect(error.errors[0].message).toBe(requiredMessage('TestTarget'));
         }
       }
     });

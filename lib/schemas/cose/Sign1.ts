@@ -106,8 +106,12 @@ const createSign1TupleSchema = (
   z.tuple(
     [
       protectedHeadersSchema, // protected headers (Bytes)
-      unprotectedHeadersSchema, // unprotected headers (NumberMap)
-      payloadSchema, // payload (Bytes)
+      unprotectedHeadersSchema, // unprotected headers (LabelKeyMap)
+      // Accept null/undefined and convert to empty Uint8Array before validating as bytes
+      z
+        .any()
+        .transform((v) => (v == null ? new Uint8Array() : v))
+        .pipe(payloadSchema), // payload (Bytes)
       signatureSchema, // signature (Bytes)
     ],
     {
@@ -127,18 +131,19 @@ const createSign1TupleSchema = (
  * COSE_Sign1 = [
  *   protected:   bstr,
  *   unprotected: {
- *     * uint => any
+ *     * label => any
  *   },
  *   payload:     bstr,
  *   signature:   bstr
  * ]
  * ```
+ * where `label = int / tstr`
  *
  * Validation rules:
  * - Must be an array with exactly 4 elements
  * - Element 0: Protected headers (Uint8Array)
- * - Element 1: Unprotected headers (Map<number, unknown>)
- * - Element 2: Payload (Uint8Array)
+ * - Element 1: Unprotected headers (Map<number | string, unknown>)
+ * - Element 2: Payload (Uint8Array | undefined)
  * - Element 3: Signature (Uint8Array)
  *
  * @param target - The name of the target schema (used in error messages)
@@ -180,7 +185,7 @@ export const createSign1Schema = (target: string): z.ZodType<Sign1> =>
     .transform(([protectedHeaders, unprotectedHeaders, payload, signature]) => {
       return new Sign1(
         protectedHeaders,
-        unprotectedHeaders,
+        unprotectedHeaders as unknown as Map<number, unknown>,
         payload,
         signature
       );

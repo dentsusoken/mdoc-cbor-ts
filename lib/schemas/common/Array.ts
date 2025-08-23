@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { createRequiredSchema } from './Required';
 
 /**
  * Creates an error message for invalid array types
@@ -19,24 +20,6 @@ export const arrayInvalidTypeMessage = (target: string): string =>
   `${target}: Expected an array, but received a different type. Please provide an array.`;
 
 /**
- * Creates an error message for required array fields
- * @description
- * Generates a standardized error message when a required array field is missing.
- * The message indicates the expected target name and that the field is required.
- *
- * @param target - The name of the target schema being validated
- * @returns A formatted error message string
- *
- * @example
- * ```typescript
- * const message = arrayRequiredMessage('Tags');
- * // Returns: "Tags: This field is required. Please provide an array."
- * ```
- */
-export const arrayRequiredMessage = (target: string): string =>
-  `${target}: This field is required. Please provide an array.`;
-
-/**
  * Creates an error message for empty array validation
  * @description
  * Generates a standardized error message when an array validation fails because
@@ -54,11 +37,33 @@ export const arrayRequiredMessage = (target: string): string =>
 export const arrayEmptyMessage = (target: string): string =>
   `${target}: At least one entry must be provided. The array cannot be empty.`;
 
-type CreateArraySchemaParams<T> = {
+type CreateArraySchemaParams<Output, Input = Output> = {
   target: string;
-  itemSchema: z.ZodType<T>;
+  itemSchema: z.ZodType<Output, z.ZodTypeDef, Input>;
   allowEmpty?: boolean;
 };
+
+const createArrayInnerSchema = <Output, Input = Output>({
+  target,
+  itemSchema,
+  allowEmpty = false,
+}: CreateArraySchemaParams<Output, Input>): z.ZodType<
+  Output[],
+  z.ZodTypeDef,
+  Input[]
+> =>
+  z
+    .array(itemSchema, {
+      invalid_type_error: arrayInvalidTypeMessage(target),
+    })
+    .refine(
+      (data) => {
+        return allowEmpty || data.length > 0;
+      },
+      {
+        message: arrayEmptyMessage(target),
+      }
+    );
 
 /**
  * Builds an array schema with optional non-empty enforcement.
@@ -106,21 +111,15 @@ type CreateArraySchemaParams<T> = {
  * tagsSchema.parse('not-array');
  * ```
  */
-export const createArraySchema = <T>({
+export const createArraySchema = <Output, Input = Output>({
   target,
   itemSchema,
   allowEmpty = false,
-}: CreateArraySchemaParams<T>): z.ZodType<T[]> =>
-  z
-    .array(itemSchema, {
-      invalid_type_error: arrayInvalidTypeMessage(target),
-      required_error: arrayRequiredMessage(target),
-    })
-    .refine(
-      (data) => {
-        return allowEmpty || data.length > 0;
-      },
-      {
-        message: arrayEmptyMessage(target),
-      }
-    );
+}: CreateArraySchemaParams<Output, Input>): z.ZodType<
+  Output[],
+  z.ZodTypeDef,
+  Input[]
+> =>
+  createRequiredSchema(target).pipe(
+    createArrayInnerSchema({ target, itemSchema, allowEmpty })
+  );

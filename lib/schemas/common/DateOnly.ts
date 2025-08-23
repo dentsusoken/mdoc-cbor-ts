@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { DateOnly } from '@/cbor/DateOnly';
+import { createRequiredSchema } from './Required';
 
 /**
  * Creates an error message for invalid DateOnly types
@@ -36,6 +37,25 @@ export const dateOnlyInvalidTypeMessage = (target: string): string =>
  */
 export const dateOnlyInvalidDateMessage = (target: string): string =>
   `${target}: The DateOnly instance contains an invalid date.`;
+
+const createDateOnlyInnerSchema = (target: string): z.ZodType<DateOnly> =>
+  z
+    .instanceof(DateOnly, {
+      message: dateOnlyInvalidTypeMessage(target),
+    })
+    .refine(
+      (date) => {
+        try {
+          date.toISOString();
+          return true;
+        } catch (error) {
+          return false;
+        }
+      },
+      {
+        message: dateOnlyInvalidDateMessage(target),
+      }
+    );
 
 /**
  * Builds a date-only schema that validates DateOnly instances.
@@ -82,20 +102,4 @@ export const dateOnlyInvalidDateMessage = (target: string): string =>
  * ```
  */
 export const createDateOnlySchema = (target: string): z.ZodType<DateOnly> =>
-  z
-    .instanceof(DateOnly, {
-      message: dateOnlyInvalidTypeMessage(target),
-    })
-    .refine(
-      (date) => {
-        try {
-          date.toISOString();
-          return true;
-        } catch (error) {
-          return false;
-        }
-      },
-      {
-        message: dateOnlyInvalidDateMessage(target),
-      }
-    );
+  createRequiredSchema(target).pipe(createDateOnlyInnerSchema(target));

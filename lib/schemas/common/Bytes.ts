@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer';
 import { z } from 'zod';
+import { createRequiredSchema } from './Required';
 
 /**
  * Creates an error message for invalid bytes types
@@ -19,6 +20,20 @@ import { z } from 'zod';
 export const bytesInvalidTypeMessage = (target: string): string =>
   `${target}: Please provide a Buffer or Uint8Array object. Strings and numbers are not valid.`;
 
+const createBytesInnerSchema = (target: string): z.ZodType<Uint8Array> =>
+  z.union(
+    [
+      z
+        .instanceof(Buffer)
+        .transform((v) => new Uint8Array(v.buffer, v.byteOffset, v.byteLength)),
+      z.instanceof(Uint8Array),
+    ],
+    {
+      errorMap: () => ({
+        message: bytesInvalidTypeMessage(target),
+      }),
+    }
+  );
 /**
  * Schema for handling binary data in the form of Uint8Array or Buffer
  * @description
@@ -36,16 +51,4 @@ export const bytesInvalidTypeMessage = (target: string): string =>
  * ```
  */
 export const createBytesSchema = (target: string): z.ZodType<Uint8Array> =>
-  z.union(
-    [
-      z
-        .instanceof(Buffer)
-        .transform((v) => new Uint8Array(v.buffer, v.byteOffset, v.byteLength)),
-      z.instanceof(Uint8Array),
-    ],
-    {
-      errorMap: () => ({
-        message: bytesInvalidTypeMessage(target),
-      }),
-    }
-  );
+  createRequiredSchema(target).pipe(createBytesInnerSchema(target));

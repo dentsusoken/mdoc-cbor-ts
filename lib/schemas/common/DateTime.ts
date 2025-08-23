@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { DateTime } from '@/cbor/DateTime';
+import { createRequiredSchema } from './Required';
 
 /**
  * Creates an error message for invalid DateTime types
@@ -36,6 +37,25 @@ export const dateTimeInvalidTypeMessage = (target: string): string =>
  */
 export const dateTimeInvalidDateMessage = (target: string): string =>
   `${target}: The DateTime instance contains an invalid date.`;
+
+const createDateTimeInnerSchema = (target: string): z.ZodType<DateTime> =>
+  z
+    .instanceof(DateTime, {
+      message: dateTimeInvalidTypeMessage(target),
+    })
+    .refine(
+      (date) => {
+        try {
+          date.toISOString();
+          return true;
+        } catch (error) {
+          return false;
+        }
+      },
+      {
+        message: dateTimeInvalidDateMessage(target),
+      }
+    );
 
 /**
  * Builds a date-time schema that validates DateTime instances.
@@ -82,20 +102,4 @@ export const dateTimeInvalidDateMessage = (target: string): string =>
  * ```
  */
 export const createDateTimeSchema = (target: string): z.ZodType<DateTime> =>
-  z
-    .instanceof(DateTime, {
-      message: dateTimeInvalidTypeMessage(target),
-    })
-    .refine(
-      (date) => {
-        try {
-          date.toISOString();
-          return true;
-        } catch (error) {
-          return false;
-        }
-      },
-      {
-        message: dateTimeInvalidDateMessage(target),
-      }
-    );
+  createRequiredSchema(target).pipe(createDateTimeInnerSchema(target));

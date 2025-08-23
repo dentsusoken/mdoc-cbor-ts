@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   createIntSchema,
   intInvalidTypeMessage,
-  intRequiredMessage,
   intIntegerMessage,
 } from '../Int';
 import { z } from 'zod';
+import { requiredMessage } from '../Required';
 
 describe('createIntSchema', () => {
   const TARGET = 'ErrorCode';
@@ -47,16 +47,6 @@ describe('createIntSchema', () => {
         input: [1, 2, 3],
         expected: intInvalidTypeMessage(TARGET),
       },
-      {
-        name: 'null input',
-        input: null,
-        expected: intInvalidTypeMessage(TARGET),
-      },
-      {
-        name: 'undefined input',
-        input: undefined,
-        expected: intRequiredMessage(TARGET),
-      },
     ];
 
     cases.forEach(({ name, input, expected }) => {
@@ -68,6 +58,26 @@ describe('createIntSchema', () => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].message).toBe(expected);
+        }
+      });
+    });
+  });
+
+  describe('should reject required cases (null and undefined)', () => {
+    const cases: { name: string; input: unknown }[] = [
+      { name: 'null input', input: null },
+      { name: 'undefined input', input: undefined },
+    ];
+
+    cases.forEach(({ name, input }) => {
+      it(`should reject ${name} with required message`, () => {
+        try {
+          schema.parse(input);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(requiredMessage(TARGET));
         }
       });
     });

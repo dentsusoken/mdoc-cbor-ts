@@ -27,6 +27,46 @@ describe('Sign1', () => {
         new Sign1(protectedHeaders, unprotectedHeaders, payload, signature)
       );
     });
+
+    it('should convert null payload to empty Uint8Array', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = null;
+      const signature = Uint8Array.from([]);
+
+      const input = [protectedHeaders, unprotectedHeaders, payload, signature];
+      const result = schema.parse(input);
+
+      expect(result).toBeInstanceOf(Sign1);
+      expect(result).toEqual(
+        new Sign1(
+          protectedHeaders,
+          unprotectedHeaders,
+          new Uint8Array(),
+          signature
+        )
+      );
+    });
+
+    it('should convert undefined payload to empty Uint8Array', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = undefined;
+      const signature = Uint8Array.from([]);
+
+      const input = [protectedHeaders, unprotectedHeaders, payload, signature];
+      const result = schema.parse(input);
+
+      expect(result).toBeInstanceOf(Sign1);
+      expect(result).toEqual(
+        new Sign1(
+          protectedHeaders,
+          unprotectedHeaders,
+          new Uint8Array(),
+          signature
+        )
+      );
+    });
   });
 
   describe('should throw error for invalid type inputs', () => {

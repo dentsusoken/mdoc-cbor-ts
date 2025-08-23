@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   createArraySchema,
   arrayInvalidTypeMessage,
-  arrayRequiredMessage,
   arrayEmptyMessage,
 } from '../Array';
+import { requiredMessage } from '../Required';
 import { z } from 'zod';
 
 describe('createArraySchema', () => {
@@ -42,12 +42,12 @@ describe('createArraySchema', () => {
       {
         name: 'null input',
         input: null,
-        expected: arrayInvalidTypeMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: arrayRequiredMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
     ];
 

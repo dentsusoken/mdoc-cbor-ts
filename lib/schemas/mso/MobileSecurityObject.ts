@@ -5,14 +5,10 @@ import { digestAlgorithmSchema } from './DigestAlgorithm';
 import { validityInfoSchema } from './ValidityInfo';
 import { valueDigestsSchema } from './ValueDigests';
 import { createStructSchema } from '../common/Struct';
-
-export const VERSION_INVALID_VALUE_MESSAGE =
-  'MobileSecurityObject: Version must be "1.0"';
+import { versionSchema } from '@/schemas/common/Version';
 
 export const mobileSecurityObjectObjectSchema = z.object({
-  version: z.literal('1.0', {
-    errorMap: () => ({ message: VERSION_INVALID_VALUE_MESSAGE }),
-  }),
+  version: versionSchema,
   digestAlgorithm: digestAlgorithmSchema,
   valueDigests: valueDigestsSchema,
   deviceKeyInfo: deviceKeyInfoSchema,

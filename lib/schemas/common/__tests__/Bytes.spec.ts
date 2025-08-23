@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createBytesSchema, bytesInvalidTypeMessage } from '../Bytes';
+import { requiredMessage } from '../Required';
 import { z } from 'zod';
 
 describe('Bytes', () => {
@@ -67,12 +68,12 @@ describe('Bytes', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: bytesInvalidTypeMessage('Bytes'),
+        expectedMessage: requiredMessage('Bytes'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: bytesInvalidTypeMessage('Bytes'),
+        expectedMessage: requiredMessage('Bytes'),
       },
       {
         name: 'object input',

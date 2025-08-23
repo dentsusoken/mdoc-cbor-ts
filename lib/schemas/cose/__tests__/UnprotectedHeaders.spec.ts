@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { unprotectedHeadersSchema } from '../UnprotectedHeaders';
-import { labelInvalidTypeMessage } from '../Label';
+import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
 import {
   mapInvalidTypeMessage,
   mapRequiredMessage,
@@ -27,15 +27,7 @@ describe('UnprotectedHeaders', () => {
       expect(result).toEqual(input);
     });
 
-    it('should accept map with string labels and any values', () => {
-      const input = new Map<string, unknown>([
-        ['alg', 'ES256'],
-        ['kid', 'key-1'],
-      ]);
-      const result = unprotectedHeadersSchema.parse(input);
-      expect(result).toBeInstanceOf(Map);
-      expect(result).toEqual(input);
-    });
+    // string keys are not allowed for UnprotectedHeaders (must be unsigned integer keys)
   });
 
   describe('should reject invalid inputs with consistent messages', () => {
@@ -67,8 +59,8 @@ describe('UnprotectedHeaders', () => {
     });
   });
 
-  describe('should reject invalid label types in keys', () => {
-    it('should report label error message from Label schema', () => {
+  describe('should reject invalid key types in keys', () => {
+    it('should report uint error message from Key schema', () => {
       const input = new Map<unknown, unknown>([[{}, 'value']]);
       try {
         unprotectedHeadersSchema.parse(input as never);
@@ -76,9 +68,7 @@ describe('UnprotectedHeaders', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          labelInvalidTypeMessage('Label')
-        );
+        expect(zodError.issues[0].message).toBe(uintInvalidTypeMessage('Key'));
       }
     });
   });

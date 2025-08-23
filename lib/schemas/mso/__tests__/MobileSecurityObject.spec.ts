@@ -6,7 +6,7 @@ import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
 import { ExactKeyMap } from 'exact-key-map';
 import { deviceKeySchema } from '../DeviceKey';
-import { VERSION_INVALID_VALUE_MESSAGE } from '../MobileSecurityObject';
+import { VERSION_INVALID_VALUE_MESSAGE } from '@/schemas/common/Version';
 import { nonEmptyTextRequiredMessage } from '@/schemas/common/NonEmptyText';
 
 const validMSO = [

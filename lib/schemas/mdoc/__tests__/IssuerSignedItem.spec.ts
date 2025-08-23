@@ -2,7 +2,7 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { issuerSignedItemSchema } from '../IssuerSignedItem';
-import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
+import { bytesRequiredMessage } from '@/schemas/common/Bytes';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
 import {
@@ -122,7 +122,7 @@ describe('IssuerSignedItem', () => {
     });
 
     describe('random', () => {
-      it('should throw error for invalid random type', () => {
+      it('should throw required error for null random', () => {
         try {
           issuerSignedItemSchema.parse(
             new Map<string, unknown>([
@@ -137,7 +137,7 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['random']);
           expect(zodError.issues[0].message).toBe(
-            bytesInvalidTypeMessage('random')
+            bytesRequiredMessage('random')
           );
         }
       });

@@ -27,6 +27,46 @@ describe('Mac0', () => {
         new Mac0(protectedHeaders, unprotectedHeaders, payload, tag)
       );
     });
+
+    it('should pass null payload through to Mac0 (as unknown as Uint8Array)', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = null;
+      const tag = Uint8Array.from([]);
+
+      const input = [protectedHeaders, unprotectedHeaders, payload, tag];
+      const result = schema.parse(input);
+
+      expect(result).toBeInstanceOf(Mac0);
+      expect(result).toEqual(
+        new Mac0(
+          protectedHeaders,
+          unprotectedHeaders,
+          payload as unknown as Uint8Array,
+          tag
+        )
+      );
+    });
+
+    it('should pass undefined payload through to Mac0 (as unknown as Uint8Array)', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = undefined;
+      const tag = Uint8Array.from([]);
+
+      const input = [protectedHeaders, unprotectedHeaders, payload, tag];
+      const result = schema.parse(input);
+
+      expect(result).toBeInstanceOf(Mac0);
+      expect(result).toEqual(
+        new Mac0(
+          protectedHeaders,
+          unprotectedHeaders,
+          payload as unknown as Uint8Array,
+          tag
+        )
+      );
+    });
   });
 
   describe('should throw error for invalid type inputs', () => {

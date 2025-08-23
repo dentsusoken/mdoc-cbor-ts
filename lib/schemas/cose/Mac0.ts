@@ -99,7 +99,7 @@ const createMac0TupleSchema = (
   [
     z.ZodType<Uint8Array>,
     z.ZodType<Map<number, unknown>>, // acceptable general Zod type for map
-    z.ZodType<Uint8Array>,
+    z.ZodType<Uint8Array | null | undefined>,
     z.ZodType<Uint8Array>,
   ]
 > =>
@@ -107,7 +107,7 @@ const createMac0TupleSchema = (
     [
       protectedHeadersSchema, // protected headers (Bytes)
       unprotectedHeadersSchema, // unprotected headers (NumberMap)
-      payloadSchema, // payload (Bytes)
+      payloadSchema.nullish(), // payload (Bytes)
       tagSchema, // tag (Bytes)
     ],
     {
@@ -178,5 +178,10 @@ export const createMac0Schema = (target: string): z.ZodType<Mac0> =>
     })
     .pipe(createMac0TupleSchema(target))
     .transform(([protectedHeaders, unprotectedHeaders, payload, tag]) => {
-      return new Mac0(protectedHeaders, unprotectedHeaders, payload, tag);
+      return new Mac0(
+        protectedHeaders,
+        unprotectedHeaders,
+        payload as unknown as Uint8Array,
+        tag
+      );
     });
