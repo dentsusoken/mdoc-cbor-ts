@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { keyInfoSchema } from '../KeyInfo';
 import { intIntegerMessage } from '@/schemas/common/Int';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('KeyInfo', () => {
   describe('valid inputs', () => {
@@ -56,7 +54,7 @@ describe('KeyInfo', () => {
       {
         name: 'null',
         input: null,
-        expected: mapInvalidTypeMessage('KeyInfo'),
+        expected: requiredMessage('KeyInfo'),
       },
       {
         name: 'plain object',
@@ -76,7 +74,7 @@ describe('KeyInfo', () => {
       {
         name: 'undefined',
         input: undefined,
-        expected: mapRequiredMessage('KeyInfo'),
+        expected: requiredMessage('KeyInfo'),
       },
     ];
 

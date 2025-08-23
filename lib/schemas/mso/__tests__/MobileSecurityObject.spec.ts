@@ -7,7 +7,7 @@ import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
 import { ExactKeyMap } from 'exact-key-map';
 import { deviceKeySchema } from '../DeviceKey';
 import { VERSION_INVALID_VALUE_MESSAGE } from '@/schemas/common/Version';
-import { nonEmptyTextRequiredMessage } from '@/schemas/common/NonEmptyText';
+import { requiredMessage } from '@/schemas/common/Required';
 
 const validMSO = [
   ['version', '1.0'],
@@ -120,9 +120,7 @@ describe('MobileSecurityObject Schema', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(
-            nonEmptyTextRequiredMessage('DocType')
-          );
+          expect(error.issues[0].message).toBe(requiredMessage('DocType'));
         }
       }
     });

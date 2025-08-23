@@ -2,10 +2,8 @@ import { COSEKey } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceKeyInfoSchema } from '../DeviceKeyInfo';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DeviceKeyInfo', () => {
   describe('valid inputs', () => {
@@ -51,7 +49,7 @@ describe('DeviceKeyInfo', () => {
       {
         name: 'null',
         input: null,
-        expected: mapInvalidTypeMessage('DeviceKeyInfo'),
+        expected: requiredMessage('DeviceKeyInfo'),
       },
       {
         name: 'plain object',
@@ -71,7 +69,7 @@ describe('DeviceKeyInfo', () => {
       {
         name: 'undefined',
         input: undefined,
-        expected: mapRequiredMessage('DeviceKeyInfo'),
+        expected: requiredMessage('DeviceKeyInfo'),
       },
     ];
 

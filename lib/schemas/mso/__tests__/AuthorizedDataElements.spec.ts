@@ -1,11 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { authorizedDataElementsSchema } from '../AuthorizedDataElements';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-  mapEmptyMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage, mapEmptyMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 import { arrayEmptyMessage } from '@/schemas/common/Array';
 import {
   nonEmptyTextInvalidTypeMessage,
@@ -54,7 +51,7 @@ describe('AuthorizedDataElements', () => {
       {
         name: 'null input',
         input: null,
-        expected: mapInvalidTypeMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
       {
         name: 'plain object input',
@@ -64,7 +61,7 @@ describe('AuthorizedDataElements', () => {
       {
         name: 'undefined input',
         input: undefined,
-        expected: mapRequiredMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
       // content validations
       {

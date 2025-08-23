@@ -4,6 +4,7 @@ import { mobileSecurityObjectBytesSchema } from '../MobileSecurityObjectBytes';
 import { Tag } from 'cbor-x';
 import { createTag24 } from '@/cbor/createTag24';
 import { tag24InvalidTypeMessage } from '@/schemas/common/Tag24';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('MobileSecurityObjectBytes', () => {
   describe('success', () => {
@@ -16,18 +17,16 @@ describe('MobileSecurityObjectBytes', () => {
   });
 
   describe('rejects', () => {
-    it('should throw error for invalid input', () => {
-      const invalidInputs = [
-        null,
-        undefined,
-        true,
-        123,
-        'string',
-        { key: 'value' },
-        [1, 2, 3],
-      ];
+    const target = 'MobileSecurityObjectBytes';
 
-      invalidInputs.forEach((input) => {
+    [
+      { name: 'boolean', input: true },
+      { name: 'number', input: 123 },
+      { name: 'string', input: 'string' },
+      { name: 'plain object', input: { key: 'value' } },
+      { name: 'array', input: [1, 2, 3] },
+    ].forEach(({ name, input }) => {
+      it(`should throw invalid type error for ${name}`, () => {
         try {
           mobileSecurityObjectBytesSchema.parse(input as unknown as Tag);
           throw new Error('Expected error');
@@ -35,8 +34,25 @@ describe('MobileSecurityObjectBytes', () => {
           expect(error).toBeInstanceOf(z.ZodError);
           if (error instanceof z.ZodError) {
             expect(error.errors[0].message).toBe(
-              tag24InvalidTypeMessage('MobileSecurityObjectBytes')
+              tag24InvalidTypeMessage(target)
             );
+          }
+        }
+      });
+    });
+
+    [
+      { name: 'null', input: null },
+      { name: 'undefined', input: undefined },
+    ].forEach(({ name, input }) => {
+      it(`should throw required error for ${name}`, () => {
+        try {
+          mobileSecurityObjectBytesSchema.parse(input as unknown as Tag);
+          throw new Error('Expected error');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          if (error instanceof z.ZodError) {
+            expect(error.errors[0].message).toBe(requiredMessage(target));
           }
         }
       });

@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { issuerAuthSchema } from '../IssuerAuth';
 import {
-  sign1InvalidTypeMessage,
-  sign1RequiredMessage,
-  sign1TooFewMessage,
-  sign1TooManyMessage,
-} from '@/schemas/cose/Sign1';
+  fixedTupleLengthInvalidTypeMessage,
+  fixedTupleLengthTooFewMessage,
+  fixedTupleLengthTooManyMessage,
+} from '@/schemas/common/FixedTupleLength';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('IssuerAuth', () => {
   it('should accept valid Sign1 objects', () => {
@@ -33,32 +33,32 @@ describe('IssuerAuth', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: sign1InvalidTypeMessage('IssuerAuth'),
+        expectedMessage: requiredMessage('IssuerAuth'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: sign1RequiredMessage('IssuerAuth'),
+        expectedMessage: requiredMessage('IssuerAuth'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: sign1InvalidTypeMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('IssuerAuth'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: sign1InvalidTypeMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('IssuerAuth'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: sign1InvalidTypeMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('IssuerAuth'),
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage: sign1InvalidTypeMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('IssuerAuth'),
       },
     ];
 
@@ -81,22 +81,22 @@ describe('IssuerAuth', () => {
       {
         name: 'empty array',
         input: [],
-        expectedMessage: sign1TooFewMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthTooFewMessage('IssuerAuth', 4),
       },
       {
         name: 'array with 1 element',
         input: [Uint8Array.from([])],
-        expectedMessage: sign1TooFewMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthTooFewMessage('IssuerAuth', 4),
       },
       {
         name: 'array with 2 elements',
         input: [Uint8Array.from([]), new Map()],
-        expectedMessage: sign1TooFewMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthTooFewMessage('IssuerAuth', 4),
       },
       {
         name: 'array with 3 elements',
         input: [Uint8Array.from([]), new Map(), Uint8Array.from([])],
-        expectedMessage: sign1TooFewMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthTooFewMessage('IssuerAuth', 4),
       },
     ];
 
@@ -124,7 +124,7 @@ describe('IssuerAuth', () => {
           Uint8Array.from([]),
           Uint8Array.from([]),
         ],
-        expectedMessage: sign1TooManyMessage('IssuerAuth'),
+        expectedMessage: fixedTupleLengthTooManyMessage('IssuerAuth', 4),
       },
     ];
 

@@ -1,6 +1,7 @@
 import { labelSchema } from './Label';
 import { z } from 'zod';
 import { createMapSchema } from '@/schemas/common/Map';
+import { createRequiredSchema } from '../common/Required';
 
 /**
  * Creates a schema for COSE label-keyed map validation

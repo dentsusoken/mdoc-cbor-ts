@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { keyAuthorizationsSchema } from '../KeyAuthorizations';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('KeyAuthorizations', () => {
   describe('valid inputs', () => {
@@ -78,7 +76,7 @@ describe('KeyAuthorizations', () => {
       {
         name: 'null',
         input: null,
-        expected: mapInvalidTypeMessage('KeyAuthorizations'),
+        expected: requiredMessage('KeyAuthorizations'),
       },
       {
         name: 'plain object',
@@ -98,7 +96,7 @@ describe('KeyAuthorizations', () => {
       {
         name: 'undefined',
         input: undefined,
-        expected: mapRequiredMessage('KeyAuthorizations'),
+        expected: requiredMessage('KeyAuthorizations'),
       },
     ];
 

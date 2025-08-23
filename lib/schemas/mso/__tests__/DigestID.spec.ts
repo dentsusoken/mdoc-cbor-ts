@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestIDSchema } from '../DigestID';
-import {
-  uintInvalidTypeMessage,
-  uintRequiredMessage,
-} from '@/schemas/common/Uint';
+import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DigestID', () => {
   describe('valid inputs', () => {
@@ -26,7 +24,7 @@ describe('DigestID', () => {
       {
         name: 'null',
         value: null,
-        expectedMessage: uintInvalidTypeMessage('DigestID'),
+        expectedMessage: requiredMessage('DigestID'),
       },
       {
         name: 'object',
@@ -41,7 +39,7 @@ describe('DigestID', () => {
       {
         name: 'undefined (required)',
         value: undefined,
-        expectedMessage: uintRequiredMessage('DigestID'),
+        expectedMessage: requiredMessage('DigestID'),
       },
     ].forEach(({ name, value, expectedMessage }) => {
       it(`should throw for ${name}`, () => {

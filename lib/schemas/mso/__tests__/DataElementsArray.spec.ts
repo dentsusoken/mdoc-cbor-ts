@@ -3,9 +3,9 @@ import { z } from 'zod';
 import { dataElementsArraySchema } from '../DataElementsArray';
 import {
   arrayInvalidTypeMessage,
-  arrayRequiredMessage,
   arrayEmptyMessage,
 } from '@/schemas/common/Array';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DataElementsArray', () => {
   describe('success cases', () => {
@@ -42,12 +42,12 @@ describe('DataElementsArray', () => {
       {
         name: 'null input',
         input: null,
-        expected: arrayInvalidTypeMessage('DataElementsArray'),
+        expected: requiredMessage('DataElementsArray'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: arrayRequiredMessage('DataElementsArray'),
+        expected: requiredMessage('DataElementsArray'),
       },
       {
         name: 'plain object input',

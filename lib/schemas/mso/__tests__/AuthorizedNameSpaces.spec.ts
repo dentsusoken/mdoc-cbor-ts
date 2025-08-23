@@ -3,9 +3,9 @@ import { z } from 'zod';
 import { authorizedNameSpacesSchema } from '../AuthorizedNameSpaces';
 import {
   arrayInvalidTypeMessage,
-  arrayRequiredMessage,
   arrayEmptyMessage,
 } from '@/schemas/common/Array';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('AuthorizedNameSpaces', () => {
   const TARGET = 'AuthorizedNameSpaces';
@@ -43,12 +43,12 @@ describe('AuthorizedNameSpaces', () => {
       {
         name: 'null input',
         input: null,
-        expected: arrayInvalidTypeMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: arrayRequiredMessage(TARGET),
+        expected: requiredMessage(TARGET),
       },
     ];
 

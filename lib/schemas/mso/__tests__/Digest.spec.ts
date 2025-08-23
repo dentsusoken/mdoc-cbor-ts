@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestSchema } from '../Digest';
 import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('Digest', () => {
   describe('valid digest values', () => {
@@ -28,20 +29,21 @@ describe('Digest', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const schemaMessage = bytesInvalidTypeMessage('Digest');
+    const invalidTypeMes = bytesInvalidTypeMessage('Digest');
+    const requiredMes = requiredMessage('Digest');
     const testCases: Array<{ name: string; input: unknown; expected: string }> =
       [
-        { name: 'string', input: 'not bytes', expected: schemaMessage },
-        { name: 'number', input: 123, expected: schemaMessage },
-        { name: 'boolean', input: true, expected: schemaMessage },
-        { name: 'null', input: null, expected: schemaMessage },
-        { name: 'undefined', input: undefined, expected: schemaMessage },
+        { name: 'string', input: 'not bytes', expected: invalidTypeMes },
+        { name: 'number', input: 123, expected: invalidTypeMes },
+        { name: 'boolean', input: true, expected: invalidTypeMes },
+        { name: 'null', input: null, expected: requiredMes },
+        { name: 'undefined', input: undefined, expected: requiredMes },
         {
           name: 'plain object',
           input: { key: 'value' },
-          expected: schemaMessage,
+          expected: invalidTypeMes,
         },
-        { name: 'array', input: [1, 2, 3], expected: schemaMessage },
+        { name: 'array', input: [1, 2, 3], expected: invalidTypeMes },
       ];
 
     testCases.forEach(({ name, input, expected }) => {

@@ -75,8 +75,12 @@ export const DEVICE_KEY_MISSING_KTY_MESSAGE =
  * @see {@link COSEKey}
  */
 export const deviceKeySchema = createLabelKeyMapSchema('DeviceKey', false)
-  .superRefine((map, ctx) => {
-    if (!map.has(1) && !map.has('kty')) {
+  .superRefine((value, ctx) => {
+    if (!(value instanceof Map)) {
+      return;
+    }
+    const hasKty = value.has(1) || value.has('kty');
+    if (!hasKty) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: DEVICE_KEY_MISSING_KTY_MESSAGE,

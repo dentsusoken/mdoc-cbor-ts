@@ -2,10 +2,8 @@ import { COSEKey } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceKeySchema, DEVICE_KEY_MISSING_KTY_MESSAGE } from '../DeviceKey';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DeviceKey', () => {
   describe('valid inputs', () => {
@@ -26,20 +24,22 @@ describe('DeviceKey', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const schemaMessage = mapInvalidTypeMessage('DeviceKey');
+    const invalidTypeMes = mapInvalidTypeMessage('DeviceKey');
+    const requiredMes = requiredMessage('DeviceKey');
     const testCases: Array<{ name: string; input: unknown; expected: string }> =
       [
-        { name: 'null', input: null, expected: schemaMessage },
-        { name: 'boolean', input: true, expected: schemaMessage },
-        { name: 'number', input: 123, expected: schemaMessage },
-        { name: 'string', input: 'string', expected: schemaMessage },
-        { name: 'array', input: [1, 2, 3], expected: schemaMessage },
+        { name: 'null', input: null, expected: requiredMes },
+        { name: 'undefined', input: undefined, expected: requiredMes },
+        { name: 'boolean', input: true, expected: invalidTypeMes },
+        { name: 'number', input: 123, expected: invalidTypeMes },
+        { name: 'string', input: 'string', expected: invalidTypeMes },
+        { name: 'array', input: [1, 2, 3], expected: invalidTypeMes },
         {
           name: 'plain object',
           input: { key: 'value' },
-          expected: schemaMessage,
+          expected: invalidTypeMes,
         },
-        { name: 'empty object', input: {}, expected: schemaMessage },
+        { name: 'empty object', input: {}, expected: invalidTypeMes },
       ];
 
     testCases.forEach(({ name, input, expected }) => {
@@ -53,19 +53,6 @@ describe('DeviceKey', () => {
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
-    });
-
-    it('should throw error for undefined (required)', () => {
-      try {
-        deviceKeySchema.parse(undefined);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          mapRequiredMessage('DeviceKey')
-        );
-      }
     });
   });
 
