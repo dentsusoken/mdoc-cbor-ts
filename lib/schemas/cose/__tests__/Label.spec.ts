@@ -3,11 +3,11 @@ import { z } from 'zod';
 import {
   createLabelSchema,
   labelInvalidTypeMessage,
-  labelRequiredMessage,
   labelSchema,
 } from '../Label';
 import { intIntegerMessage } from '@/schemas/common/Int';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('Label', () => {
   describe('should accept valid labels', () => {
@@ -64,12 +64,12 @@ describe('Label', () => {
       {
         name: 'null input',
         input: null,
-        expected: labelInvalidTypeMessage('Label'),
+        expected: requiredMessage('Label'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: labelRequiredMessage('Label'),
+        expected: requiredMessage('Label'),
       },
     ];
 

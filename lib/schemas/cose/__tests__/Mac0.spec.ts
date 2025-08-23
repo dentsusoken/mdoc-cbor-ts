@@ -1,13 +1,13 @@
 import { Mac0 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
+import { createMac0Schema } from '../Mac0';
 import {
-  createMac0Schema,
-  mac0InvalidTypeMessage,
-  mac0RequiredMessage,
-  mac0TooFewMessage,
-  mac0TooManyMessage,
-} from '../Mac0';
+  fixedTupleLengthInvalidTypeMessage,
+  fixedTupleLengthTooFewMessage,
+  fixedTupleLengthTooManyMessage,
+} from '@/schemas/common/FixedTupleLength';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('Mac0', () => {
   const schema = createMac0Schema('DeviceMac');
@@ -70,16 +70,23 @@ describe('Mac0', () => {
   });
 
   describe('should throw error for invalid type inputs', () => {
-    const invalidMessage = mac0InvalidTypeMessage('DeviceMac');
-    const requiredMessage = mac0RequiredMessage('DeviceMac');
+    const invalidMessage = fixedTupleLengthInvalidTypeMessage('DeviceMac');
 
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
-      { name: 'null input', input: null, expected: invalidMessage },
+      {
+        name: 'null input',
+        input: null,
+        expected: requiredMessage('DeviceMac'),
+      },
       { name: 'boolean input', input: true, expected: invalidMessage },
       { name: 'number input', input: 123, expected: invalidMessage },
       { name: 'string input', input: 'string', expected: invalidMessage },
       { name: 'plain object input', input: {}, expected: invalidMessage },
-      { name: 'undefined input', input: undefined, expected: requiredMessage },
+      {
+        name: 'undefined input',
+        input: undefined,
+        expected: requiredMessage('DeviceMac'),
+      },
     ];
 
     cases.forEach(({ name, input, expected }) => {
@@ -109,7 +116,9 @@ describe('Mac0', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(mac0TooFewMessage('DeviceMac'));
+        expect(zodError.issues[0].message).toBe(
+          fixedTupleLengthTooFewMessage('DeviceMac', 4)
+        );
       }
     });
 
@@ -128,7 +137,7 @@ describe('Mac0', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          mac0TooManyMessage('DeviceMac')
+          fixedTupleLengthTooManyMessage('DeviceMac', 4)
         );
       }
     });

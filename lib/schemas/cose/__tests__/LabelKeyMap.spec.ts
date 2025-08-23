@@ -2,11 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createLabelKeyMapSchema } from '../LabelKeyMap';
 import { labelInvalidTypeMessage } from '../Label';
-import {
-  mapInvalidTypeMessage,
-  mapEmptyMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage, mapEmptyMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('LabelKeyMap', () => {
   describe('valid cases', () => {
@@ -31,7 +28,7 @@ describe('LabelKeyMap', () => {
   });
 
   describe('invalid cases', () => {
-    it('should reject non-Map inputs with consistent message', () => {
+    describe('should reject non-Map inputs with consistent message', () => {
       const schema = createLabelKeyMapSchema('Headers');
       const cases: Array<{ name: string; input: unknown; expected: string }> = [
         {
@@ -47,7 +44,7 @@ describe('LabelKeyMap', () => {
         {
           name: 'null',
           input: null,
-          expected: mapInvalidTypeMessage('Headers'),
+          expected: requiredMessage('Headers'),
         },
         {
           name: 'boolean',
@@ -67,7 +64,7 @@ describe('LabelKeyMap', () => {
         {
           name: 'undefined',
           input: undefined,
-          expected: mapRequiredMessage('Headers'),
+          expected: requiredMessage('Headers'),
         },
       ];
 

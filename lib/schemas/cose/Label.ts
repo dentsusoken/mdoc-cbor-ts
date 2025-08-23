@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createIntSchema } from '@/schemas/common/Int';
 import { createNonEmptyTextSchema } from '@/schemas/common/NonEmptyText';
+import { createRequiredSchema } from '@/schemas/common/Required';
 
 /**
  * Creates an error message for invalid label types
@@ -20,82 +21,13 @@ import { createNonEmptyTextSchema } from '@/schemas/common/NonEmptyText';
 export const labelInvalidTypeMessage = (target: string): string =>
   `${target}: Expected a number or a non-empty string, but received a different type. Please provide an integer or a non-empty string.`;
 
-/**
- * Creates an error message for required label fields
- * @description
- * Generates a standardized error message when a label validation fails due to missing value.
- * The message indicates the expected target name and that the field is required.
- *
- * @param target - The name of the target schema being validated
- * @returns A formatted error message string
- *
- * @example
- * ```typescript
- * const message = labelRequiredMessage('COSEKey');
- * // Returns: "COSEKey: This field is required. Please provide an integer or a non-empty string."
- * ```
- */
-export const labelRequiredMessage = (target: string): string =>
-  `${target}: This field is required. Please provide an integer or a non-empty string.`;
-
-/**
- * Creates a schema for COSE label validation
- * @description
- * Returns a Zod schema that validates a COSE label value, which can be either an integer or a non-empty string.
- * All validation error messages are prefixed with the provided `target` name.
- *
- * Validation rules:
- * - Accepts either integer values (via `createIntSchema`) or non-empty strings (via `createNonEmptyTextSchema`)
- * - Requires presence with a target-prefixed required message
- * - Uses target-prefixed invalid type message for type errors
- *
- * ```cddl
- * label = int / tstr
- * ```
- *
- * @param target - Prefix used in error messages (e.g., "COSEKey", "DeviceKey")
- *
- * @example
- * ```typescript
- * const coseKeyLabelSchema = createLabelSchema('COSEKey');
- * const intLabel = coseKeyLabelSchema.parse(1); // number
- * const stringLabel = coseKeyLabelSchema.parse('kty'); // string
- * ```
- *
- * @example
- * ```typescript
- * // Throws ZodError (invalid type)
- * // Message: "COSEKey: Please provide an integer or a non-empty string."
- * const coseKeyLabelSchema = createLabelSchema('COSEKey');
- * coseKeyLabelSchema.parse(true);
- * ```
- *
- * @example
- * ```typescript
- * // Throws ZodError (required)
- * // Message: "COSEKey: This field is required. Please provide an integer or a non-empty string."
- * const coseKeyLabelSchema = createLabelSchema('COSEKey');
- * // @ts-expect-error
- * coseKeyLabelSchema.parse(undefined);
- * ```
- */
-export const createLabelSchema = (
-  target: string
-): z.ZodType<number | string> => {
+const createLabelInnerSchema = (target: string): z.ZodType<number | string> => {
   const intSchema = createIntSchema(target);
   const textSchema = createNonEmptyTextSchema(target);
 
   return z
     .any()
     .superRefine((val, ctx) => {
-      if (val === undefined) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: labelRequiredMessage(target),
-        });
-        return;
-      }
-
       const isNumber = typeof val === 'number';
       const isString = typeof val === 'string';
 
@@ -127,6 +59,53 @@ export const createLabelSchema = (
     })
     .transform((v) => v) as unknown as z.ZodType<number | string>;
 };
+
+/**
+ * Builds a schema for COSE label validation
+ * @description
+ * Returns a Zod schema that validates a required COSE label value, which can be either an integer or a non-empty string.
+ * All validation error messages are prefixed with the provided `target` name and use the message constants exported
+ * from this module.
+ *
+ * Validation rules:
+ * - Requires presence with a target-prefixed required message
+ * - Accepts either integer values (via `createIntSchema`) or non-empty strings (via `createNonEmptyTextSchema`)
+ * - Uses target-prefixed invalid type message for type errors
+ *
+ * ```cddl
+ * label = int / tstr
+ * ```
+ *
+ * @param target - Prefix used in error messages (e.g., "COSEKey", "DeviceKey")
+ * @returns A Zod schema that validates integer or non-empty string values
+ *
+ * @example
+ * ```typescript
+ * const coseKeyLabelSchema = createLabelSchema('COSEKey');
+ * const intLabel = coseKeyLabelSchema.parse(1); // number
+ * const stringLabel = coseKeyLabelSchema.parse('kty'); // string
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (invalid type)
+ * // Message: "COSEKey: Expected a number or a non-empty string, but received a different type. Please provide an integer or a non-empty string."
+ * const coseKeyLabelSchema = createLabelSchema('COSEKey');
+ * // @ts-expect-error
+ * coseKeyLabelSchema.parse(true);
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Throws ZodError (required)
+ * // Message: "COSEKey: This field is required"
+ * const coseKeyLabelSchema = createLabelSchema('COSEKey');
+ * // @ts-expect-error
+ * coseKeyLabelSchema.parse(undefined);
+ * ```
+ */
+export const createLabelSchema = (target: string): z.ZodType<number | string> =>
+  createRequiredSchema(target).pipe(createLabelInnerSchema(target));
 
 /**
  * Schema for COSE label validation

@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { unprotectedHeadersSchema } from '../UnprotectedHeaders';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('UnprotectedHeaders', () => {
   describe('should accept valid maps', () => {
@@ -33,12 +31,12 @@ describe('UnprotectedHeaders', () => {
   describe('should reject invalid inputs with consistent messages', () => {
     const target = 'UnprotectedHeaders';
     const invalid = mapInvalidTypeMessage(target);
-    const required = mapRequiredMessage(target);
+    const required = requiredMessage(target);
     const cases: { name: string; input: unknown; expected: string }[] = [
       { name: 'string input', input: 'not a map', expected: invalid },
       { name: 'number input', input: 123, expected: invalid },
       { name: 'boolean input', input: true, expected: invalid },
-      { name: 'null input', input: null, expected: invalid },
+      { name: 'null input', input: null, expected: required },
       { name: 'undefined input', input: undefined, expected: required },
       { name: 'plain object input', input: { a: 1 }, expected: invalid },
       { name: 'array input', input: [['a', 1]], expected: invalid },
