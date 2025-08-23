@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { errorCodeSchema } from '../ErrorCode';
-import {
-  INT_INVALID_TYPE_MESSAGE_SUFFIX,
-  INT_REQUIRED_MESSAGE_SUFFIX,
-  INT_INTEGER_MESSAGE_SUFFIX,
-} from '../../../common/Int';
+import { intInvalidTypeMessage, intIntegerMessage } from '@/schemas/common/Int';
+import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';
 
 describe('ErrorCode', () => {
@@ -28,42 +25,41 @@ describe('ErrorCode', () => {
   });
 
   describe('should throw error for invalid inputs', () => {
-    const prefix = 'ErrorCode: ';
     const testCases = [
       {
         name: 'null input',
         input: null,
-        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: requiredMessage('ErrorCode'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: `${prefix}${INT_REQUIRED_MESSAGE_SUFFIX}`,
+        expectedMessage: requiredMessage('ErrorCode'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: intInvalidTypeMessage('ErrorCode'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: intInvalidTypeMessage('ErrorCode'),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: intInvalidTypeMessage('ErrorCode'),
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage: `${prefix}${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: intInvalidTypeMessage('ErrorCode'),
       },
       {
         name: 'decimal number',
         input: 1.5,
-        expectedMessage: `${prefix}${INT_INTEGER_MESSAGE_SUFFIX}`,
+        expectedMessage: intIntegerMessage('ErrorCode'),
       },
     ];
 

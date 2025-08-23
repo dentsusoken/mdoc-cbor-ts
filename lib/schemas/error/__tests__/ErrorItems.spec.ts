@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { errorItemsSchema } from '../ErrorItems';
-import {
-  MAP_EMPTY_MESSAGE_SUFFIX,
-  MAP_INVALID_TYPE_MESSAGE_SUFFIX,
-  MAP_REQUIRED_MESSAGE_SUFFIX,
-} from '../../../common/Map';
-import {
-  INT_INVALID_TYPE_MESSAGE_SUFFIX,
-  INT_INTEGER_MESSAGE_SUFFIX,
-} from '../../../common/Int';
+import { mapEmptyMessage, mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { intIntegerMessage } from '@/schemas/common/Int';
+import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';
 
 describe('ErrorItems', () => {
@@ -36,53 +30,51 @@ describe('ErrorItems', () => {
   });
 
   describe('should throw error for invalid inputs', () => {
-    const prefix = 'ErrorItems: ';
-    const ERROR_ITEMS_EMPTY_MESSAGE = `${prefix}${MAP_EMPTY_MESSAGE_SUFFIX}`;
     const testCases = [
       {
         name: 'empty record',
         input: new Map(),
-        expectedMessage: ERROR_ITEMS_EMPTY_MESSAGE,
+        expectedMessage: mapEmptyMessage('ErrorItems'),
       },
       {
         name: 'null input',
         input: null,
-        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: requiredMessage('ErrorItems'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: mapInvalidTypeMessage('ErrorItems'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: mapInvalidTypeMessage('ErrorItems'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: mapInvalidTypeMessage('ErrorItems'),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: `${prefix}${MAP_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: mapInvalidTypeMessage('ErrorItems'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: `${prefix}${MAP_REQUIRED_MESSAGE_SUFFIX}`,
+        expectedMessage: requiredMessage('ErrorItems'),
       },
       {
         name: 'object with null error code value',
         input: new Map<string, unknown>([['valid_identifier', null]]),
-        expectedMessage: `ErrorCode: ${INT_INVALID_TYPE_MESSAGE_SUFFIX}`,
+        expectedMessage: requiredMessage('ErrorCode'),
       },
       {
         name: 'object with decimal error code value',
         input: new Map<string, number>([['valid_identifier', 1.5]]),
-        expectedMessage: `ErrorCode: ${INT_INTEGER_MESSAGE_SUFFIX}`,
+        expectedMessage: intIntegerMessage('ErrorCode'),
       },
     ];
 
@@ -106,7 +98,7 @@ describe('ErrorItems', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(ERROR_ITEMS_EMPTY_MESSAGE);
+        expect(zodError.issues[0].message).toBe(mapEmptyMessage('ErrorItems'));
       }
     });
   });
