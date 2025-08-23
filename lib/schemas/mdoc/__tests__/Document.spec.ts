@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { documentSchema } from '../Document';
 import { createTag24 } from '@/cbor/createTag24';
 // Tag import not needed in current tests
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 // removed unused imports after test refactor
 
 describe('Document', () => {
@@ -104,12 +102,12 @@ describe('Document', () => {
       {
         name: 'null input',
         input: null,
-        expected: mapInvalidTypeMessage('Document'),
+        expected: requiredMessage('Document'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: mapRequiredMessage('Document'),
+        expected: requiredMessage('Document'),
       },
       {
         name: 'boolean input',
@@ -159,7 +157,7 @@ describe('Document', () => {
       } catch (error) {
         const zodError = error as unknown as import('zod').ZodError;
         expect(zodError.issues[0].message).toBe(
-          mapRequiredMessage('IssuerSigned')
+          requiredMessage('IssuerSigned')
         );
       }
     });

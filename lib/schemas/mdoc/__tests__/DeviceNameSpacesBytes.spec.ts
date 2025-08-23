@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { deviceNameSpacesBytesSchema } from '../DeviceNameSpacesBytes';
 import { createTag24 } from '@/cbor';
 import { tag24InvalidTypeMessage } from '@/schemas/common/Tag24';
+import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DeviceNameSpacesBytes', () => {
   describe('should accept valid CBOR Tag24 inputs', () => {
@@ -21,13 +22,15 @@ describe('DeviceNameSpacesBytes', () => {
   });
 
   describe('should throw specific error messages for invalid input', () => {
-    const schemaMessage = tag24InvalidTypeMessage('DeviceNameSpacesBytes');
+    const target = 'DeviceNameSpacesBytes';
+    const schemaMessage = tag24InvalidTypeMessage(target);
+    const requiredMsg = requiredMessage(target);
     const testCases = [
-      { name: 'null input', input: null, expectedMessage: schemaMessage },
+      { name: 'null input', input: null, expectedMessage: requiredMsg },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: schemaMessage,
+        expectedMessage: requiredMsg,
       },
       { name: 'boolean input', input: true, expectedMessage: schemaMessage },
       { name: 'number input', input: 123, expectedMessage: schemaMessage },

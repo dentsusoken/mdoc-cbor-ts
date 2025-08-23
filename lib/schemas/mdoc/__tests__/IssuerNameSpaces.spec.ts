@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { issuerNameSpacesSchema } from '../IssuerNameSpaces';
 import { createTag24 } from '@/cbor/createTag24';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';
 
 describe('IssuerNameSpaces', () => {
@@ -34,10 +32,10 @@ describe('IssuerNameSpaces', () => {
   describe('should reject invalid inputs', () => {
     const target = 'IssuerNameSpaces';
     const invalidTypeMsg = mapInvalidTypeMessage(target);
-    const requiredMsg = mapRequiredMessage(target);
+    const requiredMsg = requiredMessage(target);
 
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
-      { name: 'null input', input: null, expected: invalidTypeMsg },
+      { name: 'null input', input: null, expected: requiredMsg },
       { name: 'undefined input', input: undefined, expected: requiredMsg },
       { name: 'boolean input', input: true, expected: invalidTypeMsg },
       { name: 'number input', input: 123, expected: invalidTypeMsg },

@@ -2,11 +2,8 @@ import { Mac0, Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceSignedSchema } from '../DeviceSigned';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
-import { tag24InvalidTypeMessage } from '@/schemas/common/Tag24';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 import { createTag24 } from '@/cbor';
 
 describe('DeviceSigned', () => {
@@ -61,12 +58,12 @@ describe('DeviceSigned', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
+        expectedMessage: requiredMessage('DeviceSigned'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: mapRequiredMessage('DeviceSigned'),
+        expectedMessage: requiredMessage('DeviceSigned'),
       },
       {
         name: 'boolean input',
@@ -128,7 +125,7 @@ describe('DeviceSigned', () => {
             new Map([['deviceSignature', sign1.getContentForEncoding()]]),
           ],
         ]),
-        expectedMessage: tag24InvalidTypeMessage('DeviceNameSpacesBytes'),
+        expectedMessage: requiredMessage('DeviceNameSpacesBytes'),
       },
       {
         name: 'null deviceAuth',
@@ -136,7 +133,7 @@ describe('DeviceSigned', () => {
           ['nameSpaces', tag24],
           ['deviceAuth', null],
         ]),
-        expectedMessage: mapInvalidTypeMessage('DeviceAuth'),
+        expectedMessage: requiredMessage('DeviceAuth'),
       },
       {
         name: 'null deviceSignature in deviceAuth',
@@ -144,8 +141,7 @@ describe('DeviceSigned', () => {
           ['nameSpaces', tag24],
           ['deviceAuth', new Map([['deviceSignature', null]])],
         ]),
-        expectedMessage:
-          'DeviceSignature: Expected an array with 4 elements (protected headers, unprotected headers, payload, signature). Please provide a valid COSE_Sign1 structure.',
+        expectedMessage: requiredMessage('DeviceSignature'),
       },
     ];
 

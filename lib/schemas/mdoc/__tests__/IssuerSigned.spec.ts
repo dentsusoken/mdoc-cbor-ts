@@ -2,10 +2,8 @@ import { Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { issuerSignedSchema } from '../IssuerSigned';
 import { createTag24 } from '@/cbor/createTag24';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';
 
 describe('IssuerSigned', () => {
@@ -51,10 +49,10 @@ describe('IssuerSigned', () => {
   describe('should reject invalid inputs', () => {
     const target = 'IssuerSigned';
     const invalidTypeMsg = mapInvalidTypeMessage(target);
-    const requiredMsg = mapRequiredMessage(target);
+    const requiredMsg = requiredMessage(target);
 
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
-      { name: 'null input', input: null, expected: invalidTypeMsg },
+      { name: 'null input', input: null, expected: requiredMsg },
       { name: 'undefined input', input: undefined, expected: requiredMsg },
       { name: 'boolean input', input: true, expected: invalidTypeMsg },
       { name: 'number input', input: 123, expected: invalidTypeMsg },

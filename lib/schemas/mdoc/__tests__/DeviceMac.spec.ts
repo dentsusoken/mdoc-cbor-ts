@@ -2,12 +2,12 @@ import { Mac0 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceMacSchema } from '../DeviceMac';
+import { requiredMessage } from '@/schemas/common/Required';
 import {
-  mac0InvalidTypeMessage,
-  mac0RequiredMessage,
-  mac0TooFewMessage,
-  mac0TooManyMessage,
-} from '@/schemas/cose/Mac0';
+  fixedTupleLengthInvalidTypeMessage,
+  fixedTupleLengthTooFewMessage,
+  fixedTupleLengthTooManyMessage,
+} from '@/schemas/common/FixedTupleLength';
 // mapInvalidTypeMessage is tested in UnprotectedHeaders schema; not needed here
 
 describe('DeviceMac', () => {
@@ -36,32 +36,32 @@ describe('DeviceMac', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: mac0InvalidTypeMessage('DeviceMac'),
+        expectedMessage: requiredMessage('DeviceMac'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: mac0RequiredMessage('DeviceMac'),
+        expectedMessage: requiredMessage('DeviceMac'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: mac0InvalidTypeMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceMac'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: mac0InvalidTypeMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceMac'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: mac0InvalidTypeMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceMac'),
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage: mac0InvalidTypeMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceMac'),
       },
     ];
 
@@ -84,22 +84,22 @@ describe('DeviceMac', () => {
       {
         name: 'empty array',
         input: [],
-        expectedMessage: mac0TooFewMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceMac', 4),
       },
       {
         name: 'array with 1 element',
         input: [Buffer.from([])],
-        expectedMessage: mac0TooFewMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceMac', 4),
       },
       {
         name: 'array with 2 elements',
         input: [Buffer.from([]), new Map()],
-        expectedMessage: mac0TooFewMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceMac', 4),
       },
       {
         name: 'array with 3 elements',
         input: [Buffer.from([]), new Map(), Buffer.from([])],
-        expectedMessage: mac0TooFewMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceMac', 4),
       },
     ];
 
@@ -127,7 +127,7 @@ describe('DeviceMac', () => {
           Buffer.from([]),
           Buffer.from([]), // 5 elements
         ],
-        expectedMessage: mac0TooManyMessage('DeviceMac'),
+        expectedMessage: fixedTupleLengthTooManyMessage('DeviceMac', 4),
       },
     ];
 

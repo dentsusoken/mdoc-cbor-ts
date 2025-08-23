@@ -2,11 +2,8 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceNameSpacesSchema } from '../DeviceNameSpaces';
-import {
-  mapEmptyMessage,
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapEmptyMessage, mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
 // Constants are imported from the schema for consistency
@@ -50,12 +47,12 @@ describe('DeviceNameSpaces', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
+        expectedMessage: requiredMessage('DeviceNameSpaces'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: mapRequiredMessage('DeviceNameSpaces'),
+        expectedMessage: requiredMessage('DeviceNameSpaces'),
       },
       {
         name: 'boolean input',
@@ -110,7 +107,7 @@ describe('DeviceNameSpaces', () => {
         input: new Map<string, unknown>([
           ['org.iso.18013.5.1', null as unknown as Map<string, unknown>],
         ]),
-        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
+        expectedMessage: requiredMessage('DeviceSignedItems'),
       },
     ];
 

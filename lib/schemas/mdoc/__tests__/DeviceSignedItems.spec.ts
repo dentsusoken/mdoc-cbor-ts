@@ -2,11 +2,8 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceSignedItemsSchema } from '../DeviceSignedItems';
-import {
-  mapEmptyMessage,
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapEmptyMessage, mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
 describe('DeviceSignedItems', () => {
@@ -51,12 +48,12 @@ describe('DeviceSignedItems', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
+        expectedMessage: requiredMessage('DeviceSignedItems'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: mapRequiredMessage('DeviceSignedItems'),
+        expectedMessage: requiredMessage('DeviceSignedItems'),
       },
       {
         name: 'boolean input',

@@ -2,13 +2,10 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { issuerSignedItemSchema } from '../IssuerSignedItem';
-import { bytesRequiredMessage } from '@/schemas/common/Bytes';
+import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
-import {
-  mapInvalidTypeMessage,
-  mapRequiredMessage,
-} from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 
 describe('IssuerSignedItem', () => {
   describe('valid issuer signed items', () => {
@@ -55,12 +52,12 @@ describe('IssuerSignedItem', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
+        expectedMessage: requiredMessage('IssuerSignedItem'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: mapRequiredMessage('IssuerSignedItem'),
+        expectedMessage: requiredMessage('IssuerSignedItem'),
       },
       {
         name: 'boolean input',
@@ -136,9 +133,7 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['random']);
-          expect(zodError.issues[0].message).toBe(
-            bytesRequiredMessage('random')
-          );
+          expect(zodError.issues[0].message).toBe(requiredMessage('random'));
         }
       });
     });

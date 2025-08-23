@@ -2,12 +2,12 @@ import { Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceSignatureSchema } from '../DeviceSignature';
+import { requiredMessage } from '@/schemas/common/Required';
 import {
-  sign1InvalidTypeMessage,
-  sign1RequiredMessage,
-  sign1TooFewMessage,
-  sign1TooManyMessage,
-} from '@/schemas/cose/Sign1';
+  fixedTupleLengthInvalidTypeMessage,
+  fixedTupleLengthTooFewMessage,
+  fixedTupleLengthTooManyMessage,
+} from '@/schemas/common/FixedTupleLength';
 
 describe('DeviceSignature', () => {
   it('should accept valid Sign1 objects', () => {
@@ -33,32 +33,32 @@ describe('DeviceSignature', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: sign1InvalidTypeMessage('DeviceSignature'),
+        expectedMessage: requiredMessage('DeviceSignature'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: sign1RequiredMessage('DeviceSignature'),
+        expectedMessage: requiredMessage('DeviceSignature'),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: sign1InvalidTypeMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: sign1InvalidTypeMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: sign1InvalidTypeMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage: sign1InvalidTypeMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
       },
     ];
 
@@ -81,22 +81,22 @@ describe('DeviceSignature', () => {
       {
         name: 'empty array',
         input: [],
-        expectedMessage: sign1TooFewMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceSignature', 4),
       },
       {
         name: 'array with 1 element',
         input: [Buffer.from([])],
-        expectedMessage: sign1TooFewMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceSignature', 4),
       },
       {
         name: 'array with 2 elements',
         input: [Buffer.from([]), new Map()],
-        expectedMessage: sign1TooFewMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceSignature', 4),
       },
       {
         name: 'array with 3 elements',
         input: [Buffer.from([]), new Map(), Buffer.from([])],
-        expectedMessage: sign1TooFewMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthTooFewMessage('DeviceSignature', 4),
       },
     ];
 
@@ -124,7 +124,7 @@ describe('DeviceSignature', () => {
           Buffer.from([]),
           Buffer.from([]), // 5 elements
         ],
-        expectedMessage: sign1TooManyMessage('DeviceSignature'),
+        expectedMessage: fixedTupleLengthTooManyMessage('DeviceSignature', 4),
       },
     ];
 
