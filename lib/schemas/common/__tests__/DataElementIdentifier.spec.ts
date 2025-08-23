@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { dataElementIdentifierSchema } from '../DataElementIdentifier';
 import {
   nonEmptyTextInvalidTypeMessage,
-  nonEmptyTextRequiredMessage,
   nonEmptyTextEmptyMessage,
 } from '../NonEmptyText';
 import { z } from 'zod';
+import { requiredMessage } from '../Required';
 
 describe('DataElementIdentifier', () => {
   describe('should accept valid data element identifiers', () => {
@@ -77,14 +77,12 @@ describe('DataElementIdentifier', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: nonEmptyTextInvalidTypeMessage(
-          'DataElementIdentifier'
-        ),
+        expectedMessage: requiredMessage('DataElementIdentifier'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: nonEmptyTextRequiredMessage('DataElementIdentifier'),
+        expectedMessage: requiredMessage('DataElementIdentifier'),
       },
       {
         name: 'empty string',

@@ -2,10 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { docTypeSchema } from '../DocType';
 import {
   nonEmptyTextInvalidTypeMessage,
-  nonEmptyTextRequiredMessage,
   nonEmptyTextEmptyMessage,
 } from '../NonEmptyText';
 import { z } from 'zod';
+import { requiredMessage } from '../Required';
 
 describe('DocType', () => {
   describe('should accept valid document type strings', () => {
@@ -69,12 +69,12 @@ describe('DocType', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: nonEmptyTextInvalidTypeMessage('DocType'),
+        expectedMessage: requiredMessage('DocType'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: nonEmptyTextRequiredMessage('DocType'),
+        expectedMessage: requiredMessage('DocType'),
       },
       {
         name: 'empty string',

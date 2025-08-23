@@ -3,6 +3,7 @@ import { Tag } from 'cbor-x';
 import { createTag24Schema, tag24InvalidTypeMessage } from '../Tag24';
 import { createTag24 } from '@/cbor/createTag24';
 import { decodeCbor, encodeCbor } from '@/cbor/codec';
+import { requiredMessage } from '../Required';
 
 describe('Tag24 schema', () => {
   describe('createTag24Schema', () => {
@@ -19,40 +20,44 @@ describe('Tag24 schema', () => {
     });
 
     describe('rejects', () => {
-      it('rejects when input is not a Tag instance', () => {
-        const schema = createTag24Schema('Test');
+      const schema = createTag24Schema('Test');
 
-        const parsed = schema.safeParse({});
-        expect(parsed.success).toBe(false);
-        if (!parsed.success) {
-          expect(parsed.error.issues[0]?.message).toBe(
-            tag24InvalidTypeMessage('Test')
-          );
-        }
-      });
+      const cases: { name: string; input: unknown; expected: string }[] = [
+        {
+          name: 'null input (required)',
+          input: null,
+          expected: requiredMessage('Test'),
+        },
+        {
+          name: 'undefined input (required)',
+          input: undefined,
+          expected: requiredMessage('Test'),
+        },
+        {
+          name: 'not a Tag instance',
+          input: {},
+          expected: tag24InvalidTypeMessage('Test'),
+        },
+        {
+          name: 'tag is not 24',
+          input: new Tag(new Uint8Array([1, 2, 3]), 0),
+          expected: tag24InvalidTypeMessage('Test'),
+        },
+        {
+          name: 'value type mismatches (expects Uint8Array, got string)',
+          input: new Tag('hello', 24),
+          expected: tag24InvalidTypeMessage('Test'),
+        },
+      ];
 
-      it('rejects when tag is not 24', () => {
-        const schema = createTag24Schema('Test');
-
-        const parsed = schema.safeParse(new Tag(new Uint8Array([1, 2, 3]), 0));
-        expect(parsed.success).toBe(false);
-        if (!parsed.success) {
-          expect(parsed.error.issues[0]?.message).toBe(
-            tag24InvalidTypeMessage('Test')
-          );
-        }
-      });
-
-      it('rejects when value type mismatches (expects Uint8Array, got string)', () => {
-        const schema = createTag24Schema('Test');
-
-        const parsed = schema.safeParse(new Tag('hello', 24));
-        expect(parsed.success).toBe(false);
-        if (!parsed.success) {
-          expect(parsed.error.issues[0]?.message).toBe(
-            tag24InvalidTypeMessage('Test')
-          );
-        }
+      cases.forEach(({ name, input, expected }) => {
+        it(`rejects ${name}`, () => {
+          const parsed = schema.safeParse(input as never);
+          expect(parsed.success).toBe(false);
+          if (!parsed.success) {
+            expect(parsed.error.issues[0]?.message).toBe(expected);
+          }
+        });
       });
     });
   });
@@ -61,7 +66,7 @@ describe('Tag24 schema', () => {
     it('builds an informative validation message', () => {
       const msg = tag24InvalidTypeMessage('MobileSecurityObject');
       expect(msg).toBe(
-        'MobileSecurityObject: Please provide a Tag 24 with value type Uint8Array.'
+        'MobileSecurityObject: Expected a Tag 24 with Uint8Array value, but received a different type or structure. Please provide a Tag 24 with Uint8Array value.'
       );
     });
   });

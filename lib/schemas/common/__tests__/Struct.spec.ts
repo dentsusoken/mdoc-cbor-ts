@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createStructSchema } from '../Struct';
-import { mapInvalidTypeMessage, mapRequiredMessage } from '../Map';
+import { mapInvalidTypeMessage } from '../Map';
+import { requiredMessage } from '../Required';
 
 describe('createStructSchema', () => {
   it('should accept valid Map and return parsed object (object schema passes)', () => {
@@ -20,7 +21,7 @@ describe('createStructSchema', () => {
   describe('should reject invalid input types with prefixed messages', () => {
     const target = 'Target';
     const invalidType = mapInvalidTypeMessage(target);
-    const requiredMsg = mapRequiredMessage(target);
+    const requiredMsg = requiredMessage(target);
     const schema = createStructSchema({
       target,
       objectSchema: z.object({}),
@@ -41,7 +42,7 @@ describe('createStructSchema', () => {
       {
         name: 'null input',
         input: null,
-        expected: invalidType,
+        expected: requiredMsg,
       },
       {
         name: 'undefined input',

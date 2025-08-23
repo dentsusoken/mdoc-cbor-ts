@@ -1,10 +1,32 @@
 import { z } from 'zod';
-import { mapInvalidTypeMessage, mapRequiredMessage } from './Map';
+import { mapInvalidTypeMessage } from './Map';
+import { createRequiredSchema } from './Required';
 
 type CreateStructParams<O extends Record<string, unknown>, I = unknown> = {
   target: string;
   objectSchema: z.ZodType<O, z.ZodTypeDef, I>;
 };
+
+const createStructInnerSchema = <
+  O extends Record<string, unknown>,
+  I = unknown,
+>({
+  target,
+  objectSchema,
+}: CreateStructParams<O, I>): z.ZodType<
+  O,
+  z.ZodTypeDef,
+  Map<string, unknown>
+> =>
+  z
+    .map(z.string(), z.any(), {
+      invalid_type_error: mapInvalidTypeMessage(target),
+    })
+    .transform((valueMap) => {
+      const asObject = Object.fromEntries(valueMap);
+
+      return objectSchema.parse(asObject);
+    });
 
 /**
  * Creates a schema that validates a Map input against an object schema
@@ -50,13 +72,6 @@ export const createStructSchema = <
   z.ZodTypeDef,
   Map<string, unknown>
 > =>
-  z
-    .map(z.string(), z.any(), {
-      invalid_type_error: mapInvalidTypeMessage(target),
-      required_error: mapRequiredMessage(target),
-    })
-    .transform((valueMap) => {
-      const asObject = Object.fromEntries(valueMap);
-
-      return objectSchema.parse(asObject);
-    });
+  createRequiredSchema(target).pipe(
+    createStructInnerSchema({ target, objectSchema })
+  );

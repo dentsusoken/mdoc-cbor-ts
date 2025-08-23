@@ -4,8 +4,8 @@ import {
   createNonEmptyTextSchema,
   nonEmptyTextInvalidTypeMessage,
   nonEmptyTextEmptyMessage,
-  nonEmptyTextRequiredMessage,
 } from '../NonEmptyText';
+import { requiredMessage } from '../Required';
 
 describe('createNonEmptyTextSchema', () => {
   describe('should accept valid non-empty strings (trimmed)', () => {
@@ -70,8 +70,8 @@ describe('createNonEmptyTextSchema', () => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           const expected =
-            input === undefined
-              ? nonEmptyTextRequiredMessage('Target')
+            input == null
+              ? requiredMessage('Target')
               : nonEmptyTextInvalidTypeMessage('Target');
           expect(zodError.issues[0].message).toBe(expected);
         }

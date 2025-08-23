@@ -3,8 +3,8 @@ import {
   createMapSchema,
   mapEmptyMessage,
   mapInvalidTypeMessage,
-  mapRequiredMessage,
 } from '../Map';
+import { requiredMessage } from '../Required';
 import { z } from 'zod';
 
 describe('createMapSchema', () => {
@@ -107,12 +107,12 @@ describe('createMapSchema', () => {
       {
         name: 'null input',
         input: null,
-        expected: mapInvalidTypeMessage(target),
+        expected: requiredMessage(target),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: mapRequiredMessage(target),
+        expected: requiredMessage(target),
       },
       {
         name: 'plain object input',
