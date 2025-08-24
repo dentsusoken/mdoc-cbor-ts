@@ -1,105 +1,77 @@
 import { z } from 'zod';
-import { DateTime } from '@/cbor/DateTime';
 import { createRequiredSchema } from './Required';
+import { Tag0 } from '@/cbor/Tag0';
 
 /**
- * Creates an error message for invalid DateTime types
- * @description
- * Generates a standardized error message when a DateTime validation fails due to invalid type.
- * The message indicates the expected target name and that the value should be a DateTime instance.
- *
- * @param target - The name of the target schema being validated
- * @returns A formatted error message string
- *
- * @example
- * ```typescript
- * const message = dateTimeInvalidTypeMessage('ValidityInfo');
- * // Returns: "ValidityInfo: Expected a DateTime instance, but received a different type."
- * ```
+ * Creates an error message for invalid date-time format
+ * @param target - The target field name to include in the error message
+ * @returns Error message string indicating expected YYYY-MM-DDTHH:MM:SSZ format
+ */
+export const dateTimeInvalidFormatMessage = (target: string): string =>
+  `${target}: Expected YYYY-MM-DDTHH:MM:SSZ string, but received a different format.`;
+
+/**
+ * Creates an error message for invalid date-time type
+ * @param target - The target field name to include in the error message
+ * @returns Error message string indicating expected string (YYYY-MM-DDTHH:MM:SSZ) or Tag0 type
  */
 export const dateTimeInvalidTypeMessage = (target: string): string =>
-  `${target}: Expected a DateTime instance, but received a different type.`;
+  `${target}: Expected YYYY-MM-DDTHH:MM:SSZ string or Tag0, but received a different type.`;
 
 /**
- * Creates an error message for invalid DateTime instances
+ * Creates the inner schema for date-time validation
  * @description
- * Generates a standardized error message when a DateTime validation fails because
- * the DateTime instance contains an invalid date.
+ * This schema accepts either a string in YYYY-MM-DDTHH:MM:SSZ format (or any parseable
+ * ISO 8601 date-time which will be normalized) or a Tag0 instance and transforms both
+ * to a validated date-time string without milliseconds (YYYY-MM-DDTHH:MM:SSZ).
+ * String inputs are validated by attempting to create a Tag0 instance.
  *
- * @param target - The name of the target schema being validated
- * @returns A formatted error message string
- *
- * @example
- * ```typescript
- * const message = dateTimeInvalidDateMessage('ValidityInfo');
- * // Returns: "ValidityInfo: The DateTime instance contains an invalid date."
- * ```
+ * @param target - The target field name used in error messages
+ * @returns A Zod schema that validates and transforms inputs to YYYY-MM-DDTHH:MM:SSZ strings
  */
-export const dateTimeInvalidDateMessage = (target: string): string =>
-  `${target}: The DateTime instance contains an invalid date.`;
-
-const createDateTimeInnerSchema = (target: string): z.ZodType<DateTime> =>
-  z
-    .instanceof(DateTime, {
-      message: dateTimeInvalidTypeMessage(target),
-    })
-    .refine(
-      (date) => {
+const createDateTimeInnerSchema = (
+  target: string
+): z.ZodType<string, z.ZodTypeDef, string | Tag0> =>
+  z.union(
+    [
+      z.string().transform((value, ctx) => {
         try {
-          date.toISOString();
-          return true;
+          const tag0 = new Tag0(value);
+          return tag0.value;
         } catch (error) {
-          return false;
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: dateTimeInvalidFormatMessage(target),
+          });
+          return z.NEVER;
         }
-      },
-      {
-        message: dateTimeInvalidDateMessage(target),
-      }
-    );
+      }),
+      z.instanceof(Tag0).transform((tag0) => tag0.value),
+    ],
+    {
+      errorMap: () => ({
+        message: dateTimeInvalidTypeMessage(target),
+      }),
+    }
+  );
 
 /**
- * Builds a date-time schema that validates DateTime instances.
+ * Builds a date-time schema that validates date-time strings and Tag0 instances.
  * @description
  * The resulting schema:
- * - Requires a DateTime instance with a target-prefixed invalid type message
- * - Validates that the DateTime is valid by checking if toISOString() throws an error
+ * - Accepts either a string in YYYY-MM-DDTHH:MM:SSZ format (or parseable ISO date-time) or a Tag0 instance
+ * - Returns a validated date-time string in YYYY-MM-DDTHH:MM:SSZ format (milliseconds stripped)
+ * - Provides target-prefixed error messages for invalid formats and types
  *
- * This schema is designed for validating DateTime instances that come from CBOR decoding,
- * where Tag(0) is automatically converted to DateTime instances by the CBOR-x extension.
- * Invalid DateTime instances (created from malformed date strings in CBOR) will throw
- * RangeError when toISOString() is called, which this schema catches and reports as
- * a validation error.
+ * This schema is designed for validating date-time values that can come from either:
+ * - Direct string input (e.g., from JSON)
+ * - CBOR decoding where Tag(0) is automatically converted to Tag0 instances
  *
- * ```cddl
- * DateTime = tdate
- * ```
+ * Example accepted inputs are normalized to the exact format:
+ * - "2024-03-20T15:30:00.123Z" -> "2024-03-20T15:30:00Z"
+ * - "2024-03-20T15:30:00+09:00" -> "2024-03-20T06:30:00Z" (UTC)
  *
  * @param target - Prefix used in error messages (e.g., "ValidityInfo", "IssuerAuth")
- *
- * @example
- * ```typescript
- * const validityInfoSchema = createDateTimeSchema('ValidityInfo');
- * const dateTime = new DateTime('2024-03-20T15:30:00Z');
- * const value = validityInfoSchema.parse(dateTime); // DateTime instance
- * ```
- *
- * @example
- * ```typescript
- * // Throws ZodError (invalid type)
- * // Message: "ValidityInfo: Expected a DateTime instance, but received a different type."
- * const validityInfoSchema = createDateTimeSchema('ValidityInfo');
- * validityInfoSchema.parse('2024-03-20T15:30:00Z'); // String instead of DateTime
- * ```
- *
- * @example
- * ```typescript
- * // Throws ZodError (invalid date)
- * // Message: "ValidityInfo: The DateTime instance contains an invalid date."
- * const validityInfoSchema = createDateTimeSchema('ValidityInfo');
- * // This would be created from CBOR decoding of invalid date string
- * const invalidDateTime = decodeCbor(invalidCborData) as DateTime;
- * validityInfoSchema.parse(invalidDateTime);
- * ```
  */
-export const createDateTimeSchema = (target: string): z.ZodType<DateTime> =>
+export const createDateTimeSchema = (target: string): z.ZodType<string> =>
   createRequiredSchema(target).pipe(createDateTimeInnerSchema(target));

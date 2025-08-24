@@ -1,90 +1,102 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { DateTime } from '@/cbor/DateTime';
-import { decodeCbor } from '@/cbor/codec';
+import { Tag0 } from '@/cbor/Tag0';
 import {
   createDateTimeSchema,
   dateTimeInvalidTypeMessage,
-  dateTimeInvalidDateMessage,
+  dateTimeInvalidFormatMessage,
 } from '../DateTime';
 import { requiredMessage } from '../Required';
 
-describe('DateTime Schema', () => {
-  const testSchema = createDateTimeSchema('TestTarget');
+describe('createDateTimeSchema', () => {
+  const target = 'TestTarget';
+  const schema = createDateTimeSchema(target);
 
   describe('valid cases', () => {
-    it('should validate a valid DateTime instance', () => {
-      const dateTime = new DateTime('2024-03-20T15:30:00Z');
-      const result = testSchema.parse(dateTime);
-      expect(result).toBeInstanceOf(DateTime);
-      expect(result.toISOString()).toBe('2024-03-20T15:30:00Z');
+    it('should accept ISO string with Z and return normalized string', () => {
+      const result = schema.parse('2024-03-20T15:30:00.123Z');
+      expect(result).toBe('2024-03-20T15:30:00Z');
+    });
+
+    it('should accept ISO string with timezone offset and return normalized UTC string', () => {
+      const result = schema.parse('2024-03-20T15:30:00+09:00');
+      expect(result).toBe('2024-03-20T06:30:00Z');
+    });
+
+    it('should accept Tag0 instance and return its value', () => {
+      const tag = new Tag0('2024-03-20T15:30:00.123Z');
+      const result = schema.parse(tag);
+      expect(result).toBe('2024-03-20T15:30:00Z');
     });
   });
 
   describe('invalid cases', () => {
     it('should throw required error for undefined', () => {
       try {
-        testSchema.parse(undefined);
+        schema.parse(undefined);
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(requiredMessage('TestTarget'));
+          expect(error.issues[0].message).toBe(requiredMessage(target));
         }
       }
     });
 
     it('should throw required error for null', () => {
       try {
-        testSchema.parse(null);
+        schema.parse(null);
         throw new Error('Expected error');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(requiredMessage('TestTarget'));
+          expect(error.issues[0].message).toBe(requiredMessage(target));
         }
       }
     });
 
-    it('should throw error for non-DateTime instance', () => {
-      try {
-        testSchema.parse('2024-03-20T15:30:00Z');
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(
-            dateTimeInvalidTypeMessage('TestTarget')
-          );
+    const wrongTypeCases: Array<{ name: string; value: unknown }> = [
+      { name: 'number', value: 123 },
+      { name: 'boolean', value: true },
+      { name: 'object', value: {} },
+      { name: 'Date object', value: new Date() },
+    ];
+
+    wrongTypeCases.forEach(({ name, value }) => {
+      it(`invalid type: ${name}`, () => {
+        try {
+          schema.parse(value);
+          throw new Error('Expected error');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          if (error instanceof z.ZodError) {
+            expect(error.issues[0].message).toBe(
+              dateTimeInvalidTypeMessage(target)
+            );
+          }
         }
-      }
+      });
     });
 
-    it('should throw error for Invalid Date DateTime instance from CBOR', () => {
-      // Create an Invalid Date by decoding CBOR with invalid date string
-      // Tag 0 = 0xc0, followed by string "invalid-date"
-      const invalidCborData = new Uint8Array([
-        0xc0, 0x6c, 0x69, 0x6e, 0x76, 0x61, 0x6c, 0x69, 0x64, 0x2d, 0x64, 0x61,
-        0x74, 0x65,
-      ]);
+    const invalidFormatCases: Array<{ name: string; value: string }> = [
+      { name: 'empty string', value: '' },
+      { name: 'non-date string', value: 'invalid-date' },
+    ];
 
-      const invalidDateTime = decodeCbor(invalidCborData) as DateTime;
-      expect(invalidDateTime).toBeInstanceOf(DateTime);
-      expect(() => invalidDateTime.toISOString()).toThrow(
-        new RangeError('Invalid time value')
-      );
-
-      try {
-        testSchema.parse(invalidDateTime);
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(
-            dateTimeInvalidDateMessage('TestTarget')
-          );
+    invalidFormatCases.forEach(({ name, value }) => {
+      it(`invalid format: ${name}`, () => {
+        try {
+          schema.parse(value);
+          throw new Error('Expected error');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          if (error instanceof z.ZodError) {
+            expect(error.issues[0].message).toBe(
+              dateTimeInvalidFormatMessage(target)
+            );
+          }
         }
-      }
+      });
     });
   });
 });
