@@ -1,10 +1,11 @@
+import { toISODateTimeString } from '@/utils/toISODateTimeString';
 import { addExtension } from 'cbor-x';
 
 export class Tag0 {
   value: string;
 
   constructor(value: string) {
-    this.value = new Date(value).toISOString().split('.')[0] + 'Z';
+    this.value = toISODateTimeString(new Date(value));
   }
 }
 

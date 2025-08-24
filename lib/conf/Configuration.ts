@@ -1,4 +1,4 @@
-import { DigestAlgorithm } from '../schemas/mso';
+import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 
 /**
  * Configuration options for Mobile Security Object (MSO)

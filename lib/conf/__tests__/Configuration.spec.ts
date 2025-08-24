@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DigestAlgorithm } from '../schemas/mso';
-import { Configuration } from './Configuration';
+import { DigestAlgorithm } from '../../schemas/mso';
+import { Configuration } from '../Configuration';
 
 describe('Configuration', () => {
   describe('constructor', () => {

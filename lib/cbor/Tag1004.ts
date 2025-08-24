@@ -1,3 +1,4 @@
+import { toISOFullDateString } from '@/utils/toISOFullDateString';
 import { addExtension } from 'cbor-x';
 
 /**
@@ -33,7 +34,7 @@ export class Tag1004 {
    * ```
    */
   constructor(value: string) {
-    this.value = new Date(value).toISOString().split('T')[0];
+    this.value = toISOFullDateString(new Date(value));
   }
 }
 
