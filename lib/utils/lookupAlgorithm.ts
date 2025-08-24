@@ -16,7 +16,7 @@ import { Algorithms } from '@auth0/cose';
  * const algorithm = lookupAlgorithm(-7); // Returns 'ES256'
  * ```
  */
-export const lookupAlgorithm = (number?: Algorithms) => {
+export const lookupAlgorithm = (number?: Algorithms): string => {
   switch (number) {
     case -8:
       return 'EdDSA';

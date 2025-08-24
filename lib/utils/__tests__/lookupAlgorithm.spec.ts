@@ -1,6 +1,6 @@
 import { Algorithms } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
-import { lookupAlgorithm } from './lookupAlgorithm';
+import { lookupAlgorithm } from '../lookupAlgorithm';
 
 describe('lookupAlgorithm', () => {
   it('should return correct algorithm name for EdDSA', () => {
