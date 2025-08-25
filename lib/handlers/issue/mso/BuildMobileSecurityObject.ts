@@ -1,80 +1,110 @@
 import { COSEKey } from '@auth0/cose';
-import { TypedMap } from '@jfromaniello/typedmap';
-import { Configuration } from '../../../conf/Configuration';
-import { IssuerNameSpaces } from '../../../schemas/mdoc';
-import { MobileSecurityObject } from '../../../schemas/mso';
-import { KVMap } from '../../../types';
-import { CreateBuilderFunction } from '../CreateBuilder';
-import { BuildValidityInfo } from './BuildValidityInfo';
-import { BuildValueDigests } from './BuildValueDigests';
+import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
+import { MobileSecurityObject } from '@/schemas/mso/MobileSecurityObject';
+import { buildValidityInfo } from './buildValidityInfo';
+import { buildValueDigests } from './buildValueDigests';
+import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 
 /**
- * Type definition for building a Mobile Security Object
- * @description
- * A function that creates a Mobile Security Object (MSO) from the given parameters.
- * This function is asynchronous and returns a Promise that resolves to the created MSO.
- *
- * @param docType - The document type identifier
- * @param nameSpaces - The issuer's name spaces containing the document data
- * @param deviceKey - The COSE key used for device authentication
- * @returns A Promise that resolves to the created MobileSecurityObject
+ * Parameters for building a Mobile Security Object (MSO).
  */
-export type BuildMobileSecurityObject = (
-  docType: string,
-  nameSpaces: IssuerNameSpaces,
-  deviceKey: COSEKey
-) => Promise<TypedMap<KVMap<MobileSecurityObject>>>;
-
-/**
- * Parameters for creating a Mobile Security Object builder
- * @description
- * Configuration and dependencies required to create a builder function
- * for Mobile Security Objects.
- */
-export type CreateMobileSecurityObjectBuilderParams = {
-  /** Configuration settings for the MSO */
-  configuration: Configuration;
-  /** Function to build value digests */
-  buildValueDigests: BuildValueDigests;
-  /** Function to build validity information */
-  buildValidityInfo: BuildValidityInfo;
+export type BuildMobileSecurityObjectParams = {
+  /** The document type identifier (e.g., 'org.iso.18013.5.1.mDL') */
+  docType: string;
+  /** The issuer namespaces containing issuer signed item tags */
+  nameSpaces: IssuerNameSpaces;
+  /** The device's public key for authentication */
+  deviceKey: COSEKey;
+  /** The digest algorithm to use for calculating value digests */
+  digestAlgorithm: DigestAlgorithm;
+  /** Duration in milliseconds from now until the document becomes valid */
+  validFrom: number;
+  /** Duration in milliseconds from now until the document expires */
+  validUntil: number;
+  /** Optional duration in milliseconds from now until the document should be updated */
+  expectedUpdate?: number;
 };
 
 /**
- * Creates a builder function for Mobile Security Objects
- * @description
- * Returns a function that creates Mobile Security Objects using the provided
- * configuration and dependencies. The builder function handles the creation
- * of MSOs with proper versioning, digest algorithms, and validity information.
+ * Builds a Mobile Security Object (MSO) for mDL (mobile driving license) issuance.
+ *
+ * This function creates a complete Mobile Security Object that contains all the necessary
+ * information for document verification, including value digests, validity information,
+ * and device key information. The MSO is a critical component in the mDL issuance process
+ * that ensures document integrity and provides verification capabilities.
+ *
+ * @param params - The parameters for building the Mobile Security Object
+ * @param params.docType - The document type identifier
+ * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags
+ * @param params.deviceKey - The device's public key for authentication
+ * @param params.digestAlgorithm - The digest algorithm to use for calculating value digests
+ * @param params.validFrom - The timestamp when the document becomes valid
+ * @param params.validUntil - The timestamp when the document expires
+ * @param params.expectedUpdate - Optional timestamp for expected document updates
+ * @returns A Promise that resolves to a complete MobileSecurityObject
  *
  * @example
  * ```typescript
- * const builder = createMobileSecurityObjectBuilder({
- *   configuration,
- *   buildValueDigests,
- *   buildValidityInfo
+ * const mso = await buildMobileSecurityObject({
+ *   docType: 'org.iso.18013.5.1.mDL',
+ *   nameSpaces: new Map([
+ *     ['org.iso.18013.5.1', [tag1, tag2]],
+ *     ['org.iso.18013.5.2', [tag3]]
+ *   ]),
+ *   deviceKey: devicePublicKey,
+ *   digestAlgorithm: 'SHA-256',
+ *   validFrom: 0,
+ *   validUntil: 24 * 60 * 60 * 1000, // +1 day
+ *   expectedUpdate: 60 * 60 * 1000 // +1 hour
  * });
  *
- * const mso = await builder('org.iso.18013.5.1.mDL', nameSpaces, deviceKey);
+ * // Result structure:
+ * // {
+ * //   version: '1.0',
+ * //   docType: 'org.iso.18013.5.1.mDL',
+ * //   digestAlgorithm: 'SHA-256',
+ * //   valueDigests: Map { // calculated digests },
+ * //   validityInfo: { // validity information },
+ * //   deviceKeyInfo: { deviceKey: // device public key }
+ * // }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Without expected update
+ * const mso = await buildMobileSecurityObject({
+ *   docType: 'org.iso.18013.5.1.mDL',
+ *   nameSpaces: new Map([['org.iso.18013.5.1', [tag1]]]),
+ *   deviceKey: devicePublicKey,
+ *   digestAlgorithm: 'SHA-256',
+ *   validFrom: 0,
+ *   validUntil: 24 * 60 * 60 * 1000
+ * });
  * ```
  */
-export const createMobileSecurityObjectBuilder: CreateBuilderFunction<
-  CreateMobileSecurityObjectBuilderParams,
-  BuildMobileSecurityObject
-> =
-  ({ configuration, buildValueDigests, buildValidityInfo }) =>
-  async (docType: string, nameSpaces: IssuerNameSpaces, deviceKey: COSEKey) => {
-    const mso = new TypedMap<KVMap<MobileSecurityObject>>();
-    mso.set('version', '1.0');
-    mso.set('docType', docType);
-    mso.set('digestAlgorithm', configuration.digestAlgorithm);
-    mso.set(
-      'valueDigests',
-      await buildValueDigests(nameSpaces, configuration.digestAlgorithm)
-    );
-    mso.set('validityInfo', buildValidityInfo());
-    mso.set('deviceKeyInfo', {
-      deviceKey: Object.fromEntries(deviceKey.esMap),
-    });
-    return mso;
+export const buildMobileSecurityObject = async ({
+  docType,
+  nameSpaces,
+  deviceKey,
+  digestAlgorithm,
+  validFrom,
+  validUntil,
+  expectedUpdate,
+}: BuildMobileSecurityObjectParams): Promise<MobileSecurityObject> => {
+  const mso: MobileSecurityObject = {
+    version: '1.0',
+    docType,
+    digestAlgorithm,
+    valueDigests: await buildValueDigests({ nameSpaces, digestAlgorithm }),
+    validityInfo: buildValidityInfo({
+      validFrom,
+      validUntil,
+      expectedUpdate,
+    }),
+    deviceKeyInfo: {
+      deviceKey,
+    },
   };
+
+  return mso;
+};

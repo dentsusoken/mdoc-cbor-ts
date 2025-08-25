@@ -3,7 +3,7 @@ import { Document } from '../../../schemas/mdoc';
 import { CreateBuilderFunction } from '../CreateBuilder';
 import { MSOIssueHandler } from '../mso';
 import { BuildDeviceSigned } from './BuildDeviceSigned';
-import { BuildIssuerNameSpaces } from './BuildIssuerNameSpaces';
+import { BuildIssuerNameSpaces } from './buildIssuerNameSpaces';
 import { MdocData } from './MdocIssueHandler';
 
 /**

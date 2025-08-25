@@ -46,7 +46,7 @@ export class X509Adapter {
     return this.#privateKey;
   }
 
-  private static toPem(certificate: string) {
+  private static toPem(certificate: string): string {
     return `-----BEGIN CERTIFICATE-----\n${certificate}\n-----END CERTIFICATE-----`;
   }
 

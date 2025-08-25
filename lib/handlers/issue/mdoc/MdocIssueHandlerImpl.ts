@@ -2,11 +2,11 @@ import { COSEKey } from '@auth0/cose';
 import { X509Adapter } from '../../../adapters/X509Adapter';
 import { Configuration } from '../../../conf/Configuration';
 import { DeviceResponse, Document } from '../../../schemas/mdoc';
-import { buildProtectedHeaders } from '../common';
+import { buildProtectedHeaders } from '../cose';
 import { MSOIssueHandlerImpl } from '../mso';
 import { createDeviceSignedBuilder } from './BuildDeviceSigned';
 import { createDocumentsBuilder } from './BuildDocuments';
-import { createIssuerNameSpacesBuilder } from './BuildIssuerNameSpaces';
+import { createIssuerNameSpacesBuilder } from './buildIssuerNameSpaces';
 import { MdocData, MdocIssueHandler } from './MdocIssueHandler';
 
 /**

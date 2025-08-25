@@ -1,65 +1,58 @@
-import { DateTime } from '../../../cbor';
-import { Configuration } from '../../../conf/Configuration';
-import { ValidityInfo } from '../../../schemas/mso';
-import { CreateBuilderFunction } from '../CreateBuilder';
+import { ValidityInfo } from '@/schemas/mso/ValidityInfo';
+import { toISODateTimeString } from '@/utils/toISODateTimeString';
 
 /**
- * Type definition for building validity information
- * @description
- * A function that creates validity information for a Mobile Security Object.
- * This function returns the validity period information including signed date,
- * valid from date, valid until date, and optional expected update date.
- *
- * @returns The created ValidityInfo object
+ * Parameters for building validity information for a Mobile Security Object (MSO).
  */
-export type BuildValidityInfo = () => ValidityInfo;
-
-/**
- * Parameters for creating a validity info builder
- * @description
- * Configuration required to create a builder function for validity information.
- */
-export type CreateValidityInfoBuilderParams = {
-  /** Configuration settings for validity periods */
-  configuration: Configuration;
+type BuildValidityInfoParams = {
+  /** Duration in milliseconds from now until the document becomes valid */
+  validFrom: number;
+  /** Duration in milliseconds from now until the document expires */
+  validUntil: number;
+  /** Optional duration in milliseconds from now until the document should be updated */
+  expectedUpdate?: number;
 };
 
 /**
- * Creates a builder function for validity information
- * @description
- * Returns a function that creates validity information using the provided
- * configuration. The builder function handles the creation of validity periods
- * including signed date, valid from date, valid until date, and optional
- * expected update date.
+ * Builds validity information for a Mobile Security Object (MSO).
+ *
+ * This function creates a ValidityInfo object with signed, validFrom, and validUntil timestamps
+ * based on the current time plus the specified durations. If an expectedUpdate duration is provided,
+ * it will also include an expectedUpdate timestamp.
+ *
+ * @param params - The parameters for building validity information
+ * @param params.validFrom - Duration in milliseconds from now until the document becomes valid
+ * @param params.validUntil - Duration in milliseconds from now until the document expires
+ * @param params.expectedUpdate - Optional duration in milliseconds from now until the document should be updated
+ * @returns A ValidityInfo object with ISO datetime strings for all timestamps
  *
  * @example
  * ```typescript
- * const builder = createValidityInfoBuilder({
- *   configuration
+ * const validityInfo = buildValidityInfo({
+ *   validFrom: 0, // Valid immediately
+ *   validUntil: 365 * 24 * 60 * 60 * 1000, // Valid for 1 year
+ *   expectedUpdate: 30 * 24 * 60 * 60 * 1000 // Update in 30 days
  * });
- *
- * const validityInfo = builder();
  * ```
  */
-export const createValidityInfoBuilder: CreateBuilderFunction<
-  CreateValidityInfoBuilderParams,
-  BuildValidityInfo
-> = ({ configuration }) => {
-  return () => {
-    const { validFrom, validUntil, expectedUpdate } = configuration;
-    const now = DateTime.now();
+export const buildValidityInfo = ({
+  validFrom,
+  validUntil,
+  expectedUpdate,
+}: BuildValidityInfoParams): ValidityInfo => {
+  const now = Date.now();
 
-    return expectedUpdate
-      ? {
-          signed: new DateTime(now),
-          validFrom: new DateTime(now + validFrom),
-          validUntil: new DateTime(now + validUntil),
-          expectedUpdate: new DateTime(now + expectedUpdate),
-        }
-      : {
-          signed: new DateTime(now),
-          validFrom: new DateTime(now + validFrom),
-          validUntil: new DateTime(now + validUntil),
-        };
+  const validityInfo: ValidityInfo = {
+    signed: toISODateTimeString(new Date(now)),
+    validFrom: toISODateTimeString(new Date(now + validFrom)),
+    validUntil: toISODateTimeString(new Date(now + validUntil)),
   };
+
+  if (expectedUpdate) {
+    validityInfo.expectedUpdate = toISODateTimeString(
+      new Date(now + expectedUpdate)
+    );
+  }
+
+  return validityInfo;
 };

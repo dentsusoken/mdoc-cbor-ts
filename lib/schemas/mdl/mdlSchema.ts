@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { DateOnly } from '../../cbor';
-import { bytesSchema } from '../common';
+import { createBytesSchema } from '@/schemas/common/Bytes';
+import { createFullDateSchema } from '@/index';
 
 /**
  * Schema for driving privilege codes
@@ -49,8 +49,8 @@ export const drivingPrivilegesSchema = z
     return z
       .object({
         vehicle_category_code: z.string(),
-        issue_date: z.instanceof(DateOnly).optional(),
-        expiry_date: z.instanceof(DateOnly).optional(),
+        issue_date: createFullDateSchema('issue_date').optional(),
+        expiry_date: createFullDateSchema('expiry_date').optional(),
         codes: z.array(codeSchema).optional(),
       })
       .parse(Object.fromEntries(v));
@@ -200,13 +200,13 @@ export const mdlSchema = z
   .object({
     family_name: z.string(),
     given_name: z.string(),
-    birth_date: z.instanceof(DateOnly),
-    issue_date: z.union([z.instanceof(DateOnly), z.instanceof(Date)]),
-    expiry_date: z.union([z.instanceof(DateOnly), z.instanceof(Date)]),
+    birth_date: createFullDateSchema('birth_date'),
+    issue_date: createFullDateSchema('issue_date'),
+    expiry_date: createFullDateSchema('expiry_date'),
     issuing_country: z.string(),
     issuing_authority: z.string(),
     document_number: z.string(),
-    portrait: bytesSchema,
+    portrait: createBytesSchema('portrait'),
     driving_privileges: z.array(drivingPrivilegesSchema),
     un_distinguishing_sign: z.string(),
     administrative_number: z.string(),
@@ -217,7 +217,7 @@ export const mdlSchema = z
     hair_colour: z.string(),
     birth_place: z.string(),
     resident_address: z.string(),
-    portrait_capture_date: z.instanceof(DateOnly),
+    portrait_capture_date: createFullDateSchema('portrait_capture_date'),
     age_in_years: z.number().int().positive(),
     age_birth_year: z.number().int().positive(),
     issuing_jurisdiction: z.string(),
@@ -226,10 +226,10 @@ export const mdlSchema = z
     resident_state: z.string(),
     resident_postal_code: z.string(),
     resident_country: z.string(),
-    biometrictemplate_xx: bytesSchema, //TODO
+    biometrictemplate_face: createBytesSchema('biometrictemplate_face'),
     family_name_national_character: z.string(),
     given_name_national_character: z.string(),
-    signature_usual_mark: bytesSchema,
+    signature_usual_mark: createBytesSchema('signature_usual_mark'),
   })
   .extend({ ...overAgeSchema.shape })
   .strict();

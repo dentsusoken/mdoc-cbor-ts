@@ -1,99 +1,74 @@
-import { TypedMap } from '@jfromaniello/typedmap';
 import { Tag } from 'cbor-x';
-import { Buffer } from 'node:buffer';
-import crypto from 'node:crypto';
-import { ByteString } from '../../../cbor';
-import { Configuration } from '../../../conf/Configuration';
+import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import {
-  IssuerNameSpaces,
-  IssuerSignedItem,
-  IssuerSignedItemBytes,
-} from '../../../schemas/mdoc';
-import { KVMap } from '../../../types';
-import { CreateBuilderFunction } from '../CreateBuilder';
-import { NameSpaceData } from './MdocIssueHandler';
+  NameSpacesRecord,
+  nameSpacesRecordSchema,
+} from '@/schemas/common/NameSpacesRecord';
+import { NameSpace } from '@/schemas/common/NameSpace';
+import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
+import { createTag24 } from '@/cbor/createTag24';
 
 /**
- * Type definition for building issuer name spaces
+ * Builds issuer namespaces from a record of data elements
  * @description
- * A function type that creates issuer name spaces from the provided data.
- * The function processes each name space and its elements, creating
- * signed items with random values and digest IDs.
- */
-export type BuildIssuerNameSpaces = (data: NameSpaceData) => IssuerNameSpaces;
-
-/**
- * Parameters for creating an issuer name spaces builder
- * @description
- * Configuration required to create a builder function for issuer name spaces.
- */
-export type CreateIssuerNameSpacesBuilderParams = {
-  /** Configuration settings for validity periods and tag elements */
-  configuration: Configuration;
-};
-
-/**
- * Creates a function for building issuer name spaces
- * @description
- * Returns a function that creates issuer name spaces from the provided data.
- * The function processes each name space and its elements, creating
- * signed items with random values and digest IDs. It also applies
- * appropriate tags to element values based on configuration.
+ * Transforms a `NameSpacesRecord` into `IssuerNameSpaces` by creating CBOR Tag 24
+ * wrapped issuer-signed items for each data element. Each item includes a unique
+ * digest ID, random bytes, element identifier, and element value.
+ *
+ * The function validates the input data, generates cryptographically secure random
+ * values, and creates the hierarchical structure required for mdoc issuer namespaces.
+ *
+ * @param data - The namespace record containing data elements to be signed
+ * @returns A Map of namespaces to arrays of CBOR Tag 24 wrapped issuer-signed items
+ * @throws {Error} When a namespace contains no elements
+ * @throws {Error} When no namespaces are provided
+ * @throws {ZodError} When the input data fails validation
  *
  * @example
  * ```typescript
- * const builder = createIssuerNameSpacesBuilder({
- *   configuration
- * });
- * const nameSpaces = builder(data);
+ * const data = {
+ *   'org.iso.18013.5.1': {
+ *     'given_name': 'John',
+ *     'family_name': 'Doe'
+ *   }
+ * };
+ * const issuerNameSpaces = buildIssuerNameSpaces(data);
+ * // Returns Map<NameSpace, Tag[]> with CBOR Tag 24 wrapped items
  * ```
  */
-export const createIssuerNameSpacesBuilder: CreateBuilderFunction<
-  CreateIssuerNameSpacesBuilderParams,
-  BuildIssuerNameSpaces
-> =
-  ({ configuration }) =>
-  (data) => {
-    const issuerNameSpaces: IssuerNameSpaces = {};
-    // TODO: Should digestID start from 0 for each Document, or continue from previous Document's digestID?
-    const digestID = 0;
+export const buildIssuerNameSpaces = (
+  data: NameSpacesRecord
+): IssuerNameSpaces => {
+  data = nameSpacesRecordSchema.parse(data);
 
-    // TODO: Randomize the order of elements
-    const elements = nameSpaceData.elements;
+  const issuerNameSpaces: IssuerNameSpaces = new Map<NameSpace, Tag[]>();
+  let digestID = 0;
 
-    // TODO: Apply tags (addExtension) at the NameSpaceData level
-    Object.entries(data).forEach(([nameSpace, elements]) => {
-      const issuerSignedItems: IssuerSignedItemBytes[] = [];
-      // TODO: elementsの順番をランダムにする。
-      Object.entries(elements).forEach(([elementIdentifier, elementValue]) => {
-        const random = Buffer.from(crypto.getRandomValues(new Uint8Array(32)));
-        // TODO: NameSpaceDataの時点でtagを適用（addExtension）するようにする。
-        if (!!configuration.tagElements[elementIdentifier]) {
-          const tag = new Tag(
-            elementValue,
-            configuration.tagElements[elementIdentifier]
-          );
-          elementValue = tag;
-        }
-        issuerSignedItems.push(
-          new ByteString(
-            new TypedMap<KVMap<IssuerSignedItem>>([
-              ['random', random],
-              ['digestID', digestID],
-              ['elementIdentifier', elementIdentifier],
-              ['elementValue', elementValue],
-            ])
-          )
-        );
-        digestID++;
-      });
-      if (issuerSignedItems.length === 0) {
-        throw new Error(`No issuer signed items for namespace ${nameSpace}`);
-      }
-      issuerNameSpaces[nameSpace] = issuerSignedItems as [
-        IssuerSignedItemBytes,
-        ...IssuerSignedItemBytes[],
-      ];
+  Object.entries(data).forEach(([nameSpace, elements]) => {
+    const issuerSignedItemTags: Tag[] = [];
+
+    Object.entries(elements).forEach(([elementIdentifier, elementValue]) => {
+      const random = crypto.getRandomValues(new Uint8Array(32));
+      const issuerSignedItem: IssuerSignedItem = {
+        digestID: digestID++,
+        random,
+        elementIdentifier,
+        elementValue,
+      };
+      const tag = createTag24(issuerSignedItem);
+      issuerSignedItemTags.push(tag);
     });
-    return issuerNameSpaces;
-  };
+
+    if (issuerSignedItemTags.length === 0) {
+      throw new Error(`No issuer signed items for namespace ${nameSpace}`);
+    }
+
+    issuerNameSpaces.set(nameSpace, issuerSignedItemTags);
+  });
+
+  if (issuerNameSpaces.size === 0) {
+    throw new Error(`No issuer name spaces`);
+  }
+
+  return issuerNameSpaces;
+};

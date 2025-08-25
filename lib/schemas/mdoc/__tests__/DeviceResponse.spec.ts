@@ -21,7 +21,46 @@ describe('DeviceResponse', () => {
     it('should parse a valid DeviceResponse from CBOR fixture', () => {
       const data = decodeCbor(cbor) as Map<string, unknown>;
       const result = deviceResponseSchema.parse(data);
-      expect(result).toBeDefined();
+      //console.log('DeviceResponse parsed', result);
+      const document = result.documents?.[0];
+      //console.log('Document', document);
+      const issuerSigned = document?.issuerSigned;
+      //console.log('IssuerSigned', issuerSigned);
+      const issuerSignedNameSpaces =
+        issuerSigned?.nameSpaces.get('org.iso.18013.5.1');
+      //console.log('IssuerSignedNameSpaces', issuerSignedNameSpaces);
+      const issuerAuth = issuerSigned?.issuerAuth;
+      //console.log('IssuerAuth', issuerAuth);
+      const deviceSigned = document?.deviceSigned;
+      //console.log('DeviceSigned', deviceSigned);
+      const deviceSignedNameSpaces = deviceSigned?.nameSpaces;
+      //console.log('DeviceSignedNameSpaces', deviceSignedNameSpaces);
+      const deviceSignature = deviceSigned?.deviceAuth?.deviceSignature;
+      //console.log('DeviceSignature', deviceSignature);
+
+      const expected = {
+        version: '1.0',
+        status: 0,
+        documents: [
+          {
+            docType: 'org.iso.18013.5.1.mDL',
+            issuerSigned: {
+              nameSpaces: new Map([
+                ['org.iso.18013.5.1', issuerSignedNameSpaces],
+              ]),
+              issuerAuth,
+            },
+            deviceSigned: {
+              nameSpaces: deviceSignedNameSpaces,
+              deviceAuth: {
+                deviceSignature,
+              },
+            },
+          },
+        ],
+      };
+
+      expect(result).toEqual(expected);
     });
 
     it('should be valid when only documentErrors is provided (non-empty)', () => {

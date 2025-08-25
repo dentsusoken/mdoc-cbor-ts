@@ -2,7 +2,7 @@ import { COSEKey, Sign1 } from '@auth0/cose';
 import { TypedMap } from '@jfromaniello/typedmap';
 import { ByteString } from '../../../cbor';
 import { DeviceSigned } from '../../../schemas/mdoc';
-import { BuildProtectedHeaders } from '../common';
+import { BuildProtectedHeaders } from '../cose';
 import { CreateBuilderFunction } from '../CreateBuilder';
 
 /**
