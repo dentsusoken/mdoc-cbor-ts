@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { nameSpacesRecordSchema } from '../NameSpacesRecord';
-import { recordEmptyMessage, recordInvalidTypeMessage } from '../Record';
-import { requiredMessage } from '../Required';
+import {
+  recordEmptyMessage,
+  recordInvalidTypeMessage,
+} from '@/schemas/common/Record';
+import { requiredMessage } from '@/schemas/common/Required';
 
 /**
  * Tests for NameSpacesRecord schema

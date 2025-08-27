@@ -5,7 +5,7 @@ import {
   recordInvalidTypeMessage,
 } from '@/schemas/common/Record';
 import { buildIssuerNameSpaces } from '../buildIssuerNameSpaces';
-import type { NameSpacesRecord } from '@/schemas/common/NameSpacesRecord';
+import type { NameSpacesRecord } from '@/schemas/mdoc/NameSpacesRecord';
 import { createTag24 } from '@/cbor';
 
 /**

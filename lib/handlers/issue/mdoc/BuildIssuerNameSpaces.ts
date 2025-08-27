@@ -3,7 +3,7 @@ import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import {
   NameSpacesRecord,
   nameSpacesRecordSchema,
-} from '@/schemas/common/NameSpacesRecord';
+} from '@/schemas/mdoc/NameSpacesRecord';
 import { NameSpace } from '@/schemas/common/NameSpace';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { createTag24 } from '@/cbor/createTag24';

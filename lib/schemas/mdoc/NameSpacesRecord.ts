@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { createRecordSchema } from './Record';
-import { nameSpaceSchema } from './NameSpace';
-import { dataElementIdentifierSchema } from './DataElementIdentifier';
-import { dataElementValueSchema } from './DataElementValue';
+import { createRecordSchema } from '../common/Record';
+import { nameSpaceSchema } from '../common/NameSpace';
+import { dataElementIdentifierSchema } from '../common/DataElementIdentifier';
+import { dataElementValueSchema } from '../common/DataElementValue';
 
 /**
  * Schema for name spaces containing data elements
