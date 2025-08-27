@@ -13,59 +13,25 @@ describe('Mac0', () => {
   const schema = createMac0Schema('DeviceMac');
 
   describe('should accept valid COSE_Mac0 arrays', () => {
-    it('should parse a valid 4-element array to Mac0', () => {
-      const protectedHeaders = Uint8Array.from([]);
-      const unprotectedHeaders = new Map<number, unknown>();
-      const payload = Uint8Array.from([]);
-      const tag = Uint8Array.from([]);
+    const cases: Array<{
+      name: string;
+      payload: Uint8Array | null | undefined;
+    }> = [
+      { name: 'bytes payload', payload: Uint8Array.from([]) },
+      { name: 'null payload', payload: null! },
+      { name: 'undefined payload', payload: undefined! },
+    ];
 
-      const input = [protectedHeaders, unprotectedHeaders, payload, tag];
-      const result = schema.parse(input);
+    cases.forEach(({ name, payload }) => {
+      it(`should parse a valid 4-element array with ${name}`, () => {
+        const protectedHeaders = Uint8Array.from([]);
+        const unprotectedHeaders = new Map<number, unknown>();
+        const tag = Uint8Array.from([]);
 
-      expect(result).toBeInstanceOf(Mac0);
-      expect(result).toEqual(
-        new Mac0(protectedHeaders, unprotectedHeaders, payload, tag)
-      );
-    });
-
-    it('should pass null payload through to Mac0 (as unknown as Uint8Array)', () => {
-      const protectedHeaders = Uint8Array.from([]);
-      const unprotectedHeaders = new Map<number, unknown>();
-      const payload = null;
-      const tag = Uint8Array.from([]);
-
-      const input = [protectedHeaders, unprotectedHeaders, payload, tag];
-      const result = schema.parse(input);
-
-      expect(result).toBeInstanceOf(Mac0);
-      expect(result).toEqual(
-        new Mac0(
-          protectedHeaders,
-          unprotectedHeaders,
-          payload as unknown as Uint8Array,
-          tag
-        )
-      );
-    });
-
-    it('should pass undefined payload through to Mac0 (as unknown as Uint8Array)', () => {
-      const protectedHeaders = Uint8Array.from([]);
-      const unprotectedHeaders = new Map<number, unknown>();
-      const payload = undefined;
-      const tag = Uint8Array.from([]);
-
-      const input = [protectedHeaders, unprotectedHeaders, payload, tag];
-      const result = schema.parse(input);
-
-      expect(result).toBeInstanceOf(Mac0);
-      expect(result).toEqual(
-        new Mac0(
-          protectedHeaders,
-          unprotectedHeaders,
-          payload as unknown as Uint8Array,
-          tag
-        )
-      );
+        const input = [protectedHeaders, unprotectedHeaders, payload, tag];
+        const result = schema.parse(input as never);
+        expect(result).toEqual(input);
+      });
     });
   });
 

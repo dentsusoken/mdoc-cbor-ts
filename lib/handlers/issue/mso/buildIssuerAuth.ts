@@ -15,7 +15,7 @@ export type BuildIssuerAuthtParams = {
   /** The issuer namespaces containing issuer signed item tags */
   nameSpaces: IssuerNameSpaces;
   /** The device's public key for authentication */
-  deviceKey: COSEKey;
+  devicePublicKey: COSEKey;
   /** The digest algorithm to use for calculating value digests */
   digestAlgorithm: DigestAlgorithm;
   /** Duration in milliseconds from now until the document becomes valid */
@@ -41,7 +41,7 @@ export type BuildIssuerAuthtParams = {
  * @param params - The parameters for building the IssuerAuth
  * @param params.docType - The document type identifier (e.g., 'org.iso.18013.5.1.mDL')
  * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags
- * @param params.deviceKey - The device's public key for authentication
+ * @param params.devicePublicKey - The device's public key for authentication
  * @param params.digestAlgorithm - The digest algorithm to use for calculating value digests
  * @param params.validFrom - Duration in milliseconds from now until the document becomes valid
  * @param params.validUntil - Duration in milliseconds from now until the document expires
@@ -58,12 +58,12 @@ export type BuildIssuerAuthtParams = {
  *     ['org.iso.18013.5.1', [tag1, tag2]],
  *     ['org.iso.18013.5.2', [tag3]]
  *   ]),
- *   deviceKey: devicePublicKey,
+ *   devicePublicKey,
  *   digestAlgorithm: 'SHA-256',
  *   validFrom: 0,
  *   validUntil: 24 * 60 * 60 * 1000, // +1 day
  *   expectedUpdate: 60 * 60 * 1000, // +1 hour
- *   issuerPrivateKey: privateKey,
+ *   issuerPrivateKey,
  *   x5c: [certificateBytes]
  * });
  * ```
@@ -71,7 +71,7 @@ export type BuildIssuerAuthtParams = {
 export const buildIssuerAuth = async ({
   docType,
   nameSpaces,
-  deviceKey,
+  devicePublicKey,
   digestAlgorithm,
   validFrom,
   validUntil,
@@ -95,7 +95,7 @@ export const buildIssuerAuth = async ({
       expectedUpdate,
     })
   );
-  mso.set('deviceKeyInfo', { deviceKey });
+  mso.set('deviceKeyInfo', { deviceKey: devicePublicKey });
 
   const msoTag24 = createTag24(mso);
 

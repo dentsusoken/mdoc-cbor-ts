@@ -2,7 +2,7 @@ import { COSEKey } from '@auth0/cose';
 import { Document } from '../../../schemas/mdoc';
 import { CreateBuilderFunction } from '../CreateBuilder';
 import { MSOIssueHandler } from '../mso';
-import { BuildDeviceSigned } from './BuildDeviceSigned';
+import { BuildDeviceSigned } from './buildDeviceSigned';
 import { BuildIssuerNameSpaces } from './buildIssuerNameSpaces';
 import { MdocData } from './MdocIssueHandler';
 

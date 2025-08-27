@@ -4,7 +4,7 @@ import { Configuration } from '../../../conf/Configuration';
 import { DeviceResponse, Document } from '../../../schemas/mdoc';
 import { buildProtectedHeaders } from '../cose';
 import { MSOIssueHandlerImpl } from '../mso';
-import { createDeviceSignedBuilder } from './BuildDeviceSigned';
+import { createDeviceSignedBuilder } from './buildDeviceSigned';
 import { createDocumentsBuilder } from './BuildDocuments';
 import { createIssuerNameSpacesBuilder } from './buildIssuerNameSpaces';
 import { MdocData, MdocIssueHandler } from './MdocIssueHandler';

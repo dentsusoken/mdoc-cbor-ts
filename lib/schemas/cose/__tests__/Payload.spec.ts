@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { payloadSchema } from '../Payload';
 import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
-import { requiredMessage } from '@/schemas/common/Required';
 
 describe('Payload', () => {
   describe('should accept valid byte inputs', () => {
@@ -10,29 +9,29 @@ describe('Payload', () => {
       const input = Uint8Array.from([0x01, 0x02, 0x03]);
       const result = payloadSchema.parse(input);
       expect(result).toBeInstanceOf(Uint8Array);
-      expect(Array.from(result)).toEqual([0x01, 0x02, 0x03]);
+      expect(Array.from(result!)).toEqual([0x01, 0x02, 0x03]);
     });
 
     it('should accept Buffer and return Uint8Array', () => {
       const buffer = Buffer.from([0xaa, 0xbb]);
       const result = payloadSchema.parse(buffer);
       expect(result).toBeInstanceOf(Uint8Array);
-      expect(Array.from(result)).toEqual([0xaa, 0xbb]);
+      expect(Array.from(result!)).toEqual([0xaa, 0xbb]);
+    });
+
+    it('should accept null and return null', () => {
+      const result = payloadSchema.parse(null);
+      expect(result).toBeNull();
+    });
+
+    it('should accept undefined and return undefined', () => {
+      const result = payloadSchema.parse(undefined);
+      expect(result).toBeUndefined();
     });
   });
 
   describe('should throw error for invalid type inputs', () => {
     const testCases = [
-      {
-        name: 'null input',
-        input: null,
-        expectedMessage: requiredMessage('Payload'),
-      },
-      {
-        name: 'undefined input',
-        input: undefined,
-        expectedMessage: requiredMessage('Payload'),
-      },
       {
         name: 'boolean input',
         input: true,

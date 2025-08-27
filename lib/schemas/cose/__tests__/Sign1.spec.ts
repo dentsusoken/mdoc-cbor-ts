@@ -1,4 +1,3 @@
-import { Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createSign1Schema } from '../Sign1';
@@ -22,33 +21,10 @@ describe('Sign1', () => {
       const input = [protectedHeaders, unprotectedHeaders, payload, signature];
       const result = schema.parse(input);
 
-      expect(result).toBeInstanceOf(Sign1);
-      expect(result).toEqual(
-        new Sign1(protectedHeaders, unprotectedHeaders, payload, signature)
-      );
+      expect(result).toEqual(input);
     });
 
-    it('should convert null payload to empty Uint8Array', () => {
-      const protectedHeaders = Uint8Array.from([]);
-      const unprotectedHeaders = new Map<number, unknown>();
-      const payload = null;
-      const signature = Uint8Array.from([]);
-
-      const input = [protectedHeaders, unprotectedHeaders, payload, signature];
-      const result = schema.parse(input);
-
-      expect(result).toBeInstanceOf(Sign1);
-      expect(result).toEqual(
-        new Sign1(
-          protectedHeaders,
-          unprotectedHeaders,
-          new Uint8Array(),
-          signature
-        )
-      );
-    });
-
-    it('should convert undefined payload to empty Uint8Array', () => {
+    it('should handle undefined payload', () => {
       const protectedHeaders = Uint8Array.from([]);
       const unprotectedHeaders = new Map<number, unknown>();
       const payload = undefined;
@@ -57,15 +33,19 @@ describe('Sign1', () => {
       const input = [protectedHeaders, unprotectedHeaders, payload, signature];
       const result = schema.parse(input);
 
-      expect(result).toBeInstanceOf(Sign1);
-      expect(result).toEqual(
-        new Sign1(
-          protectedHeaders,
-          unprotectedHeaders,
-          new Uint8Array(),
-          signature
-        )
-      );
+      expect(result).toEqual(input);
+    });
+
+    it('should handle null payload', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = null;
+      const signature = Uint8Array.from([]);
+
+      const input = [protectedHeaders, unprotectedHeaders, payload, signature];
+      const result = schema.parse(input);
+
+      expect(result).toEqual(input);
     });
   });
 

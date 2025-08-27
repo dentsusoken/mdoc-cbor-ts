@@ -4,6 +4,7 @@ import { Tag } from 'cbor-x';
 import { createTag24 } from '@/cbor/createTag24';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { buildIssuerAuth } from '../buildIssuerAuth';
+import { issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 
 // Helper to create a deterministic IssuerSignedItem Tag24
 const createIssuerSignedItemTag24 = (
@@ -25,9 +26,19 @@ describe('buildIssuerAuth', () => {
       ['org.iso.18013.5.1', [createIssuerSignedItemTag24(38)]],
     ]);
 
-    const { publicKey, privateKey } = await COSEKey.generate(Algorithms.ES256, {
-      crv: 'P-256',
-    });
+    const { publicKey: devicePublicKey } = await COSEKey.generate(
+      Algorithms.ES256,
+      {
+        crv: 'P-256',
+      }
+    );
+
+    const { privateKey: issuerPrivateKey } = await COSEKey.generate(
+      Algorithms.ES256,
+      {
+        crv: 'P-256',
+      }
+    );
 
     // const jwk = await privateKey.toJWK();
     // console.log('jwk', jwk);
@@ -38,15 +49,25 @@ describe('buildIssuerAuth', () => {
     const issuerAuth = await buildIssuerAuth({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaces,
-      deviceKey: publicKey,
+      devicePublicKey,
       digestAlgorithm: 'SHA-256',
       validFrom: 0,
       validUntil: 24 * 60 * 60 * 1000,
       expectedUpdate: 60 * 60 * 1000,
-      issuerPrivateKey: privateKey,
+      issuerPrivateKey,
       x5c,
     });
 
-    expect(issuerAuth).toBeInstanceOf(Sign1);
+    const expected = [
+      expect.any(Uint8Array),
+      expect.any(Map<number, unknown>),
+      expect.any(Uint8Array),
+      expect.any(Uint8Array),
+    ];
+    expect(issuerAuth).toEqual(expected);
+
+    const result = issuerAuthSchema.safeParse(issuerAuth);
+
+    expect(result.success).toBe(true);
   });
 });

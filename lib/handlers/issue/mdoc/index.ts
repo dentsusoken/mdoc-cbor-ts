@@ -1,4 +1,4 @@
-export * from './BuildDeviceSigned';
+export * from './buildDeviceSigned';
 export * from './BuildDocuments';
 export * from './buildIssuerNameSpaces';
 export * from './MdocIssueHandler';

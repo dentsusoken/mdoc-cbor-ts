@@ -27,6 +27,7 @@ export const deviceNameSpacesSchema = createMapSchema({
   target: 'DeviceNameSpaces',
   keySchema: nameSpaceSchema,
   valueSchema: deviceSignedItemsSchema,
+  allowEmpty: true,
 });
 
 /**

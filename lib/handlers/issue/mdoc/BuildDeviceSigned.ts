@@ -1,68 +1,63 @@
 import { COSEKey, Sign1 } from '@auth0/cose';
-import { TypedMap } from '@jfromaniello/typedmap';
-import { ByteString } from '../../../cbor';
-import { DeviceSigned } from '../../../schemas/mdoc';
-import { BuildProtectedHeaders } from '../cose';
-import { CreateBuilderFunction } from '../CreateBuilder';
+import { encodeCbor } from '@/cbor/codec';
+import { DeviceSigned } from '@/schemas/mdoc/DeviceSigned';
+import { buildProtectedHeaders } from '@/handlers/issue/cose';
+import { createTag24 } from '@/cbor/createTag24';
 
 /**
- * Type definition for building device-signed data
+ * Builds a DeviceSigned structure for mDL (mobile Driver's License) documents
  * @description
- * A function type that creates device-signed data using the provided COSE key.
- * The function creates a COSE_Sign1 signature for the device's authentication.
- */
-export type BuildDeviceSigned = (coseKey: COSEKey) => Promise<DeviceSigned>;
-
-/**
- * Parameters for creating a device-signed data builder
- * @description
- * Configuration required to create a builder function for device-signed data.
- */
-export type CreateDeviceSignedBuilderParams = {
-  /** Function to build protected headers for the signature */
-  buildProtectedHeaders: BuildProtectedHeaders;
-};
-
-/**
- * Creates a function for building device-signed data
- * @description
- * Returns a function that creates device-signed data using the provided
- * COSE key. The function creates a COSE_Sign1 signature and wraps it
- * in a DeviceSigned structure.
+ * Creates a DeviceSigned object containing empty namespaces and a device authentication
+ * signature. The device signature is created using COSE_Sign1 with a detached payload
+ * (null payload) and the provided device private key.
+ *
+ * The resulting structure follows the ISO/IEC 18013-5 standard for mDL DeviceSigned:
+ * ```cddl
+ * DeviceSigned = {
+ *   "nameSpaces" : DeviceNameSpaces,
+ *   "deviceAuth" : DeviceAuth
+ * }
+ * ```
+ *
+ * @param devicePrivateKey - The COSE private key used to sign the device authentication
+ * @returns Promise resolving to a DeviceSigned object with empty namespaces and device signature
  *
  * @example
  * ```typescript
- * const builder = createDeviceSignedBuilder({
- *   buildProtectedHeaders
- * });
- * const deviceSigned = await builder(deviceKey);
+ * const deviceKey = await COSEKey.generate(Algorithms.ES256, { crv: 'P-256' });
+ * const deviceSigned = await buildDeviceSigned(deviceKey.privateKey);
+ * // deviceSigned.nameSpaces contains empty CBOR Tag 24 Map
+ * // deviceSigned.deviceAuth.deviceSignature contains COSE_Sign1 4-tuple
  * ```
  */
-export const createDeviceSignedBuilder: CreateBuilderFunction<
-  CreateDeviceSignedBuilderParams,
-  BuildDeviceSigned
-> =
-  ({ buildProtectedHeaders }) =>
-  async (coseKey) => {
-    const protectedHeaders = buildProtectedHeaders(coseKey);
-    const sign1 = await Sign1.sign(
-      protectedHeaders,
-      new Map(),
-      null!,
-      await coseKey.toKeyLike()
-    );
+export const buildDeviceSigned = async (devicePrivateKey: COSEKey) => {
+  const protectedHeaders = buildProtectedHeaders(devicePrivateKey);
+  const unprotectedHeaders = new Map();
+  const payload = null!;
+  const keyList = await devicePrivateKey.toKeyLike();
 
-    const deviceSigned: DeviceSigned = {
-      // TODO: Implement DeviceAuthentication
-      // TODO: Add proper types
-      nameSpaces: new ByteString(new TypedMap()),
-      // TODO: DeviceAuthenticationを実装する
-      deviceAuth: {
-        // @ts-ignore
-        // TODO: 型をちゃんとつける
-        deviceSignature: sign1.getContentForEncoding(),
-      },
-    };
+  const { signature } = await Sign1.sign(
+    protectedHeaders,
+    unprotectedHeaders,
+    payload,
+    keyList
+  );
 
-    return deviceSigned;
+  const deviceSigned: DeviceSigned = {
+    nameSpaces: createTag24(new Map()),
+    deviceAuth: {
+      deviceSignature: [
+        encodeCbor(protectedHeaders),
+        unprotectedHeaders,
+        payload,
+        new Uint8Array(
+          signature.buffer,
+          signature.byteOffset,
+          signature.byteLength
+        ),
+      ],
+    },
   };
+
+  return deviceSigned;
+};
