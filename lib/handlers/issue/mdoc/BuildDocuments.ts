@@ -1,22 +1,63 @@
 import { COSEKey } from '@auth0/cose';
-import { Document } from '../../../schemas/mdoc';
-import { CreateBuilderFunction } from '../CreateBuilder';
-import { MSOIssueHandler } from '../mso';
-import { BuildDeviceSigned } from './buildDeviceSigned';
-import { BuildIssuerNameSpaces } from './buildIssuerNameSpaces';
-import { MdocData } from './MdocIssueHandler';
+import { Document } from '@/schemas/mdoc/Document';
+import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
+import {
+  DocTypesRecord,
+  docTypeNameSpaceElementsRecordSchema,
+} from '@/schemas/record/DocTypeNameSpaceElementsRecord';
+import { buildIssuerNameSpaces } from './buildIssuerNameSpaces';
+import { buildIssuerAuth } from '../mso';
 
-/**
- * Type definition for building documents
- * @description
- * A function type that creates a collection of documents from the provided data.
- * Each document includes issuer-signed and device-signed data.
- */
-export type BuildDocuments = (
-  data: MdocData,
-  deviceKey: COSEKey,
-  privateKey: COSEKey
-) => Promise<Document[]>;
+type BuildDocumentsParams = {
+  docTypesRecord: DocTypesRecord;
+  devicePublicKey: COSEKey;
+  issuerPrivateKey: COSEKey;
+  x5c: Uint8Array[];
+  digestAlgorithm: DigestAlgorithm;
+  validFrom: number;
+  validUntil: number;
+  expectedUpdate?: number;
+};
+
+export const createDocuments = async ({
+  docTypesRecord,
+  devicePublicKey,
+  issuerPrivateKey,
+  x5c,
+  digestAlgorithm,
+  validFrom,
+  validUntil,
+  expectedUpdate,
+}: BuildDocumentsParams) => {
+  docTypesRecord = docTypeNameSpaceElementsRecordSchema.parse(docTypesRecord);
+
+  const documents = await Promise.all(
+    Object.entries(docTypesRecord).map(async ([docType, nameSpacesRecord]) => {
+      const nameSpaces = buildIssuerNameSpaces(nameSpacesRecord);
+      const issuerAuth = await buildIssuerAuth({
+        docType,
+        nameSpaces,
+        devicePublicKey,
+        digestAlgorithm,
+        validFrom,
+        validUntil,
+        expectedUpdate,
+        issuerPrivateKey,
+        x5c,
+      });
+      const document: Document = {
+        docType,
+        issuerSigned: {
+          nameSpaces,
+          issuerAuth,
+        },
+        deviceSigned: await buildDeviceSigned(privateKey),
+      };
+      return document;
+    })
+  );
+  return documents;
+};
 
 /**
  * Parameters for creating a documents builder

@@ -5,7 +5,7 @@ import { dataElementIdentifierSchema } from '../common/DataElementIdentifier';
 import { dataElementValueSchema } from '../common/DataElementValue';
 
 /**
- * Schema for name spaces containing data elements
+ * Schema for namespaces containing data elements records
  * @description
  * Validates a required, non-empty record of `NameSpace` to nested records of
  * `DataElementIdentifier` to `DataElementValue`. This represents a hierarchical
@@ -19,10 +19,10 @@ import { dataElementValueSchema } from '../common/DataElementValue';
  *   - Keys must satisfy {@link DataElementIdentifier}
  *   - Values must satisfy {@link DataElementValue}
  *
- * Error messages are prefixed with the target name: `NameSpacesRecord: ...`.
+ * Error messages are prefixed with the target name: `NameSpaceElementsRecord: ...`.
  *
  * ```cddl
- * NameSpacesRecord = {
+ * NameSpaceElementsRecord = {
  *   + NameSpace => {
  *     + DataElementIdentifier => DataElementValue
  *   }
@@ -31,27 +31,35 @@ import { dataElementValueSchema } from '../common/DataElementValue';
  *
  * @example
  * ```typescript
- * const nameSpacesRecord = {
+ * const nameSpaceElementsRecord = {
  *   'org.iso.18013.5.1': {
  *     'given_name': 'John',
  *     'family_name': 'Doe'
  *   }
  * };
- * const result = nameSpacesRecordSchema.parse(nameSpacesRecord); // Returns Record<NameSpace, Record<DataElementIdentifier, DataElementValue>>
+ * const result = nameSpaceElementsRecordSchema.parse(nameSpaceElementsRecord); // Returns NameSpaceElementsRecord
  * ```
  *
  * @see {@link NameSpace}
  * @see {@link DataElementIdentifier}
  * @see {@link DataElementValue}
  */
-export const nameSpacesRecordSchema = createRecordSchema({
-  target: 'NameSpacesRecord',
+export const nameSpaceElementsRecordSchema = createRecordSchema({
+  target: 'NameSpaceElementsRecord',
   keySchema: nameSpaceSchema,
   valueSchema: createRecordSchema({
-    target: 'NameSpacesRecord.Value',
+    target: 'NameSpaceElementsRecord.Value',
     keySchema: dataElementIdentifierSchema,
     valueSchema: dataElementValueSchema,
   }),
 });
 
-export type NameSpacesRecord = z.output<typeof nameSpacesRecordSchema>;
+/**
+ * Type representing a record of namespaces to data element records
+ * @description
+ * A record where each key is a namespace and each value is a record of data element identifiers
+ * to their corresponding values. This type is inferred from the `nameSpaceElementsRecordSchema`.
+ */
+export type NameSpaceElementsRecord = z.output<
+  typeof nameSpaceElementsRecordSchema
+>;

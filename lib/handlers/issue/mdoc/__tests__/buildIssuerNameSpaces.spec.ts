@@ -5,7 +5,7 @@ import {
   recordInvalidTypeMessage,
 } from '@/schemas/common/Record';
 import { buildIssuerNameSpaces } from '../buildIssuerNameSpaces';
-import type { NameSpacesRecord } from '@/schemas/mdoc/NameSpacesRecord';
+import type { NameSpaceElementsRecord } from '@/schemas/record/NameSpaceElementsRecord';
 import { createTag24 } from '@/cbor';
 
 /**
@@ -28,7 +28,7 @@ describe('buildIssuerNameSpaces', () => {
 
   describe('valid cases', () => {
     it('should build IssuerNameSpaces with Tag(24) items for each element', () => {
-      const input: NameSpacesRecord = {
+      const input: NameSpaceElementsRecord = {
         'org.iso.18013.5.1': {
           given_name: 'John',
           family_name: 'Doe',
@@ -78,7 +78,7 @@ describe('buildIssuerNameSpaces', () => {
     it('should throw when an inner namespace has no elements', () => {
       const input = {
         'org.iso.18013.5.1': {},
-      } as unknown as NameSpacesRecord;
+      } as unknown as NameSpaceElementsRecord;
 
       try {
         buildIssuerNameSpaces(input);
@@ -94,7 +94,7 @@ describe('buildIssuerNameSpaces', () => {
     });
 
     it('should throw when there are no namespaces', () => {
-      const input = {} as NameSpacesRecord;
+      const input = {} as NameSpaceElementsRecord;
       try {
         buildIssuerNameSpaces(input);
         expect.fail('Expected ZodError for empty outer record');
@@ -110,7 +110,9 @@ describe('buildIssuerNameSpaces', () => {
 
     it('should throw for invalid input type', () => {
       try {
-        buildIssuerNameSpaces('not-a-record' as unknown as NameSpacesRecord);
+        buildIssuerNameSpaces(
+          'not-a-record' as unknown as NameSpaceElementsRecord
+        );
         expect.fail('Expected parse to throw a ZodError');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);

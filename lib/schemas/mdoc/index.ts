@@ -20,4 +20,3 @@ export * from './IssuerSigned';
 export * from './IssuerSignedItem';
 export * from './IssuerSignedItemBytes';
 export * from './Status';
-export * from './DocTypesRecord';
