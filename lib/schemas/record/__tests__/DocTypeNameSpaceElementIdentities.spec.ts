@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { docTypeNamespaceElementIdentitiesRecordSchema } from '../DocTypeNameSpaceElementIdentities';
+import { docTypeNameSpaceElementIdentitiesRecordSchema } from '../DocTypeNameSpaceElementIdentities';
 import {
   recordEmptyMessage,
   recordInvalidTypeMessage,
@@ -20,7 +20,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNamespaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -34,7 +34,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNamespaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -46,7 +46,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNamespaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -57,7 +57,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNamespaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -73,7 +73,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNamespaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
       expect(result).toEqual(input);
     });
   });
@@ -167,7 +167,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
     cases.forEach(({ name, input, expected }) => {
       it(`should reject ${name}`, () => {
         try {
-          docTypeNamespaceElementIdentitiesRecordSchema.parse(input as never);
+          docTypeNameSpaceElementIdentitiesRecordSchema.parse(input as never);
           expect.unreachable('Expected parsing to throw');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);

@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { documentSchema } from '../Document';
 import { createTag24 } from '@/cbor/createTag24';
-// Tag import not needed in current tests
 import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 import { requiredMessage } from '@/schemas/common/Required';
-// removed unused imports after test refactor
 
 describe('Document', () => {
   const protectedHeaders = Uint8Array.from([]);
@@ -57,7 +55,8 @@ describe('Document', () => {
       ]),
     ],
   ]);
-  describe('should accept valid document', () => {
+
+  describe('valid cases', () => {
     it('should accept valid document with issuerSigned and deviceSigned', () => {
       const result = documentSchema.parse(validDocument);
       expect(result.docType).toEqual(validDocument.get('docType'));
@@ -67,7 +66,7 @@ describe('Document', () => {
         unknown
       >;
       const issuerNameSpacesInput = issuerSignedInput.get('nameSpaces');
-      expect(result.issuerSigned.nameSpaces).toEqual(issuerNameSpacesInput);
+      expect(result.issuerSigned!.nameSpaces).toEqual(issuerNameSpacesInput);
 
       const deviceSignedInput = validDocument.get('deviceSigned') as Map<
         string,
@@ -77,7 +76,7 @@ describe('Document', () => {
       expect(result.deviceSigned!.nameSpaces).toEqual(deviceNameSpacesInput);
     });
 
-    it('should accept valid document with issuerSigned', () => {
+    it('should accept valid document with issuerSigned only', () => {
       const validDocument2 = new Map<string, unknown>(validDocument.entries());
       validDocument2.delete('deviceSigned');
       const result = documentSchema.parse(validDocument2);
@@ -88,12 +87,43 @@ describe('Document', () => {
         unknown
       >;
       const issuerNameSpacesInput = issuerSignedInput.get('nameSpaces');
-      expect(result.issuerSigned.nameSpaces).toEqual(issuerNameSpacesInput);
+      expect(result.issuerSigned!.nameSpaces).toEqual(issuerNameSpacesInput);
       expect(validDocument2.get('deviceSigned')).toBeUndefined();
+    });
+
+    it('should accept valid document with errors and docType only', () => {
+      const errorDocument = new Map<string, unknown>([
+        ['docType', 'com.example.document'],
+        [
+          'errors',
+          new Map([
+            [
+              'org.iso.18013.5.1',
+              new Map([
+                ['given_name', 0], // ErrorCode 0 for invalid_request
+              ]),
+            ],
+          ]),
+        ],
+      ]);
+
+      const result = documentSchema.parse(errorDocument);
+      expect(result.docType).toEqual(errorDocument.get('docType'));
+      expect(result.errors).toBeDefined();
+      expect(result.errors!.size).toBe(1);
+      expect(result.errors!.has('org.iso.18013.5.1')).toBe(true);
+      expect(result.errors!.get('org.iso.18013.5.1')!.has('given_name')).toBe(
+        true
+      );
+      expect(result.errors!.get('org.iso.18013.5.1')!.get('given_name')).toBe(
+        0
+      );
+      expect(result.issuerSigned).toBeUndefined();
+      expect(result.deviceSigned).toBeUndefined();
     });
   });
 
-  describe('should reject invalid inputs', () => {
+  describe('invalid cases', () => {
     const invalidTypeCases: Array<{
       name: string;
       input: unknown;
@@ -140,26 +170,13 @@ describe('Document', () => {
       it(`should reject ${name}`, () => {
         try {
           documentSchema.parse(input as never);
-          throw new Error('Should have thrown');
+          expect.unreachable('Expected parsing to throw');
         } catch (error) {
-          const zodError = error as unknown as import('zod').ZodError;
+          expect(error).toBeInstanceOf(Error);
+          const zodError = error as import('zod').ZodError;
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
-    });
-
-    it('should reject when issuerSigned is missing (derived from validDocument)', () => {
-      const invalidDoc = new Map<string, unknown>(validDocument.entries());
-      invalidDoc.delete('issuerSigned');
-      try {
-        documentSchema.parse(invalidDoc);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        const zodError = error as unknown as import('zod').ZodError;
-        expect(zodError.issues[0].message).toBe(
-          requiredMessage('IssuerSigned')
-        );
-      }
     });
   });
 });

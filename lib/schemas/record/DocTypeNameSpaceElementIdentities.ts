@@ -1,8 +1,7 @@
 import { z } from 'zod';
 import { createRecordSchema } from '@/schemas/common/Record';
-import { dataElementsArraySchema } from '@/schemas/mso/DataElementsArray';
 import { docTypeSchema } from '@/schemas/common/DocType';
-import { nameSpaceSchema } from '../common';
+import { nameSpaceElementIdentifiersRecordSchema } from './NameSpaceElementIdentifiersRecord';
 
 /**
  * Schema for document types containing namespace element identities records
@@ -47,15 +46,11 @@ import { nameSpaceSchema } from '../common';
  * @see {@link NameSpace}
  * @see {@link DataElementsArray}
  */
-export const docTypeNamespaceElementIdentitiesRecordSchema = createRecordSchema(
+export const docTypeNameSpaceElementIdentitiesRecordSchema = createRecordSchema(
   {
-    target: 'DocTypeNamespaceElementIdentitiesRecord',
+    target: 'DocTypeNameSpaceElementIdentitiesRecord',
     keySchema: docTypeSchema,
-    valueSchema: createRecordSchema({
-      target: 'DocTypeNamespaceElementIdentitiesRecord.Value',
-      keySchema: nameSpaceSchema,
-      valueSchema: dataElementsArraySchema,
-    }),
+    valueSchema: nameSpaceElementIdentifiersRecordSchema,
   }
 );
 
@@ -66,6 +61,6 @@ export const docTypeNamespaceElementIdentitiesRecordSchema = createRecordSchema(
  * to arrays of data element identifiers. This type is inferred from the
  * `docTypeNamespaceElementIdentitiesRecordSchema`.
  */
-export type DocTypeNamespaceElementIdentitiesRecord = z.output<
-  typeof docTypeNamespaceElementIdentitiesRecordSchema
+export type DocTypeNameSpaceElementIdentitiesRecord = z.output<
+  typeof docTypeNameSpaceElementIdentitiesRecordSchema
 >;

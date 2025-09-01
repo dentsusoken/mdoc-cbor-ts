@@ -33,8 +33,8 @@ import { createStructSchema } from '../common/Struct';
  */
 export const documentObjectSchema = z.object({
   docType: docTypeSchema,
-  issuerSigned: issuerSignedSchema,
-  deviceSigned: deviceSignedSchema.optional(), // TODO - is optional correct?
+  issuerSigned: issuerSignedSchema.optional(),
+  deviceSigned: deviceSignedSchema.optional(),
   errors: errorsSchema.optional(),
 });
 

@@ -87,7 +87,7 @@ describe('buildIssuerNameSpaces', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            recordEmptyMessage('NameSpacesRecord.Value')
+            recordEmptyMessage('NameSpaceElementsRecord.Value')
           );
         }
       }
@@ -102,7 +102,7 @@ describe('buildIssuerNameSpaces', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            recordEmptyMessage('NameSpacesRecord')
+            recordEmptyMessage('NameSpaceElementsRecord')
           );
         }
       }
@@ -118,7 +118,7 @@ describe('buildIssuerNameSpaces', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            recordInvalidTypeMessage('NameSpacesRecord')
+            recordInvalidTypeMessage('NameSpaceElementsRecord')
           );
         }
       }

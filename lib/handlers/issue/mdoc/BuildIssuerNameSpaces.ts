@@ -18,7 +18,7 @@ import { createTag24 } from '@/cbor/createTag24';
  * The function validates the input data, generates cryptographically secure random
  * values, and creates the hierarchical structure required for mdoc issuer namespaces.
  *
- * @param nameSpacesRecord - The namespace record containing data elements to be signed
+ * @param nameSpacesElements - The namespace record containing data elements to be signed
  * @returns A Map of namespaces to arrays of CBOR Tag 24 wrapped issuer-signed items
  * @throws {Error} When a namespace contains no elements
  * @throws {Error} When no namespaces are provided
@@ -37,14 +37,14 @@ import { createTag24 } from '@/cbor/createTag24';
  * ```
  */
 export const buildIssuerNameSpaces = (
-  nameSpacesRecord: NameSpaceElementsRecord
+  nameSpacesElements: NameSpaceElementsRecord
 ): IssuerNameSpaces => {
-  nameSpacesRecord = nameSpaceElementsRecordSchema.parse(nameSpacesRecord);
+  nameSpacesElements = nameSpaceElementsRecordSchema.parse(nameSpacesElements);
 
   const issuerNameSpaces: IssuerNameSpaces = new Map<NameSpace, Tag[]>();
   let digestID = 0;
 
-  Object.entries(nameSpacesRecord).forEach(([nameSpace, elements]) => {
+  Object.entries(nameSpacesElements).forEach(([nameSpace, elements]) => {
     const issuerSignedItemTags: Tag[] = [];
 
     Object.entries(elements).forEach(([elementIdentifier, elementValue]) => {
