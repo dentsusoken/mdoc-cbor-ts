@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { errorCodeSchema } from '../ErrorCode';
+import { errorCodeSchema, ErrorCode } from '../ErrorCode';
 import { intInvalidTypeMessage, intIntegerMessage } from '@/schemas/common/Int';
 import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';
@@ -11,9 +11,11 @@ describe('ErrorCode', () => {
       { name: 'positive integer', input: 1 },
       { name: 'positive integer 2', input: 2 },
       { name: 'large positive integer', input: 100 },
+      { name: 'unknown framework positive code', input: 9999 },
       { name: 'negative integer', input: -1 },
       { name: 'negative integer 2', input: -2 },
       { name: 'large negative integer', input: -100 },
+      { name: 'unknown framework negative code', input: -9999 },
     ];
 
     testCases.forEach(({ name, input }) => {
@@ -73,6 +75,24 @@ describe('ErrorCode', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].message).toBe(expectedMessage);
         }
+      });
+    });
+  });
+
+  describe('should validate ErrorCode constants', () => {
+    it('all exported ErrorCode values are integers', () => {
+      const values = Object.values(ErrorCode);
+      values.forEach((code) => {
+        expect(typeof code).toBe('number');
+        expect(Number.isInteger(code)).toBe(true);
+      });
+    });
+
+    it('schema accepts each ErrorCode constant', () => {
+      const values = Object.values(ErrorCode);
+      values.forEach((code) => {
+        const parsed = errorCodeSchema.parse(code);
+        expect(parsed).toBe(code);
       });
     });
   });

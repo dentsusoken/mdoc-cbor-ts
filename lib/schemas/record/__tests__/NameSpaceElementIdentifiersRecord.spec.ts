@@ -23,6 +23,23 @@ describe('NameSpaceElementIdentifiersRecord', () => {
       expect(result).toEqual(input);
     });
 
+    it('should accept readonly arrays in input and return mutable arrays in output', () => {
+      const input: Record<string, readonly string[]> = {
+        'org.iso.18013.5.1': ['given_name', 'family_name'] as const,
+      } as const;
+
+      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+
+      expect(Array.isArray(result['org.iso.18013.5.1'])).toBe(true);
+      // Mutation should be allowed on the output type (string[])
+      result['org.iso.18013.5.1'].push('age');
+      expect(result['org.iso.18013.5.1']).toEqual([
+        'given_name',
+        'family_name',
+        'age',
+      ]);
+    });
+
     it('should parse a record with multiple namespaces', () => {
       const input = {
         'org.iso.18013.5.1': ['given_name', 'family_name'],
@@ -31,6 +48,17 @@ describe('NameSpaceElementIdentifiersRecord', () => {
 
       const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
       expect(result).toEqual(input);
+    });
+
+    it('should accept as const record and preserve values', () => {
+      const input = {
+        'org.iso.18013.5.1': ['a', 'b'] as const,
+        'org.iso.18013.5.2': ['c'] as const,
+      } as const;
+
+      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+      expect(result['org.iso.18013.5.1']).toEqual(['a', 'b']);
+      expect(result['org.iso.18013.5.2']).toEqual(['c']);
     });
 
     it('should parse a record with namespace containing special characters', () => {

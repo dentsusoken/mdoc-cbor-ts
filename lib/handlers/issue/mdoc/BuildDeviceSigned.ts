@@ -30,7 +30,9 @@ import { createTag24 } from '@/cbor/createTag24';
  * // deviceSigned.deviceAuth.deviceSignature contains COSE_Sign1 4-tuple
  * ```
  */
-export const buildDeviceSigned = async (devicePrivateKey: COSEKey) => {
+export const buildDeviceSigned = async (
+  devicePrivateKey: COSEKey
+): Promise<DeviceSigned> => {
   const protectedHeaders = buildProtectedHeaders(devicePrivateKey);
   const unprotectedHeaders = new Map();
   const payload = null!;

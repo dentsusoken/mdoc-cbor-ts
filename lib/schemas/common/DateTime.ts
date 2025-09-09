@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createRequiredSchema } from './Required';
 import { Tag0 } from '@/cbor/Tag0';
+import { toISODateTimeString } from '@/utils/toISODateTimeString';
 
 /**
  * Creates an error message for invalid date-time format
@@ -21,17 +22,20 @@ export const dateTimeInvalidTypeMessage = (target: string): string =>
 /**
  * Creates the inner schema for date-time validation
  * @description
- * This schema accepts either a string in YYYY-MM-DDTHH:MM:SSZ format (or any parseable
- * ISO 8601 date-time which will be normalized) or a Tag0 instance and transforms both
- * to a validated date-time string without milliseconds (YYYY-MM-DDTHH:MM:SSZ).
- * String inputs are validated by attempting to create a Tag0 instance.
+ * This schema accepts either:
+ * - a string in YYYY-MM-DDTHH:MM:SSZ format (or any parseable ISO 8601 date-time),
+ * - a Tag0 instance, or
+ * - a Date instance
+ * and transforms the input into a validated date-time string without milliseconds
+ * (YYYY-MM-DDTHH:MM:SSZ). String inputs are validated by attempting to create a Tag0
+ * instance; Date inputs are normalized using `toISODateTimeString`.
  *
  * @param target - The target field name used in error messages
  * @returns A Zod schema that validates and transforms inputs to YYYY-MM-DDTHH:MM:SSZ strings
  */
 const createDateTimeInnerSchema = (
   target: string
-): z.ZodType<string, z.ZodTypeDef, string | Tag0> =>
+): z.ZodType<string, z.ZodTypeDef, string | Tag0 | Date> =>
   z.union(
     [
       z.string().transform((value, ctx) => {
@@ -47,6 +51,17 @@ const createDateTimeInnerSchema = (
         }
       }),
       z.instanceof(Tag0).transform((tag0) => tag0.value),
+      z.instanceof(Date).transform((date, ctx) => {
+        try {
+          return toISODateTimeString(date);
+        } catch (error) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: dateTimeInvalidFormatMessage(target),
+          });
+          return z.NEVER;
+        }
+      }),
     ],
     {
       errorMap: () => ({
@@ -59,17 +74,19 @@ const createDateTimeInnerSchema = (
  * Builds a date-time schema that validates date-time strings and Tag0 instances.
  * @description
  * The resulting schema:
- * - Accepts either a string in YYYY-MM-DDTHH:MM:SSZ format (or parseable ISO date-time) or a Tag0 instance
+ * - Accepts a string in YYYY-MM-DDTHH:MM:SSZ format (or parseable ISO date-time), a Tag0 instance, or a Date
  * - Returns a validated date-time string in YYYY-MM-DDTHH:MM:SSZ format (milliseconds stripped)
  * - Provides target-prefixed error messages for invalid formats and types
  *
  * This schema is designed for validating date-time values that can come from either:
  * - Direct string input (e.g., from JSON)
+ * - Direct Date input (runtime-generated dates)
  * - CBOR decoding where Tag(0) is automatically converted to Tag0 instances
  *
  * Example accepted inputs are normalized to the exact format:
  * - "2024-03-20T15:30:00.123Z" -> "2024-03-20T15:30:00Z"
  * - "2024-03-20T15:30:00+09:00" -> "2024-03-20T06:30:00Z" (UTC)
+ * - new Date("2024-03-20T15:30:00.123Z") -> "2024-03-20T15:30:00Z"
  *
  * @param target - Prefix used in error messages (e.g., "ValidityInfo", "IssuerAuth")
  */

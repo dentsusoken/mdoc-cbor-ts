@@ -1,4 +1,3 @@
-import { COSEKey } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceKeySchema, DEVICE_KEY_MISSING_KTY_MESSAGE } from '../DeviceKey';
@@ -10,7 +9,7 @@ describe('DeviceKey', () => {
     it('should accept Map with numeric kty label (1)', () => {
       const key = new Map<number, unknown>([[1, 2]]);
       const result = deviceKeySchema.parse(key);
-      expect(result).toBeInstanceOf(COSEKey);
+      expect(result).toEqual(key);
     });
 
     it('should accept Map with additional labels', () => {
@@ -19,7 +18,7 @@ describe('DeviceKey', () => {
         [-2, Uint8Array.from([1, 2, 3])],
       ]);
       const result = deviceKeySchema.parse(key);
-      expect(result).toBeInstanceOf(COSEKey);
+      expect(result).toEqual(key);
     });
   });
 

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createRequiredSchema } from './Required';
 import { Tag1004 } from '@/cbor/Tag1004';
+import { toISOFullDateString } from '@/utils/toISOFullDateString';
 
 /**
  * Creates an error message for invalid full-date format
@@ -21,16 +22,17 @@ export const fullDateInvaliTypeMessage = (target: string): string =>
 /**
  * Creates the inner schema for full-date validation
  * @description
- * This schema accepts either a string in YYYY-MM-DD format or a Tag1004 instance
- * and transforms both to a validated date string. String inputs are validated by
- * attempting to create a Tag1004 instance, which will throw for invalid formats.
+ * This schema accepts either a string in YYYY-MM-DD format, a Tag1004 instance, or a
+ * Date instance and transforms the input to a validated date string. String inputs
+ * are validated by attempting to create a Tag1004 instance, which will throw for
+ * invalid formats. Date inputs are normalized using `toISOFullDateString`.
  *
  * @param target - The target field name used in error messages
  * @returns A Zod schema that validates and transforms date inputs to YYYY-MM-DD strings
  */
 const createFullDateInnerSchema = (
   target: string
-): z.ZodType<string, z.ZodTypeDef, string | Tag1004> =>
+): z.ZodType<string, z.ZodTypeDef, string | Tag1004 | Date> =>
   z.union(
     [
       z.string().transform((value, ctx) => {
@@ -46,6 +48,17 @@ const createFullDateInnerSchema = (
         }
       }),
       z.instanceof(Tag1004).transform((tag1004) => tag1004.value),
+      z.instanceof(Date).transform((date, ctx) => {
+        try {
+          return toISOFullDateString(date);
+        } catch (error) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: fullDateInvalidFormatMessage(target),
+          });
+          return z.NEVER;
+        }
+      }),
     ],
     {
       errorMap: () => ({
@@ -58,12 +71,13 @@ const createFullDateInnerSchema = (
  * Builds a full-date schema that validates date strings and Tag1004 instances.
  * @description
  * The resulting schema:
- * - Accepts either a string in YYYY-MM-DD format or a Tag1004 instance
+ * - Accepts either a string in YYYY-MM-DD format, a Tag1004 instance, or a Date
  * - Returns a validated date string in YYYY-MM-DD format
  * - Provides target-prefixed error messages for invalid formats and types
  *
  * This schema is designed for validating date values that can come from either:
  * - Direct string input (e.g., from JSON)
+ * - Direct Date input (runtime-generated dates)
  * - CBOR decoding where Tag(1004) is automatically converted to Tag1004 instances
  *
  * String inputs are validated by attempting to create a Tag1004 instance, which
@@ -81,6 +95,7 @@ const createFullDateInnerSchema = (
  * const validityInfoSchema = createFullDateSchema('ValidityInfo');
  * const value1 = validityInfoSchema.parse('2024-03-20'); // '2024-03-20'
  * const value2 = validityInfoSchema.parse(new Tag1004('2024-03-20')); // '2024-03-20'
+ * const value3 = validityInfoSchema.parse(new Date('2024-03-20T15:30:00Z')); // '2024-03-20'
  * ```
  *
  * @example

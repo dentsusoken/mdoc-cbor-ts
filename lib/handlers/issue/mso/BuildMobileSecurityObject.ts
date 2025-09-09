@@ -1,9 +1,9 @@
-import { COSEKey } from '@auth0/cose';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { MobileSecurityObject } from '@/schemas/mso/MobileSecurityObject';
 import { buildValidityInfo } from './buildValidityInfo';
 import { buildValueDigests } from './buildValueDigests';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
+import { DeviceKey } from '@/schemas/mso/DeviceKey';
 
 /**
  * Parameters for building a Mobile Security Object (MSO).
@@ -14,7 +14,7 @@ export type BuildMobileSecurityObjectParams = {
   /** The issuer namespaces containing issuer signed item tags */
   nameSpaces: IssuerNameSpaces;
   /** The device's public key for authentication */
-  deviceKey: COSEKey;
+  deviceKey: DeviceKey;
   /** The digest algorithm to use for calculating value digests */
   digestAlgorithm: DigestAlgorithm;
   /** Duration in milliseconds from now until the document becomes valid */
@@ -51,7 +51,7 @@ export type BuildMobileSecurityObjectParams = {
  *     ['org.iso.18013.5.1', [tag1, tag2]],
  *     ['org.iso.18013.5.2', [tag3]]
  *   ]),
- *   deviceKey: devicePublicKey,
+ *   deviceKey: devicePublicKey.esMap,
  *   digestAlgorithm: 'SHA-256',
  *   validFrom: 0,
  *   validUntil: 24 * 60 * 60 * 1000, // +1 day
@@ -75,7 +75,7 @@ export type BuildMobileSecurityObjectParams = {
  * const mso = await buildMobileSecurityObject({
  *   docType: 'org.iso.18013.5.1.mDL',
  *   nameSpaces: new Map([['org.iso.18013.5.1', [tag1]]]),
- *   deviceKey: devicePublicKey,
+ *   deviceKey: devicePublicKey.esMap,
  *   digestAlgorithm: 'SHA-256',
  *   validFrom: 0,
  *   validUntil: 24 * 60 * 60 * 1000

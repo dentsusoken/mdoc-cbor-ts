@@ -69,7 +69,7 @@ describe('buildMobileSecurityObject', () => {
       x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
       y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
       alg: 'ES256',
-    });
+    }).esMap;
 
     const mso = await buildMobileSecurityObject({
       docType,
@@ -115,7 +115,7 @@ describe('buildMobileSecurityObject', () => {
       x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
       y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
       alg: 'ES256',
-    });
+    }).esMap;
 
     const mso = await buildMobileSecurityObject({
       docType,

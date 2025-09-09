@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { mobileSecurityObjectSchema } from '../MobileSecurityObject';
-import { DateTime } from '@/cbor/DateTime';
 import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
 import { ExactKeyMap } from 'exact-key-map';
@@ -18,9 +17,9 @@ const validMSO = [
   [
     'validityInfo',
     [
-      ['signed', new DateTime('2024-03-20T10:00:00Z')],
-      ['validFrom', new DateTime('2024-03-20T10:00:00Z')],
-      ['validUntil', new DateTime('2025-03-20T10:00:00Z')],
+      ['signed', '2024-03-20T10:00:00Z'],
+      ['validFrom', '2024-03-20T10:00:00Z'],
+      ['validUntil', '2025-03-20T10:00:00Z'],
     ],
   ],
 ] as const;
@@ -51,12 +50,9 @@ describe('MobileSecurityObject Schema', () => {
       const signed = result.validityInfo.signed;
       const validFrom = result.validityInfo.validFrom;
       const validUntil = result.validityInfo.validUntil;
-      expect(signed).toBeInstanceOf(DateTime);
-      expect(signed.toISOString()).toBe('2024-03-20T10:00:00Z');
-      expect(validFrom).toBeInstanceOf(DateTime);
-      expect(validFrom.toISOString()).toBe('2024-03-20T10:00:00Z');
-      expect(validUntil).toBeInstanceOf(DateTime);
-      expect(validUntil.toISOString()).toBe('2025-03-20T10:00:00Z');
+      expect(signed).toBe('2024-03-20T10:00:00Z');
+      expect(validFrom).toBe('2024-03-20T10:00:00Z');
+      expect(validUntil).toBe('2025-03-20T10:00:00Z');
     });
   });
 

@@ -5,7 +5,10 @@ import {
   issuerNameSpacesSchema,
 } from '@/schemas/mdoc/IssuerNameSpaces';
 import { issuerSignedItemSchema } from '@/schemas/mdoc/IssuerSignedItem';
-import { NameSpaceElementIdentifiersRecord } from '@/schemas/record/NameSpaceElementIdentifiersRecord';
+import {
+  nameSpaceElementIdentifiersRecordSchema,
+  type NameSpaceElementIdentifiersRecord,
+} from '@/schemas/record/NameSpaceElementIdentifiersRecord';
 
 /**
  * Extracts selected issuer-signed namespaces based on requested element identifiers
@@ -57,6 +60,9 @@ export const extractSelectedIssuerNameSpaces = (
   nameSpaceElementIdentities: NameSpaceElementIdentifiersRecord
 ): IssuerNameSpaces => {
   nameSpaces = issuerNameSpacesSchema.parse(nameSpaces);
+  nameSpaceElementIdentities = nameSpaceElementIdentifiersRecordSchema.parse(
+    nameSpaceElementIdentities
+  );
 
   const result = new Map<string, Tag[]>();
 

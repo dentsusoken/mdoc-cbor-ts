@@ -28,6 +28,14 @@ describe('createDateTimeSchema', () => {
       const result = schema.parse(tag);
       expect(result).toBe('2024-03-20T15:30:00Z');
     });
+
+    it('should accept a Date instance and normalize to YYYY-MM-DDTHH:MM:SSZ', () => {
+      const input = new Date('2024-03-20T15:30:00.123Z');
+      // Using toISOString and trimming ms to reflect internal normalization
+      const expected = '2024-03-20T15:30:00Z';
+      const result = schema.parse(input);
+      expect(result).toBe(expected);
+    });
   });
 
   describe('invalid cases', () => {
@@ -59,7 +67,6 @@ describe('createDateTimeSchema', () => {
       { name: 'number', value: 123 },
       { name: 'boolean', value: true },
       { name: 'object', value: {} },
-      { name: 'Date object', value: new Date() },
     ];
 
     wrongTypeCases.forEach(({ name, value }) => {
@@ -97,6 +104,23 @@ describe('createDateTimeSchema', () => {
           }
         }
       });
+    });
+
+    it('should throw when Date.toISOString throws', () => {
+      const badDate = new Date('invalid');
+      // Date.toISOString will throw for invalid Date
+      try {
+        // simulate user passing a Date indirectly (schema expects string or Tag0)
+        schema.parse(badDate);
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        if (error instanceof z.ZodError) {
+          expect(error.issues[0].message).toBe(
+            dateTimeInvalidFormatMessage(target)
+          );
+        }
+      }
     });
   });
 });

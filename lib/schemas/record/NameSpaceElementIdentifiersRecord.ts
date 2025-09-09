@@ -44,7 +44,11 @@ import { dataElementsArraySchema } from '../mso/DataElementsArray';
  */
 export const createNameSpaceElementIdentifiersRecordSchema = (
   target: string
-): z.ZodType<Record<string, string[]>> =>
+): z.ZodType<
+  Record<string, string[]>,
+  z.ZodTypeDef,
+  Record<string, readonly string[]>
+> =>
   createRecordSchema({
     target,
     keySchema: nameSpaceSchema,

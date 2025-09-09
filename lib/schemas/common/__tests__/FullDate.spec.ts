@@ -33,6 +33,12 @@ describe('createFullDateSchema', () => {
       const result = schema.parse(tag);
       expect(result).toBe('2024-03-20');
     });
+
+    it('should accept a Date instance and return YYYY-MM-DD', () => {
+      const date = new Date('2024-03-20T10:15:30.000Z');
+      const result = schema.parse(date);
+      expect(result).toBe('2024-03-20');
+    });
   });
 
   describe('invalid format strings', () => {
@@ -64,7 +70,6 @@ describe('createFullDateSchema', () => {
     }> = [
       { name: 'number', value: 123 },
       { name: 'boolean', value: true },
-      { name: 'Date object', value: new Date() },
       { name: 'null', value: null, isRequiredError: true },
       { name: 'undefined', value: undefined, isRequiredError: true },
     ];
@@ -85,6 +90,21 @@ describe('createFullDateSchema', () => {
           }
         }
       });
+    });
+  });
+
+  describe('invalid Date inputs', () => {
+    it('should throw error when Date is invalid', () => {
+      const badDate = new Date('invalid');
+      try {
+        schema.parse(badDate);
+        throw new Error('Expected ZodError to be thrown');
+      } catch (err) {
+        const zerr = err as ZodError;
+        expect(zerr.issues[0]?.message).toBe(
+          fullDateInvalidFormatMessage(target)
+        );
+      }
     });
   });
 });

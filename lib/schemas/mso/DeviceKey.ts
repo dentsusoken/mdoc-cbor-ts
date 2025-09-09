@@ -74,21 +74,21 @@ export const DEVICE_KEY_MISSING_KTY_MESSAGE =
  *
  * @see {@link COSEKey}
  */
-export const deviceKeySchema = createLabelKeyMapSchema('DeviceKey', false)
-  .superRefine((value, ctx) => {
-    if (!(value instanceof Map)) {
-      return;
-    }
-    const hasKty = value.has(1) || value.has('kty');
-    if (!hasKty) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: DEVICE_KEY_MISSING_KTY_MESSAGE,
-      });
-    }
-  })
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  .transform((data) => new COSEKey(data as Map<any, any>));
+export const deviceKeySchema = createLabelKeyMapSchema(
+  'DeviceKey',
+  false
+).superRefine((value, ctx) => {
+  if (!(value instanceof Map)) {
+    return;
+  }
+  const hasKty = value.has(1) || value.has('kty');
+  if (!hasKty) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: DEVICE_KEY_MISSING_KTY_MESSAGE,
+    });
+  }
+});
 
 /**
  * Type definition for device key

@@ -1,4 +1,3 @@
-import { COSEKey } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceKeyInfoSchema } from '../DeviceKeyInfo';
@@ -8,21 +7,21 @@ import { requiredMessage } from '@/schemas/common/Required';
 describe('DeviceKeyInfo', () => {
   describe('valid inputs', () => {
     it('should accept required fields only', () => {
-      const input = new Map<string, unknown>([
-        ['deviceKey', new Map<number, unknown>([[1, 2]])],
-      ]);
+      const deviceKey = new Map<number, unknown>([[1, 2]]);
+      const input = new Map<string, unknown>([['deviceKey', deviceKey]]);
       const result = deviceKeyInfoSchema.parse(input);
-      expect(result.deviceKey).toBeInstanceOf(COSEKey);
+      expect(result.deviceKey).toEqual(deviceKey);
     });
 
     it('should accept all fields', () => {
+      const deviceKey = new Map<number, unknown>([[1, 2]]);
       const input = new Map<string, unknown>([
-        ['deviceKey', new Map<number, unknown>([[1, 2]])],
+        ['deviceKey', deviceKey],
         ['keyAuthorizations', new Map()],
         ['keyInfo', new Map()],
       ]);
       const result = deviceKeyInfoSchema.parse(input);
-      expect(result.deviceKey).toBeInstanceOf(COSEKey);
+      expect(result.deviceKey).toEqual(deviceKey);
       expect(result.keyAuthorizations).toEqual({});
       expect(result.keyInfo).toBeInstanceOf(Map);
       expect((result.keyInfo as Map<unknown, unknown>).size).toBe(0);
