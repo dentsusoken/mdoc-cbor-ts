@@ -4,7 +4,8 @@ import { generateP256KeyPair } from '../generateP256KeyPair';
 
 describe('importEcPublicKeyFromJwk', () => {
   it('imports P-256 public JWK and verifies signature', async () => {
-    const { privateKeyJwk, publicKeyJwk } = generateP256KeyPair();
+    const { privateJwk: privateKeyJwk, publicJwk: publicKeyJwk } =
+      generateP256KeyPair();
 
     const pubWithKid = {
       ...publicKeyJwk,

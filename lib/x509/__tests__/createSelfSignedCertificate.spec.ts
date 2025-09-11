@@ -1,50 +1,43 @@
 import { describe, it, expect } from 'vitest';
-import { KEYUTIL, X509 } from 'jsrsasign';
-import {
-  webcrypto as nodeWebCrypto,
-  randomBytes as nodeRandomBytes,
-} from 'node:crypto';
+import { KJUR } from 'jsrsasign';
 import { createSelfSignedCertificate } from '../createSelfSignedCertificate';
-
-const rng = (n: number): Uint8Array => {
-  if (typeof nodeRandomBytes === 'function') {
-    return new Uint8Array(nodeRandomBytes(n));
-  }
-  const out = new Uint8Array(n);
-  const cryptoObj =
-    globalThis.crypto && 'getRandomValues' in globalThis.crypto
-      ? globalThis.crypto
-      : (nodeWebCrypto as unknown as Crypto);
-  cryptoObj.getRandomValues(out);
-  return out;
-};
+import { generateP256KeyPair } from '@/crypto/generateP256KeyPair';
+import { createPublicKey, X509Certificate } from 'node:crypto';
+import type { JsonWebKey as NodeJsonWebKey } from 'node:crypto';
+import { certificateToDerBytes } from '../certificateToDerBytes';
 
 describe('createSelfSignedCertificate jsrsasign, EC, SHA-256', () => {
-  it('creates a valid self-signed certificate from PEM keys', () => {
-    // Generate EC P-256 key pair and export PEMs
-    const { prvKeyObj, pubKeyObj } = KEYUTIL.generateKeypair('EC', 'secp256r1');
-    const privateKeyPem = KEYUTIL.getPEM(prvKeyObj, 'PKCS8PRV');
-    // @ts-expect-error jsrsasign supports this format at runtime
-    const publicKeyPem = KEYUTIL.getPEM(pubKeyObj, 'PKCS8PUB');
+  it('creates a valid self-signed certificate from JWK keys', () => {
+    // Generate EC P-256 key pair and export JWKs
+    const { privateJwk, publicJwk } = generateP256KeyPair();
 
-    const certPem = createSelfSignedCertificate({
-      publicKeyPem,
-      privateKeyPem,
+    const cert = createSelfSignedCertificate({
+      subjectPublicJwk: publicJwk,
+      caPrivateJwk: privateJwk,
       digestAlgorithm: 'SHA-256',
-      subject: { commonName: 'User1' },
+      subject: 'User1',
       validityDays: 1,
-      randomBytes: rng,
+      serialHex: '01',
     });
 
-    expect(typeof certPem).toBe('string');
-    expect(certPem.startsWith('-----BEGIN CERTIFICATE-----')).toBe(true);
-    expect(certPem.trim().endsWith('-----END CERTIFICATE-----')).toBe(true);
+    expect(cert).toBeInstanceOf(KJUR.asn1.x509.Certificate);
 
-    // Verify with jsrsasign X509
-    const x = new X509();
-    x.readCertPEM(certPem);
-    const pub = x.getPublicKey();
-    const ok = x.verifySignature(pub);
+    // Verify with Node's X509Certificate
+    const der = certificateToDerBytes(cert);
+    const x = new X509Certificate(Buffer.from(der));
+    const x2 = new X509Certificate(cert.getPEM());
+    const pub = createPublicKey({
+      key: publicJwk as unknown as NodeJsonWebKey,
+      format: 'jwk',
+    });
+
+    const ok = x.verify(pub);
+    const ok2 = x2.verify(pub);
     expect(ok).toBe(true);
+    expect(ok2).toBe(true);
+    expect(x.subject).toBe('CN=User1');
+    expect(x2.subject).toBe('CN=User1');
+    expect(x.issuer).toBe('CN=User1');
+    expect(x2.issuer).toBe('CN=User1');
   });
 });

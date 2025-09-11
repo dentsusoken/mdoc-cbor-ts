@@ -8,9 +8,9 @@ import { type ECPrivateJWK, type ECPublicJWK } from './types';
  */
 type GenerateP256KeyPairResult = {
   /** The private key in JWK format */
-  privateKeyJwk: ECPrivateJWK;
+  privateJwk: ECPrivateJWK;
   /** The public key in JWK format */
-  publicKeyJwk: ECPublicJWK;
+  publicJwk: ECPublicJWK;
 };
 
 /**
@@ -24,8 +24,8 @@ type GenerateP256KeyPairResult = {
  * @example
  * ```typescript
  * const keyPair = generateP256KeyPair();
- * console.log(keyPair.privateKeyJwk); // JWK object with private key
- * console.log(keyPair.publicKeyJwk);  // JWK object with public key
+ * console.log(keyPair.privateJwk); // JWK object with private key
+ * console.log(keyPair.publicJwk);  // JWK object with public key
  * ```
  */
 export const generateP256KeyPair = (): GenerateP256KeyPairResult => {
@@ -33,7 +33,7 @@ export const generateP256KeyPair = (): GenerateP256KeyPairResult => {
   const privateKeyJwk = KEYUTIL.getJWK(prvKeyObj) as ECPrivateJWK;
   const publicKeyJwk = KEYUTIL.getJWK(pubKeyObj) as ECPublicJWK;
   return {
-    privateKeyJwk,
-    publicKeyJwk,
+    privateJwk: privateKeyJwk,
+    publicJwk: publicKeyJwk,
   };
 };
