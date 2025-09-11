@@ -5,13 +5,12 @@ import { importEcPublicKeyFromJwk } from '../importEcPublicKeyFromJwk';
 
 describe('signES256', () => {
   it('signs with ES256 and verifies via Web Crypto', async () => {
-    const { privateJwk: privateKeyJwk, publicJwk: publicKeyJwk } =
-      generateP256KeyPair();
+    const { privateJwk, publicJwk } = generateP256KeyPair();
     const data = new TextEncoder().encode('hello world');
 
-    const concatSig = signES256({ privateKeyJwk, data });
+    const concatSig = signES256({ privateJwk, data });
 
-    const publicKey = await importEcPublicKeyFromJwk(publicKeyJwk);
+    const publicKey = await importEcPublicKeyFromJwk(publicJwk);
 
     const ok = await crypto.subtle.verify(
       { name: 'ECDSA', hash: { name: 'SHA-256' } },

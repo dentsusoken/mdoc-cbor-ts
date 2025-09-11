@@ -10,8 +10,6 @@ describe('X509Adapter', () => {
   describe('constructor', () => {
     it('should create an X509Adapter instance', () => {
       const certificate = new X509Certificate(pem);
-      console.log('SAMPLE_CERT', Buffer.from(SAMPLE_CERT, 'base64'));
-      console.log('certificate.raw', certificate.raw);
       const privateKey = COSEKey.fromJWK({
         kty: 'EC',
         crv: 'P-256',

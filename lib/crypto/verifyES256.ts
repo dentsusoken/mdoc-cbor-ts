@@ -7,7 +7,7 @@ import { encodeHex } from 'u8a-utils';
  */
 type VerifyES256Params = {
   /** The EC public key in JWK format */
-  publicKeyJwk: ECPublicJWK;
+  publicJwk: ECPublicJWK;
   /** The data that was signed */
   data: Uint8Array;
   /** The signature to verify */
@@ -24,12 +24,12 @@ type VerifyES256Params = {
  * @returns True if the signature is valid, false otherwise
  */
 export const verifyES256 = ({
-  publicKeyJwk,
+  publicJwk,
   data,
   signature,
 }: VerifyES256Params): boolean => {
   const publicKey = KEYUTIL.getKey(
-    publicKeyJwk as unknown as KJUR.jws.JWS.JsonWebKey
+    publicJwk as unknown as KJUR.jws.JWS.JsonWebKey
   );
   const sig = new KJUR.crypto.Signature({
     alg: 'SHA256withECDSA',
