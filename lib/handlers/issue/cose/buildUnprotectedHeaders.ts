@@ -1,4 +1,4 @@
-import { Headers, UnprotectedHeaders } from '@auth0/cose';
+import { Headers, UnprotectedHeaders } from '@/cose';
 
 /**
  * Builds unprotected headers for COSE (CBOR Object Signing and Encryption) operations.

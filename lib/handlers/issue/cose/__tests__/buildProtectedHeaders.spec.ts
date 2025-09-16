@@ -1,117 +1,114 @@
-import { COSEKey, Headers, ProtectedHeaders } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
-import { Algorithms } from '@auth0/cose';
 import { buildProtectedHeaders } from '../buildProtectedHeaders';
+import { ECPublicJwk } from '@/crypto/types';
+import { Headers, Algorithms } from '@/cose/types';
+import { JwsAlgorithms } from '@/jws/types';
+import { ExactKeyMap } from 'exact-key-map';
 
 describe('buildProtectedHeaders', () => {
   it('should create protected headers with algorithm and key ID', () => {
-    const coseKey = COSEKey.fromJWK({
+    const publicJwk: ECPublicJwk = {
       kty: 'EC',
       crv: 'P-256',
-      d: '2j24AjEPsTO8N9I6gN_WwRel_3c744Mp8P0jkIqIfuE',
       x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
       y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-      alg: 'ES256',
+      alg: JwsAlgorithms.ES256,
       kid: 'key-123',
-    });
+    };
 
-    const headers = buildProtectedHeaders(coseKey);
-    console.log(headers);
+    const headers = buildProtectedHeaders(publicJwk);
 
-    expect(headers).toBeInstanceOf(ProtectedHeaders);
+    expect(headers).toBeInstanceOf(ExactKeyMap);
     expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
-    expect(headers.get(Headers.KeyID)).toBe('key-123');
+    expect(headers.get(Headers.KeyID)).toEqual(
+      new TextEncoder().encode('key-123')
+    );
   });
 
   it('should create protected headers with algorithm only when no key ID', () => {
-    const coseKey = COSEKey.fromJWK({
+    const publicJwk: ECPublicJwk = {
       kty: 'EC',
       crv: 'P-256',
-      d: '2j24AjEPsTO8N9I6gN_WwRel_3c744Mp8P0jkIqIfuE',
       x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
       y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-      alg: 'ES256',
+      alg: JwsAlgorithms.ES256,
       // No kid parameter
-    });
+    };
 
-    const headers = buildProtectedHeaders(coseKey);
+    const headers = buildProtectedHeaders(publicJwk);
 
-    expect(headers).toBeInstanceOf(ProtectedHeaders);
+    expect(headers).toBeInstanceOf(ExactKeyMap);
     expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
     expect(headers.get(Headers.KeyID)).toBeUndefined();
   });
 
   it('should create protected headers with different algorithms', () => {
-    const coseKey = COSEKey.fromJWK({
+    const publicJwk: ECPublicJwk = {
       kty: 'EC',
       crv: 'P-384',
-      d: '2j24AjEPsTO8N9I6gN_WwRel_3c744Mp8P0jkIqIfuE',
       x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
       y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-      alg: 'ES384',
+      alg: JwsAlgorithms.ES384,
       kid: 'key-456',
-    });
+    };
 
-    const headers = buildProtectedHeaders(coseKey);
+    const headers = buildProtectedHeaders(publicJwk);
 
-    expect(headers).toBeInstanceOf(ProtectedHeaders);
+    expect(headers).toBeInstanceOf(ExactKeyMap);
     expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES384);
-    expect(headers.get(Headers.KeyID)).toBe('key-456');
+    expect(headers.get(Headers.KeyID)).toEqual(
+      new TextEncoder().encode('key-456')
+    );
   });
 
   it('should throw error when algorithm is missing and curve is not supported', () => {
-    const coseKey = COSEKey.fromJWK({
+    const publicJwk: ECPublicJwk = {
       kty: 'EC',
-      crv: 'P-xxx',
-      d: '2j24AjEPsTO8N9I6gN_WwRel_3c744Mp8P0jkIqIfuE',
+      crv: 'P-xxx' as 'P-256' | 'P-384' | 'P-521', // Invalid curve
       x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
       y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
       // No alg parameter
       kid: 'key-123',
-    });
+    };
 
-    expect(() => buildProtectedHeaders(coseKey)).toThrow(
-      'Algorithm not found in COSE key'
+    expect(() => buildProtectedHeaders(publicJwk)).toThrow(
+      'Missing algorithm in EC public key'
     );
   });
 
-  it('should handle RSA keys with algorithm and key ID', () => {
-    const coseKey = COSEKey.fromJWK({
-      kty: 'RSA',
-      n: 'test-n-value',
-      e: 'AQAB',
-      d: 'test-d-value',
-      p: 'test-p-value',
-      q: 'test-q-value',
-      dp: 'test-dp-value',
-      dq: 'test-dq-value',
-      qi: 'test-qi-value',
-      alg: 'PS256',
-      kid: 'rsa-key-789',
-    });
+  it('should derive algorithm from curve when alg is not provided', () => {
+    const publicJwk: ECPublicJwk = {
+      kty: 'EC',
+      crv: 'P-256',
+      x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
+      y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
+      // No alg parameter - should derive from curve
+      kid: 'key-789',
+    };
 
-    const headers = buildProtectedHeaders(coseKey);
+    const headers = buildProtectedHeaders(publicJwk);
 
-    expect(headers).toBeInstanceOf(ProtectedHeaders);
-    expect(headers.get(Headers.Algorithm)).toBe(Algorithms.PS256);
-    expect(headers.get(Headers.KeyID)).toBe('rsa-key-789');
+    expect(headers).toBeInstanceOf(ExactKeyMap);
+    expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256); // Derived from P-256
+    expect(headers.get(Headers.KeyID)).toEqual(
+      new TextEncoder().encode('key-789')
+    );
   });
 
   it('should handle empty key ID string', () => {
-    const coseKey = COSEKey.fromJWK({
+    const publicJwk: ECPublicJwk = {
       kty: 'EC',
       crv: 'P-256',
-      d: '2j24AjEPsTO8N9I6gN_WwRel_3c744Mp8P0jkIqIfuE',
       x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
       y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-      alg: 'ES256',
-      kid: '', // Empty string
-    });
+      alg: JwsAlgorithms.ES256,
+      kid: '', // Empty string - falsy value, so key ID won't be set
+    };
 
-    const headers = buildProtectedHeaders(coseKey);
+    const headers = buildProtectedHeaders(publicJwk);
 
-    expect(headers).toBeInstanceOf(ProtectedHeaders);
+    expect(headers).toBeInstanceOf(ExactKeyMap);
     expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
-    expect(headers.get(Headers.KeyID)).toBeUndefined();
+    expect(headers.get(Headers.KeyID)).toBeUndefined(); // Empty string is falsy, so no key ID is set
   });
 });

@@ -1,4 +1,4 @@
-import { ECPublicJWK } from './types';
+import { ECPublicJwk } from './types';
 
 /**
  * Imports an EC public key from JWK format into Web Crypto API
@@ -32,7 +32,7 @@ import { ECPublicJWK } from './types';
  * ```
  */
 export const importEcPublicKeyFromJwk = async (
-  jwk: ECPublicJWK
+  jwk: ECPublicJwk
 ): Promise<CryptoKey> => {
   return crypto.subtle.importKey(
     'jwk',

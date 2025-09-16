@@ -1,5 +1,5 @@
 import { KEYUTIL, KJUR } from 'jsrsasign';
-import { ECPrivateJWK } from './types';
+import { ECPrivateJwk } from './types';
 import { decodeHex, encodeHex } from 'u8a-utils';
 
 /**
@@ -7,7 +7,7 @@ import { decodeHex, encodeHex } from 'u8a-utils';
  */
 type SignES256Params = {
   /** The EC private key in JWK format */
-  privateJwk: ECPrivateJWK;
+  privateJwk: ECPrivateJwk;
   /** The data to be signed */
   data: Uint8Array;
 };

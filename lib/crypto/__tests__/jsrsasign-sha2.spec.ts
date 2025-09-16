@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { KJUR, hextob64 } from 'jsrsasign';
 import { webcrypto as nodeWebCrypto } from 'node:crypto';
 
-describe('jsrsasign SHA-256', () => {
+describe('jsrsasign SHA2', () => {
   it('computes SHA-256 hex for known vector', () => {
     const message = 'abc';
     const md = new KJUR.crypto.MessageDigest({

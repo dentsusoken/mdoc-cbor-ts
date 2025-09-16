@@ -1,4 +1,4 @@
-import { ECPrivateJWK } from './types';
+import { ECPrivateJwk } from './types';
 
 /**
  * Imports an EC private key from a JWK (JSON Web Key) format.
@@ -7,7 +7,7 @@ import { ECPrivateJWK } from './types';
  * @returns A promise that resolves to a CryptoKey for ECDSA signing operations
  */
 export const importEcPrivateKeyFromJwk = async (
-  jwk: ECPrivateJWK
+  jwk: ECPrivateJwk
 ): Promise<CryptoKey> => {
   return crypto.subtle.importKey(
     'jwk',

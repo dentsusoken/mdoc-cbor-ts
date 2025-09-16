@@ -15,12 +15,13 @@ export default defineConfig({
       formats: ['es', 'cjs'],
       name: 'mdoc-cbor-ts',
       fileName: (format) => {
-        return `${format}/index.js`;
+        return `index.${format === 'es' ? 'mjs' : 'cjs'}`;
       },
     },
     rollupOptions: {
       external: [
-        '@auth0/cose',
+        'exact-key-map',
+        'jsrsasign',
         'cbor-x',
         'zod',
         'u8a-utils',

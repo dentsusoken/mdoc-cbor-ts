@@ -21,7 +21,7 @@ type ECBase = Extract<JwkObject, { kty: 'EC' }>;
  * };
  * ```
  */
-export type ECPublicJWK = Omit<
+export type ECPublicJwk = Omit<
   Extract<ECBase, { x: string; y: string }>,
   'crv' | 'd'
 > & {
@@ -46,7 +46,7 @@ export type ECPublicJWK = Omit<
  * };
  * ```
  */
-export type ECPrivateJWK = Omit<Extract<ECBase, { d: string }>, 'crv'> & {
+export type ECPrivateJwk = Omit<Extract<ECBase, { d: string }>, 'crv'> & {
   kty: 'EC';
   crv: 'P-256' | 'P-384' | 'P-521';
   d: string;
@@ -57,7 +57,7 @@ export type ECPrivateJWK = Omit<Extract<ECBase, { d: string }>, 'crv'> & {
  * @description
  * Represents either an EC public key or EC private key in JWK format.
  */
-export type ECJWK = ECPublicJWK | ECPrivateJWK;
+export type ECJwk = ECPublicJwk | ECPrivateJwk;
 
 /**
  * Signature algorithm identifiers for ECDSA with different hash functions
@@ -66,3 +66,5 @@ export type ECJWK = ECPublicJWK | ECPrivateJWK;
  * These correspond to the algorithm identifiers used in cryptographic operations.
  */
 export type Sigalg = 'SHA256withECDSA' | 'SHA384withECDSA' | 'SHA512withECDSA';
+
+export type RandomBytes = (byteLength?: number) => Uint8Array;

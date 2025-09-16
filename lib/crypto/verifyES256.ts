@@ -1,5 +1,5 @@
 import { KEYUTIL, KJUR } from 'jsrsasign';
-import { ECPublicJWK } from './types';
+import { ECPublicJwk } from './types';
 import { encodeHex } from 'u8a-utils';
 
 /**
@@ -7,7 +7,7 @@ import { encodeHex } from 'u8a-utils';
  */
 type VerifyES256Params = {
   /** The EC public key in JWK format */
-  publicJwk: ECPublicJWK;
+  publicJwk: ECPublicJwk;
   /** The data that was signed */
   data: Uint8Array;
   /** The signature to verify */
