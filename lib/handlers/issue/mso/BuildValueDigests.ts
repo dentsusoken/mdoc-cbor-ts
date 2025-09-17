@@ -1,5 +1,7 @@
-import { IssuerNameSpaces } from '@/schemas/mdoc';
+import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
+import { issuerSignedItemSchema } from '@/schemas/mdoc/IssuerSignedItem';
+
 import { calculateDigest } from '@/utils/calculateDigest';
 import { decodeCbor } from '@/cbor/codec';
 import { ValueDigests } from '@/schemas/mso/ValueDigests';
@@ -54,9 +56,11 @@ export const buildValueDigests = async ({
     const digestMap = new Map<number, Uint8Array>();
 
     for (const tag of issuerSignedItemTags) {
-      const issuerSignedItem = decodeCbor(tag.value) as Map<string, unknown>;
+      const issuerSignedItem = issuerSignedItemSchema.parse(
+        decodeCbor(tag.value)
+      );
 
-      const digestID = issuerSignedItem.get('digestID') as number;
+      const digestID = issuerSignedItem.digestID;
       const digest = await calculateDigest(digestAlgorithm, tag);
       digestMap.set(digestID, digest);
     }

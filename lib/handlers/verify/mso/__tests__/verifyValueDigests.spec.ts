@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createTag24 } from '@/cbor/createTag24';
 import { encodeCbor } from '@/cbor/codec';
-import { verifyValueDigests } from '../verifyValueDigests';
+import { verifyValueDigests } from '../verifyValueDigests.ts';
 import { ErrorsError } from '../ErrorsError';
 import { ErrorCode } from '@/schemas/error/ErrorCode';
 import type { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';

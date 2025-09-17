@@ -48,7 +48,7 @@ export const buildValidityInfo = ({
     validUntil: toISODateTimeString(new Date(now + validUntil)),
   };
 
-  if (expectedUpdate) {
+  if (expectedUpdate !== undefined) {
     validityInfo.expectedUpdate = toISODateTimeString(
       new Date(now + expectedUpdate)
     );

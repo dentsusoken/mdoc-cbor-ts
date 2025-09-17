@@ -2,7 +2,7 @@ import { Sign1 } from '@auth0/cose';
 import { IssuerNameSpaces } from '../../../schemas/mdoc';
 import { IssuerAuth } from '../../../schemas/mso';
 import { extractPublicKey } from './ExtractPublicKey';
-import { MSOVerifyHandler } from './MSOVerifyHandler';
+import { MSOVerifyHandler } from './MSOVerifyHandler.ts.bak';
 import { verifyDigest } from './VerifyDigest';
 
 /**
