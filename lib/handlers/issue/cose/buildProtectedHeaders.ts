@@ -1,6 +1,7 @@
 import { JWK_CRV_TO_JWS_ALG } from '@/jws/constants';
-import { Headers, createProtectedHeaders, ProtectedHeaders } from '@/cose';
-import { ECPublicJwk } from '@/crypto/types';
+import { Headers } from '@/cose/types';
+import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
+import { ECPublicJwk } from '@/jwk/types';
 import { JWS_TO_COSE_ALGORITHMS } from '@/cose/constants';
 import { JwsAlgorithms } from '@/jws/types';
 
@@ -69,12 +70,10 @@ export const buildProtectedHeaders = (
     throw new Error('Missing algorithm in JWS to COSE mapping');
   }
 
-  const protectedHeaders = createProtectedHeaders();
-
-  protectedHeaders.set(Headers.Algorithm, coseAlg);
+  const protectedHeaders = new ProtectedHeaders([[Headers.Algorithm, coseAlg]]);
 
   if (kid) {
-    const coseKid = new TextEncoder().encode(kid as string);
+    const coseKid = new TextEncoder().encode(kid);
     protectedHeaders.set(Headers.KeyID, coseKid);
   }
 

@@ -1,4 +1,4 @@
-import { JwkCurves } from '../jwk/types';
+import { JwkCurves } from '@/jwk/types';
 import { JwsAlgorithms } from './types';
 
 /**

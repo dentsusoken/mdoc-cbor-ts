@@ -1,5 +1,5 @@
 import { Algorithms } from './types';
-import { JwsAlgorithms } from '../jws/types';
+import { JwsAlgorithms } from '@/jws/types';
 
 export const JWS_TO_COSE_ALGORITHMS: Record<JwsAlgorithms, Algorithms> = {
   [JwsAlgorithms.EdDSA]: Algorithms.EdDSA,

@@ -1,5 +1,5 @@
 import { KEYUTIL } from 'jsrsasign';
-import { type ECPrivateJwk, type ECPublicJwk } from './types';
+import { type ECPrivateJwk, type ECPublicJwk } from '@/jwk/types';
 
 /**
  * Result type for P-256 key pair generation
