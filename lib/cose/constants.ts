@@ -97,8 +97,6 @@ export const JWK_TO_COSE_CURVES: Record<JwkCurves, Curves> = {
   [JwkCurves.P521]: Curves.P521,
   [JwkCurves.Ed25519]: Curves.Ed25519,
   [JwkCurves.Ed448]: Curves.Ed448,
-  [JwkCurves.X25519]: Curves.X25519,
-  [JwkCurves.X448]: Curves.X448,
 };
 
 /**
@@ -210,4 +208,46 @@ export const JWK_TO_COSE_KEY_OPS: Record<JwkKeyOps, KeyOps> = {
 export const JWK_TO_COSE_MAC_KEY_OPS: Record<JwkMacKeyOps, KeyOps> = {
   [JwkMacKeyOps.MACCreate]: KeyOps.MACCreate,
   [JwkMacKeyOps.MACVerify]: KeyOps.MACVerify,
+};
+
+/**
+ * Mapping from COSE elliptic curves to their corresponding signature algorithms.
+ *
+ * @description
+ * This constant provides a direct mapping between COSE elliptic curve identifiers and their
+ * corresponding signature algorithm identifiers. This mapping is useful for determining
+ * which signature algorithm should be used with a specific elliptic curve in COSE operations.
+ *
+ * The mapping follows these conventions:
+ * - NIST P-curves (P-256, P-384, P-521) map to their corresponding ECDSA algorithms
+ * - Edwards curves (Ed25519, Ed448) map to the EdDSA algorithm
+ *
+ * @example
+ * ```typescript
+ * // Get algorithm for a specific curve
+ * const algorithm = CURVES_TO_ALGORITHMS[Curves.P256]; // Returns Algorithms.ES256
+ * const edAlgorithm = CURVES_TO_ALGORITHMS[Curves.Ed25519]; // Returns Algorithms.EdDSA
+ *
+ * // Use in COSE key validation
+ * const validateKeyAlgorithm = (curve: Curves, algorithm: Algorithms): boolean => {
+ *   return CURVES_TO_ALGORITHMS[curve] === algorithm;
+ * };
+ *
+ * // Automatic algorithm selection based on curve
+ * const selectAlgorithm = (curve: Curves): Algorithms => {
+ *   return CURVES_TO_ALGORITHMS[curve];
+ * };
+ * ```
+ *
+ * @see {@link Curves} - COSE elliptic curve identifiers
+ * @see {@link Algorithms} - COSE signature algorithm identifiers
+ * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves} - IANA COSE Elliptic Curves registry
+ * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
+ */
+export const CURVES_TO_ALGORITHMS: Record<Curves, Algorithms> = {
+  [Curves.P256]: Algorithms.ES256,
+  [Curves.P384]: Algorithms.ES384,
+  [Curves.P521]: Algorithms.ES512,
+  [Curves.Ed25519]: Algorithms.EdDSA,
+  [Curves.Ed448]: Algorithms.EdDSA,
 };

@@ -164,10 +164,6 @@ export enum Curves {
   P384 = 2,
   /** NIST P-521 curve (secp521r1) */
   P521 = 3,
-  /** Curve25519 for ECDH */
-  X25519 = 4,
-  /** Curve448 for ECDH */
-  X448 = 5,
   /** Ed25519 for EdDSA */
   Ed25519 = 6,
   /** Ed448 for EdDSA */
