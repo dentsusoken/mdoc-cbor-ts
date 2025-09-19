@@ -1,0 +1,127 @@
+import { describe, it, expect } from 'vitest';
+import { jwkToCoseAlgorithm } from '../jwkToCoseAlgorithm';
+import { JwkAlgorithms } from '@/jwk/types';
+import { Algorithms } from '../types';
+
+describe('jwkToCoseAlgorithm', () => {
+  describe('should return correct COSE algorithms', () => {
+    it('for valid JwkAlgorithms enum values', () => {
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.EdDSA)).toBe(Algorithms.EdDSA);
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES256)).toBe(Algorithms.ES256);
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES384)).toBe(Algorithms.ES384);
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES512)).toBe(Algorithms.ES512);
+    });
+
+    it('for string values that match JwkAlgorithms', () => {
+      expect(jwkToCoseAlgorithm('EdDSA')).toBe(Algorithms.EdDSA);
+      expect(jwkToCoseAlgorithm('ES256')).toBe(Algorithms.ES256);
+      expect(jwkToCoseAlgorithm('ES384')).toBe(Algorithms.ES384);
+      expect(jwkToCoseAlgorithm('ES512')).toBe(Algorithms.ES512);
+    });
+
+    it('for all enum values systematically', () => {
+      const allJwkAlgorithms = Object.values(JwkAlgorithms);
+      const expectedCoseAlgorithms = [
+        Algorithms.EdDSA,
+        Algorithms.ES256,
+        Algorithms.ES384,
+        Algorithms.ES512,
+      ];
+
+      allJwkAlgorithms.forEach((jwkAlgorithm, index) => {
+        expect(jwkToCoseAlgorithm(jwkAlgorithm)).toBe(
+          expectedCoseAlgorithms[index]
+        );
+      });
+    });
+  });
+
+  describe('should throw Error', () => {
+    it('for invalid JWK algorithm strings', () => {
+      expect(() => jwkToCoseAlgorithm('invalid-algorithm')).toThrow(
+        'Unsupported JWK algorithm: invalid-algorithm'
+      );
+      expect(() => jwkToCoseAlgorithm('HS256')).toThrow(
+        'Unsupported JWK algorithm: HS256'
+      );
+      expect(() => jwkToCoseAlgorithm('RS256')).toThrow(
+        'Unsupported JWK algorithm: RS256'
+      );
+      expect(() => jwkToCoseAlgorithm('PS256')).toThrow(
+        'Unsupported JWK algorithm: PS256'
+      );
+      expect(() => jwkToCoseAlgorithm('A256GCM')).toThrow(
+        'Unsupported JWK algorithm: A256GCM'
+      );
+      expect(() => jwkToCoseAlgorithm('RSA-OAEP')).toThrow(
+        'Unsupported JWK algorithm: RSA-OAEP'
+      );
+      expect(() => jwkToCoseAlgorithm('')).toThrow(
+        'Unsupported JWK algorithm: '
+      );
+    });
+
+    it('for case-sensitive mismatches', () => {
+      expect(() => jwkToCoseAlgorithm('es256')).toThrow(
+        'Unsupported JWK algorithm: es256'
+      );
+      expect(() => jwkToCoseAlgorithm('ES256 ')).toThrow(
+        'Unsupported JWK algorithm: ES256 '
+      );
+      expect(() => jwkToCoseAlgorithm(' ES256')).toThrow(
+        'Unsupported JWK algorithm:  ES256'
+      );
+      expect(() => jwkToCoseAlgorithm('eddsa')).toThrow(
+        'Unsupported JWK algorithm: eddsa'
+      );
+      expect(() => jwkToCoseAlgorithm('Eddsa')).toThrow(
+        'Unsupported JWK algorithm: Eddsa'
+      );
+    });
+
+    it('for partial matches', () => {
+      expect(() => jwkToCoseAlgorithm('ES')).toThrow(
+        'Unsupported JWK algorithm: ES'
+      );
+      expect(() => jwkToCoseAlgorithm('256')).toThrow(
+        'Unsupported JWK algorithm: 256'
+      );
+      expect(() => jwkToCoseAlgorithm('Ed')).toThrow(
+        'Unsupported JWK algorithm: Ed'
+      );
+      expect(() => jwkToCoseAlgorithm('DSA')).toThrow(
+        'Unsupported JWK algorithm: DSA'
+      );
+    });
+
+    it('for algorithms with extra characters', () => {
+      expect(() => jwkToCoseAlgorithm('ES256-extra')).toThrow(
+        'Unsupported JWK algorithm: ES256-extra'
+      );
+      expect(() => jwkToCoseAlgorithm('EdDSA-v2')).toThrow(
+        'Unsupported JWK algorithm: EdDSA-v2'
+      );
+      expect(() => jwkToCoseAlgorithm('ES256.1')).toThrow(
+        'Unsupported JWK algorithm: ES256.1'
+      );
+    });
+
+    it('for non-string inputs', () => {
+      expect(() => jwkToCoseAlgorithm(null as unknown as string)).toThrow(
+        'Unsupported JWK algorithm: null'
+      );
+      expect(() => jwkToCoseAlgorithm(undefined as unknown as string)).toThrow(
+        'Unsupported JWK algorithm: undefined'
+      );
+      expect(() => jwkToCoseAlgorithm(123 as unknown as string)).toThrow(
+        'Unsupported JWK algorithm: 123'
+      );
+      expect(() => jwkToCoseAlgorithm({} as unknown as string)).toThrow(
+        'Unsupported JWK algorithm: [object Object]'
+      );
+      expect(() => jwkToCoseAlgorithm([] as unknown as string)).toThrow(
+        'Unsupported JWK algorithm: '
+      );
+    });
+  });
+});
