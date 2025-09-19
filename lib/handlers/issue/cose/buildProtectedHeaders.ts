@@ -1,9 +1,8 @@
 import { JWK_CRV_TO_JWS_ALG } from '@/jws/constants';
 import { Headers } from '@/cose/types';
 import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
-import { ECPublicJwk } from '@/jwk/types';
-import { JWS_TO_COSE_ALGORITHMS } from '@/cose/constants';
-import { JwsAlgorithms } from '@/jws/types';
+import { ECPublicJwk, JwkAlgorithms } from '@/jwk/types';
+import { JWK_TO_COSE_ALGORITHMS } from '@/cose/constants';
 
 /**
  * Builds protected headers for COSE (CBOR Object Signing and Encryption) operations.
@@ -64,7 +63,7 @@ export const buildProtectedHeaders = (
     throw new Error('Missing algorithm in EC public key');
   }
 
-  const coseAlg = JWS_TO_COSE_ALGORITHMS[jwsAlg as JwsAlgorithms];
+  const coseAlg = JWK_TO_COSE_ALGORITHMS[jwsAlg as JwkAlgorithms];
 
   if (!coseAlg) {
     throw new Error('Missing algorithm in JWS to COSE mapping');
