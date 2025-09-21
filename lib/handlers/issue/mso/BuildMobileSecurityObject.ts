@@ -17,6 +17,8 @@ export type BuildMobileSecurityObjectParams = {
   deviceKey: DeviceKey;
   /** The digest algorithm to use for calculating value digests */
   digestAlgorithm: DigestAlgorithm;
+  /** The base date to use for calculations */
+  baseDate?: Date;
   /** Duration in milliseconds from now until the document becomes valid */
   validFrom: number;
   /** Duration in milliseconds from now until the document expires */
@@ -38,6 +40,7 @@ export type BuildMobileSecurityObjectParams = {
  * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags
  * @param params.deviceKey - The device's public key for authentication
  * @param params.digestAlgorithm - The digest algorithm to use for calculating value digests
+ * @param params.baseDate - The base date to use for calculations
  * @param params.validFrom - The timestamp when the document becomes valid
  * @param params.validUntil - The timestamp when the document expires
  * @param params.expectedUpdate - Optional timestamp for expected document updates
@@ -87,20 +90,24 @@ export const buildMobileSecurityObject = async ({
   nameSpaces,
   deviceKey,
   digestAlgorithm,
+  baseDate,
   validFrom,
   validUntil,
   expectedUpdate,
 }: BuildMobileSecurityObjectParams): Promise<MobileSecurityObject> => {
+  const valueDigests = await buildValueDigests({ nameSpaces, digestAlgorithm });
+  const validityInfo = buildValidityInfo({
+    baseDate,
+    validFrom,
+    validUntil,
+    expectedUpdate,
+  });
   const mso: MobileSecurityObject = {
     version: '1.0',
     docType,
     digestAlgorithm,
-    valueDigests: await buildValueDigests({ nameSpaces, digestAlgorithm }),
-    validityInfo: buildValidityInfo({
-      validFrom,
-      validUntil,
-      expectedUpdate,
-    }),
+    valueDigests,
+    validityInfo,
     deviceKeyInfo: {
       deviceKey,
     },
