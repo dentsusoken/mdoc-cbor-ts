@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildProtectedHeaders } from '../buildProtectedHeaders';
-import { ECPublicJwk } from '@/jwk/types';
+import { EcPublicJwk } from '@/jwk/types';
 import { Headers, Algorithms } from '@/cose/types';
 import { JwsAlgorithms } from '@/jws/types';
 import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
@@ -8,7 +8,7 @@ import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
 describe('buildProtectedHeaders', () => {
   describe('normal cases', () => {
     it('should create protected headers with algorithm and key ID', () => {
-      const publicJwk: ECPublicJwk = {
+      const publicJwk: EcPublicJwk = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -27,7 +27,7 @@ describe('buildProtectedHeaders', () => {
     });
 
     it('should create protected headers with algorithm only when no key ID', () => {
-      const publicJwk: ECPublicJwk = {
+      const publicJwk: EcPublicJwk = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -44,7 +44,7 @@ describe('buildProtectedHeaders', () => {
     });
 
     it('should create protected headers with crv only', () => {
-      const publicJwk: ECPublicJwk = {
+      const publicJwk: EcPublicJwk = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -61,7 +61,7 @@ describe('buildProtectedHeaders', () => {
     });
 
     it('should create protected headers with ES384 algorithm', () => {
-      const publicJwk: ECPublicJwk = {
+      const publicJwk: EcPublicJwk = {
         kty: 'EC',
         crv: 'P-384',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -76,7 +76,7 @@ describe('buildProtectedHeaders', () => {
     });
 
     it('should create protected headers with ES512 algorithm', () => {
-      const publicJwk: ECPublicJwk = {
+      const publicJwk: EcPublicJwk = {
         kty: 'EC',
         crv: 'P-521',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -93,7 +93,7 @@ describe('buildProtectedHeaders', () => {
 
   describe('exception cases', () => {
     it('should throw error when algorithm is missing and curve is not supported', () => {
-      const publicJwk: ECPublicJwk = {
+      const publicJwk: EcPublicJwk = {
         kty: 'EC',
         crv: 'P-xxx' as 'P-256' | 'P-384' | 'P-521', // Invalid curve
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -108,7 +108,7 @@ describe('buildProtectedHeaders', () => {
     });
 
     it('should throw error when algorithm is not supported', () => {
-      const publicJwk: ECPublicJwk = {
+      const publicJwk: EcPublicJwk = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',

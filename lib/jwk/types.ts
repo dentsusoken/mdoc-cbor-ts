@@ -3,7 +3,14 @@ import type { JwkObject } from 'jsrsasign';
 /**
  * Base type for EC JWK objects extracted from jsrsasign's JwkObject
  */
-type ECBaseJwk = Extract<JwkObject, { kty: 'EC' }>;
+type EcBaseJwk = Omit<
+  Extract<JwkObject, { kty: 'EC' }>,
+  'crv' | 'alg' | 'key_ops'
+> & {
+  crv: 'P-256' | 'P-384' | 'P-521';
+  alg?: 'ES256' | 'ES384' | 'ES512';
+  key_ops?: string[];
+};
 
 /**
  * Elliptic Curve public key in JSON Web Key (JWK) format
@@ -21,16 +28,12 @@ type ECBaseJwk = Extract<JwkObject, { kty: 'EC' }>;
  * };
  * ```
  */
-export type ECPublicJwk = Omit<
-  Extract<ECBaseJwk, { x: string; y: string }>,
-  'crv' | 'd'
+export type EcPublicJwk = Omit<
+  Extract<EcBaseJwk, { x: string; y: string }>,
+  'd'
 > & {
-  kty: 'EC';
-  crv: 'P-256' | 'P-384' | 'P-521';
-  x: string;
-  y: string;
   kid?: string;
-} & { [prop: string]: unknown };
+};
 
 /**
  * Elliptic Curve private key in JSON Web Key (JWK) format
@@ -47,18 +50,14 @@ export type ECPublicJwk = Omit<
  * };
  * ```
  */
-export type ECPrivateJwk = Omit<Extract<ECBaseJwk, { d: string }>, 'crv'> & {
-  kty: 'EC';
-  crv: 'P-256' | 'P-384' | 'P-521';
-  d: string;
-} & { [prop: string]: unknown };
+export type EcPrivateJwk = Extract<EcBaseJwk, { d: string }>;
 
 /**
  * Union type for EC JWK keys (public or private)
  * @description
  * Represents either an EC public key or EC private key in JWK format.
  */
-export type ECJwk = ECPublicJwk | ECPrivateJwk;
+export type EcJwk = EcPublicJwk | EcPrivateJwk;
 
 /**
  * JWK (JSON Web Key) curve names

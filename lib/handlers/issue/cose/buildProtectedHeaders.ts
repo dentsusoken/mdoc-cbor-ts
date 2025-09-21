@@ -1,7 +1,7 @@
 import { JWK_CRV_TO_JWS_ALG } from '@/jws/constants';
 import { Headers } from '@/cose/types';
 import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
-import { ECPublicJwk, JwkAlgorithms } from '@/jwk/types';
+import { EcPublicJwk, JwkAlgorithms } from '@/jwk/types';
 import { JWK_TO_COSE_ALGORITHMS } from '@/cose/constants';
 
 /**
@@ -49,7 +49,7 @@ import { JWK_TO_COSE_ALGORITHMS } from '@/cose/constants';
  * ```
  */
 export const buildProtectedHeaders = (
-  publicJwk: ECPublicJwk
+  publicJwk: EcPublicJwk
 ): ProtectedHeaders => {
   const { alg, crv, kid } = publicJwk;
 

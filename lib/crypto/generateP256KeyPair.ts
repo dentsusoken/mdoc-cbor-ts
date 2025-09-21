@@ -1,5 +1,5 @@
 import { KEYUTIL } from 'jsrsasign';
-import { type ECPrivateJwk, type ECPublicJwk } from '@/jwk/types';
+import { type EcPrivateJwk, type EcPublicJwk } from '@/jwk/types';
 
 /**
  * Result type for P-256 key pair generation
@@ -8,9 +8,9 @@ import { type ECPrivateJwk, type ECPublicJwk } from '@/jwk/types';
  */
 type GenerateP256KeyPairResult = {
   /** The private key in JWK format */
-  privateJwk: ECPrivateJwk;
+  privateJwk: EcPrivateJwk;
   /** The public key in JWK format */
-  publicJwk: ECPublicJwk;
+  publicJwk: EcPublicJwk;
 };
 
 /**
@@ -30,8 +30,8 @@ type GenerateP256KeyPairResult = {
  */
 export const generateP256KeyPair = (): GenerateP256KeyPairResult => {
   const { prvKeyObj, pubKeyObj } = KEYUTIL.generateKeypair('EC', 'secp256r1');
-  const privateKeyJwk = KEYUTIL.getJWK(prvKeyObj) as ECPrivateJwk;
-  const publicKeyJwk = KEYUTIL.getJWK(pubKeyObj) as ECPublicJwk;
+  const privateKeyJwk = KEYUTIL.getJWK(prvKeyObj) as EcPrivateJwk;
+  const publicKeyJwk = KEYUTIL.getJWK(pubKeyObj) as EcPublicJwk;
   return {
     privateJwk: privateKeyJwk,
     publicJwk: publicKeyJwk,
