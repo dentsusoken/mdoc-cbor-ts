@@ -6,7 +6,7 @@ export enum Headers {
   Algorithm = 1,
   Critical = 2,
   ContentType = 3,
-  KeyID = 4,
+  KeyId = 4,
   IV = 5,
   PartialIV = 6,
   CounterSignature = 7,
@@ -204,7 +204,7 @@ export enum KeyParams {
   /** Key type identifier */
   KeyType = 1,
   /** Key identifier */
-  KeyID = 2,
+  KeyId = 2,
   /** Algorithm identifier */
   Algorithm = 3,
   /** Key operations */

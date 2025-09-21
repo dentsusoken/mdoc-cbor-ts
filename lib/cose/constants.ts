@@ -126,7 +126,7 @@ export const JWK_TO_COSE_CURVES: Record<JwkCurves, Curves> = {
  */
 export const JWK_TO_COSE_KEY_PARAMS: Record<JwkKeyParams, KeyParams> = {
   [JwkKeyParams.KeyType]: KeyParams.KeyType,
-  [JwkKeyParams.KeyID]: KeyParams.KeyID,
+  [JwkKeyParams.KeyID]: KeyParams.KeyId,
   [JwkKeyParams.Algorithm]: KeyParams.Algorithm,
   [JwkKeyParams.KeyOps]: KeyParams.KeyOps,
   [JwkKeyParams.Curve]: KeyParams.Curve,

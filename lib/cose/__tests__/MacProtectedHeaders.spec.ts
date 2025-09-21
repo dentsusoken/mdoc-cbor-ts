@@ -23,7 +23,7 @@ describe('MacProtectedHeaders', () => {
         [Headers.Critical, [Headers.Algorithm]],
         [Headers.ContentType, 42],
         [Headers.ContentType, ctBytes],
-        [Headers.KeyID, keyId],
+        [Headers.KeyId, keyId],
       ];
 
       const headers = new MacProtectedHeaders(entries);
@@ -31,7 +31,7 @@ describe('MacProtectedHeaders', () => {
       expect(headers.get(Headers.Algorithm)).toBe(MacAlgorithms.HS256);
       expect(headers.get(Headers.Critical)).toEqual([Headers.Algorithm]);
       expect(headers.get(Headers.ContentType)).toEqual(ctBytes);
-      expect(headers.get(Headers.KeyID)).toEqual(keyId);
+      expect(headers.get(Headers.KeyId)).toEqual(keyId);
     });
   });
 
@@ -51,7 +51,7 @@ describe('MacProtectedHeaders', () => {
 
     it('allows setting and getting Critical header', () => {
       const headers = new MacProtectedHeaders();
-      const criticalHeaders = [Headers.Algorithm, Headers.KeyID];
+      const criticalHeaders = [Headers.Algorithm, Headers.KeyId];
 
       headers.set(Headers.Critical, criticalHeaders);
       expect(headers.get(Headers.Critical)).toEqual(criticalHeaders);
@@ -83,8 +83,8 @@ describe('MacProtectedHeaders', () => {
       const headers = new MacProtectedHeaders();
       const keyId = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
 
-      headers.set(Headers.KeyID, keyId);
-      expect(headers.get(Headers.KeyID)).toEqual(keyId);
+      headers.set(Headers.KeyId, keyId);
+      expect(headers.get(Headers.KeyId)).toEqual(keyId);
     });
   });
 

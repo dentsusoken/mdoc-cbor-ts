@@ -23,7 +23,7 @@ describe('ProtectedHeaders', () => {
         [Headers.Critical, [Headers.Algorithm]],
         [Headers.ContentType, 42],
         [Headers.ContentType, ctBytes],
-        [Headers.KeyID, keyId],
+        [Headers.KeyId, keyId],
       ];
 
       const headers = new ProtectedHeaders(entries);
@@ -32,7 +32,7 @@ describe('ProtectedHeaders', () => {
       expect(headers.get(Headers.Critical)).toEqual([Headers.Algorithm]);
       // Last ContentType wins
       expect(headers.get(Headers.ContentType)).toEqual(ctBytes);
-      expect(headers.get(Headers.KeyID)).toEqual(keyId);
+      expect(headers.get(Headers.KeyId)).toEqual(keyId);
     });
   });
 
@@ -52,7 +52,7 @@ describe('ProtectedHeaders', () => {
 
     it('allows setting and getting Critical header', () => {
       const headers = new ProtectedHeaders();
-      const criticalHeaders = [Headers.Algorithm, Headers.KeyID];
+      const criticalHeaders = [Headers.Algorithm, Headers.KeyId];
 
       headers.set(Headers.Critical, criticalHeaders);
       expect(headers.get(Headers.Critical)).toEqual(criticalHeaders);
@@ -84,8 +84,8 @@ describe('ProtectedHeaders', () => {
       const headers = new ProtectedHeaders();
       const keyId = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
 
-      headers.set(Headers.KeyID, keyId);
-      expect(headers.get(Headers.KeyID)).toEqual(keyId);
+      headers.set(Headers.KeyId, keyId);
+      expect(headers.get(Headers.KeyId)).toEqual(keyId);
     });
   });
 

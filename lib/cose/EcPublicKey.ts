@@ -36,7 +36,7 @@ export type EcPublicKeyEntries = Es<
   | [KeyParams.KeyOps, KeyOps[]]
   | [KeyParams.x, Uint8Array]
   | [KeyParams.y, Uint8Array]
-  | [KeyParams.KeyID, Uint8Array]
+  | [KeyParams.KeyId, Uint8Array]
 >;
 
 /**

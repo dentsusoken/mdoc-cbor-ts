@@ -27,7 +27,7 @@ import { Headers } from './types';
  */
 export type UnprotectedHeadersEntries = Es<
   | [Headers.ContentType, number | Uint8Array]
-  | [Headers.KeyID, Uint8Array]
+  | [Headers.KeyId, Uint8Array]
   | [Headers.IV, Uint8Array]
   | [Headers.PartialIV, Uint8Array]
   | [Headers.X5Chain, Uint8Array[]]
@@ -35,7 +35,7 @@ export type UnprotectedHeadersEntries = Es<
       Exclude<
         Headers,
         | Headers.ContentType
-        | Headers.KeyID
+        | Headers.KeyId
         | Headers.IV
         | Headers.PartialIV
         | Headers.X5Chain

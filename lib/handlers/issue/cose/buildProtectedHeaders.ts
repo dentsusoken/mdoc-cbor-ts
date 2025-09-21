@@ -1,8 +1,7 @@
-import { JWK_CRV_TO_JWS_ALG } from '@/jws/constants';
 import { Headers } from '@/cose/types';
 import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
-import { EcPublicJwk, JwkAlgorithms } from '@/jwk/types';
-import { JWK_TO_COSE_ALGORITHMS } from '@/cose/constants';
+import { EcPublicJwk } from '@/jwk/types';
+import { jwkToCoseCurveAlgorithmKeyId } from '@/cose/jwkToCoseCurveAlgorithmKeyId';
 
 /**
  * Builds protected headers for COSE (CBOR Object Signing and Encryption) operations.
@@ -51,29 +50,14 @@ import { JWK_TO_COSE_ALGORITHMS } from '@/cose/constants';
 export const buildProtectedHeaders = (
   publicJwk: EcPublicJwk
 ): ProtectedHeaders => {
-  const { alg, crv, kid } = publicJwk;
+  const { algorithm, keyId } = jwkToCoseCurveAlgorithmKeyId(publicJwk);
 
-  if (!alg && !crv) {
-    throw new Error('Missing algorithm or curve in EC public key');
-  }
+  const protectedHeaders = new ProtectedHeaders([
+    [Headers.Algorithm, algorithm],
+  ]);
 
-  const jwsAlg = alg || JWK_CRV_TO_JWS_ALG[crv];
-
-  if (!jwsAlg) {
-    throw new Error('Missing algorithm in EC public key');
-  }
-
-  const coseAlg = JWK_TO_COSE_ALGORITHMS[jwsAlg as JwkAlgorithms];
-
-  if (!coseAlg) {
-    throw new Error('Missing algorithm in JWS to COSE mapping');
-  }
-
-  const protectedHeaders = new ProtectedHeaders([[Headers.Algorithm, coseAlg]]);
-
-  if (kid) {
-    const coseKid = new TextEncoder().encode(kid);
-    protectedHeaders.set(Headers.KeyID, coseKid);
+  if (keyId) {
+    protectedHeaders.set(Headers.KeyId, keyId);
   }
 
   return protectedHeaders;

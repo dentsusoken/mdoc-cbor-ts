@@ -19,12 +19,12 @@ describe('UnprotectedHeaders', () => {
     it('creates a new UnprotectedHeaders with initial entries', () => {
       const headers = new UnprotectedHeaders([
         [Headers.ContentType, 42],
-        [Headers.KeyID, new Uint8Array([0x01, 0x02, 0x03])],
+        [Headers.KeyId, new Uint8Array([0x01, 0x02, 0x03])],
         [Headers.IV, new Uint8Array([0x10, 0x20, 0x30])],
       ]);
 
       expect(headers.get(Headers.ContentType)).toBe(42);
-      expect(headers.get(Headers.KeyID)).toEqual(
+      expect(headers.get(Headers.KeyId)).toEqual(
         new Uint8Array([0x01, 0x02, 0x03])
       );
       expect(headers.get(Headers.IV)).toEqual(
@@ -37,7 +37,7 @@ describe('UnprotectedHeaders', () => {
 
       expect(headers).toBeDefined();
       expect(headers.get(Headers.ContentType)).toBeUndefined();
-      expect(headers.get(Headers.KeyID)).toBeUndefined();
+      expect(headers.get(Headers.KeyId)).toBeUndefined();
       expect(headers.get(Headers.IV)).toBeUndefined();
     });
 
@@ -46,7 +46,7 @@ describe('UnprotectedHeaders', () => {
 
       expect(headers).toBeDefined();
       expect(headers.get(Headers.ContentType)).toBeUndefined();
-      expect(headers.get(Headers.KeyID)).toBeUndefined();
+      expect(headers.get(Headers.KeyId)).toBeUndefined();
       expect(headers.get(Headers.IV)).toBeUndefined();
     });
   });
@@ -55,7 +55,7 @@ describe('UnprotectedHeaders', () => {
     it('creates a new UnprotectedHeaders with mixed value types in initial entries', () => {
       const initialEntries: UnprotectedHeadersEntries = [
         [Headers.ContentType, new Uint8Array([0x01, 0x02])], // Uint8Array
-        [Headers.KeyID, new Uint8Array([0x03, 0x04, 0x05])], // Uint8Array
+        [Headers.KeyId, new Uint8Array([0x03, 0x04, 0x05])], // Uint8Array
         [Headers.X5Chain, [new Uint8Array([0x06, 0x07])]], // Uint8Array array
         [Headers.Algorithm, 123], // Number
         [Headers.Critical, [456, 789]], // Number array
@@ -67,7 +67,7 @@ describe('UnprotectedHeaders', () => {
       expect(headers.get(Headers.ContentType)).toEqual(
         new Uint8Array([0x01, 0x02])
       );
-      expect(headers.get(Headers.KeyID)).toEqual(
+      expect(headers.get(Headers.KeyId)).toEqual(
         new Uint8Array([0x03, 0x04, 0x05])
       );
       expect(headers.get(Headers.X5Chain)).toEqual([
@@ -99,14 +99,14 @@ describe('UnprotectedHeaders', () => {
     it('allows modification of headers created with initial entries', () => {
       const initialEntries: UnprotectedHeadersEntries = [
         [Headers.ContentType, 42],
-        [Headers.KeyID, new Uint8Array([0x01, 0x02])],
+        [Headers.KeyId, new Uint8Array([0x01, 0x02])],
       ];
 
       const headers = new UnprotectedHeaders(initialEntries);
 
       // Verify initial values
       expect(headers.get(Headers.ContentType)).toBe(42);
-      expect(headers.get(Headers.KeyID)).toEqual(new Uint8Array([0x01, 0x02]));
+      expect(headers.get(Headers.KeyId)).toEqual(new Uint8Array([0x01, 0x02]));
 
       // Modify existing header
       headers.set(Headers.ContentType, 100);
@@ -117,8 +117,8 @@ describe('UnprotectedHeaders', () => {
       expect(headers.get(Headers.IV)).toEqual(new Uint8Array([0x10, 0x20]));
 
       // Delete header
-      headers.delete(Headers.KeyID);
-      expect(headers.get(Headers.KeyID)).toBeUndefined();
+      headers.delete(Headers.KeyId);
+      expect(headers.get(Headers.KeyId)).toBeUndefined();
     });
   });
 
@@ -143,8 +143,8 @@ describe('UnprotectedHeaders', () => {
       const headers = new UnprotectedHeaders();
       const keyId = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
 
-      headers.set(Headers.KeyID, keyId);
-      expect(headers.get(Headers.KeyID)).toEqual(keyId);
+      headers.set(Headers.KeyId, keyId);
+      expect(headers.get(Headers.KeyId)).toEqual(keyId);
     });
   });
 

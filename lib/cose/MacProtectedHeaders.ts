@@ -28,14 +28,14 @@ export type MacProtectedHeadersEntries = Es<
   | [Headers.Algorithm, MacAlgorithms]
   | [Headers.Critical, Headers[]]
   | [Headers.ContentType, number | Uint8Array]
-  | [Headers.KeyID, Uint8Array]
+  | [Headers.KeyId, Uint8Array]
   | [
       Exclude<
         Headers,
         | Headers.Algorithm
         | Headers.Critical
         | Headers.ContentType
-        | Headers.KeyID
+        | Headers.KeyId
       >,
       Uint8Array | Uint8Array[] | number | number[],
     ]

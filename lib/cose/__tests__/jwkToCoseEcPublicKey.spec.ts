@@ -72,8 +72,8 @@ describe('jwkToCoseECPublicKey', () => {
       });
       const result = jwkToCoseEcPublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyID)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyID)!)).toBe(kid);
+      expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(kid);
     });
 
     it('for JWK with key operations', () => {
@@ -255,8 +255,8 @@ describe('jwkToCoseECPublicKey', () => {
       });
       const result = jwkToCoseEcPublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyID)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyID)!)).toBe(
+      expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
         longKid
       );
     });
@@ -268,8 +268,8 @@ describe('jwkToCoseECPublicKey', () => {
       });
       const result = jwkToCoseEcPublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyID)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyID)!)).toBe(
+      expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
         specialKid
       );
     });
@@ -281,8 +281,8 @@ describe('jwkToCoseECPublicKey', () => {
       });
       const result = jwkToCoseEcPublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyID)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyID)!)).toBe(
+      expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
         unicodeKid
       );
     });
@@ -294,7 +294,7 @@ describe('jwkToCoseECPublicKey', () => {
       const result = jwkToCoseEcPublicKey(jwk);
 
       // Empty string is falsy, so KeyID should not be set
-      expect(result.get(KeyParams.KeyID)).toBeUndefined();
+      expect(result.get(KeyParams.KeyId)).toBeUndefined();
     });
 
     it('for JWK with whitespace-only key ID', () => {
@@ -303,8 +303,8 @@ describe('jwkToCoseECPublicKey', () => {
       });
       const result = jwkToCoseEcPublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyID)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyID)!)).toBe(
+      expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
         '   '
       );
     });

@@ -1,14 +1,10 @@
 import { EcPublicJwk } from '@/jwk/types';
 import { EcPublicKey } from './EcPublicKey';
 import { jwkToCoseKeyType } from './jwkToCoseKeyType';
-import { jwkToCoseAlgorithm } from './jwkToCoseAlgorithm';
-import { CURVES_TO_ALGORITHMS } from './constants';
-import { jwkToCoseCurve } from './jwkToCoseCurve';
 import { decodeBase64Url } from 'u8a-utils';
 import { KeyParams } from './types';
 import { jwkToCoseKeyOps } from './jwkToCoseKeyOps';
-
-const encoder = new TextEncoder();
+import { jwkToCoseCurveAlgorithmKeyId } from './jwkToCoseCurveAlgorithmKeyId';
 
 /**
  * Converts an EC public key from JWK format to COSE format
@@ -43,19 +39,7 @@ export const jwkToCoseEcPublicKey = (jwk: EcPublicJwk): EcPublicKey => {
 
   const keyType = jwkToCoseKeyType(jwk.kty);
 
-  if (jwk.crv == null) {
-    throw new Error('Missing curve in EC public key');
-  }
-
-  const curve = jwkToCoseCurve(jwk.crv);
-
-  const algorithm = jwk.alg
-    ? jwkToCoseAlgorithm(jwk.alg)
-    : CURVES_TO_ALGORITHMS[curve];
-
-  if (jwk.x == null) {
-    throw new Error('Missing x coordinate in EC public key');
-  }
+  const { curve, algorithm, keyId } = jwkToCoseCurveAlgorithmKeyId(jwk);
 
   const x = decodeBase64Url(jwk.x);
 
@@ -73,9 +57,8 @@ export const jwkToCoseEcPublicKey = (jwk: EcPublicJwk): EcPublicKey => {
     [KeyParams.y, y],
   ]);
 
-  if (jwk.kid) {
-    const kid = encoder.encode(jwk.kid);
-    publicKey.set(KeyParams.KeyID, kid);
+  if (keyId) {
+    publicKey.set(KeyParams.KeyId, keyId);
   }
 
   if (jwk.key_ops) {

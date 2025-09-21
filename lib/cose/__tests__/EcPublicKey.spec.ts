@@ -25,7 +25,7 @@ describe('EcPublicKey', () => {
         [KeyParams.KeyOps, [KeyOps.Sign, KeyOps.Verify]],
         [KeyParams.x, xCoordinate],
         [KeyParams.y, yCoordinate],
-        [KeyParams.KeyID, keyId],
+        [KeyParams.KeyId, keyId],
       ];
 
       const keyMap = new EcPublicKey(entries);
@@ -39,7 +39,7 @@ describe('EcPublicKey', () => {
       ]);
       expect(keyMap.get(KeyParams.x)).toEqual(xCoordinate);
       expect(keyMap.get(KeyParams.y)).toEqual(yCoordinate);
-      expect(keyMap.get(KeyParams.KeyID)).toEqual(keyId);
+      expect(keyMap.get(KeyParams.KeyId)).toEqual(keyId);
     });
 
     it('creates a new EcPublicKey with no entries', () => {

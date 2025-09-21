@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildProtectedHeaders } from '../buildProtectedHeaders';
-import { EcPublicJwk } from '@/jwk/types';
+import { EcPublicJwk, JwkAlgorithms } from '@/jwk/types';
 import { Headers, Algorithms } from '@/cose/types';
-import { JwsAlgorithms } from '@/jws/types';
 import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
 
 describe('buildProtectedHeaders', () => {
@@ -13,7 +12,7 @@ describe('buildProtectedHeaders', () => {
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
         y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-        alg: JwsAlgorithms.ES256,
+        alg: JwkAlgorithms.ES256,
         kid: 'key-123',
       };
 
@@ -21,7 +20,7 @@ describe('buildProtectedHeaders', () => {
 
       expect(headers).toBeInstanceOf(ProtectedHeaders);
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
-      expect(headers.get(Headers.KeyID)).toEqual(
+      expect(headers.get(Headers.KeyId)).toEqual(
         new TextEncoder().encode('key-123')
       );
     });
@@ -32,7 +31,7 @@ describe('buildProtectedHeaders', () => {
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
         y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-        alg: JwsAlgorithms.ES256,
+        alg: JwkAlgorithms.ES256,
         // No kid parameter
       };
 
@@ -40,7 +39,7 @@ describe('buildProtectedHeaders', () => {
 
       expect(headers).toBeInstanceOf(ProtectedHeaders);
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
-      expect(headers.get(Headers.KeyID)).toBeUndefined();
+      expect(headers.get(Headers.KeyId)).toBeUndefined();
     });
 
     it('should create protected headers with crv only', () => {
@@ -57,7 +56,7 @@ describe('buildProtectedHeaders', () => {
 
       expect(headers).toBeInstanceOf(ProtectedHeaders);
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
-      expect(headers.get(Headers.KeyID)).toBeUndefined();
+      expect(headers.get(Headers.KeyId)).toBeUndefined();
     });
 
     it('should create protected headers with ES384 algorithm', () => {
@@ -66,7 +65,7 @@ describe('buildProtectedHeaders', () => {
         crv: 'P-384',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
         y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-        alg: JwsAlgorithms.ES384,
+        alg: JwkAlgorithms.ES384,
       };
 
       const headers = buildProtectedHeaders(publicJwk);
@@ -81,7 +80,7 @@ describe('buildProtectedHeaders', () => {
         crv: 'P-521',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
         y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-        alg: JwsAlgorithms.ES512,
+        alg: JwkAlgorithms.ES512,
       };
 
       const headers = buildProtectedHeaders(publicJwk);
@@ -103,7 +102,7 @@ describe('buildProtectedHeaders', () => {
       };
 
       expect(() => buildProtectedHeaders(publicJwk)).toThrow(
-        'Missing algorithm in EC public key'
+        'Unsupported JWK curve: P-xxx'
       );
     });
 
@@ -113,12 +112,12 @@ describe('buildProtectedHeaders', () => {
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
         y: 'Ok_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDE',
-        alg: 'xxx' as JwsAlgorithms,
+        alg: 'xxx' as JwkAlgorithms,
         kid: 'key-123',
       };
 
       expect(() => buildProtectedHeaders(publicJwk)).toThrow(
-        'Missing algorithm in JWS to COSE mapping'
+        'Unsupported JWK algorithm: xxx'
       );
     });
   });
