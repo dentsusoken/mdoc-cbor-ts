@@ -1,17 +1,18 @@
 import { describe, it, expect } from 'vitest';
-import { jwkToCoseEcPublicKey } from '../jwkToCoseEcPublicKey';
-import { EcPublicJwk, JwkAlgorithms, JwkCurves } from '@/jwk/types';
-import { EcPublicKey } from '../EcPublicKey';
+import { jwkToCosePublicKey } from '../jwkToCosePublicKey';
+import { JwkPublicKey, JwkAlgorithms, JwkCurves } from '@/jwk/types';
+import { PublicKey } from '../PublicKey';
 import { KeyParams, KeyTypes, Curves, Algorithms, KeyOps } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
 
-describe('jwkToCoseECPublicKey', () => {
+describe('jwkToCosePublicKey', () => {
   const xCoord = Uint8Array.from([1, 2, 3]);
   const yCoord = Uint8Array.from([4, 5, 6]);
+  const edPublicKey = Uint8Array.from([7, 8, 9]);
   // Helper function to create valid test JWK
-  const createValidJwk = (
-    overrides: Partial<EcPublicJwk> = {}
-  ): EcPublicJwk => ({
+  const createValidEcJwk = (
+    overrides: Partial<JwkPublicKey> = {}
+  ): JwkPublicKey => ({
     kty: 'EC',
     crv: 'P-256',
     x: encodeBase64Url(xCoord),
@@ -19,12 +20,21 @@ describe('jwkToCoseECPublicKey', () => {
     ...overrides,
   });
 
-  describe('should return correct EcPublicKey for valid JWK inputs', () => {
-    it('for minimal P-256 JWK', () => {
-      const jwk = createValidJwk();
-      const result = jwkToCoseEcPublicKey(jwk);
+  const createValidOkpJwk = (
+    overrides: Partial<JwkPublicKey> = {}
+  ): JwkPublicKey => ({
+    kty: 'OKP',
+    crv: JwkCurves.Ed25519,
+    x: encodeBase64Url(edPublicKey),
+    ...overrides,
+  });
 
-      expect(result).toBeInstanceOf(EcPublicKey);
+  describe('should return correct PublicKey for valid EC JWK inputs', () => {
+    it('for minimal P-256 JWK', () => {
+      const jwk = createValidEcJwk();
+      const result = jwkToCosePublicKey(jwk);
+
+      expect(result).toBeInstanceOf(PublicKey);
       expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
       expect(result.get(KeyParams.Curve)).toBe(Curves.P256);
       expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.ES256);
@@ -33,10 +43,10 @@ describe('jwkToCoseECPublicKey', () => {
     });
 
     it('for P-256 JWK with algorithm specified', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         alg: JwkAlgorithms.ES256,
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
       expect(result.get(KeyParams.Curve)).toBe(Curves.P256);
@@ -44,10 +54,10 @@ describe('jwkToCoseECPublicKey', () => {
     });
 
     it('for P-384 JWK', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         crv: JwkCurves.P384,
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
       expect(result.get(KeyParams.Curve)).toBe(Curves.P384);
@@ -55,10 +65,10 @@ describe('jwkToCoseECPublicKey', () => {
     });
 
     it('for P-521 JWK', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         crv: JwkCurves.P521,
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
       expect(result.get(KeyParams.Curve)).toBe(Curves.P521);
@@ -67,25 +77,105 @@ describe('jwkToCoseECPublicKey', () => {
 
     it('for JWK with key ID', () => {
       const kid = 'test-key-id';
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         kid,
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
       expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(kid);
     });
 
     it('for JWK with key operations', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         key_ops: ['sign', 'verify'],
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyOps)).toEqual([
         KeyOps.Sign,
         KeyOps.Verify,
       ]);
+    });
+  });
+
+  describe('should return correct PublicKey for valid OKP (EdDSA) JWK inputs', () => {
+    it('for minimal Ed25519 JWK', () => {
+      const jwk = createValidOkpJwk();
+      const result = jwkToCosePublicKey(jwk);
+
+      expect(result).toBeInstanceOf(PublicKey);
+      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.OKP);
+      expect(result.get(KeyParams.Curve)).toBe(Curves.Ed25519);
+      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.EdDSA);
+      expect(result.get(KeyParams.x)).toEqual(edPublicKey);
+      expect(result.get(KeyParams.y)).toBeUndefined();
+    });
+
+    it('for Ed25519 JWK with algorithm specified', () => {
+      const jwk = createValidOkpJwk({
+        alg: JwkAlgorithms.EdDSA,
+      });
+      const result = jwkToCosePublicKey(jwk);
+
+      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.OKP);
+      expect(result.get(KeyParams.Curve)).toBe(Curves.Ed25519);
+      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.EdDSA);
+      expect(result.get(KeyParams.y)).toBeUndefined();
+    });
+
+    it('for JWK with key ID', () => {
+      const kid = 'okp-key-id';
+      const jwk = createValidOkpJwk({
+        kid,
+      });
+      const result = jwkToCosePublicKey(jwk);
+
+      expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
+      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(kid);
+    });
+
+    it('for JWK with key operations', () => {
+      const jwk = createValidOkpJwk({
+        key_ops: ['sign', 'verify'],
+      });
+      const result = jwkToCosePublicKey(jwk);
+
+      expect(result.get(KeyParams.KeyOps)).toEqual([
+        KeyOps.Sign,
+        KeyOps.Verify,
+      ]);
+    });
+  });
+
+  describe('should throw Error for invalid OKP JWK inputs', () => {
+    it('for missing x coordinate', () => {
+      const invalidJwk = createValidOkpJwk({
+        x: undefined as unknown as string,
+      });
+
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
+        'Missing x coordinate in OKP public key'
+      );
+    });
+
+    it('for null x coordinate', () => {
+      const invalidJwk = createValidOkpJwk({ x: null as unknown as string });
+
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
+        'Missing x coordinate in OKP public key'
+      );
+    });
+
+    it('for missing curve parameter', () => {
+      const invalidJwk = {
+        kty: 'OKP',
+        x: encodeBase64Url(edPublicKey),
+      } as JwkPublicKey;
+
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
+        'Missing curve in EC public key'
+      );
     });
   });
 
@@ -96,10 +186,10 @@ describe('jwkToCoseECPublicKey', () => {
         crv: 'P-256',
         x: 'test-x',
         y: 'test-y',
-      } as unknown as EcPublicJwk;
+      } as unknown as JwkPublicKey;
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
-        'Key type must be "EC"'
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
+        'Unsupported JWK key type: RSA'
       );
     });
 
@@ -108,25 +198,27 @@ describe('jwkToCoseECPublicKey', () => {
         kty: 'EC',
         x: 'test-x',
         y: 'test-y',
-      } as EcPublicJwk;
+      } as JwkPublicKey;
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing curve in EC public key'
       );
     });
 
     it('for null curve parameter', () => {
-      const invalidJwk = createValidJwk({ crv: null as any });
+      const invalidJwk = createValidEcJwk({ crv: null as unknown as string });
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing curve in EC public key'
       );
     });
 
     it('for undefined curve parameter', () => {
-      const invalidJwk = createValidJwk({ crv: undefined as any });
+      const invalidJwk = createValidEcJwk({
+        crv: undefined as unknown as string,
+      });
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing curve in EC public key'
       );
     });
@@ -136,25 +228,27 @@ describe('jwkToCoseECPublicKey', () => {
         kty: 'EC',
         crv: 'P-256',
         y: 'test-y',
-      } as EcPublicJwk;
+      } as JwkPublicKey;
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing x coordinate in EC public key'
       );
     });
 
     it('for null x coordinate', () => {
-      const invalidJwk = createValidJwk({ x: null as unknown as string });
+      const invalidJwk = createValidEcJwk({ x: null as unknown as string });
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing x coordinate in EC public key'
       );
     });
 
     it('for undefined x coordinate', () => {
-      const invalidJwk = createValidJwk({ x: undefined as unknown as string });
+      const invalidJwk = createValidEcJwk({
+        x: undefined as unknown as string,
+      });
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing x coordinate in EC public key'
       );
     });
@@ -164,25 +258,27 @@ describe('jwkToCoseECPublicKey', () => {
         kty: 'EC',
         crv: 'P-256',
         x: 'test-x',
-      } as EcPublicJwk;
+      } as JwkPublicKey;
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing y coordinate in EC public key'
       );
     });
 
     it('for null y coordinate', () => {
-      const invalidJwk = createValidJwk({ y: null as unknown as string });
+      const invalidJwk = createValidEcJwk({ y: null as unknown as string });
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing y coordinate in EC public key'
       );
     });
 
     it('for undefined y coordinate', () => {
-      const invalidJwk = createValidJwk({ y: undefined as unknown as string });
+      const invalidJwk = createValidEcJwk({
+        y: undefined as unknown as string,
+      });
 
-      expect(() => jwkToCoseEcPublicKey(invalidJwk)).toThrow(
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
         'Missing y coordinate in EC public key'
       );
     });
@@ -190,25 +286,25 @@ describe('jwkToCoseECPublicKey', () => {
 
   describe('should handle edge cases correctly', () => {
     it('for JWK with empty key operations array', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         key_ops: [],
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyOps)).toEqual([]);
     });
 
     it('for JWK with single key operation', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         key_ops: ['sign'],
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyOps)).toEqual([KeyOps.Sign]);
     });
 
     it('for JWK with all possible key operations', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         key_ops: [
           'sign',
           'verify',
@@ -220,7 +316,7 @@ describe('jwkToCoseECPublicKey', () => {
           'deriveBits',
         ],
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyOps)).toEqual([
         KeyOps.Sign,
@@ -235,10 +331,10 @@ describe('jwkToCoseECPublicKey', () => {
     });
 
     it('for JWK with duplicate key operations', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         key_ops: ['sign', 'sign', 'verify', 'verify'],
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyOps)).toEqual([
         KeyOps.Sign,
@@ -250,10 +346,10 @@ describe('jwkToCoseECPublicKey', () => {
 
     it('for JWK with long key ID', () => {
       const longKid = 'a'.repeat(1000);
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         kid: longKid,
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
       expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
@@ -263,10 +359,10 @@ describe('jwkToCoseECPublicKey', () => {
 
     it('for JWK with special characters in key ID', () => {
       const specialKid = 'key-id-with-special-chars!@#$%^&*()';
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         kid: specialKid,
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
       expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
@@ -276,10 +372,10 @@ describe('jwkToCoseECPublicKey', () => {
 
     it('for JWK with Unicode characters in key ID', () => {
       const unicodeKid = 'key-id-with-unicode-🚀-🎉-测试';
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         kid: unicodeKid,
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
       expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
@@ -288,20 +384,20 @@ describe('jwkToCoseECPublicKey', () => {
     });
 
     it('for JWK with empty key ID', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         kid: '',
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       // Empty string is falsy, so KeyID should not be set
       expect(result.get(KeyParams.KeyId)).toBeUndefined();
     });
 
     it('for JWK with whitespace-only key ID', () => {
-      const jwk = createValidJwk({
+      const jwk = createValidEcJwk({
         kid: '   ',
       });
-      const result = jwkToCoseEcPublicKey(jwk);
+      const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
       expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(

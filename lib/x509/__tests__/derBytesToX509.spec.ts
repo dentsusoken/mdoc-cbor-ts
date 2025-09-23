@@ -9,8 +9,8 @@ describe('derBytesToX509', () => {
     const { privateJwk, publicJwk } = generateP256KeyPair();
 
     const cert = createSelfSignedCertificate({
-      subjectPublicJwk: publicJwk,
-      caPrivateJwk: privateJwk,
+      subjectJwkPublicKey: publicJwk,
+      caJwkPrivateKey: privateJwk,
       digestAlgorithm: 'SHA-256',
       subject: 'User1',
       validityDays: 1,

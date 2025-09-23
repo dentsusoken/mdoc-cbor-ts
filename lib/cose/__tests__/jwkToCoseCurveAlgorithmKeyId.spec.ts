@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseCurveAlgorithmKeyId } from '../jwkToCoseCurveAlgorithmKeyId';
 import { Algorithms, Curves } from '../types';
-import { EcPublicJwk, JwkAlgorithms, JwkCurves } from '@/jwk/types';
+import { JwkPublicKey, JwkAlgorithms, JwkCurves } from '@/jwk/types';
 
 // Helper to create a base EC public JWK with overrides
-const createJwk = (overrides: Partial<EcPublicJwk> = {}): EcPublicJwk => ({
+const createJwk = (overrides: Partial<JwkPublicKey> = {}): JwkPublicKey => ({
   kty: 'EC',
   crv: 'P-256',
   x: 'x',

@@ -1,8 +1,8 @@
-import { EcPublicJwk } from '@/jwk/types';
-import { EcPublicKey } from './EcPublicKey';
+import { JwkPublicKey } from '@/jwk/types';
+import { PublicKey } from './PublicKey';
 import { jwkToCoseKeyType } from './jwkToCoseKeyType';
 import { decodeBase64Url } from 'u8a-utils';
-import { KeyParams } from './types';
+import { KeyParams, KeyTypes } from './types';
 import { jwkToCoseKeyOps } from './jwkToCoseKeyOps';
 import { jwkToCoseCurveAlgorithmKeyId } from './jwkToCoseCurveAlgorithmKeyId';
 
@@ -32,29 +32,52 @@ import { jwkToCoseCurveAlgorithmKeyId } from './jwkToCoseCurveAlgorithmKeyId';
  * const coseKey = jwkToCoseECPublicKey(jwkKey);
  * ```
  */
-export const jwkToCoseEcPublicKey = (jwk: EcPublicJwk): EcPublicKey => {
-  if (jwk.kty !== 'EC') {
-    throw new Error('Key type must be "EC"');
-  }
-
+export const jwkToCosePublicKey = (jwk: JwkPublicKey): PublicKey => {
   const keyType = jwkToCoseKeyType(jwk.kty);
+
+  if (keyType !== KeyTypes.EC && keyType !== KeyTypes.OKP) {
+    throw new Error('Key type must be "EC" or "OKP"');
+  }
 
   const { curve, algorithm, keyId } = jwkToCoseCurveAlgorithmKeyId(jwk);
 
+  if (jwk.x == null) {
+    const which = keyType === KeyTypes.OKP ? 'OKP' : 'EC';
+    throw new Error(`Missing x coordinate in ${which} public key`);
+  }
   const x = decodeBase64Url(jwk.x);
 
-  if (jwk.y == null) {
-    throw new Error('Missing y coordinate in EC public key');
+  if (keyType === KeyTypes.EC) {
+    if (jwk.y == null) {
+      throw new Error('Missing y coordinate in EC public key');
+    }
+    const y = decodeBase64Url(jwk.y);
+
+    const publicKey = new PublicKey([
+      [KeyParams.KeyType, keyType],
+      [KeyParams.Curve, curve],
+      [KeyParams.Algorithm, algorithm],
+      [KeyParams.x, x],
+      [KeyParams.y, y],
+    ]);
+
+    if (keyId) {
+      publicKey.set(KeyParams.KeyId, keyId);
+    }
+
+    if (jwk.key_ops) {
+      publicKey.set(KeyParams.KeyOps, jwkToCoseKeyOps(jwk.key_ops));
+    }
+
+    return publicKey;
   }
 
-  const y = decodeBase64Url(jwk.y);
-
-  const publicKey = new EcPublicKey([
+  // OKP (EdDSA) public key: only x is required; y is not used
+  const publicKey = new PublicKey([
     [KeyParams.KeyType, keyType],
     [KeyParams.Curve, curve],
     [KeyParams.Algorithm, algorithm],
     [KeyParams.x, x],
-    [KeyParams.y, y],
   ]);
 
   if (keyId) {

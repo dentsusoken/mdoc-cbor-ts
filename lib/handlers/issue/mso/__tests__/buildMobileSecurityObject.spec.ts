@@ -4,7 +4,7 @@ import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { createTag24 } from '@/cbor/createTag24';
 import { generateP256KeyPair } from '@/crypto';
-import { jwkToCoseEcPublicKey } from '@/cose/jwkToCoseEcPublicKey';
+import { jwkToCosePublicKey } from '@/cose/jwkToCosePublicKey';
 import { buildValueDigests } from '../buildValueDigests';
 import { buildValidityInfo } from '../buildValidityInfo';
 
@@ -36,7 +36,7 @@ describe('buildMobileSecurityObject', () => {
       ['org.iso.18013.5.1', [tag24]],
     ]);
     const { publicJwk } = generateP256KeyPair();
-    const deviceKey = jwkToCoseEcPublicKey(publicJwk);
+    const deviceKey = jwkToCosePublicKey(publicJwk);
     const digestAlgorithm = 'SHA-256';
     const valueDigests = await buildValueDigests({
       nameSpaces,
@@ -80,7 +80,7 @@ describe('buildMobileSecurityObject', () => {
       ['org.iso.18013.5.1', [tag24]],
     ]);
     const { publicJwk } = generateP256KeyPair();
-    const deviceKey = jwkToCoseEcPublicKey(publicJwk);
+    const deviceKey = jwkToCosePublicKey(publicJwk);
     const digestAlgorithm = 'SHA-256';
     const valueDigests = await buildValueDigests({
       nameSpaces,

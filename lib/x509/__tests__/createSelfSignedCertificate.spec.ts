@@ -1,19 +1,24 @@
 import { describe, it, expect } from 'vitest';
 import { KJUR } from 'jsrsasign';
 import { createSelfSignedCertificate } from '../createSelfSignedCertificate';
-import { generateP256KeyPair } from '@/crypto/generateP256KeyPair';
 import { createPublicKey, X509Certificate } from 'node:crypto';
 import type { JsonWebKey as NodeJsonWebKey } from 'node:crypto';
 import { certificateToDerBytes } from '../certificateToDerBytes';
+import { createSignatureCurve } from 'noble-curves-extended';
+import { randomBytes } from '@noble/hashes/utils';
 
 describe('createSelfSignedCertificate jsrsasign, EC, SHA-256', () => {
+  const p256 = createSignatureCurve('P-256', randomBytes);
   it('creates a valid self-signed certificate from JWK keys', () => {
     // Generate EC P-256 key pair and export JWKs
-    const { privateJwk, publicJwk } = generateP256KeyPair();
+    const privateKey = p256.randomPrivateKey();
+    const publicKey = p256.getPublicKey(privateKey);
+    const subjectJwkPublicKey = p256.toJwkPublicKey(publicKey);
+    const caJwkPrivateKey = p256.toJwkPrivateKey(privateKey);
 
     const cert = createSelfSignedCertificate({
-      subjectPublicJwk: publicJwk,
-      caPrivateJwk: privateJwk,
+      subjectJwkPublicKey,
+      caJwkPrivateKey,
       digestAlgorithm: 'SHA-256',
       subject: 'User1',
       validityDays: 1,
@@ -27,7 +32,7 @@ describe('createSelfSignedCertificate jsrsasign, EC, SHA-256', () => {
     const x = new X509Certificate(Buffer.from(der));
     const x2 = new X509Certificate(cert.getPEM());
     const pub = createPublicKey({
-      key: publicJwk as unknown as NodeJsonWebKey,
+      key: subjectJwkPublicKey as unknown as NodeJsonWebKey,
       format: 'jwk',
     });
 

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { EcPublicKey, EcPublicKeyEntries } from '../EcPublicKey';
+import { PublicKey, PublicKeyEntries } from '../PublicKey';
 import { KeyParams, KeyTypes, Curves, Algorithms, KeyOps } from '../types';
 
-describe('EcPublicKey', () => {
+describe('PublicKey', () => {
   describe('construction', () => {
-    it('creates a new EcPublicKey instance', () => {
-      const keyMap = new EcPublicKey();
-      expect(keyMap).toBeInstanceOf(EcPublicKey);
+    it('creates a new PublicKey instance', () => {
+      const keyMap = new PublicKey();
+      expect(keyMap).toBeInstanceOf(PublicKey);
       expect(typeof keyMap.set).toBe('function');
       expect(typeof keyMap.get).toBe('function');
       expect(typeof keyMap.has).toBe('function');
@@ -18,7 +18,7 @@ describe('EcPublicKey', () => {
       const yCoordinate = new Uint8Array([0x04, 0x05, 0x06]);
       const keyId = new Uint8Array([0x07, 0x08, 0x09]);
 
-      const entries: EcPublicKeyEntries = [
+      const entries: PublicKeyEntries = [
         [KeyParams.KeyType, KeyTypes.EC],
         [KeyParams.Curve, Curves.P256],
         [KeyParams.Algorithm, Algorithms.ES256],
@@ -28,7 +28,7 @@ describe('EcPublicKey', () => {
         [KeyParams.KeyId, keyId],
       ];
 
-      const keyMap = new EcPublicKey(entries);
+      const keyMap = new PublicKey(entries);
 
       expect(keyMap.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
       expect(keyMap.get(KeyParams.Curve)).toBe(Curves.P256);
@@ -42,8 +42,8 @@ describe('EcPublicKey', () => {
       expect(keyMap.get(KeyParams.KeyId)).toEqual(keyId);
     });
 
-    it('creates a new EcPublicKey with no entries', () => {
-      const keyMap = new EcPublicKey();
+    it('creates a new PublicKey with no entries', () => {
+      const keyMap = new PublicKey();
 
       expect(keyMap).toBeDefined();
       expect(keyMap.get(KeyParams.KeyType)).toBeUndefined();
@@ -51,8 +51,8 @@ describe('EcPublicKey', () => {
       expect(keyMap.get(KeyParams.Algorithm)).toBeUndefined();
     });
 
-    it('creates a new EcPublicKey with undefined entries', () => {
-      const keyMap = new EcPublicKey(undefined);
+    it('creates a new PublicKey with undefined entries', () => {
+      const keyMap = new PublicKey(undefined);
 
       expect(keyMap).toBeDefined();
       expect(keyMap.get(KeyParams.KeyType)).toBeUndefined();
@@ -63,7 +63,7 @@ describe('EcPublicKey', () => {
 
   describe('complete EC public key scenarios', () => {
     it('creates a complete P-256 EC public key', () => {
-      const keyMap = new EcPublicKey();
+      const keyMap = new PublicKey();
       const xCoordinate = new Uint8Array([
         0x04, 0x8d, 0x7e, 0x4b, 0x5e, 0x2a, 0x3c, 0x1f, 0x9e, 0x6b, 0x8a, 0x2d,
         0x5c, 0x3f, 0x1a, 0x7e, 0x9b, 0x4d, 0x2c, 0x6f, 0x8a, 0x1e, 0x5b, 0x3d,
@@ -94,7 +94,7 @@ describe('EcPublicKey', () => {
     });
 
     it('creates a complete P-384 EC public key', () => {
-      const keyMap = new EcPublicKey();
+      const keyMap = new PublicKey();
       const xCoordinate = new Uint8Array([
         0x04, 0x8d, 0x7e, 0x4b, 0x5e, 0x2a, 0x3c, 0x1f, 0x9e, 0x6b, 0x8a, 0x2d,
         0x5c, 0x3f, 0x1a, 0x7e, 0x9b, 0x4d, 0x2c, 0x6f, 0x8a, 0x1e, 0x5b, 0x3d,
@@ -127,7 +127,7 @@ describe('EcPublicKey', () => {
     });
 
     it('creates a complete P-521 EC public key', () => {
-      const keyMap = new EcPublicKey();
+      const keyMap = new PublicKey();
       const xCoordinate = new Uint8Array([
         0x04, 0x8d, 0x7e, 0x4b, 0x5e, 0x2a, 0x3c, 0x1f, 0x9e, 0x6b, 0x8a, 0x2d,
         0x5c, 0x3f, 0x1a, 0x7e, 0x9b, 0x4d, 0x2c, 0x6f, 0x8a, 0x1e, 0x5b, 0x3d,
@@ -164,9 +164,56 @@ describe('EcPublicKey', () => {
     });
   });
 
+  describe('OKP (EdDSA) public key scenarios', () => {
+    it('creates a complete Ed25519 OKP public key', () => {
+      const keyMap = new PublicKey();
+      const publicKey = new Uint8Array([0x01, 0x02, 0x03]);
+      const keyId = new Uint8Array([0xaa, 0xbb, 0xcc]);
+
+      keyMap.set(KeyParams.KeyType, KeyTypes.OKP);
+      keyMap.set(KeyParams.Curve, Curves.Ed25519);
+      keyMap.set(KeyParams.Algorithm, Algorithms.EdDSA);
+      keyMap.set(KeyParams.KeyOps, [KeyOps.Sign, KeyOps.Verify]);
+      keyMap.set(KeyParams.x, publicKey);
+      keyMap.set(KeyParams.KeyId, keyId);
+
+      expect(keyMap.get(KeyParams.KeyType)).toBe(KeyTypes.OKP);
+      expect(keyMap.get(KeyParams.Curve)).toBe(Curves.Ed25519);
+      expect(keyMap.get(KeyParams.Algorithm)).toBe(Algorithms.EdDSA);
+      expect(keyMap.get(KeyParams.KeyOps)).toEqual([
+        KeyOps.Sign,
+        KeyOps.Verify,
+      ]);
+      expect(keyMap.get(KeyParams.x)).toEqual(publicKey);
+      expect(keyMap.get(KeyParams.KeyId)).toEqual(keyId);
+      expect(keyMap.get(KeyParams.y)).toBeUndefined();
+    });
+
+    it('creates a complete Ed448 OKP public key', () => {
+      const keyMap = new PublicKey();
+      const publicKey = new Uint8Array([0x0d, 0x0e, 0x0f]);
+
+      keyMap.set(KeyParams.KeyType, KeyTypes.OKP);
+      keyMap.set(KeyParams.Curve, Curves.Ed448);
+      keyMap.set(KeyParams.Algorithm, Algorithms.EdDSA);
+      keyMap.set(KeyParams.KeyOps, [KeyOps.Sign, KeyOps.Verify]);
+      keyMap.set(KeyParams.x, publicKey);
+
+      expect(keyMap.get(KeyParams.KeyType)).toBe(KeyTypes.OKP);
+      expect(keyMap.get(KeyParams.Curve)).toBe(Curves.Ed448);
+      expect(keyMap.get(KeyParams.Algorithm)).toBe(Algorithms.EdDSA);
+      expect(keyMap.get(KeyParams.KeyOps)).toEqual([
+        KeyOps.Sign,
+        KeyOps.Verify,
+      ]);
+      expect(keyMap.get(KeyParams.x)).toEqual(publicKey);
+      expect(keyMap.get(KeyParams.y)).toBeUndefined();
+    });
+  });
+
   describe('modification scenarios', () => {
     it('allows modification of parameters after initial creation', () => {
-      const keyMap = new EcPublicKey();
+      const keyMap = new PublicKey();
       const initialX = new Uint8Array([0x01, 0x02, 0x03]);
       const initialY = new Uint8Array([0x04, 0x05, 0x06]);
 
@@ -202,7 +249,7 @@ describe('EcPublicKey', () => {
     });
 
     it('allows adding parameters after initial creation', () => {
-      const keyMap = new EcPublicKey();
+      const keyMap = new PublicKey();
 
       // Start with basic parameters
       keyMap.set(KeyParams.KeyType, KeyTypes.EC);
@@ -226,7 +273,7 @@ describe('EcPublicKey', () => {
     });
 
     it('allows removing parameters', () => {
-      const keyMap = new EcPublicKey();
+      const keyMap = new PublicKey();
 
       // Set all parameters
       keyMap.set(KeyParams.KeyType, KeyTypes.EC);

@@ -1,4 +1,4 @@
-import { EcPublicJwk } from '@/jwk/types';
+import { JwkPublicKey } from '@/jwk/types';
 import { jwkToCoseAlgorithm } from './jwkToCoseAlgorithm';
 import { CURVES_TO_ALGORITHMS } from './constants';
 import { jwkToCoseCurve } from './jwkToCoseCurve';
@@ -34,7 +34,7 @@ const encoder = new TextEncoder();
  * @returns Object with COSE `curve`, `algorithm`, and optional `keyId`.
  */
 export const jwkToCoseCurveAlgorithmKeyId = (
-  jwk: EcPublicJwk
+  jwk: JwkPublicKey
 ): JwkToCoseCurveAlgorithmKeyIdResult => {
   if (jwk.crv == null) {
     throw new Error('Missing curve in EC public key');

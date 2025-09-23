@@ -27,6 +27,8 @@ export default defineConfig({
         'u8a-utils',
         'node:crypto',
         'node:buffer',
+        /^@noble\/curves($|\/)/,
+        /^@noble\/hashes($|\/)/,
       ],
     },
   },
