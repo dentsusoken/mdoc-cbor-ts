@@ -139,7 +139,7 @@ describe('ProtectedHeaders', () => {
       );
     });
 
-    it('works with Omit type headers - Uint8Array array values', () => {
+    it('supports predefined X5Chain header with Uint8Array array values', () => {
       const headers = new ProtectedHeaders();
 
       // Test headers that are part of the Omit type with Uint8Array array values

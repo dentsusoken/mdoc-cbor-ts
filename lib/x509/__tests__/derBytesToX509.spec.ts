@@ -1,16 +1,22 @@
 import { describe, it, expect } from 'vitest';
 import { derBytesToX509 } from '../derBytesToX509';
 import { createSelfSignedCertificate } from '../createSelfSignedCertificate';
-import { generateP256KeyPair } from '@/crypto/generateP256KeyPair';
 import { certificateToDerBytes } from '../certificateToDerBytes';
+import { createSignatureCurve } from 'noble-curves-extended';
+import { randomBytes } from '@noble/hashes/utils';
+
+const p256 = createSignatureCurve('P-256', randomBytes);
 
 describe('derBytesToX509', () => {
   it('parses DER to jsrsasign X509 and exposes subject/issuer and verifies signature', () => {
-    const { privateJwk, publicJwk } = generateP256KeyPair();
+    const privateKey = p256.randomPrivateKey();
+    const publicKey = p256.getPublicKey(privateKey);
+    const subjectJwkPublicKey = p256.toJwkPublicKey(publicKey);
+    const caJwkPrivateKey = p256.toJwkPrivateKey(privateKey);
 
     const cert = createSelfSignedCertificate({
-      subjectJwkPublicKey: publicJwk,
-      caJwkPrivateKey: privateJwk,
+      subjectJwkPublicKey,
+      caJwkPrivateKey,
       digestAlgorithm: 'SHA-256',
       subject: 'User1',
       validityDays: 1,

@@ -5,5 +5,3 @@
  * These correspond to the algorithm identifiers used in cryptographic operations.
  */
 export type Sigalg = 'SHA256withECDSA' | 'SHA384withECDSA' | 'SHA512withECDSA';
-
-export type RandomBytes = (byteLength?: number) => Uint8Array;

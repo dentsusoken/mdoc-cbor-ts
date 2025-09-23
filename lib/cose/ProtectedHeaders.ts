@@ -29,6 +29,7 @@ export type ProtectedHeadersEntries = Es<
   | [Headers.Critical, Headers[]]
   | [Headers.ContentType, number | Uint8Array]
   | [Headers.KeyId, Uint8Array]
+  | [Headers.X5Chain, Uint8Array[]]
   | [
       Exclude<
         Headers,
@@ -36,6 +37,7 @@ export type ProtectedHeadersEntries = Es<
         | Headers.Critical
         | Headers.ContentType
         | Headers.KeyId
+        | Headers.X5Chain
       >,
       Uint8Array | Uint8Array[] | number | number[],
     ]

@@ -3,7 +3,7 @@ import { buildMobileSecurityObject } from '../buildMobileSecurityObject';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { createTag24 } from '@/cbor/createTag24';
-import { generateP256KeyPair } from '@/crypto';
+import { generateP256KeyPair } from '@/jsrsasign';
 import { jwkToCosePublicKey } from '@/cose/jwkToCosePublicKey';
 import { buildValueDigests } from '../buildValueDigests';
 import { buildValidityInfo } from '../buildValidityInfo';

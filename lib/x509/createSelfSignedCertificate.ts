@@ -1,7 +1,7 @@
 import { KEYUTIL, KJUR } from 'jsrsasign';
 import type { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { JwkPublicKey, JwkPrivateKey } from '@/jwk/types';
-import { digestAlgorithmToSigalg } from '@/crypto/digestAlgorithmToSigalg';
+import { digestAlgorithmToSigalg } from '@/jsrsasign/digestAlgorithmToSigalg';
 import { toX509Time } from './toX509Time';
 
 type CreateSelfSignedCertificateParams = {

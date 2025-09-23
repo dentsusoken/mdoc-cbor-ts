@@ -2,7 +2,7 @@ export * from './adapters';
 export * from './cbor';
 export * from './conf';
 export * from './cose';
-export * from './crypto';
+export * from './jsrsasign';
 export * from './handlers/issue/mdoc';
 export * from './handlers/issue/mso';
 export * from './handlers/verify/mdoc';
