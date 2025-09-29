@@ -1,22 +1,28 @@
 import { SignBase, VerifyOptions } from './SignBase';
 import { JwkPrivateKey } from '@/jwk/types';
 import { encodeSignature1 } from './encodeSignature1';
-import { encodeCbor } from '@/cbor/codec';
 import { createSignatureCurveRngDisallowed } from 'noble-curves-extended';
 
 /**
  * Parameters for creating and signing a COSE_Sign1 structure.
+ *
+ * @description
+ * Expects CBOR-encoded protected headers bytes and an optional map of
+ * unprotected headers. The payload can be embedded (provide `payload`)
+ * or detached (set `payload` to null and provide `detachedPayload`).
+ * Exactly one of `payload` or `detachedPayload` must be provided.
+ * Optional `externalAad` is included in the Sig_structure.
  */
 type SignParams = {
-  /** Protected headers (object to be CBOR-encoded or already-encoded bytes) */
+  /** CBOR-encoded protected headers bytes (bstr) */
   protectedHeaders: Uint8Array;
-  /** Unprotected headers (defaults to empty) */
+  /** Unprotected headers map (defaults to empty) */
   unprotectedHeaders?: Map<number, unknown>;
-  /** External AAD/application headers (defaults to empty) */
+  /** External Additional Authenticated Data (defaults to empty) */
   externalAad?: Uint8Array;
-  /** Payload bytes to be signed */
+  /** Embedded payload bytes, or null when using detached payload */
   payload: Uint8Array | null;
-  /** Detached payload for verification when payload is null */
+  /** Detached payload bytes when `payload` is null */
   detachedPayload?: Uint8Array;
   /** JWK private key to sign with */
   jwkPrivateKey: JwkPrivateKey;
@@ -99,13 +105,19 @@ export class Sign1 extends SignBase {
   };
   /**
    * Verifies the signature using the X.509 chain present in headers.
-   * Throws an error if verification fails.
+   *
+   * @description
+   * If the signature was created with external AAD or a detached payload,
+   * you MUST provide the same values via `options.externalAad` and/or
+   * `options.detachedPayload` for verification to succeed. When the embedded
+   * payload is `null`, verification cannot proceed without `options.detachedPayload`.
+   *
+   * @param options Optional verification inputs
+   * @param options.externalAad External Additional Authenticated Data used at sign time
+   * @param options.detachedPayload Detached payload bytes when this.payload is null
+   * @throws Error If the detached payload is required but not provided, or signature verification fails
    */
   verify = (options?: VerifyOptions): void => {
-    if (options?.detachedPayload === undefined && this.payload === null) {
-      throw new Error('Detached payload is required when payload is null');
-    }
-
     if (options?.detachedPayload === undefined && this.payload === null) {
       throw new Error('Detached payload is required when payload is null');
     }

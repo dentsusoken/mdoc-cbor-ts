@@ -24,9 +24,10 @@ describe('Payload', () => {
       expect(result).toBeNull();
     });
 
-    it('should accept undefined and return undefined', () => {
-      const result = payloadSchema.parse(undefined);
-      expect(result).toBeUndefined();
+    it('should reject undefined (nullable, not nullish)', () => {
+      expect(() =>
+        payloadSchema.parse(undefined as unknown as never)
+      ).toThrow();
     });
   });
 

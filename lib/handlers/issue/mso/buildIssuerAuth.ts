@@ -3,8 +3,6 @@ import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { IssuerAuth, issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { createTag24 } from '@/cbor/createTag24';
-import { buildProtectedHeaders } from '../cose/buildProtectedHeaders';
-import { buildUnprotectedHeaders } from '../cose/buildUnprotectedHeaders';
 import { buildMobileSecurityObject } from './buildMobileSecurityObject';
 import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
 import { Sign1 } from '@/cose/Sign1';
@@ -24,10 +22,12 @@ export type BuildIssuerAuthtParams = {
   validUntil: number;
   /** Optional duration in milliseconds from now until the document should be updated */
   expectedUpdate?: number;
+  /** The protected headers for the COSE_Sign1 structure */
+  protectedHeaders: Uint8Array;
+  /** The unprotected headers for the COSE_Sign1 structure */
+  unprotectedHeaders: Map<number, unknown>;
   /** The issuer's private key for signing */
   issuerJwkPrivateKey: JwkPrivateKey;
-  /** The X.509 certificate chain for the issuer */
-  x5c: Uint8Array[];
 };
 
 /**
@@ -79,8 +79,9 @@ export const buildIssuerAuth = async ({
   validFrom,
   validUntil,
   expectedUpdate,
+  protectedHeaders,
+  unprotectedHeaders,
   issuerJwkPrivateKey,
-  x5c,
 }: BuildIssuerAuthtParams): Promise<IssuerAuth> => {
   const mso = await buildMobileSecurityObject({
     docType,
@@ -94,17 +95,12 @@ export const buildIssuerAuth = async ({
 
   const msoTag24 = createTag24(mso);
 
-  const protectedHeaders = buildProtectedHeaders(issuerJwkPrivateKey);
-  const unprotectedHeaders = buildUnprotectedHeaders(x5c);
-
   const sign1 = await Sign1.sign({
     protectedHeaders,
     unprotectedHeaders,
     payload: encodeCbor(msoTag24),
     jwkPrivateKey: issuerJwkPrivateKey,
   });
-
-  console.log('sign1.getContentForEncoding', sign1.getContentForEncoding());
 
   return issuerAuthSchema.parse(sign1.getContentForEncoding());
 };

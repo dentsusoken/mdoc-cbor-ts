@@ -1,39 +1,60 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { createSign1Schema } from '../Sign1';
+import { createSign1Schema, sign1InvalidTypeMessage } from '../Sign1';
 import { requiredMessage } from '@/schemas/common/Required';
 import {
-  fixedTupleLengthInvalidTypeMessage,
   fixedTupleLengthTooFewMessage,
   fixedTupleLengthTooManyMessage,
 } from '@/schemas/common/FixedTupleLength';
+import { Tag } from 'cbor-x';
+import { createTag18, type Tag18Content } from '@/cbor/createTag18';
 
 describe('Sign1', () => {
   const schema = createSign1Schema('DeviceSignature');
 
-  describe('should accept valid COSE_Sign1 arrays', () => {
-    it('should parse a valid 4-element array to Sign1', () => {
+  describe('tuple input', () => {
+    it('should parse a valid 4-element tuple to Tag(18, [...])', () => {
       const protectedHeaders = Uint8Array.from([]);
       const unprotectedHeaders = new Map<number, unknown>();
       const payload = Uint8Array.from([]);
       const signature = Uint8Array.from([]);
 
-      const input = [protectedHeaders, unprotectedHeaders, payload, signature];
+      const input = [
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        signature,
+      ] as const;
       const result = schema.parse(input);
 
-      expect(result).toEqual(input);
+      expect(result).toBeInstanceOf(Tag);
+      const tag = result as Tag;
+      expect(tag.tag).toBe(18);
+      expect(tag.value).toEqual(input);
     });
 
-    it('should handle undefined payload', () => {
+    it('should reject undefined payload (nullable only)', () => {
       const protectedHeaders = Uint8Array.from([]);
       const unprotectedHeaders = new Map<number, unknown>();
       const payload = undefined;
       const signature = Uint8Array.from([]);
 
-      const input = [protectedHeaders, unprotectedHeaders, payload, signature];
-      const result = schema.parse(input);
-
-      expect(result).toEqual(input);
+      const input = [
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        signature,
+      ] as const;
+      try {
+        schema.parse(input as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          sign1InvalidTypeMessage('DeviceSignature')
+        );
+      }
     });
 
     it('should handle null payload', () => {
@@ -42,10 +63,18 @@ describe('Sign1', () => {
       const payload = null;
       const signature = Uint8Array.from([]);
 
-      const input = [protectedHeaders, unprotectedHeaders, payload, signature];
+      const input = [
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        signature,
+      ] as const;
       const result = schema.parse(input);
 
-      expect(result).toEqual(input);
+      expect(result).toBeInstanceOf(Tag);
+      const tag = result as Tag;
+      expect(tag.tag).toBe(18);
+      expect(tag.value).toEqual(input);
     });
   });
 
@@ -64,29 +93,29 @@ describe('Sign1', () => {
       {
         name: 'boolean input',
         input: true,
-        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+        expected: sign1InvalidTypeMessage('DeviceSignature'),
       },
       {
         name: 'number input',
         input: 123,
-        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+        expected: sign1InvalidTypeMessage('DeviceSignature'),
       },
       {
         name: 'string input',
         input: 'string',
-        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+        expected: sign1InvalidTypeMessage('DeviceSignature'),
       },
       {
         name: 'plain object input',
         input: {},
-        expected: fixedTupleLengthInvalidTypeMessage('DeviceSignature'),
+        expected: sign1InvalidTypeMessage('DeviceSignature'),
       },
     ];
 
     testCases.forEach(({ name, input, expected }) => {
       it(`should reject ${name}`, () => {
         try {
-          schema.parse(input as never);
+          schema.parse(input);
           throw new Error('Should have thrown');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);
@@ -97,7 +126,7 @@ describe('Sign1', () => {
     });
   });
 
-  describe('should enforce array length = 4', () => {
+  describe('should enforce array length = 4 (tuple input)', () => {
     it('should reject arrays with too few elements', () => {
       const input = [
         Uint8Array.from([]),
@@ -133,6 +162,126 @@ describe('Sign1', () => {
         expect(zodError.issues[0].message).toBe(
           fixedTupleLengthTooManyMessage('DeviceSignature', 4)
         );
+      }
+    });
+  });
+
+  describe('tag input (Tag(18, [...]))', () => {
+    it('should accept Tag(18) wrapping a valid tuple', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = Uint8Array.from([]);
+      const signature = Uint8Array.from([]);
+
+      const tuple: Tag18Content = [
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        signature,
+      ];
+      const tagInput = createTag18(tuple);
+      const result = schema.parse(tagInput);
+
+      expect(result).toBeInstanceOf(Tag);
+      const tag = result as Tag;
+      expect(tag.tag).toBe(18);
+      expect(tag.value).toEqual(tuple);
+    });
+
+    it('should accept Tag(18) with null payload', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = null;
+      const signature = Uint8Array.from([]);
+
+      const tuple: Tag18Content = [
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        signature,
+      ];
+      const tagInput = createTag18(tuple);
+      const result = schema.parse(tagInput);
+
+      expect(result).toBeInstanceOf(Tag);
+      const tag = result as Tag;
+      expect(tag.tag).toBe(18);
+      expect(tag.value).toEqual(tuple);
+    });
+
+    it('should reject Tag with non-18 tag value', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = Uint8Array.from([]);
+      const signature = Uint8Array.from([]);
+
+      const badTag = new Tag(
+        [protectedHeaders, unprotectedHeaders, payload, signature],
+        0
+      );
+      try {
+        schema.parse(badTag as unknown as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe('Invalid input');
+      }
+    });
+
+    it('should reject Tag(18) with undefined payload', () => {
+      const protectedHeaders = Uint8Array.from([]);
+      const unprotectedHeaders = new Map<number, unknown>();
+      const payload = undefined;
+      const signature = Uint8Array.from([]);
+
+      const badTag = createTag18([
+        protectedHeaders,
+        unprotectedHeaders,
+        payload as unknown as never,
+        signature,
+      ] as never);
+      try {
+        schema.parse(badTag as unknown as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe('Invalid input');
+      }
+    });
+
+    it('should reject Tag(18) with wrong inner length (too few)', () => {
+      const badTag = createTag18([
+        Uint8Array.from([]),
+        new Map<number, unknown>(),
+        Uint8Array.from([]),
+      ] as unknown as never);
+      try {
+        schema.parse(badTag as unknown as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe('Invalid input');
+      }
+    });
+
+    it('should reject Tag(18) with wrong inner length (too many)', () => {
+      const badTag = createTag18([
+        Uint8Array.from([]),
+        new Map<number, unknown>(),
+        Uint8Array.from([]),
+        Uint8Array.from([]),
+        'extra',
+      ] as unknown as never);
+      try {
+        schema.parse(badTag as unknown as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe('Invalid input');
       }
     });
   });

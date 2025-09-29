@@ -20,4 +20,4 @@ import { createBytesSchema } from '@/schemas/common/Bytes';
  * const result2 = payloadSchema.parse(detachedPayload); // Returns null
  * ```
  */
-export const payloadSchema = createBytesSchema('Payload').nullish();
+export const payloadSchema = createBytesSchema('Payload').nullable();

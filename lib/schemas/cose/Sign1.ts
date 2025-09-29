@@ -4,12 +4,14 @@ import { unprotectedHeadersSchema } from '@/schemas/cose/UnprotectedHeaders';
 import { payloadSchema } from '@/schemas/cose/Payload';
 import { signatureSchema } from './Signature';
 import { createFixedTupleLengthSchema } from '../common/FixedTupleLength';
-import { Sign1 } from '@/cose/Sign1';
-import { UnprotectedHeaders } from '@/cose/UnprotectedHeaders';
-import { getErrorMessage } from '@/utils';
+import { Tag } from 'cbor-x';
+import { createTag18 } from '@/cbor/createTag18';
 
-export const sign1InvalidStructureMessage = (target: string): string =>
-  `${target}: structure must be [protectedHeaders(Uint8Array), unprotectedHeaders(Map<number, unknown>), payload(Uint8Array | null | undefined), signature(Uint8Array)]`;
+export const sign1InvalidTupleMessage = (target: string): string =>
+  `${target}: structure must be [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array]`;
+
+export const sign1InvalidTypeMessage = (target: string): string =>
+  `${target}: type must be [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array] or Tag18([Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array])`;
 
 export const sign1FailedToVerifyMessage = (
   target: string,
@@ -19,107 +21,104 @@ export const sign1FailedToVerifyMessage = (
 /**
  * Tuple schema for COSE_Sign1 structure validation
  * @description
- * Validates the 4-element array structure of COSE_Sign1 and normalizes the payload field.
- * The payload is accepted as `Uint8Array | null | undefined` and is normalized to `null`
- * (never `undefined`) in the parsed output. The returned value is the validated 4-tuple,
- * not a `Sign1` instance.
+ * Validates the 4-element array structure of COSE_Sign1 and wraps it in a CBOR Tag 18.
+ * The payload is accepted as `Uint8Array | null` (detached payloads use `null`).
+ * `undefined` is not allowed. The returned value is a CBOR Tag 18 containing
+ * the validated 4-tuple.
  *
  * Elements:
  * - 0: Protected headers (`Uint8Array`)
  * - 1: Unprotected headers (`Map<number, unknown>`)
- * - 2: Payload (`Uint8Array | null`) – `null` if input was `null` or `undefined`
+ * - 2: Payload (`Uint8Array | null`) – `null` if input was `null`
  * - 3: Signature (`Uint8Array`)
+ *
+ * Note: This schema only accepts raw tuples; see `createSign1Schema` if you
+ * want to accept either a raw tuple or a pre-wrapped `Tag(18, [...])`.
  */
 const createSign1TupleSchema = (
   target: string
-): z.ZodTuple<
-  [
-    z.ZodType<Uint8Array>,
-    z.ZodType<Map<number, unknown>>,
-    z.ZodType<Uint8Array | null | undefined>,
-    z.ZodType<Uint8Array>,
-  ]
+): z.ZodType<
+  Tag,
+  z.ZodTypeDef,
+  [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array]
 > =>
-  z.tuple(
-    [
-      protectedHeadersSchema, // protected headers (Bytes)
-      unprotectedHeadersSchema, // unprotected headers (LabelKeyMap)
-      // Normalize undefined/null to null so output type excludes undefined
-      payloadSchema, // payload (Bytes | null | undefined)
-      signatureSchema, // signature (Bytes)
-    ],
-    {
-      message: sign1InvalidStructureMessage(target),
-    }
-  );
+  z
+    .tuple(
+      [
+        protectedHeadersSchema, // protected headers (Bytes)
+        unprotectedHeadersSchema, // unprotected headers (LabelKeyMap)
+        // Normalize undefined/null to null so output type excludes undefined
+        payloadSchema, // payload (Bytes | null)
+        signatureSchema, // signature (Bytes)
+      ],
+      {
+        message: sign1InvalidTupleMessage(target),
+      }
+    )
+    .transform((value) => {
+      return createTag18(value);
+    });
 
 /**
- * Schema for validating COSE_Sign1 4-tuples
+ * Schema for validating COSE_Sign1 tuples or Tag(18) wrappers
  * @description
- * Validates COSE_Sign1 arrays with exact length 4 and returns the original tuple
- * with the payload normalized to `null` (never `undefined`). This schema does not
- * return a `Sign1` instance; it only ensures the tuple is constructible into one.
- * A refinement step tries to construct `new Sign1(...)` to confirm validity but
- * the parsed output remains the tuple.
+ * Accepts either:
+ * - a raw 4-element COSE_Sign1 tuple
+ * - or a CBOR `Tag(18, [...])` whose inner value conforms to the same tuple
+ *
+ * In both cases, the payload must be `Uint8Array | null` (never `undefined`).
+ * The parsed output is always a CBOR Tag 18 wrapping the validated tuple.
  *
  * ```cddl
  * COSE_Sign1 = [
  *   protected:   bstr,
  *   unprotected: {
- *     * label => any
+ *     * uint => any
  *   },
  *   payload:     bstr / null,
  *   signature:   bstr
  * ]
  * ```
- * where `label = int / tstr`
  *
  * Validation rules:
- * - Must be an array with exactly 4 elements
- * - Element 0: Protected headers (Uint8Array)
- * - Element 1: Unprotected headers (Map<number | string, unknown>)
- * - Element 2: Payload (Uint8Array | null) – undefined becomes null
- * - Element 3: Signature (Uint8Array)
+ * - If input is a tuple: must have exactly 4 elements and match expected types
+ * - If input is a Tag: `tag` must be 18 and `value` must pass the same tuple validation
  *
  * @param target - The name of the target schema (used in error messages)
- * @returns Zod schema that parses to `[Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array]`
+ * @returns Zod schema that parses to a CBOR Tag 18 containing the COSE_Sign1 structure
  *
  * @example
  * ```typescript
- * const deviceSignatureTupleSchema = createSign1Schema('DeviceSignature');
- * const input = [protectedHeaders, unprotectedHeaders, undefined, signature];
- * const result = deviceSignatureTupleSchema.parse(input);
- * // result[2] is null (normalized)
+ * const schema = createSign1Schema('DeviceSignature');
+ * // Tuple input
+ * const t = [protectedHeaders, unprotectedHeaders, null, signature] as const;
+ * const tagA = schema.parse(t); // Tag(18, [...])
+ *
+ * // Tag input
+ * const tagB = schema.parse(createTag18(t)); // Passes as well
  * ```
  */
 export const createSign1Schema = (
   target: string
-): z.ZodType<
-  [Uint8Array, Map<number, unknown>, Uint8Array, Uint8Array],
-  z.ZodTypeDef,
-  unknown
-> =>
-  createFixedTupleLengthSchema(target, 4)
-    .pipe(createSign1TupleSchema(target))
-    .transform(
-      ([protectedHeaders, unprotectedHeaders, payload, signature], ctx) => {
-        try {
-          // Ensure the tuple can construct a valid Sign1
-          const sign1 = new Sign1(
-            protectedHeaders,
-            UnprotectedHeaders.fromMap(unprotectedHeaders),
-            payload ?? new Uint8Array(),
-            signature
-          );
-          sign1.verify();
-
-          return sign1.getContentForEncoding();
-        } catch (error) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: sign1FailedToVerifyMessage(target, getErrorMessage(error)),
-          });
-          return z.NEVER;
-        }
-      }
-    );
+): z.ZodType<Tag, z.ZodTypeDef, unknown> =>
+  z.union(
+    [
+      createFixedTupleLengthSchema(target, 4).pipe(
+        createSign1TupleSchema(target)
+      ),
+      z
+        .instanceof(Tag)
+        .refine(
+          (tag) =>
+            tag.tag === 18 &&
+            createFixedTupleLengthSchema(target, 4)
+              .pipe(createSign1TupleSchema(target))
+              .safeParse(tag.value).success
+        ),
+    ],
+    {
+      errorMap: () => ({
+        message: sign1InvalidTypeMessage(target),
+      }),
+    }
+  );
