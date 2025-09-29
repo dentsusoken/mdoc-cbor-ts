@@ -9,6 +9,7 @@ type CreateSelfSignedCertificateParams = {
   caJwkPrivateKey: JwkPrivateKey;
   digestAlgorithm?: DigestAlgorithm;
   subject: string;
+  issuer?: string;
   validityDays?: number;
   serialHex: string;
 };
@@ -26,6 +27,7 @@ type CreateSelfSignedCertificateParams = {
  * @param params.caJwkPrivateKey - EC private key in JWK format for signing (same as subject for self-signed)
  * @param params.digestAlgorithm - Digest algorithm for signature (defaults to 'SHA-256')
  * @param params.subject - Common name for the certificate subject
+ * @param params.issuer - Common name for the certificate issuer
  * @param params.validityDays - Certificate validity period in days (defaults to 365)
  * @param params.serialHex - Certificate serial number in hexadecimal format
  * @returns jsrsasign Certificate object ready for encoding
@@ -47,6 +49,7 @@ export const createSelfSignedCertificate = ({
   caJwkPrivateKey,
   digestAlgorithm = 'SHA-256',
   subject,
+  issuer,
   validityDays = 365,
   serialHex,
 }: CreateSelfSignedCertificateParams): KJUR.asn1.x509.Certificate => {
@@ -56,7 +59,8 @@ export const createSelfSignedCertificate = ({
   const cakey = KEYUTIL.getKey(
     caJwkPrivateKey as unknown as KJUR.jws.JWS.JsonWebKey
   );
-  const dn = `/CN=${subject}`;
+  const sub = `/CN=${subject}`;
+  const iss = issuer ? `/CN=${issuer}` : sub;
   const sigalg = digestAlgorithmToSigalg(digestAlgorithm);
 
   const now = new Date();
@@ -65,10 +69,10 @@ export const createSelfSignedCertificate = ({
   return new KJUR.asn1.x509.Certificate({
     version: 3,
     serial: { hex: serialHex },
-    issuer: { str: dn },
+    issuer: { str: iss },
     notbefore: toX509Time(now),
     notafter: toX509Time(notAfter),
-    subject: { str: dn },
+    subject: { str: sub },
     sbjpubkey,
     ext: [
       { extname: 'basicConstraints', cA: false },

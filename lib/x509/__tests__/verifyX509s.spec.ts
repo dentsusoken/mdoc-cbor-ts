@@ -3,19 +3,18 @@ import { KJUR, X509 } from 'jsrsasign';
 import { createSignatureCurve } from 'noble-curves-extended';
 import { randomBytes } from '@noble/hashes/utils';
 import { createSelfSignedCertificate } from '../createSelfSignedCertificate';
-import { verifyCertificates } from '../verifyCertificates';
+import { verifyX509s } from '../verifyX509s';
+import { pemToX509 } from '../pemToX509';
 
 /**
  * Utility to convert KJUR.asn1.x509.Certificate to jsrsasign X509
  */
 const toX509 = (cert: KJUR.asn1.x509.Certificate): X509 => {
   const pem = cert.getPEM();
-  const x = new X509();
-  x.readCertPEM(pem);
-  return x;
+  return pemToX509(pem);
 };
 
-describe('verifyCertificates', () => {
+describe('verifyX509s', () => {
   const p256 = createSignatureCurve('P-256', randomBytes);
 
   it('verifies a single self-signed certificate (root)', () => {
@@ -34,7 +33,7 @@ describe('verifyCertificates', () => {
     });
 
     const x509 = toX509(cert);
-    const results = verifyCertificates([x509]);
+    const results = verifyX509s([x509]);
     expect(results).toEqual([true]);
   });
 
@@ -73,7 +72,7 @@ describe('verifyCertificates', () => {
     const leafX = toX509(leafCert);
     const rootX = toX509(rootCert);
 
-    const results = verifyCertificates([leafX, rootX]);
+    const results = verifyX509s([leafX, rootX]);
     expect(results).toEqual([true, true]);
   });
 
@@ -113,7 +112,7 @@ describe('verifyCertificates', () => {
     const leafX = toX509(leafCert);
     const bogusX = toX509(bogusParent);
 
-    const results = verifyCertificates([leafX, bogusX]);
+    const results = verifyX509s([leafX, bogusX]);
     expect(results[0]).toBe(false);
     expect(results[1]).toBe(true);
   });

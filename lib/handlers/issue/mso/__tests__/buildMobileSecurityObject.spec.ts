@@ -3,17 +3,21 @@ import { buildMobileSecurityObject } from '../buildMobileSecurityObject';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { createTag24 } from '@/cbor/createTag24';
-import { generateP256KeyPair } from '@/jsrsasign';
 import { jwkToCosePublicKey } from '@/cose/jwkToCosePublicKey';
 import { buildValueDigests } from '../buildValueDigests';
 import { buildValidityInfo } from '../buildValidityInfo';
+import { Tag } from 'cbor-x';
+import { randomBytes } from '@noble/hashes/utils';
+import { createSignatureCurve } from 'noble-curves-extended';
+
+const p256 = createSignatureCurve('P-256', randomBytes);
 
 // Helper to create a deterministic IssuerSignedItem Tag24
 const createIssuerSignedItemTag24 = (
   digestID: number,
   elementIdentifier = 'given_name',
   elementValue: unknown = 'JOHN'
-): ReturnType<typeof createTag24> => {
+): Tag => {
   const issuerSignedItem: IssuerSignedItem = {
     digestID,
     random: new Uint8Array(16),
@@ -35,9 +39,11 @@ describe('buildMobileSecurityObject', () => {
     const nameSpaces: IssuerNameSpaces = new Map([
       ['org.iso.18013.5.1', [tag24]],
     ]);
-    const { publicJwk } = generateP256KeyPair();
-    const deviceKey = jwkToCosePublicKey(publicJwk);
+    const privateKey = p256.randomPrivateKey();
+    const publicKey = p256.getPublicKey(privateKey);
+    const deviceJwkPublicKey = p256.toJwkPublicKey(publicKey);
     const digestAlgorithm = 'SHA-256';
+    const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
     const valueDigests = await buildValueDigests({
       nameSpaces,
       digestAlgorithm,
@@ -53,7 +59,7 @@ describe('buildMobileSecurityObject', () => {
     const mso = await buildMobileSecurityObject({
       docType,
       nameSpaces,
-      deviceKey,
+      deviceJwkPublicKey,
       digestAlgorithm,
       baseDate,
       validFrom,
@@ -79,8 +85,10 @@ describe('buildMobileSecurityObject', () => {
     const nameSpaces: IssuerNameSpaces = new Map([
       ['org.iso.18013.5.1', [tag24]],
     ]);
-    const { publicJwk } = generateP256KeyPair();
-    const deviceKey = jwkToCosePublicKey(publicJwk);
+    const privateKey = p256.randomPrivateKey();
+    const publicKey = p256.getPublicKey(privateKey);
+    const jwkPublicKey = p256.toJwkPublicKey(publicKey);
+    const deviceKey = jwkToCosePublicKey(jwkPublicKey);
     const digestAlgorithm = 'SHA-256';
     const valueDigests = await buildValueDigests({
       nameSpaces,
@@ -96,7 +104,7 @@ describe('buildMobileSecurityObject', () => {
     const mso = await buildMobileSecurityObject({
       docType,
       nameSpaces,
-      deviceKey,
+      deviceJwkPublicKey: jwkPublicKey,
       digestAlgorithm,
       baseDate,
       validFrom,

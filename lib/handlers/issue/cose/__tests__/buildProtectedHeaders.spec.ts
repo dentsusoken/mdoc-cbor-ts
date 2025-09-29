@@ -1,13 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { buildProtectedHeaders } from '../buildProtectedHeaders';
-import { EcPublicJwk, JwkAlgorithms } from '@/jwk/types';
+import { JwkPublicKey, JwkAlgorithms } from '@/jwk/types';
 import { Headers, Algorithms } from '@/cose/types';
-import { ProtectedHeaders } from '@/cose/ProtectedHeaders';
 
 describe('buildProtectedHeaders', () => {
   describe('normal cases', () => {
     it('should create protected headers with algorithm and key ID', () => {
-      const publicJwk: EcPublicJwk = {
+      const publicJwk: JwkPublicKey = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -18,7 +17,8 @@ describe('buildProtectedHeaders', () => {
 
       const headers = buildProtectedHeaders(publicJwk);
 
-      expect(headers).toBeInstanceOf(ProtectedHeaders);
+      expect(headers).toBeInstanceOf(Map);
+      expect(headers.constructor.name).toBe('Map');
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
       expect(headers.get(Headers.KeyId)).toEqual(
         new TextEncoder().encode('key-123')
@@ -26,7 +26,7 @@ describe('buildProtectedHeaders', () => {
     });
 
     it('should create protected headers with algorithm only when no key ID', () => {
-      const publicJwk: EcPublicJwk = {
+      const publicJwk: JwkPublicKey = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -37,13 +37,14 @@ describe('buildProtectedHeaders', () => {
 
       const headers = buildProtectedHeaders(publicJwk);
 
-      expect(headers).toBeInstanceOf(ProtectedHeaders);
+      expect(headers).toBeInstanceOf(Map);
+      expect(headers.constructor.name).toBe('Map');
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
       expect(headers.get(Headers.KeyId)).toBeUndefined();
     });
 
     it('should create protected headers with crv only', () => {
-      const publicJwk: EcPublicJwk = {
+      const publicJwk: JwkPublicKey = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -54,13 +55,14 @@ describe('buildProtectedHeaders', () => {
 
       const headers = buildProtectedHeaders(publicJwk);
 
-      expect(headers).toBeInstanceOf(ProtectedHeaders);
+      expect(headers).toBeInstanceOf(Map);
+      expect(headers.constructor.name).toBe('Map');
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES256);
       expect(headers.get(Headers.KeyId)).toBeUndefined();
     });
 
     it('should create protected headers with ES384 algorithm', () => {
-      const publicJwk: EcPublicJwk = {
+      const publicJwk: JwkPublicKey = {
         kty: 'EC',
         crv: 'P-384',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -70,12 +72,13 @@ describe('buildProtectedHeaders', () => {
 
       const headers = buildProtectedHeaders(publicJwk);
 
-      expect(headers).toBeInstanceOf(ProtectedHeaders);
+      expect(headers).toBeInstanceOf(Map);
+      expect(headers.constructor.name).toBe('Map');
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES384);
     });
 
     it('should create protected headers with ES512 algorithm', () => {
-      const publicJwk: EcPublicJwk = {
+      const publicJwk: JwkPublicKey = {
         kty: 'EC',
         crv: 'P-521',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -85,14 +88,15 @@ describe('buildProtectedHeaders', () => {
 
       const headers = buildProtectedHeaders(publicJwk);
 
-      expect(headers).toBeInstanceOf(ProtectedHeaders);
+      expect(headers).toBeInstanceOf(Map);
+      expect(headers.constructor.name).toBe('Map');
       expect(headers.get(Headers.Algorithm)).toBe(Algorithms.ES512);
     });
   });
 
   describe('exception cases', () => {
     it('should throw error when algorithm is missing and curve is not supported', () => {
-      const publicJwk: EcPublicJwk = {
+      const publicJwk: JwkPublicKey = {
         kty: 'EC',
         crv: 'P-xxx' as 'P-256' | 'P-384' | 'P-521', // Invalid curve
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',
@@ -107,7 +111,7 @@ describe('buildProtectedHeaders', () => {
     });
 
     it('should throw error when algorithm is not supported', () => {
-      const publicJwk: EcPublicJwk = {
+      const publicJwk: JwkPublicKey = {
         kty: 'EC',
         crv: 'P-256',
         x: 'JUzffSI36_W_nxxY6_byP8swRe6kbIa5bBk4kjnfKlQ',

@@ -1,5 +1,4 @@
 import { Headers } from '@/cose/types';
-import { UnprotectedHeaders } from '@/cose/UnprotectedHeaders';
 import { describe, expect, it } from 'vitest';
 import { buildUnprotectedHeaders } from '../buildUnprotectedHeaders';
 
@@ -10,8 +9,9 @@ describe('buildUnprotectedHeaders', () => {
     ]);
     const headers = buildUnprotectedHeaders([certBytes]);
 
-    expect(headers).toBeInstanceOf(UnprotectedHeaders);
-    const x5chain = headers.get(Headers.X5Chain);
+    expect(headers).toBeInstanceOf(Map);
+    expect(headers.constructor.name).toBe('Map');
+    const x5chain = headers.get(Headers.X5Chain) as Uint8Array[];
     expect(x5chain).toBeInstanceOf(Array);
     expect(x5chain).toHaveLength(1);
     expect(x5chain![0]).toEqual(certBytes);
@@ -28,8 +28,9 @@ describe('buildUnprotectedHeaders', () => {
       rootCert,
     ]);
 
-    expect(headers).toBeInstanceOf(UnprotectedHeaders);
-    const x5chain = headers.get(Headers.X5Chain);
+    expect(headers).toBeInstanceOf(Map);
+    expect(headers.constructor.name).toBe('Map');
+    const x5chain = headers.get(Headers.X5Chain) as Uint8Array[];
     expect(x5chain).toBeInstanceOf(Array);
     expect(x5chain).toHaveLength(3);
     expect(x5chain![0]).toEqual(leafCert);
@@ -49,8 +50,9 @@ describe('buildUnprotectedHeaders', () => {
 
     const headers = buildUnprotectedHeaders([certU8a]);
 
-    expect(headers).toBeInstanceOf(UnprotectedHeaders);
-    const x5chain = headers.get(Headers.X5Chain);
+    expect(headers).toBeInstanceOf(Map);
+    expect(headers.constructor.name).toBe('Map');
+    const x5chain = headers.get(Headers.X5Chain) as Uint8Array[];
     expect(x5chain).toHaveLength(1);
     expect(x5chain![0]).toEqual(certU8a);
   });

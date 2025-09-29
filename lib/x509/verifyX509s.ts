@@ -14,16 +14,21 @@ import { X509 } from 'jsrsasign';
  * @example
  * ```typescript
  * const certificates = [leafCert, intermediateCert, rootCert];
- * const results = verifyCertificates(certificates);
+ * const results = verifyX509s(certificates);
  * console.log(results); // [true, true, true] if all certificates are valid
  * ```
  */
-export const verifyCertificates = (x509s: X509[]): boolean[] => {
+export const verifyX509s = (x509s: X509[]): boolean[] => {
   return x509s.map((x509, index) => {
     const publicKey =
       index === x509s.length - 1
         ? x509.getPublicKey()
         : x509s[index + 1].getPublicKey();
-    return x509.verifySignature(publicKey);
+    try {
+      return x509.verifySignature(publicKey);
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   });
 };

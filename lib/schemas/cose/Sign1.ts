@@ -1,13 +1,21 @@
-import { Sign1 } from '@auth0/cose';
 import { z } from 'zod';
 import { protectedHeadersSchema } from '@/schemas/cose/ProtectedHeaders';
 import { unprotectedHeadersSchema } from '@/schemas/cose/UnprotectedHeaders';
 import { payloadSchema } from '@/schemas/cose/Payload';
 import { signatureSchema } from './Signature';
 import { createFixedTupleLengthSchema } from '../common/FixedTupleLength';
+import { Sign1 } from '@/cose/Sign1';
+import { UnprotectedHeaders } from '@/cose/UnprotectedHeaders';
+import { getErrorMessage } from '@/utils';
 
-export const SIGN1_INVALID_STRUCTURE_MESSAGE =
-  'COSE_Sign1: structure must be [protectedHeaders(Uint8Array), unprotectedHeaders(Map<number, unknown>), payload(Uint8Array | null | undefined), signature(Uint8Array)]';
+export const sign1InvalidStructureMessage = (target: string): string =>
+  `${target}: structure must be [protectedHeaders(Uint8Array), unprotectedHeaders(Map<number, unknown>), payload(Uint8Array | null | undefined), signature(Uint8Array)]`;
+
+export const sign1FailedToVerifyMessage = (
+  target: string,
+  error: string
+): string => `${target}: failed to verify: ${error}`;
+
 /**
  * Tuple schema for COSE_Sign1 structure validation
  * @description
@@ -22,13 +30,28 @@ export const SIGN1_INVALID_STRUCTURE_MESSAGE =
  * - 2: Payload (`Uint8Array | null`) – `null` if input was `null` or `undefined`
  * - 3: Signature (`Uint8Array`)
  */
-const sign1TupleSchema = z.tuple([
-  protectedHeadersSchema, // protected headers (Bytes)
-  unprotectedHeadersSchema, // unprotected headers (LabelKeyMap)
-  // Normalize undefined/null to null so output type excludes undefined
-  payloadSchema, // payload (Bytes | null | undefined)
-  signatureSchema, // signature (Bytes)
-]);
+const createSign1TupleSchema = (
+  target: string
+): z.ZodTuple<
+  [
+    z.ZodType<Uint8Array>,
+    z.ZodType<Map<number, unknown>>,
+    z.ZodType<Uint8Array | null | undefined>,
+    z.ZodType<Uint8Array>,
+  ]
+> =>
+  z.tuple(
+    [
+      protectedHeadersSchema, // protected headers (Bytes)
+      unprotectedHeadersSchema, // unprotected headers (LabelKeyMap)
+      // Normalize undefined/null to null so output type excludes undefined
+      payloadSchema, // payload (Bytes | null | undefined)
+      signatureSchema, // signature (Bytes)
+    ],
+    {
+      message: sign1InvalidStructureMessage(target),
+    }
+  );
 
 /**
  * Schema for validating COSE_Sign1 4-tuples
@@ -77,26 +100,24 @@ export const createSign1Schema = (
   unknown
 > =>
   createFixedTupleLengthSchema(target, 4)
-    .pipe(sign1TupleSchema)
+    .pipe(createSign1TupleSchema(target))
     .transform(
       ([protectedHeaders, unprotectedHeaders, payload, signature], ctx) => {
         try {
           // Ensure the tuple can construct a valid Sign1
-          return new Sign1(
+          const sign1 = new Sign1(
             protectedHeaders,
-            unprotectedHeaders,
-            payload!,
+            UnprotectedHeaders.fromMap(unprotectedHeaders),
+            payload ?? new Uint8Array(),
             signature
-          ).getContentForEncoding() as [
-            Uint8Array,
-            Map<number, unknown>,
-            Uint8Array,
-            Uint8Array,
-          ];
+          );
+          sign1.verify();
+
+          return sign1.getContentForEncoding();
         } catch (error) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: SIGN1_INVALID_STRUCTURE_MESSAGE,
+            message: sign1FailedToVerifyMessage(target, getErrorMessage(error)),
           });
           return z.NEVER;
         }

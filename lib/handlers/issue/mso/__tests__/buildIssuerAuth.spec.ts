@@ -1,10 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { Algorithms, COSEKey, Sign1 } from '@auth0/cose';
 import { Tag } from 'cbor-x';
 import { createTag24 } from '@/cbor/createTag24';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { buildIssuerAuth } from '../buildIssuerAuth';
 import { issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
+import { createSignatureCurve } from 'noble-curves-extended';
+import { randomBytes } from '@noble/hashes/utils';
+import { certificateToDerBytes } from '@/x509/certificateToDerBytes';
+import { createSelfSignedCertificate } from '@/x509/createSelfSignedCertificate';
+
+const p256 = createSignatureCurve('P-256', randomBytes);
 
 // Helper to create a deterministic IssuerSignedItem Tag24
 const createIssuerSignedItemTag24 = (
@@ -26,35 +31,28 @@ describe('buildIssuerAuth', () => {
       ['org.iso.18013.5.1', [createIssuerSignedItemTag24(38)]],
     ]);
 
-    const { publicKey: devicePublicKey } = await COSEKey.generate(
-      Algorithms.ES256,
-      {
-        crv: 'P-256',
-      }
-    );
+    const privateKey = p256.randomPrivateKey();
+    const publicKey = p256.getPublicKey(privateKey);
+    const deviceJwkPublicKey = p256.toJwkPublicKey(publicKey);
+    const issuerJwkPrivateKey = p256.toJwkPrivateKey(privateKey);
 
-    const { privateKey: issuerPrivateKey } = await COSEKey.generate(
-      Algorithms.ES256,
-      {
-        crv: 'P-256',
-      }
-    );
-
-    // const jwk = await privateKey.toJWK();
-    // console.log('jwk', jwk);
-    // Ensure alg is present for protected headers construction
-    // const jwkWithAlg: CoseKeyJwk = { ...jwk, alg: 'ES256' };
-    const x5c = [new Uint8Array([0x30, 0x82, 0x01, 0x3d])];
+    const certificate = createSelfSignedCertificate({
+      subjectJwkPublicKey: deviceJwkPublicKey,
+      caJwkPrivateKey: issuerJwkPrivateKey,
+      subject: 'Sign1 Interop',
+      serialHex: '02',
+    });
+    const x5c = [certificateToDerBytes(certificate)];
 
     const issuerAuth = await buildIssuerAuth({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaces,
-      devicePublicKey,
+      deviceJwkPublicKey,
       digestAlgorithm: 'SHA-256',
       validFrom: 0,
       validUntil: 24 * 60 * 60 * 1000,
       expectedUpdate: 60 * 60 * 1000,
-      issuerPrivateKey,
+      issuerJwkPrivateKey,
       x5c,
     });
 
@@ -66,8 +64,8 @@ describe('buildIssuerAuth', () => {
     ];
     expect(issuerAuth).toEqual(expected);
 
-    const result = issuerAuthSchema.safeParse(issuerAuth);
+    const result = issuerAuthSchema.parse(issuerAuth);
 
-    expect(result.success).toBe(true);
+    expect(result).toEqual(issuerAuth);
   });
 });
