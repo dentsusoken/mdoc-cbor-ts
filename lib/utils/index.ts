@@ -1,5 +1,6 @@
 export * from './calculateDigest';
+export * from './generateHmac';
 export * from './getErrorMessage';
-export * from './lookupAlgorithm';
+export * from './getShaHash';
 export * from './toISODateTimeString';
 export * from './toISOFullDateString';

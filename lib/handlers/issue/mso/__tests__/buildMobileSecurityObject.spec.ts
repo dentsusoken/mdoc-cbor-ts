@@ -33,7 +33,7 @@ describe('buildMobileSecurityObject', () => {
   const validUntil = validFrom + 24 * 60 * 60; // +1 day
   const expectedUpdate = validFrom + 60 * 60; // +1 hour
 
-  it('should create a mobile security object with all required fields', async () => {
+  it('should create a mobile security object with all required fields', () => {
     const docType = 'org.iso.18013.5.1.mDL';
     const tag24 = createIssuerSignedItemTag24(1);
     const nameSpaces: IssuerNameSpaces = new Map([
@@ -44,7 +44,7 @@ describe('buildMobileSecurityObject', () => {
     const deviceJwkPublicKey = p256.toJwkPublicKey(publicKey);
     const digestAlgorithm = 'SHA-256';
     const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
-    const valueDigests = await buildValueDigests({
+    const valueDigests = buildValueDigests({
       nameSpaces,
       digestAlgorithm,
     });
@@ -56,7 +56,7 @@ describe('buildMobileSecurityObject', () => {
       expectedUpdate,
     });
 
-    const mso = await buildMobileSecurityObject({
+    const mso = buildMobileSecurityObject({
       docType,
       nameSpaces,
       deviceJwkPublicKey,
@@ -79,7 +79,7 @@ describe('buildMobileSecurityObject', () => {
     });
   });
 
-  it('should create a mobile security object without expectedUpdate', async () => {
+  it('should create a mobile security object without expectedUpdate', () => {
     const docType = 'org.iso.18013.5.1.mDL';
     const tag24 = createIssuerSignedItemTag24(1);
     const nameSpaces: IssuerNameSpaces = new Map([
@@ -90,7 +90,7 @@ describe('buildMobileSecurityObject', () => {
     const jwkPublicKey = p256.toJwkPublicKey(publicKey);
     const deviceKey = jwkToCosePublicKey(jwkPublicKey);
     const digestAlgorithm = 'SHA-256';
-    const valueDigests = await buildValueDigests({
+    const valueDigests = buildValueDigests({
       nameSpaces,
       digestAlgorithm,
     });
@@ -101,7 +101,7 @@ describe('buildMobileSecurityObject', () => {
       validUntil,
     });
 
-    const mso = await buildMobileSecurityObject({
+    const mso = buildMobileSecurityObject({
       docType,
       nameSpaces,
       deviceJwkPublicKey: jwkPublicKey,

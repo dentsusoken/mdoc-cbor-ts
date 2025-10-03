@@ -1,5 +1,4 @@
 import { JwkPublicKey } from '@/jwk/types';
-import { PublicKey } from './PublicKey';
 import { jwkToCoseKeyType } from './jwkToCoseKeyType';
 import { decodeBase64Url } from 'u8a-utils';
 import { KeyParams, KeyTypes } from './types';
@@ -7,32 +6,20 @@ import { jwkToCoseKeyOps } from './jwkToCoseKeyOps';
 import { jwkToCoseCurveAlgorithmKeyId } from './jwkToCoseCurveAlgorithmKeyId';
 
 /**
- * Converts an EC public key from JWK format to COSE format
+ * Converts a JWK public key to a COSE public key map.
+ *
+ * @param jwk - The JWK public key to convert.
+ * @returns A Map representing the COSE public key.
+ * @throws {Error} If the key type is not "EC" or "OKP".
+ * @throws {Error} If required coordinates (x or y) are missing.
+ *
  * @description
- * Transforms an Elliptic Curve public key from JSON Web Key (JWK) format
- * to CBOR Object Signing and Encryption (COSE) format. The function validates
- * the input JWK and extracts the necessary parameters to create a COSE EC public key.
- *
- * @param jwk - The EC public key in JWK format
- * @returns The EC public key in COSE format
- * @throws {Error} When the key type is not "EC"
- * @throws {Error} When the curve parameter is missing
- * @throws {Error} When the x coordinate is missing
- * @throws {Error} When the y coordinate is missing
- *
- * @example
- * ```typescript
- * const jwkKey: EcPublicJwk = {
- *   kty: 'EC',
- *   crv: 'P-256',
- *   x: 'base64url-encoded-x-coordinate',
- *   y: 'base64url-encoded-y-coordinate'
- * };
- *
- * const coseKey = jwkToCoseECPublicKey(jwkKey);
- * ```
+ * This function takes a JWK public key and converts it into a COSE-compliant public key map.
+ * It supports both EC (Elliptic Curve) and OKP (Octet Key Pair, e.g., EdDSA) key types.
+ * For EC keys, both x and y coordinates are required. For OKP keys, only x is required.
+ * The function also maps curve, algorithm, key ID, and key operations if present.
  */
-export const jwkToCosePublicKey = (jwk: JwkPublicKey): PublicKey => {
+export const jwkToCosePublicKey = (jwk: JwkPublicKey): Map<number, unknown> => {
   const keyType = jwkToCoseKeyType(jwk.kty);
 
   if (keyType !== KeyTypes.EC && keyType !== KeyTypes.OKP) {
@@ -53,7 +40,7 @@ export const jwkToCosePublicKey = (jwk: JwkPublicKey): PublicKey => {
     }
     const y = decodeBase64Url(jwk.y);
 
-    const publicKey = new PublicKey([
+    const publicKey = new Map<number, unknown>([
       [KeyParams.KeyType, keyType],
       [KeyParams.Curve, curve],
       [KeyParams.Algorithm, algorithm],
@@ -73,7 +60,7 @@ export const jwkToCosePublicKey = (jwk: JwkPublicKey): PublicKey => {
   }
 
   // OKP (EdDSA) public key: only x is required; y is not used
-  const publicKey = new PublicKey([
+  const publicKey = new Map<number, unknown>([
     [KeyParams.KeyType, keyType],
     [KeyParams.Curve, curve],
     [KeyParams.Algorithm, algorithm],

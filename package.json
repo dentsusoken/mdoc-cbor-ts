@@ -45,7 +45,6 @@
     "@noble/curves": "^1.9.7",
     "@noble/hashes": "^1.8.0",
     "cbor-x": "^1.6.0",
-    "exact-key-map": "^0.2.3",
     "jsrsasign": "10.5",
     "noble-curves-extended": "^0.2.7",
     "u8a-utils": "^1.0.12",

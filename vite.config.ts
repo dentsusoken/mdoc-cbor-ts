@@ -20,7 +20,6 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        'exact-key-map',
         'jsrsasign',
         'cbor-x',
         'zod',

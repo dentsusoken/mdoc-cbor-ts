@@ -199,6 +199,35 @@ export enum JwkAlgorithms {
 }
 
 /**
+ * JWK (JSON Web Key) MAC algorithms
+ * @description
+ * Enumeration of HMAC-based algorithms supported in JSON Web Key format.
+ * These algorithms are used in the 'alg' (algorithm) parameter to specify
+ * which HMAC algorithm should be used with the key for message authentication codes (MAC).
+ *
+ * @example
+ * ```typescript
+ * // Create a JWK with a specific MAC algorithm
+ * const macKey = {
+ *   kty: JwkKeyTypes.oct,
+ *   alg: JwkMacAlgorithms.HS256,
+ *   k: 'base64url-encoded-symmetric-key'
+ * };
+ * ```
+ *
+ * @see {@link https://tools.ietf.org/html/rfc7518#section-3.2} - RFC 7518 JWS MAC Algorithms
+ * @see {@link https://www.iana.org/assignments/jose/jose.xhtml#web-signature-encryption-algorithms} - IANA JOSE Algorithms registry
+ */
+export enum JwkMacAlgorithms {
+  /** HMAC using SHA-256 */
+  HS256 = 'HS256',
+  /** HMAC using SHA-384 */
+  HS384 = 'HS384',
+  /** HMAC using SHA-512 */
+  HS512 = 'HS512',
+}
+
+/**
  * JWK (JSON Web Key) MAC operations mapping.
  * @description
  * Enumeration that maps MAC-specific operations to their corresponding JWK key operations.
@@ -229,3 +258,35 @@ export enum JwkMacKeyOps {
   /** Verify MAC (mapped to 'verify' operation) */
   MACVerify = 'verify',
 }
+
+/**
+ * JWK (JSON Web Key) Octet Sequence Key type
+ * @description
+ * Represents a symmetric key in JWK format, typically used for HMAC or other symmetric cryptographic operations.
+ *
+ * @property {string} kty - Key type, must be "oct" for octet sequence keys.
+ * @property {string} alg - Algorithm intended for use with the key (e.g., "HS256").
+ * @property {string} k - The symmetric key, encoded in base64url format.
+ * @property {string} [kid] - Optional key identifier.
+ * @property {string[]} [key_ops] - Optional list of permitted key operations (e.g., "sign", "verify").
+ *
+ * @example
+ * ```typescript
+ * const octKey: JwkOctKey = {
+ *   kty: "oct",
+ *   alg: "HS256",
+ *   k: "base64url-encoded-key",
+ *   kid: "my-key-id",
+ *   key_ops: ["sign", "verify"]
+ * };
+ * ```
+ *
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc7517#section-6.4} - RFC 7517 Octet Sequence Keys
+ */
+export type JwkOctKey = {
+  kty: string;
+  alg: string;
+  k: string;
+  kid?: string;
+  key_ops?: string[];
+};

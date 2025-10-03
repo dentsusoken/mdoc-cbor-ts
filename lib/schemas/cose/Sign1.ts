@@ -7,16 +7,52 @@ import { createFixedTupleLengthSchema } from '../common/FixedTupleLength';
 import { Tag } from 'cbor-x';
 import { createTag18 } from '@/cbor/createTag18';
 
+/**
+ * Returns an error message indicating that the structure of the COSE_Sign1 tuple is invalid.
+ *
+ * @param target - The name of the target or context for the error message
+ * @returns The formatted error message describing the expected tuple structure
+ */
 export const sign1InvalidTupleMessage = (target: string): string =>
   `${target}: structure must be [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array]`;
 
+/**
+ * Returns an error message indicating that the type provided is not a valid COSE_Sign1 tuple or Tag18 wrapper.
+ *
+ * @param target - The name of the target or context for the error message
+ * @returns The formatted error message describing the expected types
+ */
 export const sign1InvalidTypeMessage = (target: string): string =>
   `${target}: type must be [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array] or Tag18([Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array])`;
 
+/**
+ * Returns an error message indicating that verification of the COSE_Sign1 structure failed.
+ *
+ * @param target - The name of the target or context for the error message
+ * @param error - The error message or reason for the verification failure
+ * @returns The formatted error message including the failure reason
+ */
 export const sign1FailedToVerifyMessage = (
   target: string,
   error: string
 ): string => `${target}: failed to verify: ${error}`;
+
+/**
+ * Type definition for a COSE_Sign1 tuple.
+ *
+ * @description
+ * Represents the 4-element tuple structure of a COSE_Sign1 object:
+ * - 0: Protected headers (Uint8Array)
+ * - 1: Unprotected headers (Map<number, unknown>)
+ * - 2: Payload (Uint8Array or null)
+ * - 3: Signature (Uint8Array)
+ */
+export type Sign1Tuple = [
+  Uint8Array,
+  Map<number, unknown>,
+  Uint8Array | null,
+  Uint8Array,
+];
 
 /**
  * Tuple schema for COSE_Sign1 structure validation
@@ -37,11 +73,7 @@ export const sign1FailedToVerifyMessage = (
  */
 const createSign1TupleSchema = (
   target: string
-): z.ZodType<
-  Tag,
-  z.ZodTypeDef,
-  [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array]
-> =>
+): z.ZodType<Tag, z.ZodTypeDef, Sign1Tuple> =>
   z
     .tuple(
       [

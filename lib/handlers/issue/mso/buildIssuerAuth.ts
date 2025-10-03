@@ -7,6 +7,13 @@ import { buildMobileSecurityObject } from './buildMobileSecurityObject';
 import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
 import { Sign1 } from '@/cose/Sign1';
 
+/**
+ * Parameters to build IssuerAuth using COSE_Sign1
+ * @description
+ * Inputs required to construct a Mobile Security Object (MSO), embed it as
+ * CBOR Tag 24, and sign it with COSE_Sign1. Time-related fields are relative
+ * durations from now (in milliseconds), not absolute timestamps.
+ */
 export type BuildIssuerAuthtParams = {
   /** The document type identifier (e.g., 'org.iso.18013.5.1.mDL') */
   docType: string;
@@ -26,19 +33,20 @@ export type BuildIssuerAuthtParams = {
   protectedHeaders: Uint8Array;
   /** The unprotected headers for the COSE_Sign1 structure */
   unprotectedHeaders: Map<number, unknown>;
-  /** The issuer's private key for signing */
+  /** The issuer's private key (JWK) for signing COSE_Sign1 */
   issuerJwkPrivateKey: JwkPrivateKey;
 };
 
 /**
  * Builds and signs an IssuerAuth structure for mobile document authentication.
  *
- * This function creates a complete Mobile Security Object (MSO) with all required fields,
- * wraps it in a CBOR Tag 24, and signs it using COSE_Sign1 to produce an IssuerAuth
- * structure. The MSO contains value digests, validity information, and device key info,
- * all cryptographically signed by the issuer's private key.
+ * @description
+ * Synchronously creates a complete Mobile Security Object (MSO) with value digests, validity info,
+ * and device key info, embeds it as CBOR Tag 24 via {@link createTag24}, then signs
+ * it using COSE_Sign1 via {@link Sign1.sign}. The resulting COSE_Sign1 content is
+ * validated using {@link issuerAuthSchema} and returned as an {@link IssuerAuth}.
  *
- * @param params - The parameters for building the IssuerAuth
+ * @param params - Parameters to build and sign the IssuerAuth
  * @param params.docType - The document type identifier (e.g., 'org.iso.18013.5.1.mDL')
  * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags
  * @param params.deviceJwkPublicKey - The device's JWK public key used to derive the COSE public key
@@ -46,13 +54,14 @@ export type BuildIssuerAuthtParams = {
  * @param params.validFrom - Duration in milliseconds from now until the document becomes valid
  * @param params.validUntil - Duration in milliseconds from now until the document expires
  * @param params.expectedUpdate - Optional duration in milliseconds from now until the document should be updated
+ * @param params.protectedHeaders - Protected headers for the COSE_Sign1 structure
+ * @param params.unprotectedHeaders - Unprotected headers for the COSE_Sign1 structure
  * @param params.issuerJwkPrivateKey - The issuer's private key (JWK) for signing
- * @param params.x5c - The X.509 certificate chain for the issuer
- * @returns A Promise that resolves to the signed IssuerAuth structure
+ * @returns A validated {@link IssuerAuth} (COSE_Sign1)
  *
  * @example
  * ```typescript
- * const issuerAuth = await buildIssuerAuth({
+ * const issuerAuth = buildIssuerAuth({
  *   docType: 'org.iso.18013.5.1.mDL',
  *   nameSpaces: new Map([
  *     ['org.iso.18013.5.1', [tag1, tag2]],
@@ -61,17 +70,21 @@ export type BuildIssuerAuthtParams = {
  *   deviceJwkPublicKey,
  *   digestAlgorithm: 'SHA-256',
  *   validFrom: 0,
- *   validUntil: 24 * 60 * 60 * 1000, // +1 day
- *   expectedUpdate: 60 * 60 * 1000, // +1 hour
+ *   validUntil: 24 * 60 * 60 * 1000,
+ *   expectedUpdate: 60 * 60 * 1000,
+ *   protectedHeaders,
+ *   unprotectedHeaders,
  *   issuerJwkPrivateKey,
- *   x5c: [certificateBytes]
  * });
- *
- * // The MSO is wrapped as new Tag(mso, 24) and signed via COSE_Sign1.
- * // MSO.validityInfo fields are Tag(0) (tdate) with normalized 'YYYY-MM-DDTHH:MM:SSZ' values.
+ * // MSO is embedded as Tag(24, bstr) and signed with COSE_Sign1.
  * ```
+ *
+ * @see {@link buildMobileSecurityObject}
+ * @see {@link createTag24}
+ * @see {@link Sign1}
+ * @see {@link issuerAuthSchema}
  */
-export const buildIssuerAuth = async ({
+export const buildIssuerAuth = ({
   docType,
   nameSpaces,
   deviceJwkPublicKey,
@@ -82,8 +95,8 @@ export const buildIssuerAuth = async ({
   protectedHeaders,
   unprotectedHeaders,
   issuerJwkPrivateKey,
-}: BuildIssuerAuthtParams): Promise<IssuerAuth> => {
-  const mso = await buildMobileSecurityObject({
+}: BuildIssuerAuthtParams): IssuerAuth => {
+  const mso = buildMobileSecurityObject({
     docType,
     nameSpaces,
     deviceJwkPublicKey,
@@ -95,7 +108,7 @@ export const buildIssuerAuth = async ({
 
   const msoTag24 = createTag24(mso);
 
-  const sign1 = await Sign1.sign({
+  const sign1 = Sign1.sign({
     protectedHeaders,
     unprotectedHeaders,
     payload: encodeCbor(msoTag24),

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { buildValueDigests } from '../buildValueDigests';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
@@ -22,17 +22,17 @@ const createIssuerSignedItemTag24 = (
 };
 
 describe('buildValueDigests', () => {
-  it('should calculate value digests for namespaces', async () => {
+  it('should calculate value digests for namespaces', () => {
     const tags = [
       createIssuerSignedItemTag24(1),
       createIssuerSignedItemTag24(2),
     ];
     const nameSpaces: IssuerNameSpaces = new Map([['org.iso.18013.5.1', tags]]);
 
-    const digest1 = await calculateDigest('SHA-256', tags[0]);
-    const digest2 = await calculateDigest('SHA-256', tags[1]);
+    const digest1 = calculateDigest('SHA-256', tags[0]);
+    const digest2 = calculateDigest('SHA-256', tags[1]);
 
-    const valueDigests = await buildValueDigests({
+    const valueDigests = buildValueDigests({
       nameSpaces,
       digestAlgorithm: 'SHA-256',
     });
@@ -44,7 +44,7 @@ describe('buildValueDigests', () => {
     expect(ns?.get(2)).toEqual(digest2);
   });
 
-  it('should handle multiple namespaces', async () => {
+  it('should handle multiple namespaces', () => {
     const tags1 = [createIssuerSignedItemTag24(1)];
     const tags2 = [
       createIssuerSignedItemTag24(2),
@@ -55,11 +55,11 @@ describe('buildValueDigests', () => {
       ['org.iso.18013.5.2', tags2],
     ]);
 
-    const digest1 = await calculateDigest('SHA-256', tags1[0]);
-    const digest2 = await calculateDigest('SHA-256', tags2[0]);
-    const digest3 = await calculateDigest('SHA-256', tags2[1]);
+    const digest1 = calculateDigest('SHA-256', tags1[0]);
+    const digest2 = calculateDigest('SHA-256', tags2[0]);
+    const digest3 = calculateDigest('SHA-256', tags2[1]);
 
-    const valueDigests = await buildValueDigests({
+    const valueDigests = buildValueDigests({
       nameSpaces,
       digestAlgorithm: 'SHA-256',
     });
@@ -74,10 +74,10 @@ describe('buildValueDigests', () => {
     expect(ns2?.get(3)).toEqual(digest3);
   });
 
-  it('should handle empty namespaces', async () => {
+  it('should handle empty namespaces', () => {
     const nameSpaces: IssuerNameSpaces = new Map();
 
-    const valueDigests = await buildValueDigests({
+    const valueDigests = buildValueDigests({
       nameSpaces,
       digestAlgorithm: 'SHA-256' as DigestAlgorithm,
     });
@@ -85,10 +85,10 @@ describe('buildValueDigests', () => {
     expect(valueDigests.size).toBe(0);
   });
 
-  it('should handle empty tags array in namespace', async () => {
+  it('should handle empty tags array in namespace', () => {
     const nameSpaces: IssuerNameSpaces = new Map([['org.iso.18013.5.1', []]]);
 
-    const valueDigests = await buildValueDigests({
+    const valueDigests = buildValueDigests({
       nameSpaces,
       digestAlgorithm: 'SHA-256' as DigestAlgorithm,
     });

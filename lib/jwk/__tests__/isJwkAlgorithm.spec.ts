@@ -47,11 +47,24 @@ describe('isJwkAlgorithm', () => {
     });
 
     it('for non-string inputs', () => {
-      expect(isJwkAlgorithm(null as unknown as string)).toBe(false);
-      expect(isJwkAlgorithm(undefined as unknown as string)).toBe(false);
-      expect(isJwkAlgorithm(123 as unknown as string)).toBe(false);
-      expect(isJwkAlgorithm({} as unknown as string)).toBe(false);
-      expect(isJwkAlgorithm([] as unknown as string)).toBe(false);
+      expect(isJwkAlgorithm(null)).toBe(false);
+      expect(isJwkAlgorithm(undefined)).toBe(false);
+      expect(isJwkAlgorithm(123)).toBe(false);
+      expect(isJwkAlgorithm({})).toBe(false);
+      expect(isJwkAlgorithm([])).toBe(false);
+    });
+
+    it('for boolean inputs', () => {
+      expect(isJwkAlgorithm(true)).toBe(false);
+      expect(isJwkAlgorithm(false)).toBe(false);
+    });
+
+    it('for symbol input', () => {
+      expect(isJwkAlgorithm(Symbol('ES256'))).toBe(false);
+    });
+
+    it('for function input', () => {
+      expect(isJwkAlgorithm(() => 'ES256')).toBe(false);
     });
   });
 });

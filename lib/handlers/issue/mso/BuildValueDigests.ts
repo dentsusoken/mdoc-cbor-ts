@@ -19,19 +19,19 @@ type BuildValueDigestsParams = {
 /**
  * Builds value digests for a Mobile Security Object (MSO).
  *
- * This function processes issuer namespaces and their associated issuer signed item tags,
- * calculating digests for each tag using the specified digest algorithm. The function
- * extracts the digestID from each issuer signed item and creates a mapping of digestID
- * to the calculated digest value.
+ * @description
+ * Iterates over issuer namespaces and their associated issuer signed item tags,
+ * calculates a digest for each tag using the specified digest algorithm, and
+ * maps each digestID to its corresponding digest value. The result is a nested
+ * map structure: namespace string → digestID (number) → digest (Uint8Array).
  *
- * @param params - The parameters for building value digests
- * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags
- * @param params.digestAlgorithm - The digest algorithm to use for calculating digests
- * @returns A Promise that resolves to a ValueDigests object mapping namespace to digestID to digest value
+ * @param params - The parameters for building value digests.
+ * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags.
+ * @param params.digestAlgorithm - The digest algorithm to use for calculating digests.
+ * @returns A ValueDigests object mapping each namespace to a map of digestID to digest value.
  *
  * @example
- * ```typescript
- * const valueDigests = await buildValueDigests({
+ * const valueDigests = buildValueDigests({
  *   nameSpaces: new Map([
  *     ['org.iso.18013.5.1', [tag1, tag2]],
  *     ['org.iso.18013.5.2', [tag3]]
@@ -44,12 +44,11 @@ type BuildValueDigestsParams = {
  * //   'org.iso.18013.5.1' => Map { 1 => Uint8Array, 2 => Uint8Array },
  * //   'org.iso.18013.5.2' => Map { 3 => Uint8Array }
  * // }
- * ```
  */
-export const buildValueDigests = async ({
+export const buildValueDigests = ({
   nameSpaces,
   digestAlgorithm,
-}: BuildValueDigestsParams): Promise<ValueDigests> => {
+}: BuildValueDigestsParams): ValueDigests => {
   const valueDigests: ValueDigests = new Map<string, Map<number, Uint8Array>>();
 
   for (const [nameSpace, issuerSignedItemTags] of nameSpaces) {
@@ -61,7 +60,7 @@ export const buildValueDigests = async ({
       );
 
       const digestID = issuerSignedItem.digestID;
-      const digest = await calculateDigest(digestAlgorithm, tag);
+      const digest = calculateDigest(digestAlgorithm, tag);
       digestMap.set(digestID, digest);
     }
 

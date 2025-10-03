@@ -45,11 +45,11 @@ export type BuildMobileSecurityObjectParams = {
  * @param params.validFrom - Duration in milliseconds from the base date until the document becomes valid
  * @param params.validUntil - Duration in milliseconds from the base date until the document expires
  * @param params.expectedUpdate - Optional duration in milliseconds from the base date until the document should be updated
- * @returns A Promise that resolves to a complete MobileSecurityObject
+ * @returns A complete MobileSecurityObject
  *
  * @example
  * ```typescript
- * const mso = await buildMobileSecurityObject({
+ * const mso = buildMobileSecurityObject({
  *   docType: 'org.iso.18013.5.1.mDL',
  *   nameSpaces: new Map([
  *     ['org.iso.18013.5.1', [tag1, tag2]],
@@ -82,7 +82,7 @@ export type BuildMobileSecurityObjectParams = {
  * @example
  * ```typescript
  * // Without expected update
- * const mso = await buildMobileSecurityObject({
+ * const mso = buildMobileSecurityObject({
  *   docType: 'org.iso.18013.5.1.mDL',
  *   nameSpaces: new Map([['org.iso.18013.5.1', [tag1]]]),
  *   deviceJwkPublicKey,
@@ -92,7 +92,7 @@ export type BuildMobileSecurityObjectParams = {
  * });
  * ```
  */
-export const buildMobileSecurityObject = async ({
+export const buildMobileSecurityObject = ({
   docType,
   nameSpaces,
   deviceJwkPublicKey,
@@ -101,15 +101,19 @@ export const buildMobileSecurityObject = async ({
   validFrom,
   validUntil,
   expectedUpdate,
-}: BuildMobileSecurityObjectParams): Promise<MobileSecurityObject> => {
+}: BuildMobileSecurityObjectParams): MobileSecurityObject => {
+  // Convert the device JWK public key to a COSE public key
   const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
-  const valueDigests = await buildValueDigests({ nameSpaces, digestAlgorithm });
+  // Build value digests for the provided namespaces and digest algorithm
+  const valueDigests = buildValueDigests({ nameSpaces, digestAlgorithm });
+  // Build validity information for the MSO
   const validityInfo = buildValidityInfo({
     baseDate,
     validFrom,
     validUntil,
     expectedUpdate,
   });
+  // Construct the Mobile Security Object
   const mso: MobileSecurityObject = {
     version: '1.0',
     docType,

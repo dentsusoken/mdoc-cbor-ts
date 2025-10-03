@@ -274,3 +274,18 @@ export enum KeyOps {
   /** Verify MAC */
   MACVerify = 10,
 }
+
+/**
+ * Options for verifying COSE signatures.
+ *
+ * @description
+ * Configuration options that can be provided when verifying COSE signatures.
+ * These options allow for customization of the verification process including
+ * external additional authenticated data, detached payloads, and algorithm restrictions.
+ */
+export type VerifyOptions = {
+  /** External Additional Authenticated Data to include in verification */
+  externalAad?: Uint8Array;
+  /** Detached payload data when the payload is not embedded in the COSE structure */
+  detachedPayload?: Uint8Array;
+};

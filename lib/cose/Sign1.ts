@@ -1,7 +1,11 @@
-import { SignBase, VerifyOptions } from './SignBase';
+import { SignBase } from './SignBase';
+import { VerifyOptions } from './types';
 import { JwkPrivateKey } from '@/jwk/types';
 import { encodeSignature1 } from './encodeSignature1';
-import { createSignatureCurveRngDisallowed } from 'noble-curves-extended';
+import {
+  createSignatureCurveRngDisallowed,
+  JwkPublicKey,
+} from 'noble-curves-extended';
 
 /**
  * Parameters for creating and signing a COSE_Sign1 structure.
@@ -103,25 +107,30 @@ export class Sign1 extends SignBase {
       this.signature,
     ];
   };
+
   /**
-   * Verifies the signature using the X.509 chain present in headers.
+   * Verifies the signature using the provided JWK public key.
    *
    * @description
-   * If the signature was created with external AAD or a detached payload,
-   * you MUST provide the same values via `options.externalAad` and/or
-   * `options.detachedPayload` for verification to succeed. When the embedded
-   * payload is `null`, verification cannot proceed without `options.detachedPayload`.
+   * This method verifies the COSE_Sign1 signature using the given {@link JwkPublicKey}.
+   * In the case of Device authentication, the X.509 certificate chain header is not present,
+   * so the public key must be provided directly via the `jwkPublicKey` argument.
    *
-   * @param options Optional verification inputs
-   * @param options.externalAad External Additional Authenticated Data used at sign time
-   * @param options.detachedPayload Detached payload bytes when this.payload is null
-   * @throws Error If the detached payload is required but not provided, or signature verification fails
+   * If the signature was created with external Additional Authenticated Data (AAD) or a detached payload,
+   * you MUST provide the same values via `options.externalAad` and/or `options.detachedPayload` for verification to succeed.
+   * When the embedded payload is `null`, verification cannot proceed without `options.detachedPayload`.
+   *
+   * @param jwkPublicKey The JWK public key to use for signature verification.
+   * @param options Optional verification inputs.
+   * @param options.externalAad External Additional Authenticated Data used at sign time.
+   * @param options.detachedPayload Detached payload bytes when this.payload is null.
+   * @throws Error If the detached payload is required but not provided, or if signature verification fails.
    */
-  verify = (options?: VerifyOptions): void => {
+  verify = (jwkPublicKey: JwkPublicKey, options?: VerifyOptions): void => {
     if (options?.detachedPayload === undefined && this.payload === null) {
       throw new Error('Detached payload is required when payload is null');
     }
-    const jwkPublicKey = this.verifyX509Chain();
+
     const toBeSigned = encodeSignature1({
       protectedHeaders: this.protectedHeaders,
       externalAad: options?.externalAad,

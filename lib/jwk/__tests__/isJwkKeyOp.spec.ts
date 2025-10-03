@@ -66,12 +66,18 @@ describe('isJwkKeyOp', () => {
     });
 
     it('for non-string values', () => {
-      expect(isJwkKeyOp(123 as unknown as string)).toBe(false);
-      expect(isJwkKeyOp(null as unknown as string)).toBe(false);
-      expect(isJwkKeyOp(undefined as unknown as string)).toBe(false);
-      expect(isJwkKeyOp({} as unknown as string)).toBe(false);
-      expect(isJwkKeyOp([] as unknown as string)).toBe(false);
-      expect(isJwkKeyOp(true as unknown as string)).toBe(false);
+      expect(isJwkKeyOp(123)).toBe(false);
+      expect(isJwkKeyOp(null)).toBe(false);
+      expect(isJwkKeyOp(undefined)).toBe(false);
+      expect(isJwkKeyOp({})).toBe(false);
+      expect(isJwkKeyOp([])).toBe(false);
+      expect(isJwkKeyOp(true)).toBe(false);
+      expect(isJwkKeyOp(false)).toBe(false);
+    });
+
+    it('for symbol and function inputs', () => {
+      expect(isJwkKeyOp(Symbol('sign'))).toBe(false);
+      expect(isJwkKeyOp(() => 'sign')).toBe(false);
     });
 
     it('for edge case strings', () => {

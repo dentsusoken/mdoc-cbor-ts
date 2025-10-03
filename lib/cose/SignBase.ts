@@ -1,4 +1,3 @@
-import { decodeCbor } from '@/cbor/codec';
 import {
   createSignatureCurveRngDisallowed,
   JwkPublicKey,
@@ -7,21 +6,7 @@ import { Headers } from '@/cose/types';
 import { derBytesToX509 } from '@/x509/derBytesToX509';
 import { verifyX509s } from '@/x509/verifyX509s';
 import { KEYUTIL } from 'jsrsasign';
-
-/**
- * Options for verifying COSE signatures.
- *
- * @description
- * Configuration options that can be provided when verifying COSE signatures.
- * These options allow for customization of the verification process including
- * external additional authenticated data, detached payloads, and algorithm restrictions.
- */
-export type VerifyOptions = {
-  /** External Additional Authenticated Data to include in verification */
-  externalAad?: Uint8Array;
-  /** Detached payload data when the payload is not embedded in the COSE structure */
-  detachedPayload?: Uint8Array;
-};
+import { CoseBase } from './CoseBase';
 
 /**
  * Parameters for internal signature verification.
@@ -41,10 +26,21 @@ type InternalVerifyParams = {
  * Provides shared functionality for COSE signature structures.
  *
  * @description
- * This class manages protected and unprotected headers along with the
- * signature bytes. It also offers utilities to extract the X.509
- * certificate chain from headers, verify the chain, and derive the
- * corresponding public key in JWK format.
+ * Extends {@link CoseBase} to provide signature-specific functionality.
+ * Inherits protected/unprotected header management and adds signature
+ * verification capabilities. This class offers utilities to extract the
+ * X.509 certificate chain from headers, verify the chain, and verify
+ * signatures using the corresponding public key in JWK format.
+ *
+ * **Inherited Properties:**
+ * - `protectedHeaders` - CBOR-encoded protected headers (bstr)
+ * - `decodedProtectedHeaders` - Decoded protected headers as a Map
+ * - `unprotectedHeaders` - Unprotected headers as a Map
+ *
+ * **Inherited Methods:**
+ * - `getHeader(label)` - Retrieves a header value by label
+ *
+ * @see {@link CoseBase} for base header management functionality
  *
  * @example
  * ```typescript
@@ -68,18 +64,23 @@ type InternalVerifyParams = {
  * });
  * ```
  */
-export class SignBase {
-  /** CBOR-encoded protected headers (bstr). */
-  readonly protectedHeaders: Uint8Array;
-  /** Unprotected headers. */
-  readonly unprotectedHeaders: Map<number, unknown>;
-  /** Decoded protected headers as a Map. */
-  readonly decodedProtectedHeaders: Map<number, unknown>;
-  /** COSE signature bytes. */
+export class SignBase extends CoseBase {
+  /**
+   * The cryptographic signature bytes.
+   *
+   * @description
+   * Raw signature bytes that authenticate the COSE structure.
+   * The format depends on the signing algorithm used.
+   */
   readonly signature: Uint8Array;
 
   /**
    * Creates a new instance of SignBase.
+   *
+   * @description
+   * Initializes the signature structure with protected headers, unprotected headers,
+   * and signature bytes. Calls the parent {@link CoseBase} constructor to decode
+   * protected headers automatically.
    *
    * @param protectedHeaders - CBOR-encoded protected headers bytes (bstr)
    * @param unprotectedHeaders - Unprotected headers map
@@ -99,12 +100,7 @@ export class SignBase {
     unprotectedHeaders: Map<number, unknown>,
     signature: Uint8Array
   ) {
-    this.protectedHeaders = protectedHeaders;
-    this.decodedProtectedHeaders = decodeCbor(protectedHeaders) as Map<
-      number,
-      unknown
-    >;
-    this.unprotectedHeaders = unprotectedHeaders;
+    super(protectedHeaders, unprotectedHeaders);
     this.signature = signature;
   }
 
@@ -112,8 +108,10 @@ export class SignBase {
    * Returns the X.509 certificate chain (x5c) from headers.
    *
    * @description
-   * The order is expected to be: leaf first, followed by intermediates, then root.
-   * Searches first in protected headers, then in unprotected headers.
+   * Retrieves the X.509 certificate chain using the inherited {@link CoseBase.getHeader}
+   * method. The order is expected to be: leaf certificate first, followed by
+   * intermediate certificates, then root certificate. Searches first in protected
+   * headers, then in unprotected headers.
    *
    * @returns Array of DER-encoded certificate bytes
    * @throws {Error} If no X.509 certificate chain is present in headers
@@ -125,8 +123,7 @@ export class SignBase {
    * ```
    */
   get x5c(): Uint8Array[] {
-    const x5c = (this.decodedProtectedHeaders.get(Headers.X5Chain) ??
-      this.unprotectedHeaders.get(Headers.X5Chain)) as Uint8Array[];
+    const x5c = this.getHeader(Headers.X5Chain) as Uint8Array[];
 
     if (!x5c || x5c.length === 0) {
       throw new Error('X509 certificate not found');

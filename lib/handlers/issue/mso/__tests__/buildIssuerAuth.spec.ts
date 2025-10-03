@@ -8,6 +8,9 @@ import { createSignatureCurve } from 'noble-curves-extended';
 import { randomBytes } from '@noble/hashes/utils';
 import { certificateToDerBytes } from '@/x509/certificateToDerBytes';
 import { createSelfSignedCertificate } from '@/x509/createSelfSignedCertificate';
+import { buildProtectedHeaders } from '../../cose/buildProtectedHeaders';
+import { encodeCbor } from '@/cbor/codec';
+import { buildUnprotectedHeaders } from '../../cose/buildUnprotectedHeaders';
 
 const p256 = createSignatureCurve('P-256', randomBytes);
 
@@ -26,7 +29,7 @@ const createIssuerSignedItemTag24 = (
 };
 
 describe('buildIssuerAuth', () => {
-  it('should build IssuerAuth (COSE_Sign1) for given inputs', async () => {
+  it('should build IssuerAuth (COSE_Sign1) for given inputs', () => {
     const nameSpaces: IssuerNameSpaces = new Map([
       ['org.iso.18013.5.1', [createIssuerSignedItemTag24(38)]],
     ]);
@@ -43,8 +46,12 @@ describe('buildIssuerAuth', () => {
       serialHex: '02',
     });
     const x5c = [certificateToDerBytes(certificate)];
+    const protectedHeaders = encodeCbor(
+      buildProtectedHeaders(issuerJwkPrivateKey)
+    );
+    const unprotectedHeaders = buildUnprotectedHeaders(x5c);
 
-    const issuerAuth = await buildIssuerAuth({
+    const issuerAuth = buildIssuerAuth({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaces,
       deviceJwkPublicKey,
@@ -52,17 +59,19 @@ describe('buildIssuerAuth', () => {
       validFrom: 0,
       validUntil: 24 * 60 * 60 * 1000,
       expectedUpdate: 60 * 60 * 1000,
+      protectedHeaders,
+      unprotectedHeaders,
       issuerJwkPrivateKey,
-      x5c,
     });
 
-    const expected = [
-      expect.any(Uint8Array),
-      expect.any(Map<number, unknown>),
-      expect.any(Uint8Array),
-      expect.any(Uint8Array),
-    ];
-    expect(issuerAuth).toEqual(expected);
+    expect(issuerAuth).toBeInstanceOf(Tag);
+    expect(issuerAuth.tag).toBe(18);
+    expect(issuerAuth.value).toBeInstanceOf(Array);
+    expect(issuerAuth.value).toHaveLength(4);
+    expect(issuerAuth.value[0]).toEqual(protectedHeaders);
+    expect(issuerAuth.value[1]).toEqual(unprotectedHeaders);
+    expect(issuerAuth.value[2]).toBeInstanceOf(Uint8Array);
+    expect(issuerAuth.value[3]).toBeInstanceOf(Uint8Array);
 
     const result = issuerAuthSchema.parse(issuerAuth);
 

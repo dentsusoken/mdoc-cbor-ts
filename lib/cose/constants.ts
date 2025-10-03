@@ -5,8 +5,17 @@ import {
   JwkMacKeyOps,
   JwkAlgorithms,
   JwkCurves,
+  JwkMacAlgorithms,
 } from '@/jwk/types';
-import { Algorithms, Curves, KeyOps, KeyParams, KeyTypes } from './types';
+import {
+  Algorithms,
+  Curves,
+  KeyOps,
+  KeyParams,
+  KeyTypes,
+  MacAlgorithms,
+} from './types';
+import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 
 /**
  * Mapping from JWK (JSON Web Key) algorithms to COSE (CBOR Object Signing and Encryption) algorithms.
@@ -250,4 +259,40 @@ export const CURVES_TO_ALGORITHMS: Record<Curves, Algorithms> = {
   [Curves.P521]: Algorithms.ES512,
   [Curves.Ed25519]: Algorithms.EdDSA,
   [Curves.Ed448]: Algorithms.EdDSA,
+};
+
+/**
+ * Mapping from COSE MAC algorithms to their corresponding digest algorithms.
+ */
+export const MAC_ALGORITHM_TO_DIGEST_ALGORITHM: Record<
+  MacAlgorithms,
+  DigestAlgorithm
+> = {
+  [MacAlgorithms.HS256]: 'SHA-256',
+  [MacAlgorithms.HS384]: 'SHA-384',
+  [MacAlgorithms.HS512]: 'SHA-512',
+};
+
+/**
+ * Mapping from JWK MAC algorithms to their corresponding digest algorithms.
+ */
+export const JWK_MAC_ALGORITHM_TO_DIGEST_ALGORITHM: Record<
+  JwkMacAlgorithms,
+  DigestAlgorithm
+> = {
+  [JwkMacAlgorithms.HS256]: 'SHA-256',
+  [JwkMacAlgorithms.HS384]: 'SHA-384',
+  [JwkMacAlgorithms.HS512]: 'SHA-512',
+};
+
+/**
+ * Mapping from COSE MAC algorithms to their corresponding JWK MAC algorithms.
+ */
+export const MAC_ALGORITHM_TO_JWK_ALGORITHM: Record<
+  MacAlgorithms,
+  JwkMacAlgorithms
+> = {
+  [MacAlgorithms.HS256]: JwkMacAlgorithms.HS256,
+  [MacAlgorithms.HS384]: JwkMacAlgorithms.HS384,
+  [MacAlgorithms.HS512]: JwkMacAlgorithms.HS512,
 };

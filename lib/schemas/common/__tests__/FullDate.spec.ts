@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { ZodError } from 'zod';
+import { z } from 'zod';
+import { Tag } from 'cbor-x';
 import {
   createFullDateSchema,
   fullDateInvalidFormatMessage,
-  fullDateInvaliTypeMessage,
+  fullDateInvalidTypeMessage,
 } from '../FullDate';
 import { requiredMessage } from '../Required';
-import { Tag1004 } from '@/cbor/Tag1004';
 
 describe('createFullDateSchema', () => {
   const target = 'ValidityInfo';
   const schema = createFullDateSchema(target);
 
-  describe('valid inputs', () => {
+  describe('valid cases', () => {
     it('should accept a valid full-date string and normalize it to YYYY-MM-DD', () => {
       const result = schema.parse('2024-03-20');
       expect(result).toBe('2024-03-20');
@@ -28,8 +28,8 @@ describe('createFullDateSchema', () => {
       expect(result).toBe('2024-03-20');
     });
 
-    it('should accept a Tag1004 instance and return its YYYY-MM-DD value', () => {
-      const tag = new Tag1004('2024-03-20T10:15:30.000Z');
+    it('should accept a CBOR Tag(1004) and return YYYY-MM-DD', () => {
+      const tag = new Tag('2024-03-20', 1004);
       const result = schema.parse(tag);
       expect(result).toBe('2024-03-20');
     });
@@ -41,69 +41,86 @@ describe('createFullDateSchema', () => {
     });
   });
 
-  describe('invalid format strings', () => {
-    const cases = [
-      { name: 'empty string', value: '' },
-      { name: 'non-date string', value: 'invalid-date' },
-    ];
-
-    cases.forEach(({ name, value }) => {
-      it(`invalid format: ${name}`, () => {
-        try {
-          schema.parse(value);
-          throw new Error('Expected ZodError to be thrown');
-        } catch (err) {
-          const zerr = err as ZodError;
-          expect(zerr.issues[0]?.message).toBe(
-            fullDateInvalidFormatMessage(target)
-          );
+  describe('invalid cases', () => {
+    it('should throw required error for undefined', () => {
+      try {
+        schema.parse(undefined);
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        if (error instanceof z.ZodError) {
+          expect(error.issues[0].message).toBe(requiredMessage(target));
         }
-      });
+      }
     });
-  });
 
-  describe('invalid types', () => {
-    const cases: Array<{
-      name: string;
-      value: unknown;
-      isRequiredError?: boolean;
-    }> = [
+    it('should throw required error for null', () => {
+      try {
+        schema.parse(null);
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        if (error instanceof z.ZodError) {
+          expect(error.issues[0].message).toBe(requiredMessage(target));
+        }
+      }
+    });
+
+    const wrongTypeCases: Array<{ name: string; value: unknown }> = [
       { name: 'number', value: 123 },
       { name: 'boolean', value: true },
-      { name: 'null', value: null, isRequiredError: true },
-      { name: 'undefined', value: undefined, isRequiredError: true },
+      { name: 'object', value: {} },
     ];
 
-    cases.forEach(({ name, value, isRequiredError }) => {
+    wrongTypeCases.forEach(({ name, value }) => {
       it(`invalid type: ${name}`, () => {
         try {
           schema.parse(value);
-          throw new Error('Expected ZodError to be thrown');
-        } catch (err) {
-          const zerr = err as ZodError;
-          if (isRequiredError) {
-            expect(zerr.issues[0]?.message).toBe(requiredMessage(target));
-          } else {
-            expect(zerr.issues[0]?.message).toBe(
-              fullDateInvaliTypeMessage(target)
+          throw new Error('Expected error');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          if (error instanceof z.ZodError) {
+            expect(error.issues[0].message).toBe(
+              fullDateInvalidTypeMessage(target)
             );
           }
         }
       });
     });
-  });
 
-  describe('invalid Date inputs', () => {
+    const invalidFormatCases: Array<{ name: string; value: string }> = [
+      { name: 'empty string', value: '' },
+      { name: 'non-date string', value: 'invalid-date' },
+    ];
+
+    invalidFormatCases.forEach(({ name, value }) => {
+      it(`invalid format: ${name}`, () => {
+        try {
+          schema.parse(value);
+          throw new Error('Expected error');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          if (error instanceof z.ZodError) {
+            expect(error.issues[0].message).toBe(
+              fullDateInvalidFormatMessage(target)
+            );
+          }
+        }
+      });
+    });
+
     it('should throw error when Date is invalid', () => {
       const badDate = new Date('invalid');
       try {
         schema.parse(badDate);
-        throw new Error('Expected ZodError to be thrown');
-      } catch (err) {
-        const zerr = err as ZodError;
-        expect(zerr.issues[0]?.message).toBe(
-          fullDateInvalidFormatMessage(target)
-        );
+        throw new Error('Expected error');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        if (error instanceof z.ZodError) {
+          expect(error.issues[0].message).toBe(
+            fullDateInvalidFormatMessage(target)
+          );
+        }
       }
     });
   });

@@ -6,6 +6,10 @@ import { JwkKeyOps } from './types';
  * @param keyOp - The string to check
  * @returns True if the keyOps is a valid JwkKeyOps value, false otherwise
  */
-export const isJwkKeyOp = (keyOp: string): keyOp is JwkKeyOps => {
+export const isJwkKeyOp = (keyOp: unknown): keyOp is JwkKeyOps => {
+  if (typeof keyOp !== 'string') {
+    return false;
+  }
+
   return Object.values(JwkKeyOps).includes(keyOp as JwkKeyOps);
 };

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCosePublicKey } from '../jwkToCosePublicKey';
 import { JwkPublicKey, JwkAlgorithms, JwkCurves } from '@/jwk/types';
-import { PublicKey } from '../PublicKey';
 import { KeyParams, KeyTypes, Curves, Algorithms, KeyOps } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
 
@@ -29,12 +28,12 @@ describe('jwkToCosePublicKey', () => {
     ...overrides,
   });
 
-  describe('should return correct PublicKey for valid EC JWK inputs', () => {
+  describe('should return correct Map for valid EC JWK inputs', () => {
     it('for minimal P-256 JWK', () => {
       const jwk = createValidEcJwk();
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result).toBeInstanceOf(PublicKey);
+      expect(result).toBeInstanceOf(Map);
       expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
       expect(result.get(KeyParams.Curve)).toBe(Curves.P256);
       expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.ES256);
@@ -83,7 +82,9 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(kid);
+      expect(
+        new TextDecoder().decode(result.get(KeyParams.KeyId) as Uint8Array)
+      ).toBe(kid);
     });
 
     it('for JWK with key operations', () => {
@@ -99,12 +100,12 @@ describe('jwkToCosePublicKey', () => {
     });
   });
 
-  describe('should return correct PublicKey for valid OKP (EdDSA) JWK inputs', () => {
+  describe('should return correct Map for valid OKP (EdDSA) JWK inputs', () => {
     it('for minimal Ed25519 JWK', () => {
       const jwk = createValidOkpJwk();
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result).toBeInstanceOf(PublicKey);
+      expect(result).toBeInstanceOf(Map);
       expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.OKP);
       expect(result.get(KeyParams.Curve)).toBe(Curves.Ed25519);
       expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.EdDSA);
@@ -132,7 +133,9 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(kid);
+      expect(
+        new TextDecoder().decode(result.get(KeyParams.KeyId) as Uint8Array)
+      ).toBe(kid);
     });
 
     it('for JWK with key operations', () => {
@@ -352,9 +355,9 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
-        longKid
-      );
+      expect(
+        new TextDecoder().decode(result.get(KeyParams.KeyId) as Uint8Array)
+      ).toBe(longKid);
     });
 
     it('for JWK with special characters in key ID', () => {
@@ -365,9 +368,9 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
-        specialKid
-      );
+      expect(
+        new TextDecoder().decode(result.get(KeyParams.KeyId) as Uint8Array)
+      ).toBe(specialKid);
     });
 
     it('for JWK with Unicode characters in key ID', () => {
@@ -378,9 +381,9 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
-        unicodeKid
-      );
+      expect(
+        new TextDecoder().decode(result.get(KeyParams.KeyId) as Uint8Array)
+      ).toBe(unicodeKid);
     });
 
     it('for JWK with empty key ID', () => {
@@ -400,9 +403,9 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(KeyParams.KeyId)).toBeInstanceOf(Uint8Array);
-      expect(new TextDecoder().decode(result.get(KeyParams.KeyId)!)).toBe(
-        '   '
-      );
+      expect(
+        new TextDecoder().decode(result.get(KeyParams.KeyId) as Uint8Array)
+      ).toBe('   ');
     });
   });
 });
