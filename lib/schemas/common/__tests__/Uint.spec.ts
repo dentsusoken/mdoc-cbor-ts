@@ -3,7 +3,7 @@ import {
   createUintSchema,
   uintInvalidTypeMessage,
   uintIntegerMessage,
-  uintPositiveMessage,
+  uintNonNegativeMessage,
 } from '../Uint';
 import { z } from 'zod';
 import { requiredMessage } from '../Required';
@@ -12,8 +12,9 @@ describe('createUintSchema', () => {
   const TARGET = 'DigestID';
   const schema = createUintSchema(TARGET);
 
-  describe('should accept valid positive integers', () => {
+  describe('should accept valid non-negative integers', () => {
     const cases = [
+      { name: 'zero', input: 0 },
       { name: 'small positive integer', input: 1 },
       { name: 'medium positive integer', input: 123 },
       { name: 'large positive integer', input: 999 },
@@ -73,7 +74,7 @@ describe('createUintSchema', () => {
     });
   });
 
-  describe('should enforce integer and positivity', () => {
+  describe('should enforce integer and non-negativity', () => {
     const cases: { name: string; input: number; expected: string }[] = [
       {
         name: 'decimal number',
@@ -81,14 +82,9 @@ describe('createUintSchema', () => {
         expected: uintIntegerMessage(TARGET),
       },
       {
-        name: 'zero',
-        input: 0,
-        expected: uintPositiveMessage(TARGET),
-      },
-      {
         name: 'negative number',
         input: -1,
-        expected: uintPositiveMessage(TARGET),
+        expected: uintNonNegativeMessage(TARGET),
       },
     ];
 

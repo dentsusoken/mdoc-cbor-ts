@@ -51,14 +51,20 @@ describe('buildIssuerAuth', () => {
     );
     const unprotectedHeaders = buildUnprotectedHeaders(x5c);
 
+    const signed = new Date('2024-01-01T00:00:00Z');
+    const validFrom = new Date('2024-01-01T00:00:00Z');
+    const validUntil = new Date('2024-01-02T00:00:00Z'); // +1 day
+    const expectedUpdate = new Date('2024-01-01T01:00:00Z'); // +1 hour
+
     const issuerAuth = buildIssuerAuth({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaces,
       deviceJwkPublicKey,
       digestAlgorithm: 'SHA-256',
-      validFrom: 0,
-      validUntil: 24 * 60 * 60 * 1000,
-      expectedUpdate: 60 * 60 * 1000,
+      signed,
+      validFrom,
+      validUntil,
+      expectedUpdate,
       protectedHeaders,
       unprotectedHeaders,
       issuerJwkPrivateKey,

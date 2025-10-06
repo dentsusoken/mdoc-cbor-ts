@@ -12,6 +12,13 @@ describe('DigestID', () => {
       expect(typeof result).toBe('number');
       expect(result).toBe(42);
     });
+
+    it('should accept zero (0)', () => {
+      const input = 0;
+      const result = digestIDSchema.parse(input);
+      expect(typeof result).toBe('number');
+      expect(result).toBe(0);
+    });
   });
 
   describe('should throw error for invalid type inputs', () => {

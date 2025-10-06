@@ -4,14 +4,14 @@ import { createUintSchema } from '@/schemas/common/Uint';
 /**
  * Schema for digest ID in MSO
  * @description
- * Validates a required positive integer (`uint`) identifier for a digest. All
+ * Validates a required non-negative integer (`uint`) identifier for a digest. All
  * error messages are prefixed with `DigestID: ...` and follow the standardized
  * unsigned integer messaging provided by the common `Uint` schema.
  *
  * Validation rules:
  * - Requires a number type
  * - Requires an integer (no decimal places)
- * - Requires a strictly positive value (> 0)
+ * - Requires a non-negative value (>= 0)
  *
  * ```cddl
  * DigestID = uint
@@ -19,14 +19,14 @@ import { createUintSchema } from '@/schemas/common/Uint';
  *
  * @example
  * ```typescript
- * const id = 1;
- * const result = digestIDSchema.parse(id); // number
+ * const id = 0;
+ * const result = digestIDSchema.parse(id); // number - 0 is valid
  *
  * // Throws ZodError (not an integer)
  * // digestIDSchema.parse(1.5);
  *
- * // Throws ZodError (not positive)
- * // digestIDSchema.parse(0);
+ * // Throws ZodError (negative)
+ * // digestIDSchema.parse(-1);
  * ```
  *
  * @see {@link createUintSchema}
@@ -36,6 +36,6 @@ export const digestIDSchema = createUintSchema('DigestID');
 /**
  * Type definition for digest ID
  * @description
- * Represents a validated positive integer digest identifier
+ * Represents a validated non-negative integer digest identifier
  */
 export type DigestID = z.output<typeof digestIDSchema>;

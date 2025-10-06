@@ -1,10 +1,7 @@
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
-import { issuerSignedItemSchema } from '@/schemas/mdoc/IssuerSignedItem';
-
-import { calculateDigest } from '@/utils/calculateDigest';
-import { decodeCbor } from '@/cbor/codec';
 import { ValueDigests } from '@/schemas/mso/ValueDigests';
+import { buildValueDigest } from './buildValueDigest';
 
 /**
  * Parameters for building value digests for a Mobile Security Object (MSO).
@@ -55,12 +52,10 @@ export const buildValueDigests = ({
     const digestMap = new Map<number, Uint8Array>();
 
     for (const tag of issuerSignedItemTags) {
-      const issuerSignedItem = issuerSignedItemSchema.parse(
-        decodeCbor(tag.value)
-      );
-
-      const digestID = issuerSignedItem.digestID;
-      const digest = calculateDigest(digestAlgorithm, tag);
+      const { digestID, digest } = buildValueDigest({
+        issuerSignedItemTag: tag,
+        digestAlgorithm,
+      });
       digestMap.set(digestID, digest);
     }
 

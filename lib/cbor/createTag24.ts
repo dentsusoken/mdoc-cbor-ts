@@ -16,6 +16,6 @@ export const createTag24 = (
   input: unknown,
   additionalOptions: AdvancedOptions = {}
 ): Tag => {
-  const inner = encodeCbor(input, additionalOptions);
+  const inner = encodeCbor(input, { ...additionalOptions, useFloat32: 0 });
   return new Tag(inner, 24);
 };

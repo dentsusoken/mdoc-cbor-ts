@@ -38,22 +38,22 @@ export const uintIntegerMessage = (target: string): string =>
   `${target}: Please provide an integer (no decimal places)`;
 
 /**
- * Creates an error message for uint positive validation
+ * Creates an error message for uint non-negative validation
  * @description
  * Generates a standardized error message when a uint validation fails because
- * the value is not positive (must be greater than 0).
+ * the value is negative (must be greater than or equal to 0).
  *
  * @param target - The name of the target schema being validated
  * @returns A formatted error message string
  *
  * @example
  * ```typescript
- * const message = uintPositiveMessage('DigestID');
- * // Returns: "DigestID: Please provide a positive integer greater than 0"
+ * const message = uintNonNegativeMessage('DigestID');
+ * // Returns: "DigestID: Please provide a non-negative integer (>= 0)"
  * ```
  */
-export const uintPositiveMessage = (target: string): string =>
-  `${target}: Please provide a positive integer greater than 0`;
+export const uintNonNegativeMessage = (target: string): string =>
+  `${target}: Please provide a non-negative integer (>= 0)`;
 
 const createUintInnerSchema = (target: string): z.ZodType<number> =>
   z
@@ -63,14 +63,14 @@ const createUintInnerSchema = (target: string): z.ZodType<number> =>
     .int({
       message: uintIntegerMessage(target),
     })
-    .positive({
-      message: uintPositiveMessage(target),
+    .nonnegative({
+      message: uintNonNegativeMessage(target),
     });
 
 /**
  * Builds a number schema for unsigned integers (uint)
  * @description
- * Returns a Zod schema that validates a required positive integer (uint) value.
+ * Returns a Zod schema that validates a required non-negative integer (uint) value.
  * All validation error messages are prefixed with the provided `target` name
  * and use the message constants exported from this module.
  *
@@ -78,19 +78,19 @@ const createUintInnerSchema = (target: string): z.ZodType<number> =>
  * - Requires a number type with a target-prefixed invalid type message
  * - Requires presence with a target-prefixed required message
  * - Enforces integer (no decimals) with a target-prefixed message
- * - Enforces strictly positive (> 0) with a target-prefixed message
+ * - Enforces non-negative (>= 0) with a target-prefixed message
  *
  * ```cddl
  * Uint = uint
  * ```
  *
  * @param target - Prefix used in error messages (e.g., "DigestID")
- * @returns A Zod schema that validates positive integer values
+ * @returns A Zod schema that validates non-negative integer values
  *
  * @example
  * ```typescript
  * const digestIDSchema = createUintSchema('DigestID');
- * const digestID = digestIDSchema.parse(123); // number
+ * const digestID = digestIDSchema.parse(0); // number - 0 is valid
  * ```
  *
  * @example
@@ -103,10 +103,10 @@ const createUintInnerSchema = (target: string): z.ZodType<number> =>
  *
  * @example
  * ```typescript
- * // Throws ZodError (not positive)
- * // Message: "DigestID: Please provide a positive integer greater than 0"
+ * // Throws ZodError (negative)
+ * // Message: "DigestID: Please provide a non-negative integer (>= 0)"
  * const digestIDSchema = createUintSchema('DigestID');
- * digestIDSchema.parse(0);
+ * digestIDSchema.parse(-1);
  * ```
  *
  * @example

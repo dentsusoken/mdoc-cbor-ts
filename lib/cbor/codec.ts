@@ -31,6 +31,7 @@ export const defaultOptions: AdvancedOptions = {
   useRecords: false,
   mapsAsObjects: false,
   useTag259ForMaps: false,
+  variableMapSize: true,
 };
 
 /**

@@ -3,7 +3,7 @@ import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { IssuerAuth, issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { createTag24 } from '@/cbor/createTag24';
-import { buildMobileSecurityObject } from './buildMobileSecurityObject';
+import { buildMobileSecurityObject } from '@/handlers/issue/mso/buildMobileSecurityObject';
 import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
 import { Sign1 } from '@/cose/Sign1';
 
