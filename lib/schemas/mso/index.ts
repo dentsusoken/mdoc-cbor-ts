@@ -1,6 +1,6 @@
 export * from './AuthorizedDataElements';
 export * from './AuthorizedNameSpaces';
-export * from './DataElementsArray';
+export * from './DataElementIdentifiers';
 export * from './DeviceKey';
 export * from './DeviceKeyInfo';
 export * from './Digest';

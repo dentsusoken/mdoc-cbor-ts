@@ -43,7 +43,7 @@ describe('buildMobileSecurityObject', () => {
 
     const mso = buildMobileSecurityObject({
       docType,
-      nameSpacesElements,
+      nameSpaceElements: nameSpacesElements,
       randomBytes: mockRandomBytes,
       deviceJwkPublicKey,
       digestAlgorithm,
@@ -96,7 +96,7 @@ describe('buildMobileSecurityObject', () => {
 
     const mso = buildMobileSecurityObject({
       docType,
-      nameSpacesElements,
+      nameSpaceElements: nameSpacesElements,
       randomBytes: mockRandomBytes,
       deviceJwkPublicKey,
       digestAlgorithm,
@@ -211,7 +211,7 @@ describe('buildMobileSecurityObject', () => {
       // Build MSO using our function with the same dates and randomBytes
       const ourMSO = buildMobileSecurityObject({
         docType: 'org.iso.18013.5.1.mDL',
-        nameSpacesElements,
+        nameSpaceElements: nameSpacesElements,
         randomBytes: customRandomBytes,
         deviceJwkPublicKey: publicKeyJWK,
         digestAlgorithm,
@@ -335,7 +335,7 @@ describe('buildMobileSecurityObject', () => {
       // Build our MSO
       const ourMSO = buildMobileSecurityObject({
         docType: 'org.iso.18013.5.1.mDL',
-        nameSpacesElements,
+        nameSpaceElements: nameSpacesElements,
         randomBytes: customRandomBytes,
         deviceJwkPublicKey: publicKeyJWK,
         digestAlgorithm: 'SHA-256',

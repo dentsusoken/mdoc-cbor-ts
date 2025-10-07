@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { nameSpaceElementIdentifiersRecordSchema } from '../NameSpaceElementIdentifiersRecord';
+import { nameSpaceElementIdentifiersSchema } from '../NameSpaceElementIdentifiers';
 import {
   recordEmptyMessage,
   recordInvalidTypeMessage,
@@ -12,14 +12,14 @@ import {
 } from '@/schemas/common/NonEmptyText';
 import { arrayEmptyMessage } from '@/schemas/common/Array';
 
-describe('NameSpaceElementIdentifiersRecord', () => {
+describe('NameSpaceElementIdentifiers', () => {
   describe('valid cases', () => {
     it('should parse a record with a single namespace containing element identifiers', () => {
       const input = {
         'org.iso.18013.5.1': ['given_name', 'family_name', 'age'],
       } as const;
 
-      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+      const result = nameSpaceElementIdentifiersSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -28,7 +28,7 @@ describe('NameSpaceElementIdentifiersRecord', () => {
         'org.iso.18013.5.1': ['given_name', 'family_name'] as const,
       } as const;
 
-      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+      const result = nameSpaceElementIdentifiersSchema.parse(input);
 
       expect(Array.isArray(result['org.iso.18013.5.1'])).toBe(true);
       // Mutation should be allowed on the output type (string[])
@@ -46,7 +46,7 @@ describe('NameSpaceElementIdentifiersRecord', () => {
         'org.iso.18013.5.2': ['document_number', 'expiry_date'],
       } as const;
 
-      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+      const result = nameSpaceElementIdentifiersSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -56,7 +56,7 @@ describe('NameSpaceElementIdentifiersRecord', () => {
         'org.iso.18013.5.2': ['c'] as const,
       } as const;
 
-      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+      const result = nameSpaceElementIdentifiersSchema.parse(input);
       expect(result['org.iso.18013.5.1']).toEqual(['a', 'b']);
       expect(result['org.iso.18013.5.2']).toEqual(['c']);
     });
@@ -69,7 +69,7 @@ describe('NameSpaceElementIdentifiersRecord', () => {
         ],
       } as const;
 
-      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+      const result = nameSpaceElementIdentifiersSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -83,13 +83,13 @@ describe('NameSpaceElementIdentifiersRecord', () => {
         ],
       } as const;
 
-      const result = nameSpaceElementIdentifiersRecordSchema.parse(input);
+      const result = nameSpaceElementIdentifiersSchema.parse(input);
       expect(result).toEqual(input);
     });
   });
 
   describe('invalid cases', () => {
-    const TARGET = 'NameSpaceElementIdentifiersRecord';
+    const TARGET = 'NameSpaceElementIdentifiers';
 
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
       {
@@ -139,7 +139,7 @@ describe('NameSpaceElementIdentifiersRecord', () => {
         input: {
           'org.iso.18013.5.1': [],
         },
-        expected: arrayEmptyMessage('DataElementsArray'),
+        expected: arrayEmptyMessage('DataElementIdentifiers'),
       },
       {
         name: 'invalid element type in array',
@@ -160,7 +160,7 @@ describe('NameSpaceElementIdentifiersRecord', () => {
     cases.forEach(({ name, input, expected }) => {
       it(`should reject ${name}`, () => {
         try {
-          nameSpaceElementIdentifiersRecordSchema.parse(input as never);
+          nameSpaceElementIdentifiersSchema.parse(input as never);
           expect.unreachable('Expected parsing to throw');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { createMapSchema } from '@/schemas/common/Map';
-import { dataElementsArraySchema } from '@/schemas/mso/DataElementsArray';
+import { dataElementIdentifiersSchema } from '@/schemas/mso/DataElementIdentifiers';
 
 /**
  * Schema for authorized data elements in MSO
@@ -43,12 +43,12 @@ import { dataElementsArraySchema } from '@/schemas/mso/DataElementsArray';
  * ```
  *
  * @see nameSpaceSchema
- * @see dataElementsArraySchema
+ * @see dataElementIdentifiersSchema
  */
 export const authorizedDataElementsSchema = createMapSchema({
   target: 'AuthorizedDataElements',
   keySchema: nameSpaceSchema,
-  valueSchema: dataElementsArraySchema,
+  valueSchema: dataElementIdentifiersSchema,
 });
 
 /**

@@ -3,28 +3,29 @@ import { z } from 'zod';
 import { mobileSecurityObjectSchema } from '../MobileSecurityObject';
 import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
-import { ExactKeyMap } from 'exact-key-map';
 import { deviceKeySchema } from '../DeviceKey';
 import { VERSION_INVALID_VALUE_MESSAGE } from '@/schemas/common/Version';
 import { requiredMessage } from '@/schemas/common/Required';
+import { Tag } from 'cbor-x';
 
-const validMSO = [
+const validMSOMap = new Map<string, unknown>([
   ['version', '1.0'],
   ['digestAlgorithm', 'SHA-256'],
-  ['valueDigests', [['org.iso.18013.5.1', [[1, new Uint8Array([1])]]]]],
-  ['deviceKeyInfo', [['deviceKey', [[1, 2]]]]],
+  [
+    'valueDigests',
+    new Map([['org.iso.18013.5.1', new Map([[1, new Uint8Array([1])]])]]),
+  ],
+  ['deviceKeyInfo', new Map([['deviceKey', new Map([[1, 2]])]])],
   ['docType', 'org.iso.18013.5.1.mDL'],
   [
     'validityInfo',
-    [
+    new Map([
       ['signed', '2024-03-20T10:00:00Z'],
       ['validFrom', '2024-03-20T10:00:00Z'],
       ['validUntil', '2025-03-20T10:00:00Z'],
-    ],
+    ]),
   ],
-] as const;
-
-const validMSOMap = ExactKeyMap.fromEntries(validMSO);
+]);
 
 describe('MobileSecurityObject Schema', () => {
   describe('valid cases', () => {
@@ -50,9 +51,9 @@ describe('MobileSecurityObject Schema', () => {
       const signed = result.validityInfo.signed;
       const validFrom = result.validityInfo.validFrom;
       const validUntil = result.validityInfo.validUntil;
-      expect(signed).toBe('2024-03-20T10:00:00Z');
-      expect(validFrom).toBe('2024-03-20T10:00:00Z');
-      expect(validUntil).toBe('2025-03-20T10:00:00Z');
+      expect(signed).toEqual(new Tag('2024-03-20T10:00:00Z', 0));
+      expect(validFrom).toEqual(new Tag('2024-03-20T10:00:00Z', 0));
+      expect(validUntil).toEqual(new Tag('2025-03-20T10:00:00Z', 0));
     });
   });
 
@@ -72,9 +73,8 @@ describe('MobileSecurityObject Schema', () => {
     });
 
     it('should throw when digestAlgorithm is invalid value', () => {
-      const invalidInput = [...validMSO] as [string, unknown][];
-      invalidInput[1] = ['digestAlgorithm', 'SHA-1'];
-      const input = ExactKeyMap.fromEntries(invalidInput);
+      const input = new Map(validMSOMap);
+      input.set('digestAlgorithm', 'SHA-1');
 
       try {
         mobileSecurityObjectSchema.parse(input);
@@ -90,9 +90,8 @@ describe('MobileSecurityObject Schema', () => {
     });
 
     it('should throw when version is missing', () => {
-      const invalidInput = [...validMSO] as [string, unknown][];
-      invalidInput.splice(0, 1); // Remove version field
-      const input = ExactKeyMap.fromEntries(invalidInput);
+      const input = new Map(validMSOMap);
+      input.delete('version');
 
       try {
         mobileSecurityObjectSchema.parse(input);
@@ -106,9 +105,8 @@ describe('MobileSecurityObject Schema', () => {
     });
 
     it('should throw when docType is missing', () => {
-      const invalidInput = [...validMSO] as [string, unknown][];
-      invalidInput.splice(4, 1); // Remove docType field (index 4)
-      const input = ExactKeyMap.fromEntries(invalidInput);
+      const input = new Map(validMSOMap);
+      input.delete('docType');
 
       try {
         mobileSecurityObjectSchema.parse(input);
@@ -122,9 +120,8 @@ describe('MobileSecurityObject Schema', () => {
     });
 
     it('should throw when version has invalid value', () => {
-      const invalidInput = [...validMSO] as [string, unknown][];
-      invalidInput[0] = ['version', '2.0'];
-      const input = ExactKeyMap.fromEntries(invalidInput);
+      const input = new Map(validMSOMap);
+      input.set('version', '2.0');
 
       try {
         mobileSecurityObjectSchema.parse(input);
@@ -138,9 +135,8 @@ describe('MobileSecurityObject Schema', () => {
     });
 
     it('should throw when valueDigests has invalid type', () => {
-      const invalidInput = [...validMSO] as [string, unknown][];
-      invalidInput[2] = ['valueDigests', 'invalid-value'];
-      const input = ExactKeyMap.fromEntries(invalidInput);
+      const input = new Map(validMSOMap);
+      input.set('valueDigests', 'invalid-value');
 
       try {
         mobileSecurityObjectSchema.parse(input);
@@ -156,9 +152,8 @@ describe('MobileSecurityObject Schema', () => {
     });
 
     it('should throw when deviceKeyInfo has invalid type', () => {
-      const invalidInput = [...validMSO] as [string, unknown][];
-      invalidInput[3] = ['deviceKeyInfo', 'invalid-value'];
-      const input = ExactKeyMap.fromEntries(invalidInput);
+      const input = new Map(validMSOMap);
+      input.set('deviceKeyInfo', 'invalid-value');
 
       try {
         mobileSecurityObjectSchema.parse(input);
@@ -174,9 +169,8 @@ describe('MobileSecurityObject Schema', () => {
     });
 
     it('should throw when validityInfo has invalid type', () => {
-      const invalidInput = [...validMSO] as [string, unknown][];
-      invalidInput[5] = ['validityInfo', 'invalid-value'];
-      const input = ExactKeyMap.fromEntries(invalidInput);
+      const input = new Map(validMSOMap);
+      input.set('validityInfo', 'invalid-value');
 
       try {
         mobileSecurityObjectSchema.parse(input);

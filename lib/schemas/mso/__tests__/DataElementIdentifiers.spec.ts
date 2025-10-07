@@ -1,17 +1,17 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { dataElementsArraySchema } from '../DataElementsArray';
+import { dataElementIdentifiersSchema } from '../DataElementIdentifiers';
 import {
   arrayInvalidTypeMessage,
   arrayEmptyMessage,
 } from '@/schemas/common/Array';
 import { requiredMessage } from '@/schemas/common/Required';
 
-describe('DataElementsArray', () => {
+describe('DataElementIdentifiers', () => {
   describe('success cases', () => {
     it('should accept a non-empty array of identifiers', () => {
       const input = ['given_name', 'family_name'];
-      const result = dataElementsArraySchema.parse(input);
+      const result = dataElementIdentifiersSchema.parse(input);
       expect(Array.isArray(result)).toBe(true);
       expect(result).toEqual(input);
     });
@@ -22,37 +22,37 @@ describe('DataElementsArray', () => {
       {
         name: 'empty array',
         input: [],
-        expected: arrayEmptyMessage('DataElementsArray'),
+        expected: arrayEmptyMessage('DataElementIdentifiers'),
       },
       {
         name: 'string input',
         input: 'not-array',
-        expected: arrayInvalidTypeMessage('DataElementsArray'),
+        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
       },
       {
         name: 'number input',
         input: 123,
-        expected: arrayInvalidTypeMessage('DataElementsArray'),
+        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
       },
       {
         name: 'boolean input',
         input: true,
-        expected: arrayInvalidTypeMessage('DataElementsArray'),
+        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
       },
       {
         name: 'null input',
         input: null,
-        expected: requiredMessage('DataElementsArray'),
+        expected: requiredMessage('DataElementIdentifiers'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: requiredMessage('DataElementsArray'),
+        expected: requiredMessage('DataElementIdentifiers'),
       },
       {
         name: 'plain object input',
         input: {},
-        expected: arrayInvalidTypeMessage('DataElementsArray'),
+        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
       },
     ];
 
@@ -60,7 +60,7 @@ describe('DataElementsArray', () => {
       it(name, () => {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          dataElementsArraySchema.parse(input as any);
+          dataElementIdentifiersSchema.parse(input as any);
           expect.unreachable('Expected parsing to throw');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);

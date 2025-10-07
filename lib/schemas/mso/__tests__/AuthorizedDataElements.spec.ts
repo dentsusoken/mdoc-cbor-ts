@@ -77,7 +77,7 @@ describe('AuthorizedDataElements', () => {
       {
         name: 'empty elements array',
         input: new Map([[`org.iso.18013.5.1`, []]]),
-        expected: arrayEmptyMessage('DataElementsArray'),
+        expected: arrayEmptyMessage('DataElementIdentifiers'),
       },
       {
         name: 'invalid element type inside array',

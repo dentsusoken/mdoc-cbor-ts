@@ -8,7 +8,7 @@ import {
   issuerSignedItemSchema,
 } from '@/schemas/mdoc/IssuerSignedItem';
 import { extractSelectedIssuerNameSpaces } from '../extractSelectedIssuerNameSpaces';
-import { NameSpaceElementIdentifiersRecord } from '@/schemas/record/NameSpaceElementIdentifiersRecord';
+import { NameSpaceElementIdentifiers } from '@/schemas/record/NameSpaceElementIdentifiers';
 
 const makeItem = (
   digestID: number,
@@ -40,7 +40,7 @@ describe('extractSelectedIssuerNameSpaces', () => {
       ['org.iso.18013.5.2', [makeItem(4, 'document_number', '1234567890')]],
     ]);
 
-    const requested: NameSpaceElementIdentifiersRecord = {
+    const requested: NameSpaceElementIdentifiers = {
       'org.iso.18013.5.1': ['given_name', 'family_name'],
     };
 
@@ -59,7 +59,7 @@ describe('extractSelectedIssuerNameSpaces', () => {
       ['ns1', [makeItem(1, 'a', 1)]],
       ['ns2', [makeItem(2, 'b', 2)]],
     ]);
-    const requested: NameSpaceElementIdentifiersRecord = { ns2: ['b'] };
+    const requested: NameSpaceElementIdentifiers = { ns2: ['b'] };
 
     const result = extractSelectedIssuerNameSpaces(issuerNameSpaces, requested);
 
@@ -75,7 +75,7 @@ describe('extractSelectedIssuerNameSpaces', () => {
     const issuerNameSpaces = new Map<string, Tag[]>([
       ['ns', [makeItem(1, 'a', 1), makeItem(2, 'b', 2)]],
     ]);
-    const requested: NameSpaceElementIdentifiersRecord = { ns: ['c'] };
+    const requested: NameSpaceElementIdentifiers = { ns: ['c'] };
 
     const result = extractSelectedIssuerNameSpaces(issuerNameSpaces, requested);
 
@@ -84,7 +84,7 @@ describe('extractSelectedIssuerNameSpaces', () => {
 
   it('throws ZodError when input IssuerNameSpaces is invalid type', () => {
     const badInput = 'not-a-map';
-    const requested: NameSpaceElementIdentifiersRecord = { ns: ['a'] };
+    const requested: NameSpaceElementIdentifiers = { ns: ['a'] };
 
     try {
       // @ts-expect-error - intentionally pass non-Map to assert IssuerNameSpaces invalid type
@@ -116,7 +116,7 @@ describe('extractSelectedIssuerNameSpaces', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toMatch(
-        /NameSpaceElementIdentifiersRecord: Expected a record/
+        /NameSpaceElementIdentifiers: Expected a record/
       );
     }
   });
@@ -125,7 +125,7 @@ describe('extractSelectedIssuerNameSpaces', () => {
     const issuerNameSpaces = new Map<string, Tag[]>([
       ['ns', [makeItem(1, 'a', 1)]],
     ]);
-    const badRequested: NameSpaceElementIdentifiersRecord = {
+    const badRequested: NameSpaceElementIdentifiers = {
       ns: [],
     };
 
@@ -136,7 +136,7 @@ describe('extractSelectedIssuerNameSpaces', () => {
       expect(error).toBeInstanceOf(z.ZodError);
       const zodError = error as z.ZodError;
       expect(zodError.issues[0].message).toMatch(
-        /DataElementsArray: At least one entry must be provided/
+        /DataElementIdentifiers: At least one entry must be provided/
       );
     }
   });

@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { nameSpaceElementsRecordSchema } from '../NameSpaceElementsRecord';
+import { nameSpaceElementsSchema } from '../NameSpaceElements';
 import {
   recordEmptyMessage,
   recordInvalidTypeMessage,
 } from '@/schemas/common/Record';
 import { requiredMessage } from '@/schemas/common/Required';
 
-describe('NameSpaceElementsRecord', () => {
+describe('NameSpaceElements', () => {
   describe('valid cases', () => {
     it('should parse a record with multiple namespaces containing data elements', () => {
       const input = {
@@ -20,7 +20,7 @@ describe('NameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const parsed = nameSpaceElementsRecordSchema.parse(input);
+      const parsed = nameSpaceElementsSchema.parse(input);
       expect(parsed).toEqual(input);
     });
 
@@ -34,7 +34,7 @@ describe('NameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const parsed = nameSpaceElementsRecordSchema.parse(input);
+      const parsed = nameSpaceElementsSchema.parse(input);
       expect(parsed).toEqual(input);
     });
 
@@ -50,7 +50,7 @@ describe('NameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const parsed = nameSpaceElementsRecordSchema.parse(input);
+      const parsed = nameSpaceElementsSchema.parse(input);
       expect(parsed).toEqual(input);
     });
 
@@ -62,15 +62,15 @@ describe('NameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const parsed = nameSpaceElementsRecordSchema.parse(input);
+      const parsed = nameSpaceElementsSchema.parse(input);
       expect(parsed).toEqual(input);
     });
   });
 
   describe('invalid cases', () => {
     it('should throw when the outer record is empty', () => {
-      expect(() => nameSpaceElementsRecordSchema.parse({})).toThrow(
-        recordEmptyMessage('NameSpaceElementsRecord')
+      expect(() => nameSpaceElementsSchema.parse({})).toThrow(
+        recordEmptyMessage('NameSpaceElements')
       );
     });
 
@@ -79,65 +79,65 @@ describe('NameSpaceElementsRecord', () => {
         'org.iso.18013.5.1': {},
       } as Record<string, Record<string, unknown>>;
 
-      expect(() => nameSpaceElementsRecordSchema.parse(input)).toThrow(
-        recordEmptyMessage('NameSpaceElementsRecord.Value')
+      expect(() => nameSpaceElementsSchema.parse(input)).toThrow(
+        recordEmptyMessage('NameSpaceElements.Value')
       );
     });
 
     it('should throw when input is null', () => {
       expect(() =>
-        nameSpaceElementsRecordSchema.parse(
+        nameSpaceElementsSchema.parse(
           null as unknown as Record<string, Record<string, unknown>>
         )
-      ).toThrow(requiredMessage('NameSpaceElementsRecord'));
+      ).toThrow(requiredMessage('NameSpaceElements'));
     });
 
     it('should throw when input is undefined', () => {
       expect(() =>
-        nameSpaceElementsRecordSchema.parse(
+        nameSpaceElementsSchema.parse(
           undefined as unknown as Record<string, Record<string, unknown>>
         )
-      ).toThrow(requiredMessage('NameSpaceElementsRecord'));
+      ).toThrow(requiredMessage('NameSpaceElements'));
     });
 
     it('should throw when input is a Map', () => {
       expect(() =>
-        nameSpaceElementsRecordSchema.parse(
+        nameSpaceElementsSchema.parse(
           new Map() as unknown as Record<string, Record<string, unknown>>
         )
-      ).toThrow(recordInvalidTypeMessage('NameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('NameSpaceElements'));
     });
 
     it('should throw when input is a string', () => {
       expect(() =>
-        nameSpaceElementsRecordSchema.parse(
+        nameSpaceElementsSchema.parse(
           'not-a-record' as unknown as Record<string, Record<string, unknown>>
         )
-      ).toThrow(recordInvalidTypeMessage('NameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('NameSpaceElements'));
     });
 
     it('should throw when input is an array', () => {
       expect(() =>
-        nameSpaceElementsRecordSchema.parse(
+        nameSpaceElementsSchema.parse(
           [] as unknown as Record<string, Record<string, unknown>>
         )
-      ).toThrow(recordInvalidTypeMessage('NameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('NameSpaceElements'));
     });
 
     it('should throw when input is a number', () => {
       expect(() =>
-        nameSpaceElementsRecordSchema.parse(
+        nameSpaceElementsSchema.parse(
           123 as unknown as Record<string, Record<string, unknown>>
         )
-      ).toThrow(recordInvalidTypeMessage('NameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('NameSpaceElements'));
     });
 
     it('should throw when input is a boolean', () => {
       expect(() =>
-        nameSpaceElementsRecordSchema.parse(
+        nameSpaceElementsSchema.parse(
           true as unknown as Record<string, Record<string, unknown>>
         )
-      ).toThrow(recordInvalidTypeMessage('NameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('NameSpaceElements'));
     });
   });
 });

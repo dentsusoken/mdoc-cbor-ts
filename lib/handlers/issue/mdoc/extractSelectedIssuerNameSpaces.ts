@@ -6,9 +6,9 @@ import {
 } from '@/schemas/mdoc/IssuerNameSpaces';
 import { issuerSignedItemSchema } from '@/schemas/mdoc/IssuerSignedItem';
 import {
-  nameSpaceElementIdentifiersRecordSchema,
-  type NameSpaceElementIdentifiersRecord,
-} from '@/schemas/record/NameSpaceElementIdentifiersRecord';
+  nameSpaceElementIdentifiersSchema,
+  type NameSpaceElementIdentifiers,
+} from '@/schemas/record/NameSpaceElementIdentifiers';
 
 /**
  * Extracts selected issuer-signed namespaces based on requested element identifiers
@@ -57,10 +57,10 @@ import {
  */
 export const extractSelectedIssuerNameSpaces = (
   nameSpaces: IssuerNameSpaces,
-  nameSpaceElementIdentities: NameSpaceElementIdentifiersRecord
+  nameSpaceElementIdentities: NameSpaceElementIdentifiers
 ): IssuerNameSpaces => {
   nameSpaces = issuerNameSpacesSchema.parse(nameSpaces);
-  nameSpaceElementIdentities = nameSpaceElementIdentifiersRecordSchema.parse(
+  nameSpaceElementIdentities = nameSpaceElementIdentifiersSchema.parse(
     nameSpaceElementIdentities
   );
 

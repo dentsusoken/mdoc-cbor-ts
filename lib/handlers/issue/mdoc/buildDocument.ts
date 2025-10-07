@@ -1,7 +1,7 @@
 import { COSEKey } from '@auth0/cose';
 import { Document } from '@/schemas/mdoc/Document';
 import { IssuerSigned } from '@/schemas/mdoc/IssuerSigned';
-import { NameSpaceElementIdentifiersRecord } from '@/schemas/record/NameSpaceElementIdentifiersRecord';
+import { NameSpaceElementIdentifiers } from '@/schemas/record/NameSpaceElementIdentifiers';
 import { extractSelectedIssuerNameSpaces } from './extractSelectedIssuerNameSpaces';
 import { buildDeviceSigned } from './buildDeviceSigned';
 import { mobileSecurityObjectSchema } from '@/schemas/mso';
@@ -18,7 +18,7 @@ type BuildDocumentParams = {
   /** The issuer-signed data containing namespaces and issuer authentication */
   issuerSigned: IssuerSigned;
   /** Record mapping namespace names to arrays of requested element identifiers */
-  nameSpacesElementIdentifiers: NameSpaceElementIdentifiersRecord;
+  nameSpacesElementIdentifiers: NameSpaceElementIdentifiers;
   /** The device's private key used for device authentication */
   devicePrivateKey: COSEKey;
 };
@@ -54,7 +54,7 @@ type BuildDocumentParams = {
  * @throws {Error} When device signing fails
  *
  * @see {@link IssuerSigned}
- * @see {@link NameSpaceElementIdentifiersRecord}
+ * @see {@link NameSpaceElementIdentifiers}
  * @see {@link Document}
  * @see {@link extractSelectedIssuerNameSpaces}
  * @see {@link buildDeviceSigned}

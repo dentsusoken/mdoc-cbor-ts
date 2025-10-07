@@ -7,7 +7,7 @@ import { buildDocument } from '../buildDocument';
 import { buildMobileSecurityObject } from '@/handlers/issue/mso/buildMobileSecurityObject';
 import type { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import type { IssuerSigned } from '@/schemas/mdoc/IssuerSigned';
-import type { NameSpaceElementIdentifiersRecord } from '@/schemas/record/NameSpaceElementIdentifiersRecord';
+import type { NameSpaceElementIdentifiers } from '@/schemas/record/NameSpaceElementIdentifiers';
 import { issuerSignedItemSchema } from '@/schemas/mdoc/IssuerSignedItem';
 import { buildProtectedHeaders } from '@/handlers/issue/cose/buildProtectedHeaders';
 import { IssuerAuth } from '@/schemas/mso/IssuerAuth';
@@ -88,7 +88,7 @@ describe('buildDocument', () => {
       issuerAuth: sign1.getContentForEncoding() as IssuerAuth,
     };
 
-    const requested: NameSpaceElementIdentifiersRecord = {
+    const requested: NameSpaceElementIdentifiers = {
       'org.iso.18013.5.1': ['given_name', 'family_name'],
     };
 

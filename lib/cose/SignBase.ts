@@ -113,23 +113,36 @@ export class SignBase extends CoseBase {
    * intermediate certificates, then root certificate. Searches first in protected
    * headers, then in unprotected headers.
    *
-   * @returns Array of DER-encoded certificate bytes
-   * @throws {Error} If no X.509 certificate chain is present in headers
+   * Returns `undefined` if no X.509 certificate chain is present, which is valid
+   * for Device Authentication where certificates are not used.
+   *
+   * @returns Array of DER-encoded certificate bytes, or `undefined` if not present
    *
    * @example
    * ```typescript
    * const certChain = signBase.x5c;
-   * console.log(`Found ${certChain.length} certificates in chain`);
+   * if (certChain) {
+   *   console.log(`Found ${certChain.length} certificates in chain`);
+   * } else {
+   *   console.log('No certificate chain (e.g., Device Authentication)');
+   * }
    * ```
    */
-  get x5c(): Uint8Array[] {
-    const x5c = this.getHeader(Headers.X5Chain) as Uint8Array[];
+  get x5c(): Uint8Array[] | undefined {
+    const x5cHeader = this.getHeader(Headers.X5Chain);
 
-    if (!x5c || x5c.length === 0) {
-      throw new Error('X509 certificate not found');
+    if (!x5cHeader) {
+      return undefined;
     }
 
-    return x5c;
+    // Handle both single certificate and array of certificates
+    const x5c = Array.isArray(x5cHeader) ? x5cHeader : [x5cHeader];
+
+    if (x5c.length === 0) {
+      return undefined;
+    }
+
+    return x5c as Uint8Array[];
   }
 
   /**
@@ -139,12 +152,17 @@ export class SignBase extends CoseBase {
    * Parses each certificate in the chain, verifies the chain integrity using
    * {@link verifyX509s}, and extracts the public key from the leaf certificate.
    *
+   * This method should be used for Issuer Authentication. For Device Authentication,
+   * the certificate chain is not present and this method will throw an error.
+   *
    * @returns Leaf certificate public key in JWK format
+   * @throws {Error} If no X.509 certificate chain is present in headers
    * @throws {Error} If the certificate chain is invalid or verification fails
    * @throws {Error} If any certificate in the chain cannot be parsed
    *
    * @example
    * ```typescript
+   * // For Issuer Authentication
    * try {
    *   const publicKey = signBase.verifyX509Chain();
    *   console.log('Chain verified, public key:', publicKey);
@@ -152,9 +170,25 @@ export class SignBase extends CoseBase {
    *   console.error('Chain verification failed:', error.message);
    * }
    * ```
+   *
+   * @example
+   * ```typescript
+   * // Check if certificate chain exists before verifying
+   * if (signBase.x5c) {
+   *   const publicKey = signBase.verifyX509Chain();
+   * } else {
+   *   // Device Authentication - use deviceKey directly
+   *   console.log('No certificate chain');
+   * }
+   * ```
    */
   verifyX509Chain(): JwkPublicKey {
     const { x5c } = this;
+
+    if (!x5c) {
+      throw new Error('X.509 certificate chain not found');
+    }
+
     const x509s = x5c.map((c) => {
       try {
         return derBytesToX509(c);

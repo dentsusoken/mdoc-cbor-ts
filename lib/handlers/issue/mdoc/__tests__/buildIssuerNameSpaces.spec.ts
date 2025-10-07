@@ -5,10 +5,12 @@ import {
   recordInvalidTypeMessage,
 } from '@/schemas/common/Record';
 import { buildIssuerNameSpaces } from '../buildIssuerNameSpaces';
-import type { NameSpaceElementsRecord } from '@/schemas/record/NameSpaceElementsRecord';
-import { createTag24, createTag1004 } from '@/cbor';
-import type { RandomBytes } from 'noble-curves-extended';
-import { Document, MDoc, parse } from '@auth0/mdl';
+import type { NameSpaceElements } from '@/schemas/record/NameSpaceElements';
+import { createTag24 } from '@/cbor/createTag24';
+import { decodeCbor } from '@/cbor/codec';
+import type { RandomBytes } from '@/types';
+import { Document, MDoc } from '@auth0/mdl';
+import { DateOnly } from '@auth0/mdl/lib/cbor';
 import {
   DEVICE_JWK,
   ISSUER_CERTIFICATE,
@@ -28,7 +30,7 @@ describe('buildIssuerNameSpaces', () => {
 
   describe('valid cases', () => {
     it('should build IssuerNameSpaces with Tag(24) items for each element', () => {
-      const input: NameSpaceElementsRecord = {
+      const input: NameSpaceElements = {
         'org.iso.18013.5.1': {
           given_name: 'John',
           family_name: 'Doe',
@@ -78,7 +80,7 @@ describe('buildIssuerNameSpaces', () => {
     it('should throw when an inner namespace has no elements', () => {
       const input = {
         'org.iso.18013.5.1': {},
-      } as unknown as NameSpaceElementsRecord;
+      } as unknown as NameSpaceElements;
 
       try {
         buildIssuerNameSpaces(input, mockRandomBytes);
@@ -87,14 +89,14 @@ describe('buildIssuerNameSpaces', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            recordEmptyMessage('NameSpaceElementsRecord.Value')
+            recordEmptyMessage('NameSpaceElements.Value')
           );
         }
       }
     });
 
     it('should throw when there are no namespaces', () => {
-      const input = {} as NameSpaceElementsRecord;
+      const input = {} as NameSpaceElements;
       try {
         buildIssuerNameSpaces(input, mockRandomBytes);
         expect.fail('Expected ZodError for empty outer record');
@@ -102,7 +104,7 @@ describe('buildIssuerNameSpaces', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            recordEmptyMessage('NameSpaceElementsRecord')
+            recordEmptyMessage('NameSpaceElements')
           );
         }
       }
@@ -111,7 +113,7 @@ describe('buildIssuerNameSpaces', () => {
     it('should throw for invalid input type', () => {
       try {
         buildIssuerNameSpaces(
-          'not-a-record' as unknown as NameSpaceElementsRecord,
+          'not-a-record' as unknown as NameSpaceElements,
           mockRandomBytes
         );
         expect.fail('Expected parse to throw a ZodError');
@@ -119,7 +121,7 @@ describe('buildIssuerNameSpaces', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            recordInvalidTypeMessage('NameSpaceElementsRecord')
+            recordInvalidTypeMessage('NameSpaceElements')
           );
         }
       }
@@ -143,7 +145,7 @@ describe('buildIssuerNameSpaces', () => {
         .addIssuerNameSpace('org.iso.18013.5.1', {
           family_name: 'Jones',
           given_name: 'Ava',
-          birth_date: createTag1004(new Date('2007-03-25')),
+          birth_date: new DateOnly('2007-03-25'),
         })
         .useDigestAlgorithm('SHA-256')
         .addValidityInfo({
@@ -162,13 +164,16 @@ describe('buildIssuerNameSpaces', () => {
       const mdoc = new MDoc([document]);
       const encoded = mdoc.encode();
 
-      const parsedMDOC = parse(encoded);
-      const [parsedDocument] = parsedMDOC.documents;
+      // Use decodeCbor instead of auth0/mdl's parse() to preserve CBOR Tags
+      const decoded = decodeCbor(encoded) as Map<string, unknown>;
+      const documents = decoded.get('documents') as Array<Map<string, unknown>>;
+      const firstDoc = documents[0];
+      const issuerSigned = firstDoc.get('issuerSigned') as Map<string, unknown>;
+      const nameSpaces = issuerSigned.get('nameSpaces') as Map<string, Tag[]>;
 
       const nameSpace = 'org.iso.18013.5.1';
-      const issuerSignedItems =
-        parsedDocument.issuerSigned.nameSpaces?.[nameSpace];
-      expect(issuerSignedItems).toBeDefined();
+      const issuerSignedItemTags = nameSpaces.get(nameSpace);
+      expect(issuerSignedItemTags).toBeDefined();
 
       // Create nameSpacesElements in the SAME ORDER as auth0/mdl's issuerSignedItems
       const nameSpacesElements: Record<string, Record<string, unknown>> = {
@@ -176,12 +181,18 @@ describe('buildIssuerNameSpaces', () => {
       };
       const randomBytesByOrder: Uint8Array[] = [];
 
-      issuerSignedItems!.forEach((item) => {
-        // For birth_date, issue_date, expiry_date in mDL namespace,
-        // convert to Tag1004 to match our expected usage pattern
-        const elementValue = item.elementValue;
-        nameSpacesElements[nameSpace][item.elementIdentifier] = elementValue;
-        randomBytesByOrder.push(item.random);
+      issuerSignedItemTags!.forEach((itemTag) => {
+        // Decode Tag 24 to get the IssuerSignedItem
+        const item = decodeCbor(itemTag.value as Uint8Array) as Map<
+          string,
+          unknown
+        >;
+        const elementIdentifier = item.get('elementIdentifier') as string;
+        const elementValue = item.get('elementValue');
+        const random = item.get('random') as Uint8Array;
+
+        nameSpacesElements[nameSpace][elementIdentifier] = elementValue;
+        randomBytesByOrder.push(random);
       });
 
       // Create custom randomBytes function
@@ -206,16 +217,16 @@ describe('buildIssuerNameSpaces', () => {
 
       const ourTags = ourNameSpaces.get(nameSpace);
       expect(ourTags).toBeDefined();
-      expect(ourTags!.length).toBe(issuerSignedItems!.length);
+      expect(ourTags!.length).toBe(issuerSignedItemTags!.length);
 
       // Compare each Tag24
-      issuerSignedItems!.forEach((auth0Item, index) => {
+      issuerSignedItemTags!.forEach((auth0Tag, index) => {
         const ourTag = ourTags![index];
         expect(ourTag).toBeInstanceOf(Tag);
         expect(ourTag.tag).toBe(24);
 
         // Compare Tag24 byte arrays
-        const auth0Bytes = auth0Item.dataItem.buffer;
+        const auth0Bytes = auth0Tag.value as Uint8Array;
         const ourBytes = ourTag.value as Uint8Array;
         expect(Array.from(ourBytes)).toEqual(Array.from(auth0Bytes));
       });
@@ -255,21 +266,34 @@ describe('buildIssuerNameSpaces', () => {
       const mdoc = new MDoc([document]);
       const encoded = mdoc.encode();
 
-      const parsedMDOC = parse(encoded);
-      const [parsedDoc] = parsedMDOC.documents;
+      // Use decodeCbor instead of auth0/mdl's parse() to preserve CBOR Tags
+      const decoded = decodeCbor(encoded) as Map<string, unknown>;
+      const documents = decoded.get('documents') as Array<Map<string, unknown>>;
+      const firstDoc = documents[0];
+      const issuerSigned = firstDoc.get('issuerSigned') as Map<string, unknown>;
+      const auth0NameSpaces = issuerSigned.get('nameSpaces') as Map<
+        string,
+        Tag[]
+      >;
 
       // Build nameSpacesElements from auth0/mdl in same order
       const nameSpacesElements: Record<string, Record<string, unknown>> = {};
       const allRandomBytes: Uint8Array[] = [];
 
-      for (const [nameSpace, items] of Object.entries(
-        parsedDoc.issuerSigned.nameSpaces || {}
-      )) {
+      for (const [nameSpace, itemTags] of auth0NameSpaces.entries()) {
         nameSpacesElements[nameSpace] = {};
-        items.forEach((item) => {
-          nameSpacesElements[nameSpace][item.elementIdentifier] =
-            item.elementValue;
-          allRandomBytes.push(item.random);
+        itemTags.forEach((itemTag) => {
+          // Decode Tag 24 to get the IssuerSignedItem
+          const item = decodeCbor(itemTag.value as Uint8Array) as Map<
+            string,
+            unknown
+          >;
+          const elementIdentifier = item.get('elementIdentifier') as string;
+          const elementValue = item.get('elementValue');
+          const random = item.get('random') as Uint8Array;
+
+          nameSpacesElements[nameSpace][elementIdentifier] = elementValue;
+          allRandomBytes.push(random);
         });
       }
 
@@ -290,21 +314,17 @@ describe('buildIssuerNameSpaces', () => {
       );
 
       // Verify all namespaces match
-      expect(ourNameSpaces.size).toBe(
-        Object.keys(parsedDoc.issuerSigned.nameSpaces || {}).length
-      );
+      expect(ourNameSpaces.size).toBe(auth0NameSpaces.size);
 
-      for (const [nameSpace, auth0Items] of Object.entries(
-        parsedDoc.issuerSigned.nameSpaces || {}
-      )) {
+      for (const [nameSpace, auth0Tags] of auth0NameSpaces.entries()) {
         const ourTags = ourNameSpaces.get(nameSpace);
         expect(ourTags).toBeDefined();
-        expect(ourTags!.length).toBe(auth0Items.length);
+        expect(ourTags!.length).toBe(auth0Tags.length);
 
         // Compare each Tag24
-        auth0Items.forEach((auth0Item, index) => {
+        auth0Tags.forEach((auth0Tag, index) => {
           const ourTag = ourTags![index];
-          const auth0Bytes = auth0Item.dataItem.buffer;
+          const auth0Bytes = auth0Tag.value as Uint8Array;
           const ourBytes = ourTag.value as Uint8Array;
           expect(Array.from(ourBytes)).toEqual(Array.from(auth0Bytes));
         });

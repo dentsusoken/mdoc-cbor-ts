@@ -1,11 +1,12 @@
 import { encodeCbor } from '@/cbor/codec';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
-import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { IssuerAuth, issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { createTag24 } from '@/cbor/createTag24';
 import { buildMobileSecurityObject } from './buildMobileSecurityObject';
 import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
 import { Sign1 } from '@/cose/Sign1';
+import { NameSpaceElements } from '@/schemas/record/NameSpaceElements';
+import { RandomBytes } from '@/types';
 
 /**
  * Parameters to build IssuerAuth using COSE_Sign1
@@ -16,8 +17,10 @@ import { Sign1 } from '@/cose/Sign1';
 export type BuildIssuerAuthtParams = {
   /** The document type identifier (e.g., 'org.iso.18013.5.1.mDL') */
   docType: string;
-  /** The issuer namespaces containing issuer signed item tags */
-  nameSpaces: IssuerNameSpaces;
+  /** The issuer namespaces and their associated elements as a record structure */
+  nameSpaceElements: NameSpaceElements;
+  /** A cryptographically secure random bytes generator function */
+  randomBytes: RandomBytes;
   /** The device's public key for authentication */
   deviceJwkPublicKey: JwkPublicKey;
   /** The digest algorithm to use for calculating value digests */
@@ -49,12 +52,14 @@ export type BuildIssuerAuthtParams = {
  *
  * @param params - Parameters to build and sign the IssuerAuth
  * @param params.docType - The document type identifier (e.g., 'org.iso.18013.5.1.mDL')
- * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags
+ * @param params.nameSpaceElements - The issuer namespaces and their elements as a record structure
+ * @param params.randomBytes - A cryptographically secure random bytes generator function
  * @param params.deviceJwkPublicKey - The device's JWK public key used to derive the COSE public key
  * @param params.digestAlgorithm - The digest algorithm to use for calculating value digests
- * @param params.validFrom - Duration in milliseconds from now until the document becomes valid
- * @param params.validUntil - Duration in milliseconds from now until the document expires
- * @param params.expectedUpdate - Optional duration in milliseconds from now until the document should be updated
+ * @param params.signed - The date and time when the MSO was signed
+ * @param params.validFrom - The date and time when the document becomes valid
+ * @param params.validUntil - The date and time when the document expires
+ * @param params.expectedUpdate - Optional date and time when the document should be updated
  * @param params.protectedHeaders - Protected headers for the COSE_Sign1 structure
  * @param params.unprotectedHeaders - Unprotected headers for the COSE_Sign1 structure
  * @param params.issuerJwkPrivateKey - The issuer's private key (JWK) for signing
@@ -62,17 +67,28 @@ export type BuildIssuerAuthtParams = {
  *
  * @example
  * ```typescript
+ * import { randomBytes } from '@noble/hashes/utils';
+ * import { createTag1004 } from '@/cbor/createTag1004';
+ *
  * const issuerAuth = buildIssuerAuth({
  *   docType: 'org.iso.18013.5.1.mDL',
- *   nameSpaces: new Map([
- *     ['org.iso.18013.5.1', [tag1, tag2]],
- *     ['org.iso.18013.5.2', [tag3]]
- *   ]),
+ *   nameSpaceElements: {
+ *     'org.iso.18013.5.1': {
+ *       given_name: 'John',
+ *       family_name: 'Doe',
+ *       birth_date: createTag1004(new Date('1990-01-01'))
+ *     },
+ *     'org.iso.18013.5.2': {
+ *       license_number: 'D1234567'
+ *     }
+ *   },
+ *   randomBytes,
  *   deviceJwkPublicKey,
  *   digestAlgorithm: 'SHA-256',
- *   validFrom: 0,
- *   validUntil: 24 * 60 * 60 * 1000,
- *   expectedUpdate: 60 * 60 * 1000,
+ *   signed: new Date('2025-01-01T00:00:00Z'),
+ *   validFrom: new Date('2025-01-01T00:00:00Z'),
+ *   validUntil: new Date('2025-01-02T00:00:00Z'),
+ *   expectedUpdate: new Date('2025-01-01T01:00:00Z'),
  *   protectedHeaders,
  *   unprotectedHeaders,
  *   issuerJwkPrivateKey,
@@ -87,7 +103,8 @@ export type BuildIssuerAuthtParams = {
  */
 export const buildIssuerAuth = ({
   docType,
-  nameSpaces,
+  nameSpaceElements,
+  randomBytes,
   deviceJwkPublicKey,
   digestAlgorithm,
   signed,
@@ -100,7 +117,8 @@ export const buildIssuerAuth = ({
 }: BuildIssuerAuthtParams): IssuerAuth => {
   const mso = buildMobileSecurityObject({
     docType,
-    nameSpaces,
+    nameSpaceElements,
+    randomBytes,
     deviceJwkPublicKey,
     digestAlgorithm,
     signed,

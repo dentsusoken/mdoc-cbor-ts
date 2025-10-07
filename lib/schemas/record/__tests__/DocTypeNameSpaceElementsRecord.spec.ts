@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { docTypeNameSpaceElementsRecordSchema } from '../DocTypeNameSpaceElementsRecord';
+import { docTypeNameSpaceElementsSchema } from '../DocTypeNameSpaceElements';
 import {
   recordEmptyMessage,
   recordInvalidTypeMessage,
@@ -7,7 +7,7 @@ import {
 import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
-describe('DocTypeNameSpaceElementsRecord', () => {
+describe('DocTypeNameSpaceElements', () => {
   describe('valid cases', () => {
     it('should parse a record with a single document type containing namespace elements', () => {
       const input = {
@@ -19,7 +19,7 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementsRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementsSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -38,7 +38,7 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementsRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementsSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -55,7 +55,7 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementsRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementsSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -73,7 +73,7 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementsRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementsSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -86,82 +86,82 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementsRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementsSchema.parse(input);
       expect(result).toEqual(input);
     });
   });
 
   describe('invalid cases', () => {
     it('should throw when the outer record is empty', () => {
-      expect(() => docTypeNameSpaceElementsRecordSchema.parse({})).toThrow(
-        recordEmptyMessage('DocTypeNameSpaceElementsRecord')
+      expect(() => docTypeNameSpaceElementsSchema.parse({})).toThrow(
+        recordEmptyMessage('DocTypeNameSpaceElements')
       );
     });
 
     it('should throw when input is null', () => {
       expect(() =>
-        docTypeNameSpaceElementsRecordSchema.parse(
+        docTypeNameSpaceElementsSchema.parse(
           null as unknown as Record<
             string,
             Record<string, Record<string, unknown>>
           >
         )
-      ).toThrow(requiredMessage('DocTypeNameSpaceElementsRecord'));
+      ).toThrow(requiredMessage('DocTypeNameSpaceElements'));
     });
 
     it('should throw when input is undefined', () => {
       expect(() =>
-        docTypeNameSpaceElementsRecordSchema.parse(
+        docTypeNameSpaceElementsSchema.parse(
           undefined as unknown as Record<
             string,
             Record<string, Record<string, unknown>>
           >
         )
-      ).toThrow(requiredMessage('DocTypeNameSpaceElementsRecord'));
+      ).toThrow(requiredMessage('DocTypeNameSpaceElements'));
     });
 
     it('should throw when input is a string', () => {
       expect(() =>
-        docTypeNameSpaceElementsRecordSchema.parse(
+        docTypeNameSpaceElementsSchema.parse(
           'not-an-object' as unknown as Record<
             string,
             Record<string, Record<string, unknown>>
           >
         )
-      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElements'));
     });
 
     it('should throw when input is an array', () => {
       expect(() =>
-        docTypeNameSpaceElementsRecordSchema.parse(
+        docTypeNameSpaceElementsSchema.parse(
           [] as unknown as Record<
             string,
             Record<string, Record<string, unknown>>
           >
         )
-      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElements'));
     });
 
     it('should throw when input is a number', () => {
       expect(() =>
-        docTypeNameSpaceElementsRecordSchema.parse(
+        docTypeNameSpaceElementsSchema.parse(
           123 as unknown as Record<
             string,
             Record<string, Record<string, unknown>>
           >
         )
-      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElements'));
     });
 
     it('should throw when input is a boolean', () => {
       expect(() =>
-        docTypeNameSpaceElementsRecordSchema.parse(
+        docTypeNameSpaceElementsSchema.parse(
           true as unknown as Record<
             string,
             Record<string, Record<string, unknown>>
           >
         )
-      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElementsRecord'));
+      ).toThrow(recordInvalidTypeMessage('DocTypeNameSpaceElements'));
     });
 
     it('should throw when doc type key is empty', () => {
@@ -173,7 +173,7 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         },
       } as Record<string, Record<string, Record<string, unknown>>>;
 
-      expect(() => docTypeNameSpaceElementsRecordSchema.parse(input)).toThrow(
+      expect(() => docTypeNameSpaceElementsSchema.parse(input)).toThrow(
         nonEmptyTextEmptyMessage('DocType')
       );
     });
@@ -183,8 +183,8 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         'org.iso.18013.5.1.mDL': {},
       } as Record<string, Record<string, Record<string, unknown>>>;
 
-      expect(() => docTypeNameSpaceElementsRecordSchema.parse(input)).toThrow(
-        recordEmptyMessage('NameSpaceElementsRecord')
+      expect(() => docTypeNameSpaceElementsSchema.parse(input)).toThrow(
+        recordEmptyMessage('NameSpaceElements')
       );
     });
 
@@ -197,7 +197,7 @@ describe('DocTypeNameSpaceElementsRecord', () => {
         },
       } as Record<string, Record<string, Record<string, unknown>>>;
 
-      expect(() => docTypeNameSpaceElementsRecordSchema.parse(input)).toThrow(
+      expect(() => docTypeNameSpaceElementsSchema.parse(input)).toThrow(
         nonEmptyTextEmptyMessage('DataElementIdentifier')
       );
     });

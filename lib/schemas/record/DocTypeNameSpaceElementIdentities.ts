@@ -1,13 +1,13 @@
 import { z } from 'zod';
 import { createRecordSchema } from '@/schemas/common/Record';
 import { docTypeSchema } from '@/schemas/common/DocType';
-import { nameSpaceElementIdentifiersRecordSchema } from './NameSpaceElementIdentifiersRecord';
+import { createNameSpaceElementIdentifiersSchema } from './NameSpaceElementIdentifiers';
 
 /**
- * Schema for document types containing namespace element identities records
+ * Schema for document types containing namespace element identities
  * @description
  * Validates a required, non-empty record of `DocType` to nested records of
- * `NameSpace` to `DataElementsArray`. This represents a hierarchical structure
+ * `NameSpace` to `DataElementIdentifiers`. This represents a hierarchical structure
  * where each document type contains multiple namespaces with their respective
  * arrays of data element identifiers.
  *
@@ -17,21 +17,21 @@ import { nameSpaceElementIdentifiersRecordSchema } from './NameSpaceElementIdent
  * - Keys must satisfy {@link DocType}
  * - Values must be non-empty records where:
  *   - Keys must satisfy {@link NameSpace}
- *   - Values must satisfy {@link DataElementsArray}
+ *   - Values must satisfy {@link DataElementIdentifiers}
  *
- * Error messages are prefixed with the target name: `DocTypeNamespaceElementIdentitiesRecord: ...`.
+ * Error messages are prefixed with the target name: `DocTypeNamespaceElementIdentities: ...`.
  *
  * ```cddl
- * DocTypeNamespaceElementIdentitiesRecord = {
+ * DocTypeNamespaceElementIdentities = {
  *   + DocType => {
- *     + NameSpace => DataElementsArray
+ *     + NameSpace => DataElementIdentifiers
  *   }
  * }
  * ```
  *
  * @example
  * ```typescript
- * const docTypeNamespaceElementIdentitiesRecord = {
+ * const docTypeNamespaceElementIdentities = {
  *   'org.iso.18013.5.1.mDL': {
  *     'org.iso.18013.5.1': [
  *       'given_name',
@@ -39,28 +39,28 @@ import { nameSpaceElementIdentifiersRecordSchema } from './NameSpaceElementIdent
  *     ]
  *   }
  * };
- * const result = docTypeNamespaceElementIdentitiesRecordSchema.parse(docTypeNamespaceElementIdentitiesRecord); // Returns DocTypeNamespaceElementIdentitiesRecord
+ * const result = docTypeNameSpaceElementIdentitiesSchema.parse(docTypeNamespaceElementIdentities); // Returns DocTypeNamespaceElementIdentities
  * ```
  *
  * @see {@link DocType}
  * @see {@link NameSpace}
- * @see {@link DataElementsArray}
+ * @see {@link DataElementIdentifiers}
  */
-export const docTypeNameSpaceElementIdentitiesRecordSchema = createRecordSchema(
-  {
-    target: 'DocTypeNameSpaceElementIdentitiesRecord',
-    keySchema: docTypeSchema,
-    valueSchema: nameSpaceElementIdentifiersRecordSchema,
-  }
-);
+export const docTypeNameSpaceElementIdentitiesSchema = createRecordSchema({
+  target: 'DocTypeNamespaceElementIdentities',
+  keySchema: docTypeSchema,
+  valueSchema: createNameSpaceElementIdentifiersSchema(
+    'DocTypeNamespaceElementIdentities.Value'
+  ),
+});
 
 /**
- * Type representing a record of document types to namespace element identities records
+ * Type representing a record of document types to namespace element identities
  * @description
  * A record where each key is a document type and each value is a record of namespaces
  * to arrays of data element identifiers. This type is inferred from the
- * `docTypeNamespaceElementIdentitiesRecordSchema`.
+ * `docTypeNameSpaceElementIdentitiesSchema`.
  */
-export type DocTypeNameSpaceElementIdentitiesRecord = z.output<
-  typeof docTypeNameSpaceElementIdentitiesRecordSchema
+export type DocTypeNameSpaceElementIdentities = z.output<
+  typeof docTypeNameSpaceElementIdentitiesSchema
 >;

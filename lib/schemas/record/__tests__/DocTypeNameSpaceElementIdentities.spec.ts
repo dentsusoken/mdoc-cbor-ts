@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { docTypeNameSpaceElementIdentitiesRecordSchema } from '../DocTypeNameSpaceElementIdentities';
+import { docTypeNameSpaceElementIdentitiesSchema } from '../DocTypeNameSpaceElementIdentities';
 import {
   recordEmptyMessage,
   recordInvalidTypeMessage,
@@ -11,7 +11,7 @@ import {
   nonEmptyTextInvalidTypeMessage,
 } from '@/schemas/common/NonEmptyText';
 
-describe('DocTypeNamespaceElementIdentitiesRecord', () => {
+describe('DocTypeNamespaceElementIdentities', () => {
   describe('valid cases', () => {
     it('should parse a record with a single document type containing namespace element identities', () => {
       const input = {
@@ -20,7 +20,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -34,7 +34,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -46,7 +46,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -57,7 +57,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesSchema.parse(input);
       expect(result).toEqual(input);
     });
 
@@ -73,13 +73,13 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         },
       } as const;
 
-      const result = docTypeNameSpaceElementIdentitiesRecordSchema.parse(input);
+      const result = docTypeNameSpaceElementIdentitiesSchema.parse(input);
       expect(result).toEqual(input);
     });
   });
 
   describe('invalid cases', () => {
-    const TARGET = 'DocTypeNamespaceElementIdentitiesRecord';
+    const TARGET = 'DocTypeNamespaceElementIdentities';
 
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
       {
@@ -131,9 +131,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
         input: {
           'org.iso.18013.5.1.mDL': {},
         },
-        expected: recordEmptyMessage(
-          'DocTypeNamespaceElementIdentitiesRecord.Value'
-        ),
+        expected: recordEmptyMessage('DocTypeNamespaceElementIdentities.Value'),
       },
       {
         name: 'empty namespace key',
@@ -167,7 +165,7 @@ describe('DocTypeNamespaceElementIdentitiesRecord', () => {
     cases.forEach(({ name, input, expected }) => {
       it(`should reject ${name}`, () => {
         try {
-          docTypeNameSpaceElementIdentitiesRecordSchema.parse(input as never);
+          docTypeNameSpaceElementIdentitiesSchema.parse(input as never);
           expect.unreachable('Expected parsing to throw');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);

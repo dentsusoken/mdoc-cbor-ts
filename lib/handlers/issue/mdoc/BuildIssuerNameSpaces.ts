@@ -1,32 +1,25 @@
 import { Tag } from 'cbor-x';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import {
-  NameSpaceElementsRecord,
-  nameSpaceElementsRecordSchema,
-} from '@/schemas/record/NameSpaceElementsRecord';
+  NameSpaceElements,
+  nameSpaceElementsSchema,
+} from '@/schemas/record/NameSpaceElements';
 import { NameSpace } from '@/schemas/common/NameSpace';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { createTag24 } from '@/cbor/createTag24';
-import { RandomBytes } from 'noble-curves-extended';
+import { RandomBytes } from '@/types';
 
 /**
- * Builds issuer namespaces from a record of data elements
+ * Builds IssuerNameSpaces from a NameSpaceElements.
+ *
  * @description
- * Transforms a `NameSpaceElementsRecord` into `IssuerNameSpaces` by creating CBOR Tag 24
- * wrapped issuer-signed items for each data element. Each item includes a unique
- * digest ID (starting from 0 within each namespace), random bytes, element identifier,
- * and element value.
+ * Converts a validated {@link NameSpaceElements} into an {@link IssuerNameSpaces} structure by generating a CBOR Tag 24 wrapped issuer-signed item for each data element in each namespace. Each issuer-signed item includes a unique digest ID (incremented per element within a namespace), a cryptographically secure random value, the element identifier, and the element value. The function ensures the input is valid, generates random bytes for each item, and returns a Map of namespaces to arrays of Tag 24 issuer-signed items.
  *
- * The function validates the input data, generates cryptographically secure random
- * values using the provided random bytes function, and creates the hierarchical
- * structure required for mdoc issuer namespaces.
- *
- * @param nameSpacesElements - The namespace record containing data elements to be signed
- * @param randomBytes - A cryptographically secure random bytes generator function that accepts a length and returns a Uint8Array
- * @returns A Map of namespaces to arrays of CBOR Tag 24 wrapped issuer-signed items
- * @throws {Error} When a namespace contains no elements
- * @throws {Error} When no namespaces are provided
- * @throws {ZodError} When the input data fails validation
+ * @param {NameSpaceElements} nameSpaceElements - The record mapping each namespace to its data elements to be signed.
+ * @param {RandomBytes} randomBytes - A function that generates cryptographically secure random bytes of the specified length.
+ * @returns {IssuerNameSpaces} A Map where each key is a namespace and each value is an array of CBOR Tag 24 issuer-signed items.
+ * @throws {z.ZodError} If the input data does not conform to the NameSpaceElements schema.
+ * @throws {Error} If a namespace contains no elements or if no namespaces are provided.
  *
  * @example
  * ```typescript
@@ -39,18 +32,18 @@ import { RandomBytes } from 'noble-curves-extended';
  *   }
  * };
  * const issuerNameSpaces = buildIssuerNameSpaces(data, randomBytes);
- * // Returns Map<NameSpace, Tag[]> with CBOR Tag 24 wrapped items
+ * // issuerNameSpaces is a Map<NameSpace, Tag[]> with CBOR Tag 24 wrapped items
  * ```
  */
 export const buildIssuerNameSpaces = (
-  nameSpacesElements: NameSpaceElementsRecord,
+  nameSpaceElements: NameSpaceElements,
   randomBytes: RandomBytes
 ): IssuerNameSpaces => {
-  nameSpacesElements = nameSpaceElementsRecordSchema.parse(nameSpacesElements);
+  nameSpaceElements = nameSpaceElementsSchema.parse(nameSpaceElements);
 
   const issuerNameSpaces: IssuerNameSpaces = new Map<NameSpace, Tag[]>();
 
-  Object.entries(nameSpacesElements).forEach(([nameSpace, elements]) => {
+  Object.entries(nameSpaceElements).forEach(([nameSpace, elements]) => {
     const issuerSignedItemTags: Tag[] = [];
 
     Object.entries(elements).forEach(([elementIdentifier, elementValue]) => {
