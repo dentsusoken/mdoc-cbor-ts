@@ -18,7 +18,7 @@ import { X509 } from 'jsrsasign';
  * console.log(results); // [true, true, true] if all certificates are valid
  * ```
  */
-export const verifyX509s = (x509s: X509[]): boolean[] => {
+export const verifyX5Chain = (x509s: X509[]): boolean[] => {
   return x509s.map((x509, index) => {
     const publicKey =
       index === x509s.length - 1

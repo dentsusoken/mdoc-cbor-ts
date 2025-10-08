@@ -11,7 +11,7 @@ import {
   DEVICE_JWK,
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
-} from './config';
+} from '../../../__tests__/config';
 
 const { d, ...publicKeyJWK } = DEVICE_JWK as jose.JWK;
 

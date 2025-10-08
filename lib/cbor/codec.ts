@@ -32,6 +32,7 @@ export const defaultOptions: AdvancedOptions = {
   mapsAsObjects: false,
   useTag259ForMaps: false,
   variableMapSize: true,
+  structuredClone: false,
 };
 
 /**

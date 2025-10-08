@@ -36,7 +36,7 @@ describe('SignBase', () => {
     });
   });
 
-  describe('x5c getter', () => {
+  describe('x5chain getter', () => {
     it('returns chain from protected headers', () => {
       const der = new Uint8Array([0x01, 0x02]);
       const ph = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
@@ -44,7 +44,7 @@ describe('SignBase', () => {
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
-      expect(sb.x5c).toEqual([der]);
+      expect(sb.x5chain).toEqual([der]);
     });
 
     it('returns chain from unprotected headers when not in protected', () => {
@@ -54,7 +54,7 @@ describe('SignBase', () => {
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
-      expect(sb.x5c).toEqual([der]);
+      expect(sb.x5chain).toEqual([der]);
     });
 
     it('converts single certificate to array from protected headers', () => {
@@ -64,9 +64,9 @@ describe('SignBase', () => {
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
-      expect(sb.x5c).toEqual([der]);
-      expect(Array.isArray(sb.x5c)).toBe(true);
-      expect(sb.x5c).toHaveLength(1);
+      expect(sb.x5chain).toEqual([der]);
+      expect(Array.isArray(sb.x5chain)).toBe(true);
+      expect(sb.x5chain).toHaveLength(1);
     });
 
     it('converts single certificate to array from unprotected headers', () => {
@@ -76,29 +76,29 @@ describe('SignBase', () => {
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
-      expect(sb.x5c).toEqual([der]);
-      expect(Array.isArray(sb.x5c)).toBe(true);
-      expect(sb.x5c).toHaveLength(1);
+      expect(sb.x5chain).toEqual([der]);
+      expect(Array.isArray(sb.x5chain)).toBe(true);
+      expect(sb.x5chain).toHaveLength(1);
     });
 
-    it('returns undefined when x5c is missing (e.g., Device Authentication)', () => {
+    it('returns undefined when x5chain is missing (e.g., Device Authentication)', () => {
       const ph = new Map<number, unknown>();
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
-      expect(sb.x5c).toBeUndefined();
+      expect(sb.x5chain).toBeUndefined();
     });
   });
 
-  describe('verifyX509Chain', () => {
-    it('throws when x5c is not present (e.g., Device Authentication)', () => {
+  describe('verifyX5Chain', () => {
+    it('throws when x5chain is not present (e.g., Device Authentication)', () => {
       const ph = new Map<number, unknown>();
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
-      expect(() => sb.verifyX509Chain()).toThrowError(
+      expect(() => sb.verifyX5Chain()).toThrowError(
         'X.509 certificate chain not found'
       );
     });
@@ -121,7 +121,7 @@ describe('SignBase', () => {
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
-      const jwk = sb.verifyX509Chain();
+      const jwk = sb.verifyX5Chain();
 
       expect(pickEcPublicJwkFields(jwk)).toEqual(
         pickEcPublicJwkFields(jwkPublicKey)
@@ -158,7 +158,7 @@ describe('SignBase', () => {
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
-      expect(() => sb.verifyX509Chain()).toThrowError(
+      expect(() => sb.verifyX5Chain()).toThrowError(
         'Invalid X.509 certificate chain'
       );
     });

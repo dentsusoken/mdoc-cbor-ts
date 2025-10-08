@@ -14,7 +14,7 @@ import {
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
   PRESENTATION_DEFINITION_1,
-} from './config';
+} from '../../../__tests__/config';
 import { cborEncode } from './cbor';
 
 const curves = [

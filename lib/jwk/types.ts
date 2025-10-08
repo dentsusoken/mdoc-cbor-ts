@@ -1,4 +1,8 @@
-export type { JwkPublicKey, JwkPrivateKey } from 'noble-curves-extended';
+export type {
+  JwkPublicKey,
+  JwkPrivateKey,
+  JwkBase,
+} from 'noble-curves-extended';
 
 /**
  * JWK (JSON Web Key) curve names

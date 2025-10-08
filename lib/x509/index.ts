@@ -1,3 +1,4 @@
+export * from './certificatePemToDerBytes';
 export * from './certificateToDerBytes';
 export * from './createSelfSignedCertificate';
 export * from './derBytesToX509';

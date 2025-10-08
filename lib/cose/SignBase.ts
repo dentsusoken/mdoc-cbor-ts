@@ -4,7 +4,7 @@ import {
 } from 'noble-curves-extended';
 import { Headers } from '@/cose/types';
 import { derBytesToX509 } from '@/x509/derBytesToX509';
-import { verifyX509s } from '@/x509/verifyX509s';
+import { verifyX5Chain } from '@/x509/verifyX509s';
 import { KEYUTIL } from 'jsrsasign';
 import { CoseBase } from './CoseBase';
 
@@ -52,10 +52,10 @@ type InternalVerifyParams = {
  * );
  *
  * // Get X.509 certificate chain
- * const certChain = signBase.x5c;
+ * const certChain = signBase.x5chain;
  *
  * // Verify certificate chain and get public key
- * const publicKey = signBase.verifyX509Chain();
+ * const publicKey = signBase.verifyX5Chain();
  *
  * // Verify signature internally
  * const isValid = signBase.internalVerify({
@@ -105,7 +105,7 @@ export class SignBase extends CoseBase {
   }
 
   /**
-   * Returns the X.509 certificate chain (x5c) from headers.
+   * Returns the X.509 certificate chain (x5chain) from COSE headers.
    *
    * @description
    * Retrieves the X.509 certificate chain using the inherited {@link CoseBase.getHeader}
@@ -120,7 +120,7 @@ export class SignBase extends CoseBase {
    *
    * @example
    * ```typescript
-   * const certChain = signBase.x5c;
+   * const certChain = signBase.x5chain;
    * if (certChain) {
    *   console.log(`Found ${certChain.length} certificates in chain`);
    * } else {
@@ -128,7 +128,7 @@ export class SignBase extends CoseBase {
    * }
    * ```
    */
-  get x5c(): Uint8Array[] | undefined {
+  get x5chain(): Uint8Array[] | undefined {
     const x5cHeader = this.getHeader(Headers.X5Chain);
 
     if (!x5cHeader) {
@@ -150,7 +150,7 @@ export class SignBase extends CoseBase {
    *
    * @description
    * Parses each certificate in the chain, verifies the chain integrity using
-   * {@link verifyX509s}, and extracts the public key from the leaf certificate.
+   * {@link verifyX5Chain}, and extracts the public key from the leaf certificate.
    *
    * This method should be used for Issuer Authentication. For Device Authentication,
    * the certificate chain is not present and this method will throw an error.
@@ -164,7 +164,7 @@ export class SignBase extends CoseBase {
    * ```typescript
    * // For Issuer Authentication
    * try {
-   *   const publicKey = signBase.verifyX509Chain();
+   *   const publicKey = signBase.verifyX5Chain();
    *   console.log('Chain verified, public key:', publicKey);
    * } catch (error) {
    *   console.error('Chain verification failed:', error.message);
@@ -174,22 +174,22 @@ export class SignBase extends CoseBase {
    * @example
    * ```typescript
    * // Check if certificate chain exists before verifying
-   * if (signBase.x5c) {
-   *   const publicKey = signBase.verifyX509Chain();
+   * if (signBase.x5chain) {
+   *   const publicKey = signBase.verifyX5Chain();
    * } else {
    *   // Device Authentication - use deviceKey directly
    *   console.log('No certificate chain');
    * }
    * ```
    */
-  verifyX509Chain(): JwkPublicKey {
-    const { x5c } = this;
+  verifyX5Chain(): JwkPublicKey {
+    const { x5chain } = this;
 
-    if (!x5c) {
+    if (!x5chain) {
       throw new Error('X.509 certificate chain not found');
     }
 
-    const x509s = x5c.map((c) => {
+    const x509s = x5chain.map((c) => {
       try {
         return derBytesToX509(c);
       } catch (error) {
@@ -197,7 +197,7 @@ export class SignBase extends CoseBase {
         throw new Error('Failed to parse X.509 certificate');
       }
     });
-    const verified = verifyX509s(x509s);
+    const verified = verifyX5Chain(x509s);
 
     if (!verified.every((v) => v)) {
       throw new Error('Invalid X.509 certificate chain');

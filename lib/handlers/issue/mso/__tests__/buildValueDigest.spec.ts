@@ -10,7 +10,7 @@ import {
   DEVICE_JWK,
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
-} from '@/../lib/mdl/__tests__/issuing/config';
+} from '@/__tests__/config';
 import { Tag } from 'cbor-x';
 
 // Helper to create a deterministic IssuerSignedItem Tag24

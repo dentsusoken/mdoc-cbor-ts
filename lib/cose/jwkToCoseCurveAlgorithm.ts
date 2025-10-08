@@ -1,4 +1,4 @@
-import { JwkPublicKey } from '@/jwk/types';
+import { JwkBase } from '@/jwk/types';
 import { jwkToCoseAlgorithm } from './jwkToCoseAlgorithm';
 import { CURVES_TO_ALGORITHMS } from './constants';
 import { jwkToCoseCurve } from './jwkToCoseCurve';
@@ -10,34 +10,31 @@ import { Algorithms, Curves } from './types';
  * - `curve` is the COSE curve derived from the JWK `crv` value.
  * - `algorithm` is the COSE algorithm derived from JWK `alg`,
  *   or the default algorithm for the resolved curve if `alg` is absent.
- * - `keyId` is the optional UTF-8 encoded bytes of JWK `kid`.
  */
-type JwkToCoseCurveAlgorithmKeyIdResult = {
+type JwkToCoseCurveAlgorithmResult = {
   curve: Curves;
   algorithm: Algorithms;
-  keyId?: Uint8Array;
 };
 
-const encoder = new TextEncoder();
-
 /**
- * Converts an EC public JWK's metadata (`crv`, optional `alg`, optional `kid`)
- * into COSE curve, algorithm, and optional key identifier bytes.
+ * Converts an EC JWK's metadata (`crv`, optional `alg`) into COSE curve and algorithm.
+ *
+ * This function supports both public and private EC JWKs, extracting only the curve
+ * and algorithm information needed for COSE operations.
  *
  * Behavior:
  * - Throws if `crv` is missing or null.
  * - If `alg` is provided, maps it to a COSE algorithm; otherwise uses the
  *   canonical algorithm for the resolved curve.
- * - If `kid` is present, encodes it as UTF-8 bytes for COSE `kid`.
  *
- * @param jwk EC public JWK containing `crv` and optional `alg` and `kid`.
- * @returns Object with COSE `curve`, `algorithm`, and optional `keyId`.
+ * @param jwk EC JWK (public or private) containing `crv` and optional `alg`.
+ * @returns Object with COSE `curve` and `algorithm`.
  */
-export const jwkToCoseCurveAlgorithmKeyId = (
-  jwk: JwkPublicKey
-): JwkToCoseCurveAlgorithmKeyIdResult => {
+export const jwkToCoseCurveAlgorithm = (
+  jwk: JwkBase
+): JwkToCoseCurveAlgorithmResult => {
   if (jwk.crv == null) {
-    throw new Error('Missing curve in EC public key');
+    throw new Error('Missing curve in EC key');
   }
 
   const curve = jwkToCoseCurve(jwk.crv);
@@ -46,7 +43,5 @@ export const jwkToCoseCurveAlgorithmKeyId = (
     ? jwkToCoseAlgorithm(jwk.alg)
     : CURVES_TO_ALGORITHMS[curve];
 
-  const keyId = jwk.kid ? encoder.encode(jwk.kid) : undefined;
-
-  return { curve, algorithm, keyId };
+  return { curve, algorithm };
 };

@@ -4,9 +4,7 @@ import { buildValueDigests } from './buildValueDigests';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { JwkPublicKey } from '@/jwk/types';
 import { jwkToCosePublicKey } from '@/cose/jwkToCosePublicKey';
-import { NameSpaceElements } from '@/schemas/record/NameSpaceElements';
-import { buildIssuerNameSpaces } from '../mdoc/buildIssuerNameSpaces';
-import { RandomBytes } from 'noble-curves-extended';
+import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 
 /**
  * Parameters for building a Mobile Security Object (MSO).
@@ -15,9 +13,7 @@ export type BuildMobileSecurityObjectParams = {
   /** The document type identifier (e.g., 'org.iso.18013.5.1.mDL') */
   docType: string;
   /** The issuer namespaces and their associated elements as a record structure */
-  nameSpaceElements: NameSpaceElements;
-  /** A cryptographically secure random bytes generator function */
-  randomBytes: RandomBytes;
+  nameSpaces: IssuerNameSpaces;
   /** The device's public key for authentication */
   deviceJwkPublicKey: JwkPublicKey;
   /** The digest algorithm to use for calculating value digests */
@@ -40,14 +36,12 @@ export type BuildMobileSecurityObjectParams = {
  * and device key information. The MSO is a critical component in the mDL issuance process
  * that ensures document integrity and provides verification capabilities.
  *
- * The function internally converts the `nameSpaceElements` record into issuer namespaces
- * with CBOR Tag 24 wrapped issuer-signed items, then calculates value digests for each
- * element and assembles the complete MSO structure.
+ * The function calculates value digests for each element in the provided issuer namespaces
+ * and assembles the complete MSO structure with validity information and device key details.
  *
  * @param params - The parameters for building the Mobile Security Object
  * @param params.docType - The document type identifier (e.g., 'org.iso.18013.5.1.mDL')
- * @param params.nameSpaceElements - The issuer namespaces and their elements as a record structure
- * @param params.randomBytes - A cryptographically secure random bytes generator function
+ * @param params.nameSpaces - The issuer namespaces containing the signed data elements
  * @param params.deviceJwkPublicKey - The device's JWK public key used to derive the COSE public key
  * @param params.digestAlgorithm - The digest algorithm to use for calculating value digests
  * @param params.signed - The date and time when the MSO was signed
@@ -58,11 +52,12 @@ export type BuildMobileSecurityObjectParams = {
  *
  * @example
  * ```typescript
+ * import { buildIssuerNameSpaces } from '../mdoc/buildIssuerNameSpaces';
  * import { randomBytes } from '@noble/hashes/utils';
  * import { createTag1004 } from '@/cbor/createTag1004';
  *
- * const mso = buildMobileSecurityObject({
- *   docType: 'org.iso.18013.5.1.mDL',
+ * // First, build issuer namespaces with issuer-signed items
+ * const nameSpaces = buildIssuerNameSpaces({
  *   nameSpaceElements: {
  *     'org.iso.18013.5.1': {
  *       given_name: 'John',
@@ -73,7 +68,13 @@ export type BuildMobileSecurityObjectParams = {
  *       license_number: 'D1234567'
  *     }
  *   },
- *   randomBytes,
+ *   randomBytes
+ * });
+ *
+ * // Then, build the Mobile Security Object
+ * const mso = buildMobileSecurityObject({
+ *   docType: 'org.iso.18013.5.1.mDL',
+ *   nameSpaces,
  *   deviceJwkPublicKey,
  *   digestAlgorithm: 'SHA-256',
  *   signed: new Date('2025-01-01T00:00:00Z'),
@@ -101,18 +102,23 @@ export type BuildMobileSecurityObjectParams = {
  *
  * @example
  * ```typescript
+ * import { buildIssuerNameSpaces } from '../mdoc/buildIssuerNameSpaces';
  * import { randomBytes } from '@noble/hashes/utils';
  *
  * // Without expected update
- * const mso = buildMobileSecurityObject({
- *   docType: 'org.iso.18013.5.1.mDL',
+ * const nameSpaces = buildIssuerNameSpaces({
  *   nameSpaceElements: {
  *     'org.iso.18013.5.1': {
  *       given_name: 'John',
  *       family_name: 'Doe'
  *     }
  *   },
- *   randomBytes,
+ *   randomBytes
+ * });
+ *
+ * const mso = buildMobileSecurityObject({
+ *   docType: 'org.iso.18013.5.1.mDL',
+ *   nameSpaces,
  *   deviceJwkPublicKey,
  *   digestAlgorithm: 'SHA-256',
  *   signed: new Date('2025-01-01T00:00:00Z'),
@@ -123,8 +129,7 @@ export type BuildMobileSecurityObjectParams = {
  */
 export const buildMobileSecurityObject = ({
   docType,
-  nameSpaceElements,
-  randomBytes,
+  nameSpaces,
   deviceJwkPublicKey,
   digestAlgorithm,
   signed,
@@ -132,7 +137,6 @@ export const buildMobileSecurityObject = ({
   validUntil,
   expectedUpdate,
 }: BuildMobileSecurityObjectParams): MobileSecurityObject => {
-  const nameSpaces = buildIssuerNameSpaces(nameSpaceElements, randomBytes);
   const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
   const valueDigests = buildValueDigests({ nameSpaces, digestAlgorithm });
   const validityInfo = buildValidityInfo({

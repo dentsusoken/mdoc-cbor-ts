@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildMobileSecurityObject } from '../buildMobileSecurityObject';
+import { buildIssuerNameSpaces } from '../../mdoc/buildIssuerNameSpaces';
 import { jwkToCosePublicKey } from '@/cose/jwkToCosePublicKey';
 import { randomBytes } from '@noble/hashes/utils';
 import { createSignatureCurve } from 'noble-curves-extended';
@@ -10,7 +11,7 @@ import {
   DEVICE_JWK,
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
-} from '@/../lib/mdl/__tests__/issuing/config';
+} from '@/__tests__/config';
 import { createTag1004 } from '@/cbor';
 
 const p256 = createSignatureCurve('P-256', randomBytes);
@@ -41,10 +42,14 @@ describe('buildMobileSecurityObject', () => {
     const digestAlgorithm = 'SHA-256';
     const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
 
+    const nameSpaces = buildIssuerNameSpaces(
+      nameSpacesElements,
+      mockRandomBytes
+    );
+
     const mso = buildMobileSecurityObject({
       docType,
-      nameSpaceElements: nameSpacesElements,
-      randomBytes: mockRandomBytes,
+      nameSpaces,
       deviceJwkPublicKey,
       digestAlgorithm,
       signed,
@@ -94,10 +99,14 @@ describe('buildMobileSecurityObject', () => {
     const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
     const digestAlgorithm = 'SHA-256';
 
+    const nameSpaces = buildIssuerNameSpaces(
+      nameSpacesElements,
+      mockRandomBytes
+    );
+
     const mso = buildMobileSecurityObject({
       docType,
-      nameSpaceElements: nameSpacesElements,
-      randomBytes: mockRandomBytes,
+      nameSpaces,
       deviceJwkPublicKey,
       digestAlgorithm,
       signed,
@@ -208,11 +217,16 @@ describe('buildMobileSecurityObject', () => {
         return new Uint8Array(length);
       };
 
-      // Build MSO using our function with the same dates and randomBytes
+      // Build issuer namespaces with the custom randomBytes
+      const nameSpaces = buildIssuerNameSpaces(
+        nameSpacesElements,
+        customRandomBytes
+      );
+
+      // Build MSO using our function with the same dates
       const ourMSO = buildMobileSecurityObject({
         docType: 'org.iso.18013.5.1.mDL',
-        nameSpaceElements: nameSpacesElements,
-        randomBytes: customRandomBytes,
+        nameSpaces,
         deviceJwkPublicKey: publicKeyJWK,
         digestAlgorithm,
         signed,
@@ -332,11 +346,16 @@ describe('buildMobileSecurityObject', () => {
         return new Uint8Array(length);
       };
 
+      // Build issuer namespaces with the custom randomBytes
+      const nameSpaces = buildIssuerNameSpaces(
+        nameSpacesElements,
+        customRandomBytes
+      );
+
       // Build our MSO
       const ourMSO = buildMobileSecurityObject({
         docType: 'org.iso.18013.5.1.mDL',
-        nameSpaceElements: nameSpacesElements,
-        randomBytes: customRandomBytes,
+        nameSpaces,
         deviceJwkPublicKey: publicKeyJWK,
         digestAlgorithm: 'SHA-256',
         signed,

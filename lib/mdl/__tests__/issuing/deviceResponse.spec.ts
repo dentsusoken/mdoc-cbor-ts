@@ -13,7 +13,7 @@ import {
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
   PRESENTATION_DEFINITION_1,
-} from './config';
+} from '../../../__tests__/config';
 import { DataItem } from '@auth0/mdl';
 import { cborEncode } from './cbor';
 

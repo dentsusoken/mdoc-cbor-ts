@@ -3,7 +3,7 @@ import { KJUR, X509 } from 'jsrsasign';
 import { createSignatureCurve } from 'noble-curves-extended';
 import { randomBytes } from '@noble/hashes/utils';
 import { createSelfSignedCertificate } from '../createSelfSignedCertificate';
-import { verifyX509s } from '../verifyX509s';
+import { verifyX5Chain } from '../verifyX509s';
 import { pemToX509 } from '../pemToX509';
 
 /**
@@ -33,7 +33,7 @@ describe('verifyX509s', () => {
     });
 
     const x509 = toX509(cert);
-    const results = verifyX509s([x509]);
+    const results = verifyX5Chain([x509]);
     expect(results).toEqual([true]);
   });
 
@@ -72,7 +72,7 @@ describe('verifyX509s', () => {
     const leafX = toX509(leafCert);
     const rootX = toX509(rootCert);
 
-    const results = verifyX509s([leafX, rootX]);
+    const results = verifyX5Chain([leafX, rootX]);
     expect(results).toEqual([true, true]);
   });
 
@@ -112,7 +112,7 @@ describe('verifyX509s', () => {
     const leafX = toX509(leafCert);
     const bogusX = toX509(bogusParent);
 
-    const results = verifyX509s([leafX, bogusX]);
+    const results = verifyX5Chain([leafX, bogusX]);
     expect(results[0]).toBe(false);
     expect(results[1]).toBe(true);
   });

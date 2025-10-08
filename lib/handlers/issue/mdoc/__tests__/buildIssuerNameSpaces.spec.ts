@@ -15,7 +15,7 @@ import {
   DEVICE_JWK,
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
-} from '@/../lib/mdl/__tests__/issuing/config';
+} from '@/__tests__/config';
 
 /**
  * Tests for buildIssuerNameSpaces

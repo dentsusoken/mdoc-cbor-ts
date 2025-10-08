@@ -96,9 +96,10 @@ const createSign1TupleSchema = (
  * @description
  * Accepts either:
  * - a raw 4-element COSE_Sign1 tuple
- * - or a CBOR `Tag(18, [...])` whose inner value conforms to the same tuple
+ * - a CBOR `Tag(18, [...])` whose inner value conforms to the same tuple
+ * - an object with `getContentForEncoding()` method (e.g., `@auth0/cose` Sign1 instance)
  *
- * In both cases, the payload must be `Uint8Array | null` (never `undefined`).
+ * In all cases, the payload must be `Uint8Array | null` (never `undefined`).
  * The parsed output is always a CBOR Tag 18 wrapping the validated tuple.
  *
  * ```cddl
@@ -115,6 +116,7 @@ const createSign1TupleSchema = (
  * Validation rules:
  * - If input is a tuple: must have exactly 4 elements and match expected types
  * - If input is a Tag: `tag` must be 18 and `value` must pass the same tuple validation
+ * - If input has `getContentForEncoding()`: the method is called and the result is validated
  *
  * @param target - The name of the target schema (used in error messages)
  * @returns Zod schema that parses to a CBOR Tag 18 containing the COSE_Sign1 structure
@@ -128,29 +130,48 @@ const createSign1TupleSchema = (
  *
  * // Tag input
  * const tagB = schema.parse(createTag18(t)); // Passes as well
+ *
+ * // @auth0/cose Sign1 instance
+ * const sign1 = await Sign1.sign(...);
+ * const tagC = schema.parse(sign1); // Also works
  * ```
  */
 export const createSign1Schema = (
   target: string
 ): z.ZodType<Tag, z.ZodTypeDef, unknown> =>
-  z.union(
-    [
-      createFixedTupleLengthSchema(target, 4).pipe(
-        createSign1TupleSchema(target)
-      ),
-      z
-        .instanceof(Tag)
-        .refine(
-          (tag) =>
-            tag.tag === 18 &&
-            createFixedTupleLengthSchema(target, 4)
-              .pipe(createSign1TupleSchema(target))
-              .safeParse(tag.value).success
+  z.preprocess(
+    (value) => {
+      // If value has getContentForEncoding method and returns an Array, convert it to tuple
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        'getContentForEncoding' in value &&
+        typeof value.getContentForEncoding === 'function'
+      ) {
+        return value.getContentForEncoding();
+      }
+      // Otherwise return as is
+      return value;
+    },
+    z.union(
+      [
+        createFixedTupleLengthSchema(target, 4).pipe(
+          createSign1TupleSchema(target)
         ),
-    ],
-    {
-      errorMap: () => ({
-        message: sign1InvalidTypeMessage(target),
-      }),
-    }
+        z
+          .instanceof(Tag)
+          .refine(
+            (tag) =>
+              tag.tag === 18 &&
+              createFixedTupleLengthSchema(target, 4)
+                .pipe(createSign1TupleSchema(target))
+                .safeParse(tag.value).success
+          ),
+      ],
+      {
+        errorMap: () => ({
+          message: sign1InvalidTypeMessage(target),
+        }),
+      }
+    )
   );
