@@ -1,9 +1,7 @@
 import { decodeCbor } from '@/cbor/codec';
-import {
-  deviceResponseSchema,
-  DEVICE_RESPONSE_AT_LEAST_ONE_MESSAGE,
-} from '../DeviceResponse';
+import { deviceResponseSchema } from '../DeviceResponse';
 import { arrayEmptyMessage } from '@/schemas/common/Array';
+import { mdocAtLeastOneDocumentOrErrorMessage } from '../MDoc';
 import { z } from 'zod';
 //import { issuerSignedSchema } from '@/schemas/mdoc/IssuerSigned';
 //import { deviceSignedSchema } from '@/schemas/mdoc/DeviceSigned';
@@ -103,7 +101,7 @@ describe('DeviceResponse', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          DEVICE_RESPONSE_AT_LEAST_ONE_MESSAGE
+          mdocAtLeastOneDocumentOrErrorMessage('DeviceResponse')
         );
       }
     });
