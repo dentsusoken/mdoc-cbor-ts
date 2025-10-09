@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { createMac0Schema, mac0InvalidTypeMessage } from '../Mac0';
+import { createMac0Schema, mac0InvalidTypeMessage, Mac0Tuple } from '../Mac0';
 import { requiredMessage } from '@/schemas/common/Required';
 import {
   fixedTupleLengthTooFewMessage,
@@ -282,6 +282,150 @@ describe('Mac0', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe('Invalid input');
+      }
+    });
+  });
+
+  describe('object with getContentForEncoding() method', () => {
+    it('should accept object with getContentForEncoding() that returns a valid tuple', () => {
+      const protectedHeaders = Uint8Array.from([1, 2, 3]);
+      const unprotectedHeaders = new Map<number, unknown>([[1, 'test']]);
+      const payload = Uint8Array.from([4, 5, 6]);
+      const tag = Uint8Array.from([7, 8, 9]);
+
+      // Mock @auth0/cose Mac0 instance
+      const mockMac0 = {
+        getContentForEncoding(): Mac0Tuple {
+          return [protectedHeaders, unprotectedHeaders, payload, tag];
+        },
+      };
+
+      const result = schema.parse(mockMac0);
+
+      expect(result).toBeInstanceOf(Tag);
+      const resultTag = result as Tag;
+      expect(resultTag.tag).toBe(17);
+      expect(resultTag.value).toEqual([
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        tag,
+      ]);
+    });
+
+    it('should accept object with getContentForEncoding() that returns null payload', () => {
+      const protectedHeaders = Uint8Array.from([1, 2, 3]);
+      const unprotectedHeaders = new Map<number, unknown>([[1, 'test']]);
+      const payload = null;
+      const tag = Uint8Array.from([7, 8, 9]);
+
+      const mockMac0 = {
+        getContentForEncoding(): Mac0Tuple {
+          return [protectedHeaders, unprotectedHeaders, payload, tag];
+        },
+      };
+
+      const result = schema.parse(mockMac0);
+
+      expect(result).toBeInstanceOf(Tag);
+      const resultTag = result as Tag;
+      expect(resultTag.tag).toBe(17);
+      expect(resultTag.value).toEqual([
+        protectedHeaders,
+        unprotectedHeaders,
+        payload,
+        tag,
+      ]);
+    });
+
+    it('should reject object with getContentForEncoding() that returns invalid tuple (too few elements)', () => {
+      const mockMac0 = {
+        getContentForEncoding(): Array<unknown> {
+          return [
+            Uint8Array.from([]),
+            new Map<number, unknown>(),
+            Uint8Array.from([]),
+          ];
+        },
+      };
+
+      try {
+        schema.parse(mockMac0);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          fixedTupleLengthTooFewMessage('DeviceMac', 4)
+        );
+      }
+    });
+
+    it('should reject object with getContentForEncoding() that returns invalid tuple (too many elements)', () => {
+      const mockMac0 = {
+        getContentForEncoding(): Array<unknown> {
+          return [
+            Uint8Array.from([]),
+            new Map<number, unknown>(),
+            Uint8Array.from([]),
+            Uint8Array.from([]),
+            'extra',
+          ];
+        },
+      };
+
+      try {
+        schema.parse(mockMac0);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          fixedTupleLengthTooManyMessage('DeviceMac', 4)
+        );
+      }
+    });
+
+    it('should reject object with getContentForEncoding() that returns invalid tuple (undefined payload)', () => {
+      const mockMac0 = {
+        getContentForEncoding(): Array<unknown> {
+          return [
+            Uint8Array.from([]),
+            new Map<number, unknown>(),
+            undefined,
+            Uint8Array.from([]),
+          ];
+        },
+      };
+
+      try {
+        schema.parse(mockMac0 as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          mac0InvalidTypeMessage('DeviceMac')
+        );
+      }
+    });
+
+    it('should reject object with getContentForEncoding() that returns non-array', () => {
+      const mockMac0 = {
+        getContentForEncoding(): unknown {
+          return 'not an array';
+        },
+      };
+
+      try {
+        schema.parse(mockMac0);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          mac0InvalidTypeMessage('DeviceMac')
+        );
       }
     });
   });
