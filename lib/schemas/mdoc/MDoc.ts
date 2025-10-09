@@ -1,0 +1,83 @@
+import { z } from 'zod';
+import { documentSchema, Document } from './Document';
+import { DocumentError, documentErrorSchema } from '@/schemas/error';
+import { statusSchema } from './Status';
+import { versionSchema } from '@/schemas/common/Version';
+import { createArraySchema } from '@/schemas/common/Array';
+import { createStructSchema } from '@/schemas/common/Struct';
+
+/**
+ * Generates an error message indicating that at least one document or documentError must be provided.
+ * @param target - The target name to include in the error message
+ * @returns The formatted error message string
+ */
+export const mdocAtLeastOneDocumentOrErrorMessage = (target: string): string =>
+  `${target}: At least one document or documentError must be provided.`;
+
+/**
+ * Creates a Zod schema for an MDoc object with validation.
+ * The schema ensures that at least one of documents or documentErrors is provided.
+ * @param mdocTarget - The target name used for error messages
+ * @returns A Zod schema with refinement validation for MDoc objects
+ */
+export const createMDocObjectSchema = (
+  mdocTarget: string
+): z.ZodEffects<
+  z.ZodObject<
+    {
+      version: typeof versionSchema;
+      documents: z.ZodOptional<z.ZodType<Document[]>>;
+      documentErrors: z.ZodOptional<z.ZodType<DocumentError[]>>;
+      status: typeof statusSchema;
+    },
+    'strip'
+  >
+> => {
+  const baseSchema = z.object({
+    version: versionSchema,
+    documents: createArraySchema({
+      target: 'documents',
+      itemSchema: documentSchema,
+    }).optional(),
+    documentErrors: createArraySchema({
+      target: 'documentErrors',
+      itemSchema: documentErrorSchema,
+    }).optional(),
+    status: statusSchema,
+  });
+
+  return baseSchema.refine((obj) => obj.documents || obj.documentErrors, {
+    message: mdocAtLeastOneDocumentOrErrorMessage(mdocTarget),
+  });
+};
+
+/**
+ * Creates a Zod schema for an MDoc structure.
+ * This wraps the MDoc object schema with struct validation for Map-based input.
+ * @param mdocTarget - The target name used for error messages
+ * @returns A Zod schema that validates MDoc structures from Map inputs
+ */
+export const createMDocSchema = (
+  mdocTarget: string
+): z.ZodType<
+  z.output<ReturnType<typeof createMDocObjectSchema>>,
+  z.ZodTypeDef,
+  Map<string, unknown>
+> =>
+  createStructSchema({
+    target: mdocTarget,
+    objectSchema: createMDocObjectSchema(mdocTarget),
+  });
+
+/**
+ * Zod schema for validating an MDoc (mobile document) structure.
+ * This schema expects a Map-based input and validates that it conforms to the MDoc specification,
+ * requiring at least one of "documents" or "documentErrors" to be present, along with version and status.
+ */
+export const mdocSchema = createMDocSchema('MDoc');
+
+/**
+ * Type representing an MDoc (mobile document).
+ * Contains version, documents or documentErrors, and status information.
+ */
+export type MDoc = z.output<ReturnType<typeof createMDocSchema>>;

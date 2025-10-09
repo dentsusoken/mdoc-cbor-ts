@@ -3,6 +3,15 @@ import { documentSchema } from '../Document';
 import { createTag24 } from '@/cbor/createTag24';
 import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 import { requiredMessage } from '@/schemas/common/Required';
+import { Document, MDoc } from '@auth0/mdl';
+import { createTag1004 } from '@/cbor/createTag1004';
+import {
+  DEVICE_JWK,
+  ISSUER_CERTIFICATE,
+  ISSUER_PRIVATE_KEY_JWK,
+} from '@/__tests__/config';
+import { Tag } from 'cbor-x';
+import { decodeCbor } from '@/cbor/codec';
 
 describe('Document', () => {
   const protectedHeaders = Uint8Array.from([]);
@@ -120,6 +129,214 @@ describe('Document', () => {
       );
       expect(result.issuerSigned).toBeUndefined();
       expect(result.deviceSigned).toBeUndefined();
+    });
+  });
+
+  describe('auth0/mdl compatibility', () => {
+    it('should parse auth0/mdl created Document after encode/decode', async () => {
+      const { ...publicKeyJWK } = DEVICE_JWK;
+      const issuerPrivateKey = ISSUER_PRIVATE_KEY_JWK;
+
+      const signed = new Date('2024-01-01T00:00:00Z');
+      const validFrom = new Date('2024-01-01T01:00:00Z');
+      const validUntil = new Date('2025-01-01T00:00:00Z');
+      const expectedUpdate = new Date('2024-06-01T00:00:00Z');
+
+      // Create auth0/mdl document
+      const document = await new Document('org.iso.18013.5.1.mDL')
+        .addIssuerNameSpace('org.iso.18013.5.1', {
+          family_name: 'Doe',
+          given_name: 'John',
+          birth_date: createTag1004(new Date('1990-01-01')),
+        })
+        .useDigestAlgorithm('SHA-256')
+        .addValidityInfo({
+          signed,
+          validFrom,
+          validUntil,
+          expectedUpdate,
+        })
+        .addDeviceKeyInfo({ deviceKey: publicKeyJWK })
+        .sign({
+          issuerPrivateKey,
+          issuerCertificate: ISSUER_CERTIFICATE,
+          alg: 'ES256',
+        });
+
+      const mdoc = new MDoc([document]);
+      const encoded = mdoc.encode();
+
+      // Decode the CBOR to get raw structure
+      const decoded = decodeCbor(encoded) as Map<string, unknown>;
+      const documentsArray = decoded.get('documents') as Map<string, unknown>[];
+
+      // Parse with documentSchema
+      const validated = documentSchema.parse(documentsArray[0]);
+
+      // Verify Document structure
+      expect(validated.docType).toBe('org.iso.18013.5.1.mDL');
+      expect(validated.issuerSigned).toBeDefined();
+
+      if (!validated.issuerSigned) {
+        throw new Error('issuerSigned is undefined');
+      }
+
+      // Verify issuerSigned structure
+      expect(validated.issuerSigned.nameSpaces).toBeInstanceOf(Map);
+      expect(validated.issuerSigned.issuerAuth).toBeInstanceOf(Tag);
+      expect(validated.issuerSigned.issuerAuth.tag).toBe(18);
+
+      // Verify nameSpaces
+      expect(validated.issuerSigned.nameSpaces.size).toBe(1);
+      expect(validated.issuerSigned.nameSpaces.has('org.iso.18013.5.1')).toBe(
+        true
+      );
+
+      const nameSpace =
+        validated.issuerSigned.nameSpaces.get('org.iso.18013.5.1');
+      expect(nameSpace).toBeInstanceOf(Array);
+      expect(nameSpace?.length).toBe(3); // family_name, given_name, birth_date
+
+      // Each item should be a Tag24
+      nameSpace?.forEach((item) => {
+        expect(item).toBeInstanceOf(Tag);
+        expect(item.tag).toBe(24);
+      });
+
+      // Verify issuerAuth (COSE_Sign1)
+      expect(validated.issuerSigned.issuerAuth.value).toBeInstanceOf(Array);
+      expect(validated.issuerSigned.issuerAuth.value).toHaveLength(4);
+      expect(validated.issuerSigned.issuerAuth.value[0]).toBeInstanceOf(
+        Uint8Array
+      ); // protected headers
+      expect(validated.issuerSigned.issuerAuth.value[1]).toBeInstanceOf(Map); // unprotected headers
+      expect(validated.issuerSigned.issuerAuth.value[2]).toBeInstanceOf(
+        Uint8Array
+      ); // payload
+      expect(validated.issuerSigned.issuerAuth.value[3]).toBeInstanceOf(
+        Uint8Array
+      ); // signature
+    });
+
+    it('should parse auth0/mdl created Document without expectedUpdate', async () => {
+      const { ...publicKeyJWK } = DEVICE_JWK;
+      const issuerPrivateKey = ISSUER_PRIVATE_KEY_JWK;
+
+      const signed = new Date('2024-01-01T00:00:00Z');
+      const validFrom = new Date('2024-01-01T01:00:00Z');
+      const validUntil = new Date('2025-01-01T00:00:00Z');
+
+      // Create auth0/mdl document without expectedUpdate
+      const document = await new Document('org.iso.18013.5.1.mDL')
+        .addIssuerNameSpace('org.iso.18013.5.1', {
+          family_name: 'Smith',
+          given_name: 'Alice',
+        })
+        .useDigestAlgorithm('SHA-256')
+        .addValidityInfo({
+          signed,
+          validFrom,
+          validUntil,
+          // No expectedUpdate
+        })
+        .addDeviceKeyInfo({ deviceKey: publicKeyJWK })
+        .sign({
+          issuerPrivateKey,
+          issuerCertificate: ISSUER_CERTIFICATE,
+          alg: 'ES256',
+        });
+
+      const mdoc = new MDoc([document]);
+      const encoded = mdoc.encode();
+
+      // Decode the CBOR to get raw structure
+      const decoded = decodeCbor(encoded) as Map<string, unknown>;
+      const documentsArray = decoded.get('documents') as Map<string, unknown>[];
+
+      // Parse with documentSchema
+      const validated = documentSchema.parse(documentsArray[0]);
+
+      // Verify Document structure
+      expect(validated.docType).toBe('org.iso.18013.5.1.mDL');
+      expect(validated.issuerSigned).toBeDefined();
+
+      if (!validated.issuerSigned) {
+        throw new Error('issuerSigned is undefined');
+      }
+
+      // Verify issuerSigned structure
+      expect(validated.issuerSigned.nameSpaces).toBeInstanceOf(Map);
+      expect(validated.issuerSigned.issuerAuth).toBeInstanceOf(Tag);
+      expect(validated.issuerSigned.nameSpaces.size).toBe(1);
+
+      const nameSpace =
+        validated.issuerSigned.nameSpaces.get('org.iso.18013.5.1');
+      expect(nameSpace?.length).toBe(2); // family_name, given_name
+    });
+
+    it('should parse auth0/mdl created Document with multiple namespaces', async () => {
+      const { ...publicKeyJWK } = DEVICE_JWK;
+      const issuerPrivateKey = ISSUER_PRIVATE_KEY_JWK;
+
+      const signed = new Date('2024-01-01T00:00:00Z');
+      const validFrom = new Date('2024-01-01T01:00:00Z');
+      const validUntil = new Date('2025-01-01T00:00:00Z');
+
+      // Create auth0/mdl document with multiple namespaces
+      const document = await new Document('org.iso.18013.5.1.mDL')
+        .addIssuerNameSpace('org.iso.18013.5.1', {
+          family_name: 'Brown',
+          given_name: 'Bob',
+          birth_date: createTag1004(new Date('1985-05-15')),
+        })
+        .addIssuerNameSpace('org.iso.18013.5.2', {
+          license_number: 'D1234567',
+        })
+        .useDigestAlgorithm('SHA-256')
+        .addValidityInfo({
+          signed,
+          validFrom,
+          validUntil,
+        })
+        .addDeviceKeyInfo({ deviceKey: publicKeyJWK })
+        .sign({
+          issuerPrivateKey,
+          issuerCertificate: ISSUER_CERTIFICATE,
+          alg: 'ES256',
+        });
+
+      const mdoc = new MDoc([document]);
+      const encoded = mdoc.encode();
+
+      // Decode the CBOR to get raw structure
+      const decoded = decodeCbor(encoded) as Map<string, unknown>;
+      const documentsArray = decoded.get('documents') as Map<string, unknown>[];
+
+      // Parse with documentSchema
+      const validated = documentSchema.parse(documentsArray[0]);
+
+      // Verify Document structure
+      expect(validated.docType).toBe('org.iso.18013.5.1.mDL');
+      expect(validated.issuerSigned).toBeDefined();
+
+      if (!validated.issuerSigned) {
+        throw new Error('issuerSigned is undefined');
+      }
+
+      // Verify both namespaces are present
+      expect(validated.issuerSigned.nameSpaces.size).toBe(2);
+      expect(validated.issuerSigned.nameSpaces.has('org.iso.18013.5.1')).toBe(
+        true
+      );
+      expect(validated.issuerSigned.nameSpaces.has('org.iso.18013.5.2')).toBe(
+        true
+      );
+
+      const ns1 = validated.issuerSigned.nameSpaces.get('org.iso.18013.5.1');
+      const ns2 = validated.issuerSigned.nameSpaces.get('org.iso.18013.5.2');
+
+      expect(ns1?.length).toBe(3); // family_name, given_name, birth_date
+      expect(ns2?.length).toBe(1); // license_number
     });
   });
 
