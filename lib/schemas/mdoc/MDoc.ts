@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { documentSchema, Document } from './Document';
-import { DocumentError, documentErrorSchema } from '@/schemas/error';
+import { documentSchema } from './Document';
+import { documentErrorSchema } from '@/schemas/error';
 import { statusSchema } from './Status';
 import { versionSchema } from '@/schemas/common/Version';
 import { createArraySchema } from '@/schemas/common/Array';
@@ -20,19 +20,8 @@ export const mdocAtLeastOneDocumentOrErrorMessage = (target: string): string =>
  * @param mdocTarget - The target name used for error messages
  * @returns A Zod schema with refinement validation for MDoc objects
  */
-export const createMDocObjectSchema = (
-  mdocTarget: string
-): z.ZodEffects<
-  z.ZodObject<
-    {
-      version: typeof versionSchema;
-      documents: z.ZodOptional<z.ZodType<Document[]>>;
-      documentErrors: z.ZodOptional<z.ZodType<DocumentError[]>>;
-      status: typeof statusSchema;
-    },
-    'strip'
-  >
-> => {
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const createMDocObjectSchema = (mdocTarget: string) => {
   const baseSchema = z.object({
     version: versionSchema,
     documents: createArraySchema({
