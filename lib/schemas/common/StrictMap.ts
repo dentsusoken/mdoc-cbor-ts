@@ -2,6 +2,16 @@ import { z } from 'zod';
 import { mapInvalidTypeMessage } from './Map';
 import { createRequiredSchema } from './Required';
 
+/**
+ * Mode for handling unknown keys in StrictMap schemas
+ * @description
+ * Defines how the schema handles keys that are not defined in the entries array:
+ * - 'strip': Remove unknown keys from the output (default, safest option)
+ * - 'passthrough': Include unknown keys in the output as-is
+ * - 'strict': Throw a validation error if unknown keys are present
+ *
+ * This mirrors Zod's object handling (.strip(), .passthrough(), .strict())
+ */
 type UnknownKeysMode = 'strip' | 'passthrough' | 'strict';
 
 /**
@@ -66,16 +76,54 @@ export type StrictMapEntriesWithUnknownKeys<
 
 /**
  * Extract the entries type from StrictMapEntriesWithUnknownKeys
+ * @description
+ * Utility type to extract just the entries array from a StrictMapEntriesWithUnknownKeys type.
+ * Used internally by helper functions to decompose the consolidated type parameter.
+ *
+ * @template P - Type with an 'entries' property
+ *
+ * @example
+ * ```typescript
+ * type MyParams = StrictMapEntriesWithUnknownKeys<typeof myEntries, MyUnknownKeys>;
+ * type Entries = ExtractEntriesFromParams<MyParams>; // typeof myEntries
+ * ```
  */
 type ExtractEntriesFromParams<P extends { entries: StrictMapEntries }> =
   P['entries'];
 
 /**
  * Extract the unknown keys type from StrictMapEntriesWithUnknownKeys
+ * @description
+ * Utility type to extract just the unknown key type constraint from a StrictMapEntriesWithUnknownKeys type.
+ * Used internally by helper functions to decompose the consolidated type parameter.
+ *
+ * @template P - Type with an 'unknownKeys' property
+ *
+ * @example
+ * ```typescript
+ * type MyParams = StrictMapEntriesWithUnknownKeys<typeof myEntries, MyUnknownKeys>;
+ * type UnknownKeys = ExtractUnknownKeysFromParams<MyParams>; // MyUnknownKeys
+ * ```
  */
 type ExtractUnknownKeysFromParams<P extends { unknownKeys: string | number }> =
   P['unknownKeys'];
 
+/**
+ * Configuration parameters for createStrictMapSchema
+ * @description
+ * Defines the structure and validation behavior for a StrictMap schema.
+ *
+ * @template T - The entries array type
+ * @template U - The unknown key type constraint (default: never)
+ *
+ * @property target - Name used in error messages (e.g., "DeviceAuth", "ProtectedHeaders")
+ * @property entries - Readonly array of [key, schema] tuples defining the map structure
+ * @property unknownKeys - How to handle keys not defined in entries (default: 'strip')
+ *   - 'strip': Remove unknown keys from output
+ *   - 'passthrough': Include unknown keys in output
+ *   - 'strict': Throw error if unknown keys are present
+ * @property unknownKeyType - Type constraint for unknown keys (used with passthrough mode)
+ */
 type CreateStrictMapParams<
   T extends StrictMapEntries,
   U extends string | number = never,
@@ -86,13 +134,50 @@ type CreateStrictMapParams<
   unknownKeyType?: U;
 };
 
-// Extract key type from entries (union of all keys)
+/**
+ * Extract key type from entries (union of all keys)
+ * @description
+ * Creates a union type of all key literals from the entries array.
+ *
+ * @template T - The entries array type
+ *
+ * @example
+ * ```typescript
+ * const entries = [['name', z.string()], ['age', z.number()]] as const;
+ * type Keys = ExtractKeys<typeof entries>; // 'name' | 'age'
+ * ```
+ */
 type ExtractKeys<T extends StrictMapEntries> = T[number][0];
 
-// Extract value type from entries (union of all inferred schema types)
+/**
+ * Extract value type from entries (union of all inferred schema types)
+ * @description
+ * Creates a union type of all output types from the schemas in the entries array.
+ *
+ * @template T - The entries array type
+ *
+ * @example
+ * ```typescript
+ * const entries = [['name', z.string()], ['age', z.number()]] as const;
+ * type Values = ExtractValues<typeof entries>; // string | number
+ * ```
+ */
 type ExtractValues<T extends StrictMapEntries> = z.infer<T[number][1]>;
 
-// Extract the schema for a specific key
+/**
+ * Extract the schema for a specific key
+ * @description
+ * Retrieves the Zod schema associated with a specific key from the entries array.
+ *
+ * @template T - The entries array type
+ * @template K - The key to look up
+ *
+ * @example
+ * ```typescript
+ * const entries = [['name', z.string()], ['age', z.number()]] as const;
+ * type NameSchema = GetSchemaForKey<typeof entries, 'name'>; // z.ZodString
+ * ```
+ */
 type GetSchemaForKey<
   T extends StrictMapEntries,
   K extends string | number,
@@ -102,7 +187,21 @@ type GetSchemaForKey<
   readonly [K, any]
 >[1];
 
-// Extract the input type for a specific key's schema
+/**
+ * Extract the input type for a specific key's schema
+ * @description
+ * Retrieves the input type of the Zod schema associated with a specific key.
+ * This is the type that the builder's set() method expects for that key.
+ *
+ * @template T - The entries array type
+ * @template K - The key to look up
+ *
+ * @example
+ * ```typescript
+ * const entries = [['name', z.string()], ['age', z.number()]] as const;
+ * type NameInput = GetInputTypeForKey<typeof entries, 'name'>; // string
+ * ```
+ */
 type GetInputTypeForKey<
   T extends StrictMapEntries,
   K extends string | number,
@@ -329,11 +428,35 @@ export type ExtractBuilderUnknownKeyType<B> =
 
 /**
  * Extract known keys from entries
+ * @description
+ * Same as ExtractKeys, but with a more descriptive name for use in typed get() scenarios.
+ * Creates a union type of all key literals defined in the entries array.
+ *
+ * @template T - The entries array type
+ *
+ * @example
+ * ```typescript
+ * const entries = [['name', z.string()], ['age', z.number()]] as const;
+ * type Known = ExtractKnownKeys<typeof entries>; // 'name' | 'age'
+ * ```
  */
 type ExtractKnownKeys<T extends StrictMapEntries> = T[number][0];
 
 /**
  * Extract value type for a specific key
+ * @description
+ * Retrieves the output type of the Zod schema for a specific key.
+ * This is the type returned by map.get() for that key.
+ *
+ * @template T - The entries array type
+ * @template K - The key to look up (must be a known key)
+ *
+ * @example
+ * ```typescript
+ * const entries = [['name', z.string()], ['age', z.number()]] as const;
+ * type NameValue = ExtractValueTypeForKey<typeof entries, 'name'>; // string
+ * type AgeValue = ExtractValueTypeForKey<typeof entries, 'age'>; // number
+ * ```
  */
 type ExtractValueTypeForKey<
   T extends StrictMapEntries,
@@ -344,9 +467,26 @@ type ExtractValueTypeForKey<
 /**
  * Create get method overloads for all known keys
  * @description
- * Creates overloaded function signatures where:
- * - Known keys return their specific value type | undefined
- * - Unknown keys (within AllKeys) return unknown
+ * Creates a conditional type for the Map's get() method that returns:
+ * - Specific type | undefined for known keys (keys defined in entries)
+ * - unknown for unknown keys (keys within AllKeys but not in entries)
+ *
+ * This enables type-safe access to map values with autocomplete for known keys.
+ *
+ * @template T - The entries array type
+ * @template AllKeys - All allowed keys (known + unknown)
+ *
+ * @example
+ * ```typescript
+ * const entries = [['alg', z.number()]] as const;
+ * type Get = GetMethodOverloads<typeof entries, Headers>;
+ *
+ * // For known key:
+ * const alg = map.get(Headers.Algorithm);    // number | undefined
+ *
+ * // For unknown key:
+ * const contentType = map.get(Headers.ContentType); // unknown
+ * ```
  */
 type GetMethodOverloads<
   T extends StrictMapEntries,
@@ -387,10 +527,43 @@ export type MapWithTypedGet<B> =
 /**
  * Create a Map type with typed get method from entries and unknown key type
  * @description
- * Directly creates a Map type with overloaded get methods from entries definition.
+ * Directly creates a Map type with overloaded get() methods from entries definition.
+ * This type provides:
+ * - All standard Map methods (set, has, delete, etc.)
+ * - Type-safe get() method with specific return types for known keys
+ * - unknown return type for unknown keys
  *
- * @template T - The entries type
- * @template U - The unknown key type constraint
+ * Use this when you want to define a Map type directly from entries without going through a builder.
+ *
+ * @template T - The entries array type
+ * @template U - The unknown key type constraint (string | number or specific enum)
+ *
+ * @example
+ * ```typescript
+ * const entries = [['alg', z.number()]] as const;
+ * type Headers = 1 | 2 | 3 | 4; // Algorithm, IV, ContentType, KeyId
+ *
+ * type MyMap = MapWithTypedGetFromEntries<typeof entries, Headers>;
+ *
+ * const map: MyMap = ...;
+ * const alg = map.get(1);    // number | undefined (known key)
+ * const iv = map.get(2);     // unknown (unknown key)
+ * map.set(1, -7);            // OK
+ * map.has(3);                // boolean
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // With enum keys
+ * enum Headers { Algorithm = 1, ContentType = 3 }
+ * const entries = [['alg', z.number()]] as const;
+ *
+ * type DecodedHeaders = MapWithTypedGetFromEntries<typeof entries, Headers>;
+ *
+ * const headers: DecodedHeaders = ...;
+ * headers.get(Headers.Algorithm);    // number | undefined
+ * headers.get(Headers.ContentType);  // unknown
+ * ```
  */
 export type MapWithTypedGetFromEntries<
   T extends StrictMapEntries,
@@ -512,11 +685,12 @@ export const createStrictMapSchemaWithUnknownKeys = <
       ExtractEntriesFromParams<P>,
       ExtractUnknownKeysFromParams<P>
     >
-  : z.ZodType<OutputType, z.ZodTypeDef, Map<string | number, unknown>> =>
-  createStrictMapSchema<
-    ExtractEntriesFromParams<P>,
-    ExtractUnknownKeysFromParams<P>
-  >(params) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  : z.ZodType<OutputType, z.ZodTypeDef, Map<string | number, unknown>> => {
+  const { target, entries, unknownKeys = 'strip' } = params;
+  return createRequiredSchema(target).pipe(
+    createStrictMapInnerSchema({ target, entries, unknownKeys })
+  ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+};
 
 const createStrictMapInnerSchema = <T extends StrictMapEntries>({
   target,
@@ -581,10 +755,31 @@ const createStrictMapInnerSchema = <T extends StrictMapEntries>({
   >;
 };
 
+/**
+ * Return type for createStrictMapSchema
+ * @description
+ * Determines the output type of the schema based on whether unknown keys are allowed:
+ * - If U is never: Returns a standard Map type with known keys only
+ * - If U is specified: Returns MapWithTypedGetFromEntries with typed get() overloads
+ *
+ * @template T - The entries array type
+ * @template U - The unknown key type constraint
+ *
+ * @example
+ * ```typescript
+ * // Without unknown keys (U = never)
+ * type Schema1 = CreateStrictMapSchemaReturnType<typeof entries, never>;
+ * // z.ZodType<Map<'name' | 'age', string | number>, ...>
+ *
+ * // With unknown keys (U = Headers)
+ * type Schema2 = CreateStrictMapSchemaReturnType<typeof entries, Headers>;
+ * // z.ZodType<MapWithTypedGetFromEntries<typeof entries, Headers>, ...>
+ * ```
+ */
 type CreateStrictMapSchemaReturnType<
   T extends StrictMapEntries,
   U extends string | number,
-> = U extends never
+> = [U] extends [never]
   ? z.ZodType<
       Map<ExtractKeys<T>, ExtractValues<T>>,
       z.ZodTypeDef,
@@ -681,14 +876,14 @@ type CreateStrictMapSchemaReturnType<
  * ])); // Throws ZodError: Person contains unexpected key: extra_key
  * ```
  */
-export const createStrictMapSchema = <
-  T extends StrictMapEntries,
-  U extends string | number = never,
->({
+export const createStrictMapSchema = <T extends StrictMapEntries>({
   target,
   entries,
   unknownKeys = 'strip',
-}: CreateStrictMapParams<T, U>): CreateStrictMapSchemaReturnType<T, U> =>
+}: Omit<
+  CreateStrictMapParams<T, never>,
+  'unknownKeyType'
+>): CreateStrictMapSchemaReturnType<T, never> =>
   createRequiredSchema(target).pipe(
     createStrictMapInnerSchema({ target, entries, unknownKeys })
-  ) as unknown as CreateStrictMapSchemaReturnType<T, U>;
+  ) as unknown as CreateStrictMapSchemaReturnType<T, never>;
