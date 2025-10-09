@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { createStrictMapSchema, createStrictMapBuilder } from '../StrictMap';
+import {
+  createStrictMapSchema,
+  createStrictMapBuilder,
+  createUnknownStrictMapBuilder,
+  type StrictMapEntries,
+} from '../StrictMap';
 import { mapInvalidTypeMessage } from '../Map';
 import { requiredMessage } from '../Required';
 
@@ -11,7 +16,7 @@ describe('createStrictMapSchema', () => {
         ['family_name', z.string()],
         ['given_name', z.string()],
         ['age', z.number()],
-      ] as const;
+      ] as const satisfies StrictMapEntries;
 
       const schema = createStrictMapSchema({
         target: 'Person',
@@ -43,7 +48,7 @@ describe('createStrictMapSchema', () => {
         ['family_name', z.string()],
         ['given_name', z.string()],
         ['middle_name', z.string().optional()],
-      ] as const;
+      ] as const satisfies StrictMapEntries;
 
       const schema = createStrictMapSchema({
         target: 'Person',
@@ -68,7 +73,7 @@ describe('createStrictMapSchema', () => {
         ['family_name', z.string()],
         ['given_name', z.string()],
         ['middle_name', z.string().optional()],
-      ] as const;
+      ] as const satisfies StrictMapEntries;
 
       const schema = createStrictMapSchema({
         target: 'Person',
@@ -93,21 +98,23 @@ describe('createStrictMapSchema', () => {
   describe('unknownKeys mode', () => {
     describe('strip mode (default)', () => {
       it('should remove unknown keys from output', () => {
+        const entries = [
+          ['family_name', z.string()],
+          ['given_name', z.string()],
+        ] as const satisfies StrictMapEntries;
+
         const schema = createStrictMapSchema({
           target: 'Person',
-          entries: [
-            ['family_name', z.string()],
-            ['given_name', z.string()],
-          ] as const,
+          entries,
           unknownKeys: 'strip',
         });
 
-        const input = new Map<string, unknown>([
-          ['family_name', 'Doe'],
-          ['given_name', 'John'],
-          ['extra_key', 'should be removed'],
-          ['another_extra', 123],
-        ]);
+        const input = createUnknownStrictMapBuilder<typeof entries>()
+          .set('family_name', 'Doe')
+          .set('given_name', 'John')
+          .setUnknown('extra_key', 'should be removed')
+          .setUnknown('another_extra', 123)
+          .build();
 
         const result = schema.parse(input);
         expect(result.size).toBe(2);
@@ -119,19 +126,21 @@ describe('createStrictMapSchema', () => {
       });
 
       it('should use strip mode by default when unknownKeys is not specified', () => {
+        const entries = [
+          ['family_name', z.string()],
+          ['given_name', z.string()],
+        ] as const satisfies StrictMapEntries;
+
         const schema = createStrictMapSchema({
           target: 'Person',
-          entries: [
-            ['family_name', z.string()],
-            ['given_name', z.string()],
-          ] as const,
+          entries,
         });
 
-        const input = new Map<string, unknown>([
-          ['family_name', 'Doe'],
-          ['given_name', 'John'],
-          ['extra_key', 'should be removed'],
-        ]);
+        const input = createUnknownStrictMapBuilder<typeof entries>()
+          .set('family_name', 'Doe')
+          .set('given_name', 'John')
+          .setUnknown('extra_key', 'should be removed')
+          .build();
 
         const result = schema.parse(input);
         expect(result.size).toBe(2);
@@ -143,21 +152,23 @@ describe('createStrictMapSchema', () => {
 
     describe('passthrough mode', () => {
       it('should include unknown keys in output', () => {
+        const entries = [
+          ['family_name', z.string()],
+          ['given_name', z.string()],
+        ] as const satisfies StrictMapEntries;
+
         const schema = createStrictMapSchema({
           target: 'Person',
-          entries: [
-            ['family_name', z.string()],
-            ['given_name', z.string()],
-          ] as const,
+          entries,
           unknownKeys: 'passthrough',
         });
 
-        const input = new Map<string, unknown>([
-          ['family_name', 'Doe'],
-          ['given_name', 'John'],
-          ['extra_key', 'kept'],
-          ['another_extra', 123],
-        ]);
+        const input = createUnknownStrictMapBuilder<typeof entries>()
+          .set('family_name', 'Doe')
+          .set('given_name', 'John')
+          .setUnknown('extra_key', 'kept')
+          .setUnknown('another_extra', 123)
+          .build();
 
         const result = schema.parse(input);
         expect(result.size).toBe(4);
@@ -178,20 +189,22 @@ describe('createStrictMapSchema', () => {
 
     describe('strict mode', () => {
       it('should throw error when unknown keys are present', () => {
+        const entries = [
+          ['family_name', z.string()],
+          ['given_name', z.string()],
+        ] as const satisfies StrictMapEntries;
+
         const schema = createStrictMapSchema({
           target: 'Person',
-          entries: [
-            ['family_name', z.string()],
-            ['given_name', z.string()],
-          ] as const,
+          entries,
           unknownKeys: 'strict',
         });
 
-        const input = new Map<string, unknown>([
-          ['family_name', 'Doe'],
-          ['given_name', 'John'],
-          ['extra_key', 'error'],
-        ]);
+        const input = createUnknownStrictMapBuilder<typeof entries>()
+          .set('family_name', 'Doe')
+          .set('given_name', 'John')
+          .setUnknown('extra_key', 'error')
+          .build();
 
         try {
           schema.parse(input);
@@ -206,19 +219,21 @@ describe('createStrictMapSchema', () => {
       });
 
       it('should accept when no unknown keys are present', () => {
+        const entries = [
+          ['family_name', z.string()],
+          ['given_name', z.string()],
+        ] as const satisfies StrictMapEntries;
+
         const schema = createStrictMapSchema({
           target: 'Person',
-          entries: [
-            ['family_name', z.string()],
-            ['given_name', z.string()],
-          ] as const,
+          entries,
           unknownKeys: 'strict',
         });
 
-        const input = new Map<string, unknown>([
-          ['family_name', 'Doe'],
-          ['given_name', 'John'],
-        ]);
+        const input = createStrictMapBuilder<typeof entries>()
+          .set('family_name', 'Doe')
+          .set('given_name', 'John')
+          .build();
 
         const result = schema.parse(input);
         expect(result).toBeInstanceOf(Map);
@@ -231,7 +246,7 @@ describe('createStrictMapSchema', () => {
     const target = 'Person';
     const schema = createStrictMapSchema({
       target,
-      entries: [['name', z.string()]] as const,
+      entries: [['name', z.string()]] as const satisfies StrictMapEntries,
     });
 
     const cases: { name: string; input: unknown; expected: string }[] = [
@@ -298,7 +313,7 @@ describe('createStrictMapSchema', () => {
         entries: [
           ['family_name', z.string()],
           ['given_name', z.string()],
-        ] as const,
+        ] as const satisfies StrictMapEntries,
       });
 
       const input = new Map<string, unknown>([['family_name', 'Doe']]);
@@ -319,7 +334,7 @@ describe('createStrictMapSchema', () => {
         entries: [
           ['family_name', z.string()],
           ['age', z.number()],
-        ] as const,
+        ] as const satisfies StrictMapEntries,
       });
 
       const input = new Map<string, unknown>([
@@ -345,7 +360,7 @@ describe('createStrictMapSchema', () => {
         entries: [
           ['value', z.string().transform((s) => s.toUpperCase())],
           ['count', z.number().transform((n) => n * 2)],
-        ] as const,
+        ] as const satisfies StrictMapEntries,
       });
 
       const input = new Map<string, unknown>([
@@ -364,7 +379,7 @@ describe('createStrictMapSchema', () => {
         entries: [
           ['age', z.number().min(0).max(150)],
           ['email', z.string().email()],
-        ] as const,
+        ] as const satisfies StrictMapEntries,
       });
 
       const validInput = new Map<string, unknown>([
@@ -409,7 +424,7 @@ describe('createStrictMapSchema', () => {
       const entries = [
         ['name', z.string()],
         ['age', z.number()],
-      ] as const;
+      ] as const satisfies StrictMapEntries;
 
       const schema = createStrictMapSchema({
         target: 'Test',
@@ -432,7 +447,7 @@ describe('createStrictMapSchema', () => {
         ['id', z.string()],
         ['data', z.object({ x: z.number(), y: z.number() })],
         ['tags', z.array(z.string())],
-      ] as const;
+      ] as const satisfies StrictMapEntries;
 
       const schema = createStrictMapSchema({
         target: 'Complex',
@@ -456,7 +471,7 @@ describe('createStrictMapSchema', () => {
         ['a', z.string()],
         ['b', z.number()],
         ['c', z.boolean()],
-      ] as const;
+      ] as const satisfies StrictMapEntries;
 
       const input = createStrictMapBuilder<typeof entries>()
         .set('a', 'test')
@@ -474,7 +489,7 @@ describe('createStrictMapSchema', () => {
       const entries = [
         ['required', z.string()],
         ['optional', z.number().optional()],
-      ] as const;
+      ] as const satisfies StrictMapEntries;
 
       // Can omit optional field
       const input1 = createStrictMapBuilder<typeof entries>()
@@ -494,6 +509,289 @@ describe('createStrictMapSchema', () => {
     });
   });
 
+  describe('createUnknownStrictMapBuilder - builder with unknown keys support', () => {
+    it('should allow setting both known and unknown string keys', () => {
+      const entries = [
+        ['name', z.string()],
+        ['age', z.number()],
+      ] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .set('name', 'Alice')
+        .set('age', 25)
+        .setUnknown('metadata', { custom: 'data' })
+        .setUnknown('timestamp', Date.now())
+        .build();
+
+      expect(input.size).toBe(4);
+      expect(input.get('name')).toBe('Alice');
+      expect(input.get('age')).toBe(25);
+      expect(input.get('metadata')).toEqual({ custom: 'data' });
+      expect(typeof input.get('timestamp')).toBe('number');
+    });
+
+    it('should allow setting unknown number keys', () => {
+      const entries = [[1, z.number()]] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .set(1, -7)
+        .setUnknown(5, 'iv-value')
+        .setUnknown(99, 'custom-header')
+        .build();
+
+      expect(input.size).toBe(3);
+      expect(input.get(1)).toBe(-7);
+      expect(input.get(5)).toBe('iv-value');
+      expect(input.get(99)).toBe('custom-header');
+    });
+
+    it('should support method chaining with mixed keys', () => {
+      const entries = [
+        ['required', z.string()],
+      ] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .set('required', 'value')
+        .setUnknown('extra1', 'a')
+        .setUnknown('extra2', 'b')
+        .setUnknown(100, 'numeric')
+        .build();
+
+      expect(input.size).toBe(4);
+      expect(input.get('required')).toBe('value');
+      expect(input.get('extra1')).toBe('a');
+      expect(input.get('extra2')).toBe('b');
+      expect(input.get(100)).toBe('numeric');
+    });
+
+    it('should work with empty entries and only unknown keys', () => {
+      const entries = [] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .setUnknown('key1', 'value1')
+        .setUnknown(42, 'value2')
+        .build();
+
+      expect(input.size).toBe(2);
+      expect(input.get('key1')).toBe('value1');
+      expect(input.get(42)).toBe('value2');
+    });
+
+    it('should allow overwriting keys', () => {
+      const entries = [
+        ['name', z.string()],
+      ] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .set('name', 'First')
+        .setUnknown('extra', 'initial')
+        .set('name', 'Second') // Overwrite known key
+        .setUnknown('extra', 'updated') // Overwrite unknown key
+        .build();
+
+      expect(input.size).toBe(2);
+      expect(input.get('name')).toBe('Second');
+      expect(input.get('extra')).toBe('updated');
+    });
+
+    it('should restrict unknown keys to numbers only when U = number', () => {
+      const entries = [
+        [1, z.number()],
+        [4, z.string()],
+      ] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries, number>()
+        .set(1, -7) // Known key
+        .set(4, 'key-id') // Known key
+        .setUnknown(5, 'iv') // Unknown number key
+        .setUnknown(99, 'custom-header') // Unknown number key
+        .build();
+
+      expect(input.size).toBe(4);
+      expect(input.get(1)).toBe(-7);
+      expect(input.get(4)).toBe('key-id');
+      expect(input.get(5)).toBe('iv');
+      expect(input.get(99)).toBe('custom-header');
+    });
+
+    it('should restrict unknown keys to strings only when U = string', () => {
+      const entries = [
+        ['name', z.string()],
+        ['age', z.number()],
+      ] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries, string>()
+        .set('name', 'Alice') // Known key
+        .set('age', 30) // Known key
+        .setUnknown('metadata', { info: 'data' }) // Unknown string key
+        .setUnknown('timestamp', '2024-01-01') // Unknown string key
+        .build();
+
+      expect(input.size).toBe(4);
+      expect(input.get('name')).toBe('Alice');
+      expect(input.get('age')).toBe(30);
+      expect(input.get('metadata')).toEqual({ info: 'data' });
+      expect(input.get('timestamp')).toBe('2024-01-01');
+    });
+
+    it('should allow both string and number unknown keys by default', () => {
+      const entries = [
+        ['known', z.string()],
+      ] as const satisfies StrictMapEntries;
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .set('known', 'value')
+        .setUnknown('str-key', 'string-unknown')
+        .setUnknown(42, 'number-unknown')
+        .build();
+
+      expect(input.size).toBe(3);
+      expect(input.get('known')).toBe('value');
+      expect(input.get('str-key')).toBe('string-unknown');
+      expect(input.get(42)).toBe('number-unknown');
+    });
+  });
+
+  describe('number keys support', () => {
+    it('should handle number keys (e.g., COSE header labels)', () => {
+      const entries = [
+        [1, z.number()], // Algorithm
+        [4, z.string()], // Key ID
+      ] as const satisfies StrictMapEntries;
+
+      const schema = createStrictMapSchema({
+        target: 'CoseHeaders',
+        entries,
+      });
+
+      const input = createStrictMapBuilder<typeof entries>()
+        .set(1, -7) // ES256
+        .set(4, 'key-123')
+        .build();
+
+      const result = schema.parse(input);
+      expect(result).toBeInstanceOf(Map);
+      expect(result.size).toBe(2);
+
+      const keys = Array.from(result.keys());
+      expect(keys).toEqual([1, 4]);
+
+      expect(result.get(1)).toBe(-7);
+      expect(result.get(4)).toBe('key-123');
+    });
+
+    it('should handle mixed string and number keys', () => {
+      const entries = [
+        [1, z.number()],
+        ['custom_field', z.string()],
+        [4, z.string()],
+      ] as const satisfies StrictMapEntries;
+
+      const schema = createStrictMapSchema({
+        target: 'MixedHeaders',
+        entries,
+      });
+
+      const input = createStrictMapBuilder<typeof entries>()
+        .set(1, -8) // EdDSA
+        .set('custom_field', 'value')
+        .set(4, 'kid-456')
+        .build();
+
+      const result = schema.parse(input);
+      expect(result.size).toBe(3);
+
+      const keys = Array.from(result.keys());
+      expect(keys).toEqual([1, 'custom_field', 4]);
+
+      expect(result.get(1)).toBe(-8);
+      expect(result.get('custom_field')).toBe('value');
+      expect(result.get(4)).toBe('kid-456');
+    });
+
+    it('should handle unknown number keys with setUnknown', () => {
+      const entries = [[1, z.number()]] as const satisfies StrictMapEntries;
+
+      const schema = createStrictMapSchema({
+        target: 'ExtendedHeaders',
+        entries,
+        unknownKeys: 'passthrough',
+      });
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .set(1, -7)
+        .setUnknown(5, 'additional header') // IV
+        .setUnknown('x-custom', 'custom value')
+        .build();
+
+      // Verify input contains all keys with correct values
+      expect(input.size).toBe(3);
+      expect(input.get(1)).toBe(-7);
+      expect(input.get(5)).toBe('additional header');
+      expect(input.get('x-custom')).toBe('custom value');
+
+      const result = schema.parse(input);
+
+      // Verify known key is validated and preserved
+      expect(result.get(1)).toBe(-7);
+
+      // Passthrough mode preserves all keys including unknown ones (verified by size)
+      // Input had 3 keys (1 known + 2 unknown), all should be preserved
+      expect(result.size).toBe(3);
+    });
+
+    it('should validate number keys in strict mode', () => {
+      const entries = [
+        [1, z.number()],
+        [4, z.string()],
+      ] as const satisfies StrictMapEntries;
+
+      const schema = createStrictMapSchema({
+        target: 'StrictHeaders',
+        entries,
+        unknownKeys: 'strict',
+      });
+
+      const input = createUnknownStrictMapBuilder<typeof entries>()
+        .set(1, -7)
+        .set(4, 'key-id')
+        .setUnknown(99, 'unexpected')
+        .build();
+
+      try {
+        schema.parse(input);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          'StrictHeaders contains unexpected key: 99'
+        );
+      }
+    });
+
+    it('should handle optional number keys', () => {
+      const entries = [
+        [1, z.number()],
+        [4, z.string().optional()],
+      ] as const satisfies StrictMapEntries;
+
+      const schema = createStrictMapSchema({
+        target: 'OptionalHeaders',
+        entries,
+      });
+
+      const input = createStrictMapBuilder<typeof entries>()
+        .set(1, -35) // ES384
+        .build();
+
+      const result = schema.parse(input);
+      expect(result.size).toBe(1);
+      expect(result.get(1)).toBe(-35);
+      expect(result.has(4)).toBe(false);
+    });
+  });
+
   describe('edge cases', () => {
     it('should handle empty entries array', () => {
       const schema = createStrictMapSchema({
@@ -510,7 +808,7 @@ describe('createStrictMapSchema', () => {
     it('should handle single entry', () => {
       const schema = createStrictMapSchema({
         target: 'Single',
-        entries: [['key', z.string()]] as const,
+        entries: [['key', z.string()]] as const satisfies StrictMapEntries,
       });
 
       const input = new Map<string, unknown>([['key', 'value']]);
@@ -526,7 +824,7 @@ describe('createStrictMapSchema', () => {
           ['array', z.array(z.number())],
           ['nested', z.object({ a: z.string(), b: z.number() })],
           ['union', z.union([z.string(), z.number()])],
-        ] as const,
+        ] as const satisfies StrictMapEntries,
       });
 
       const input = new Map<string, unknown>([
@@ -547,7 +845,7 @@ describe('createStrictMapSchema', () => {
         entries: [
           ['field1', z.string().optional()],
           ['field2', z.number().optional()],
-        ] as const,
+        ] as const satisfies StrictMapEntries,
       });
 
       const emptyInput = new Map();
@@ -563,7 +861,7 @@ describe('createStrictMapSchema', () => {
           ['b', z.string().optional()],
           ['c', z.string()],
           ['d', z.string().optional()],
-        ] as const,
+        ] as const satisfies StrictMapEntries,
       });
 
       const input = new Map<string, unknown>([

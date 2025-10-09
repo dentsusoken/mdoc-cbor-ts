@@ -1,3 +1,4 @@
+export * from './Algorithms';
 export * from './Label';
 export * from './LabelKeyMap';
 export * from './Mac0';
