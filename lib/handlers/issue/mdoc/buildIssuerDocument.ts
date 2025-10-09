@@ -6,13 +6,13 @@ import { buildIssuerSigned } from './buildIssuerSigned';
 import { Document } from '@/schemas/mdoc/Document';
 
 /**
- * Parameters for building a mobile document (mDoc)
+ * Parameters for building an issuer Document
  *
  * @description
  * Defines all the required and optional parameters needed to construct a complete
- * mobile document according to ISO/IEC 18013-5 specification.
+ * Document structure with issuer-signed data according to ISO/IEC 18013-5 specification.
  */
-export type BuildDocumentParams = {
+export type BuildIssuerDocumentParams = {
   /** The document type identifier (e.g., 'org.iso.18013.5.1.mDL') */
   docType: string;
   /** The issuer namespaces and their associated elements as a record structure */
@@ -38,14 +38,14 @@ export type BuildDocumentParams = {
 };
 
 /**
- * Builds a complete mobile document (mDoc) structure
+ * Builds a complete issuer Document structure
  *
  * @description
- * Creates a mobile document by combining the document type identifier with
+ * Creates a Document structure by combining the document type identifier with
  * the issuer-signed data. This function orchestrates the creation of the
- * complete mDoc structure according to ISO/IEC 18013-5.
+ * complete Document structure for issuance according to ISO/IEC 18013-5.
  *
- * The resulting document contains:
+ * The resulting Document contains:
  * - Document type identifier (docType)
  * - Issuer-signed data (IssuerSigned) which includes:
  *   - Name-spaced data elements
@@ -68,10 +68,10 @@ export type BuildDocumentParams = {
  *
  * @example
  * ```typescript
- * import { buildDocument } from '@/handlers/issue/mdoc/buildDocument';
+ * import { buildIssuerDocument } from '@/handlers/issue/mdoc/buildIssuerDocument';
  * import { webcrypto } from 'crypto';
  *
- * const document = buildDocument({
+ * const document = buildIssuerDocument({
  *   docType: 'org.iso.18013.5.1.mDL',
  *   nameSpaceElements: {
  *     'org.iso.18013.5.1': {
@@ -98,7 +98,7 @@ export type BuildDocumentParams = {
  * @see {@link buildIssuerSigned} - Function used internally to create IssuerSigned structure
  * @see {@link Document} - The return type schema
  */
-export const buildDocument = ({
+export const buildIssuerDocument = ({
   docType,
   nameSpaceElements,
   randomBytes,
@@ -110,7 +110,7 @@ export const buildDocument = ({
   expectedUpdate,
   x5chain,
   issuerJwkPrivateKey,
-}: BuildDocumentParams): Document => {
+}: BuildIssuerDocumentParams): Document => {
   const issuerSigned = buildIssuerSigned({
     docType,
     nameSpaceElements,

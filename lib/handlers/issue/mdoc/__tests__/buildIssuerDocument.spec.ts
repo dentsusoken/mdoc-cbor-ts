@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Tag } from 'cbor-x';
-import { buildDocument } from '../buildDocument';
+import { buildIssuerDocument } from '../buildIssuerDocument';
 import { randomBytes } from '@noble/hashes/utils';
 import { NameSpaceElements } from '@/schemas/record/NameSpaceElements';
 import { createTag1004 } from '@/cbor/createTag1004';
@@ -16,7 +16,7 @@ import { certificatePemToDerBytes } from '@/x509/certificatePemToDerBytes';
 import { mobileSecurityObjectSchema } from '@/schemas/mso/MobileSecurityObject';
 import { documentSchema } from '@/schemas/mdoc/Document';
 
-describe('buildDocument', () => {
+describe('buildIssuerDocument', () => {
   it('should build Document structure with docType and issuerSigned', () => {
     const nameSpaceElements: NameSpaceElements = {
       'org.iso.18013.5.1': {
@@ -33,7 +33,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -93,7 +93,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -126,7 +126,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -171,7 +171,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -229,7 +229,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -276,7 +276,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -326,7 +326,7 @@ describe('buildDocument', () => {
     const x5chainArray = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
     // Test with array
-    const document1 = buildDocument({
+    const document1 = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -346,7 +346,7 @@ describe('buildDocument', () => {
     expect(document1.issuerSigned.issuerAuth).toBeInstanceOf(Tag);
 
     // Test with single Uint8Array
-    const document2 = buildDocument({
+    const document2 = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -381,7 +381,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -469,7 +469,7 @@ describe('buildDocument', () => {
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: 'org.iso.18013.5.1.mDL',
       nameSpaceElements,
       randomBytes,
@@ -518,7 +518,7 @@ describe('buildDocument', () => {
 
     const customDocType = 'com.example.custom.document';
 
-    const document = buildDocument({
+    const document = buildIssuerDocument({
       docType: customDocType,
       nameSpaceElements,
       randomBytes,
