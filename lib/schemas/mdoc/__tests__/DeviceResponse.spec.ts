@@ -2,7 +2,7 @@ import { decodeCbor } from '@/cbor/codec';
 import {
   deviceResponseSchema,
   DEVICE_RESPONSE_AT_LEAST_ONE_MESSAGE,
-} from '../MDoc';
+} from '../DeviceResponse';
 import { arrayEmptyMessage } from '@/schemas/common/Array';
 import { z } from 'zod';
 //import { issuerSignedSchema } from '@/schemas/mdoc/IssuerSigned';
