@@ -10,6 +10,7 @@ export * from './DeviceAuth';
 export * from './DeviceMac';
 export * from './DeviceNameSpaces';
 export * from './DeviceNameSpacesBytes';
+export * from './DeviceResponse';
 export * from './DeviceSignature';
 export * from './DeviceSigned';
 export * from './DeviceSignedItems';
