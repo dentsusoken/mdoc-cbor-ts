@@ -11,9 +11,9 @@ import {
   DEVICE_JWK,
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
-} from '../../../__tests__/config';
+} from '../../config';
 
-const { d, ...publicKeyJWK } = DEVICE_JWK as jose.JWK;
+const { ...publicKeyJWK } = DEVICE_JWK as jose.JWK;
 
 describe('issuing an MDOC', () => {
   let encoded: Uint8Array;

@@ -29,5 +29,5 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["lib"]
+  "include": ["lib", "lib/__tests__/mdl/issuing/issuingMDoc.spec.ts"]
 }
