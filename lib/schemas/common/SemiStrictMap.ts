@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { SemiStrictMap, StrictMapEntries } from './types';
+import type { SemiStrictMap, StrictMapEntries } from './strict-map/types';
 
 /**
  * Creates an error message when input is not a Map

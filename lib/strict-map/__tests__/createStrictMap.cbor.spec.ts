@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { decodeCbor, encodeCbor } from '../../../../cbor/codec';
+import { decodeCbor, encodeCbor } from '@/cbor/codec';
 import { createStrictMap } from '../createStrictMap';
 
 /**

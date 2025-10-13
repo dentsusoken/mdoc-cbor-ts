@@ -5,7 +5,7 @@ import {
   semiStrictMapNotMapMessage,
   semiStrictMapMissingKeysMessage,
   semiStrictMapKeyValueMessage,
-} from '../createSemiStrictMapSchema';
+} from '../SemiStrictMap';
 
 describe('createSemiStrictMapSchema', () => {
   describe('successful validation', () => {
