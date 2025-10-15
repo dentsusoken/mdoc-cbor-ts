@@ -1,92 +1,70 @@
 import { z } from 'zod';
-import { createDateTimeSchema } from '@/schemas/common/DateTime';
-import { createStrictMapSchema } from '../common/StrictMap';
+import { dateTimeSchema } from '@/schemas/common/DateTime';
+import { createStrictMapSchema } from '@/schemas/common/StrictMap';
+import { createStrictMap } from '@/strict-map';
 
 /**
- * The canonical struct entries for MSO ValidityInfo, to be used with createStructSchema.
+ * The canonical field entries for the MSO ValidityInfo structure.
  *
  * @description
- * Defines the validity information fields for a Mobile Security Object (MSO),
- * including required and optional tagged date-time values. Each field expects
- * an ISO 8601 string or CBOR Tag0 date-time representation, normalized to
- * 'YYYY-MM-DDTHH:MM:SSZ'. The array is designed for use with createStructSchema.
+ * Describes the entries for a Mobile Security Object's (MSO) validity information,
+ * including required and optional date-time fields. Each field expects either
+ * an ISO 8601 date-time string or a CBOR Tag(0), both normalized to
+ * the "YYYY-MM-DDTHH:MM:SSZ" format. This constant is meant to be used
+ * with `createStrictMapSchema` or similar struct validation utilities.
  *
  * Fields:
- * - 'signed': The date/time when the MSO was signed (required)
- * - 'validFrom': The date/time when the document becomes valid (required)
- * - 'validUntil': The date/time when the document expires (required)
- * - 'expectedUpdate': The date/time by when the document should be updated (optional)
+ * - `signed`:   REQUIRED.   Date/time the MSO was signed.
+ * - `validFrom`: REQUIRED.  Date/time when the document becomes valid.
+ * - `validUntil`: REQUIRED. Date/time when the document expires.
+ * - `expectedUpdate`: OPTIONAL. Date/time by which the document should be updated.
  *
- * Used by: {@link validityInfoSchema}
+ * @see {validityInfoSchema}
  */
 export const validityInfoEntries = [
-  ['signed', createDateTimeSchema('Signed')],
-  ['validFrom', createDateTimeSchema('ValidFrom')],
-  ['validUntil', createDateTimeSchema('ValidUntil')],
-  ['expectedUpdate', createDateTimeSchema('ExpectedUpdate').optional()],
+  ['signed', dateTimeSchema],
+  ['validFrom', dateTimeSchema],
+  ['validUntil', dateTimeSchema],
+  ['expectedUpdate', dateTimeSchema.optional()],
 ] as const;
 
 /**
- * Schema for validity information in a Mobile Security Object (MSO)
+ * Zod schema for Mobile Security Object (MSO) ValidityInfo.
+ *
  * @description
- * Validates a required Map with keys and values corresponding to the fields in MSO ValidityInfo.
- * Primarily designed to accept a `Map<string, unknown>` (such as CBOR-decoded input), enforcing presence and correctness of all required fields.
+ * Validates a Map for the ValidityInfo section of an MSO, requiring or allowing fields as specified by
+ * `validityInfoEntries`. This schema enforces:
+ *   - All required fields (`signed`, `validFrom`, `validUntil`) must be present, with date-time values.
+ *   - `expectedUpdate` is optional.
+ *   - No unknown fields are allowed.
+ *   - Field values must be either ISO 8601/RFC 3339 date-time strings (e.g. "2024-03-20T10:00:00Z") or
+ *     CBOR Tag(0) objects containing such normalized strings.
+ *   - All output values are normalized as CBOR Tag(0) objects with "YYYY-MM-DDTHH:MM:SSZ" UTC format.
  *
- * - Each value must be a date-time string in RFC 3339/ISO 8601 format (e.g., `'2024-03-20T10:00:00Z'`)
- *   or a CBOR Tag0 (tdate, per RFC 8949) containing such a string.
- * - Fields are normalized and output as CBOR Tag0 objects (if using the Tag0 path), or checked for format (if using string input).
- * - The schema ensures:
- *   - All required fields are present: `signed`, `validFrom`, `validUntil`.
- *   - An optional field: `expectedUpdate` may also be provided.
- *   - Additional fields are rejected.
- *   - Error messages are prefixed with `ValidityInfo: ...`.
- *   - Field-level validation is delegated to `createDateTimeSchema`, which ensures correct type and strict format.
+ * Input is expected to be a `Map<string, unknown>`, such as from CBOR decoding.
  *
- * ValidityInfo structure:
- * - `signed`: Required. Date/time when the MSO was signed.
- * - `validFrom`: Required. Date/time when the document becomes valid.
- * - `validUntil`: Required. Date/time when the document expires.
- * - `expectedUpdate`: Optional. Date/time by which the document should be updated.
- *
- * ```cddl
- * ValidityInfo = {
- *   "signed": tdate,
- *   "validFrom": tdate,
- *   "validUntil": tdate,
- *   ? "expectedUpdate": tdate
- * }
- * ```
- *
- * @example Validate a fully-populated ValidityInfo map:
- * ```typescript
+ * @example
+ * // With all fields:
  * import { validityInfoSchema } from '@/schemas/mso/ValidityInfo';
- *
- * const input = new Map<string, unknown>([
+ * const map = new Map([
  *   ['signed', '2024-03-20T10:00:00Z'],
  *   ['validFrom', '2024-03-20T10:00:00Z'],
  *   ['validUntil', '2025-03-20T10:00:00Z'],
  *   ['expectedUpdate', '2024-09-20T10:00:00Z'],
  * ]);
+ * const result = validityInfoSchema.parse(map);
+ * // result is a Map with Tag(0) objects as values
  *
- * const result = validityInfoSchema.parse(input);
- * // result.get('signed'), result.get('validFrom'), etc., are Tag(0) with normalized RFC 3339 strings.
- * ```
- *
- * @example Validate a minimal ValidityInfo map (no expectedUpdate):
- * ```typescript
- * import { validityInfoSchema } from '@/schemas/mso/ValidityInfo';
- *
- * const input = new Map<string, unknown>([
+ * @example
+ * // With only required fields:
+ * const map = new Map([
  *   ['signed', '2025-01-01T00:00:00Z'],
  *   ['validFrom', '2025-01-01T00:00:00Z'],
  *   ['validUntil', '2026-01-01T00:00:00Z'],
  * ]);
- *
- * const result = validityInfoSchema.parse(input);
+ * const result = validityInfoSchema.parse(map);
  * // result.has('expectedUpdate') === false
- * ```
  *
- * @see createDateTimeSchema
  * @see validityInfoEntries
  */
 export const validityInfoSchema = createStrictMapSchema({
@@ -95,10 +73,26 @@ export const validityInfoSchema = createStrictMapSchema({
 });
 
 /**
- * Type definition for validity information
+ * Type representing validated ValidityInfo data structure.
+ *
  * @description
- * Represents a validated validity information structure where all date-time
- * fields are normalized ISO strings (`YYYY-MM-DDTHH:MM:SSZ`) as produced by
- * `createDateTimeSchema` (see `schemas/common/DateTime.ts`).
+ * This type represents a ValidityInfo map after validation, where all field values
+ * are CBOR Tag(0) objects holding normalized RFC 3339 date-time strings
+ * ("YYYY-MM-DDTHH:MM:SSZ").
+ *
+ * @see validityInfoSchema
  */
 export type ValidityInfo = z.output<typeof validityInfoSchema>;
+
+/**
+ * Factory function for constructing a ValidityInfo map.
+ *
+ * @description
+ * This utility creates a ValidityInfo map instance (enforcing the MSO validity info schema structure),
+ * ensuring only the allowed keys (`signed`, `validFrom`, `validUntil`, and optional `expectedUpdate`)
+ * are present, and their values are valid CBOR Tag(0) date-time objects.
+ *
+ * @see validityInfoEntries
+ * @see ValidityInfo
+ */
+export const createValidityInfo = createStrictMap<typeof validityInfoEntries>;

@@ -6,6 +6,8 @@ import {
   strictMapMissingKeysMessage,
   strictMapUnexpectedKeysMessage,
   strictMapKeyValueMessage,
+  buildEntriesIndex,
+  validateAndCollectKnownEntries,
 } from '../StrictMap';
 
 describe('createStrictMapSchema', () => {
@@ -286,6 +288,22 @@ describe('createStrictMapSchema', () => {
       expectTypeOf(result.get('status')).toEqualTypeOf<
         'active' | 'inactive' | undefined
       >();
+    });
+
+    it('should allow undefined when schema is optional', () => {
+      const entries = [['name', z.string()]] as const;
+      const optionalSchema = createStrictMapSchema({
+        target: 'UserOptional',
+        entries,
+      }).optional();
+
+      const result = optionalSchema.safeParse(undefined);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toBeUndefined();
+      }
+
+      expect(optionalSchema.parse(undefined)).toBeUndefined();
     });
 
     describe('unknownKeys modes', () => {
@@ -599,10 +617,10 @@ describe('createStrictMapSchema', () => {
       const cases: Array<[string, unknown, string]> = [
         ['plain object', {}, 'Object'],
         ['array', [], 'Array'],
-        ['string', 'hello', 'string'],
-        ['number', 123, 'number'],
-        ['boolean', true, 'boolean'],
-        ['null', null, 'object'],
+        ['string', 'hello', 'String'],
+        ['number', 123, 'Number'],
+        ['boolean', true, 'Boolean'],
+        ['null', null, 'null'],
         ['undefined', undefined, 'undefined'],
       ];
 
@@ -630,6 +648,148 @@ describe('createStrictMapSchema', () => {
           }
         });
       }
+    });
+  });
+
+  describe('buildEntriesIndex', () => {
+    it('should build schemaMap, requiredKeys, and allKeys correctly', () => {
+      const entries = [
+        ['name', z.string()],
+        ['age', z.number().optional()],
+        [1, z.boolean()],
+      ] as const;
+
+      const { schemaMap, requiredKeys, allKeys } = buildEntriesIndex(entries);
+
+      // schemaMap
+      expect(schemaMap.has('name')).toBe(true);
+      expect(schemaMap.has('age')).toBe(true);
+      expect(schemaMap.has(1)).toBe(true);
+      expect(schemaMap.get('name')!.safeParse('alice').success).toBe(true);
+      expect(schemaMap.get('name')!.safeParse(1).success).toBe(false);
+      expect(schemaMap.get(1)!.safeParse(true).success).toBe(true);
+      expect(schemaMap.get(1)!.safeParse('no').success).toBe(false);
+
+      // requiredKeys (age is optional)
+      expect(requiredKeys.has('name')).toBe(true);
+      expect(requiredKeys.has(1)).toBe(true);
+      expect(requiredKeys.has('age')).toBe(false);
+
+      // allKeys contains all declared keys
+      expect(allKeys.has('name')).toBe(true);
+      expect(allKeys.has('age')).toBe(true);
+      expect(allKeys.has(1)).toBe(true);
+    });
+
+    it('should handle only-number keys', () => {
+      const entries = [
+        [1, z.number()],
+        [4, z.string()],
+      ] as const;
+
+      const { schemaMap, requiredKeys, allKeys } = buildEntriesIndex(entries);
+
+      expect(schemaMap.get(1)!.safeParse(-7).success).toBe(true);
+      expect(schemaMap.get(4)!.safeParse('kid').success).toBe(true);
+      expect(requiredKeys.has(1)).toBe(true);
+      expect(requiredKeys.has(4)).toBe(true);
+      expect(allKeys.has(1)).toBe(true);
+      expect(allKeys.has(4)).toBe(true);
+    });
+  });
+
+  describe('validateAndCollectKnownEntries', () => {
+    it('should validate and collect declared keys and ignore unknown when passthroughMode=false', () => {
+      const entries = [
+        ['name', z.string()],
+        ['age', z.number()],
+      ] as const;
+      const { schemaMap } = buildEntriesIndex(entries);
+
+      const inputMap = new Map<string | number, unknown>([
+        ['name', 'Alice'],
+        ['age', 30],
+        ['unknown', 'ignored'],
+      ]);
+
+      const issues: z.ZodIssue[] = [];
+      const ctx = {
+        addIssue: (issue: z.ZodIssue) => issues.push(issue),
+      } as unknown as z.RefinementCtx;
+
+      const result = validateAndCollectKnownEntries({
+        target: 'User',
+        inputMap,
+        schemaMap,
+        ctx,
+        passthroughMode: false,
+      });
+
+      expect(issues.length).toBe(0);
+      expect(result.get('name')).toBe('Alice');
+      expect(result.get('age')).toBe(30);
+      expect(result.has('unknown' as 'name')).toBe(false);
+    });
+
+    it('should include unknown keys when passthroughMode=true', () => {
+      const entries = [['id', z.number()]] as const;
+      const { schemaMap } = buildEntriesIndex(entries);
+
+      const inputMap = new Map<string | number, unknown>([
+        ['id', 1],
+        ['extra', 'kept'],
+      ]);
+
+      const issues: z.ZodIssue[] = [];
+      const ctx = {
+        addIssue: (issue: z.ZodIssue) => issues.push(issue),
+      } as unknown as z.RefinementCtx;
+
+      const result = validateAndCollectKnownEntries({
+        target: 'Data',
+        inputMap,
+        schemaMap,
+        ctx,
+        passthroughMode: true,
+      });
+
+      expect(issues.length).toBe(0);
+      expect(result.get('id')).toBe(1);
+      expect(result.get('extra')).toBe('kept');
+    });
+
+    it('should report issues for invalid values with correct path and message', () => {
+      const entries = [['age', z.number()]] as const;
+      const { schemaMap } = buildEntriesIndex(entries);
+
+      const inputMap = new Map<string | number, unknown>([
+        ['age', 'not a number'],
+      ]);
+
+      const issues: z.ZodIssue[] = [];
+      const ctx = {
+        addIssue: (issue: z.ZodIssue) => issues.push(issue),
+      } as unknown as z.RefinementCtx;
+
+      const result = validateAndCollectKnownEntries({
+        target: 'User',
+        inputMap,
+        schemaMap,
+        ctx,
+        passthroughMode: false,
+      });
+
+      expect(result.size).toBe(0);
+      expect(issues.length).toBeGreaterThan(0);
+      const first = issues[0];
+      expect(first.path).toEqual(['age']);
+      expect(first.message).toBe(
+        strictMapKeyValueMessage(
+          'User',
+          ['age'],
+          'Expected number, received string'
+        )
+      );
     });
   });
 });

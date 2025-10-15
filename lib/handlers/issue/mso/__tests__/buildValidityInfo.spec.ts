@@ -22,17 +22,20 @@ describe('buildValidityInfo', () => {
         validUntil,
       });
 
-      expect(result).toBeInstanceOf(Object);
-      expect(result.signed).toBeInstanceOf(Tag);
-      expect(result.signed.tag).toBe(0);
-      expect(result.signed.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.validFrom).toBeInstanceOf(Tag);
-      expect(result.validFrom.tag).toBe(0);
-      expect(result.validFrom.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.validUntil).toBeInstanceOf(Tag);
-      expect(result.validUntil.tag).toBe(0);
-      expect(result.validUntil.value).toBe('2025-01-02T00:00:00Z');
-      expect(result.expectedUpdate).toBeUndefined();
+      expect(result).toBeInstanceOf(Map);
+      const signedTag = result.get('signed')!;
+      const validFromTag = result.get('validFrom')!;
+      const validUntilTag = result.get('validUntil')!;
+      expect(signedTag).toBeInstanceOf(Tag);
+      expect(signedTag.tag).toBe(0);
+      expect(signedTag.value).toBe('2025-01-01T00:00:00Z');
+      expect(validFromTag).toBeInstanceOf(Tag);
+      expect(validFromTag.tag).toBe(0);
+      expect(validFromTag.value).toBe('2025-01-01T00:00:00Z');
+      expect(validUntilTag).toBeInstanceOf(Tag);
+      expect(validUntilTag.tag).toBe(0);
+      expect(validUntilTag.value).toBe('2025-01-02T00:00:00Z');
+      expect(result.get('expectedUpdate')).toBeUndefined();
     });
 
     it('should build validity info with expectedUpdate when provided', () => {
@@ -48,21 +51,23 @@ describe('buildValidityInfo', () => {
         expectedUpdate,
       });
 
-      expect(result).toBeInstanceOf(Object);
-      expect(result.signed).toBeInstanceOf(Tag);
-      expect(result.signed.tag).toBe(0);
-      expect(result.signed.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.validFrom).toBeInstanceOf(Tag);
-      expect(result.validFrom.tag).toBe(0);
-      expect(result.validFrom.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.validUntil).toBeInstanceOf(Tag);
-      expect(result.validUntil.tag).toBe(0);
-      expect(result.validUntil.value).toBe('2025-01-02T00:00:00Z');
-      expect(result.expectedUpdate).toBeInstanceOf(Tag);
-      // @ts-expect-error - optional property is present here
-      expect(result.expectedUpdate.tag).toBe(0);
-      // @ts-expect-error - optional property is present here
-      expect(result.expectedUpdate.value).toBe('2025-01-01T01:00:00Z');
+      expect(result).toBeInstanceOf(Map);
+      const sTag = result.get('signed')!;
+      const vfTag = result.get('validFrom')!;
+      const vuTag = result.get('validUntil')!;
+      const euTag = result.get('expectedUpdate')!;
+      expect(sTag).toBeInstanceOf(Tag);
+      expect(sTag.tag).toBe(0);
+      expect(sTag.value).toBe('2025-01-01T00:00:00Z');
+      expect(vfTag).toBeInstanceOf(Tag);
+      expect(vfTag.tag).toBe(0);
+      expect(vfTag.value).toBe('2025-01-01T00:00:00Z');
+      expect(vuTag).toBeInstanceOf(Tag);
+      expect(vuTag.tag).toBe(0);
+      expect(vuTag.value).toBe('2025-01-02T00:00:00Z');
+      expect(euTag).toBeInstanceOf(Tag);
+      expect(euTag.tag).toBe(0);
+      expect(euTag.value).toBe('2025-01-01T01:00:00Z');
     });
 
     it('should handle future validFrom dates', () => {
@@ -76,15 +81,18 @@ describe('buildValidityInfo', () => {
         validUntil,
       });
 
-      expect(result.signed).toBeInstanceOf(Tag);
-      expect(result.signed.tag).toBe(0);
-      expect(result.signed.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.validFrom).toBeInstanceOf(Tag);
-      expect(result.validFrom.tag).toBe(0);
-      expect(result.validFrom.value).toBe('2025-01-01T02:00:00Z');
-      expect(result.validUntil).toBeInstanceOf(Tag);
-      expect(result.validUntil.tag).toBe(0);
-      expect(result.validUntil.value).toBe('2025-01-02T00:00:00Z');
+      const s2 = result.get('signed')!;
+      const vf2 = result.get('validFrom')!;
+      const vu2 = result.get('validUntil')!;
+      expect(s2).toBeInstanceOf(Tag);
+      expect(s2.tag).toBe(0);
+      expect(s2.value).toBe('2025-01-01T00:00:00Z');
+      expect(vf2).toBeInstanceOf(Tag);
+      expect(vf2.tag).toBe(0);
+      expect(vf2.value).toBe('2025-01-01T02:00:00Z');
+      expect(vu2).toBeInstanceOf(Tag);
+      expect(vu2.tag).toBe(0);
+      expect(vu2.value).toBe('2025-01-02T00:00:00Z');
     });
 
     it('should handle same date for all fields', () => {
@@ -97,20 +105,22 @@ describe('buildValidityInfo', () => {
         expectedUpdate: date,
       });
 
-      expect(result.signed).toBeInstanceOf(Tag);
-      expect(result.signed.tag).toBe(0);
-      expect(result.signed.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.validFrom).toBeInstanceOf(Tag);
-      expect(result.validFrom.tag).toBe(0);
-      expect(result.validFrom.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.validUntil).toBeInstanceOf(Tag);
-      expect(result.validUntil.tag).toBe(0);
-      expect(result.validUntil.value).toBe('2025-01-01T00:00:00Z');
-      expect(result.expectedUpdate).toBeInstanceOf(Tag);
-      // @ts-expect-error - optional property is present here
-      expect(result.expectedUpdate.tag).toBe(0);
-      // @ts-expect-error - optional property is present here
-      expect(result.expectedUpdate.value).toBe('2025-01-01T00:00:00Z');
+      const s3 = result.get('signed')!;
+      const vf3 = result.get('validFrom')!;
+      const vu3 = result.get('validUntil')!;
+      const eu3 = result.get('expectedUpdate')!;
+      expect(s3).toBeInstanceOf(Tag);
+      expect(s3.tag).toBe(0);
+      expect(s3.value).toBe('2025-01-01T00:00:00Z');
+      expect(vf3).toBeInstanceOf(Tag);
+      expect(vf3.tag).toBe(0);
+      expect(vf3.value).toBe('2025-01-01T00:00:00Z');
+      expect(vu3).toBeInstanceOf(Tag);
+      expect(vu3.tag).toBe(0);
+      expect(vu3.value).toBe('2025-01-01T00:00:00Z');
+      expect(eu3).toBeInstanceOf(Tag);
+      expect(eu3.tag).toBe(0);
+      expect(eu3.value).toBe('2025-01-01T00:00:00Z');
     });
 
     it('should handle different dates for each field', () => {
@@ -126,20 +136,22 @@ describe('buildValidityInfo', () => {
         expectedUpdate,
       });
 
-      expect(result.signed).toBeInstanceOf(Tag);
-      expect(result.signed.tag).toBe(0);
-      expect(result.signed.value).toBe('2030-06-15T12:34:56Z');
-      expect(result.validFrom).toBeInstanceOf(Tag);
-      expect(result.validFrom.tag).toBe(0);
-      expect(result.validFrom.value).toBe('2030-06-15T14:34:56Z');
-      expect(result.validUntil).toBeInstanceOf(Tag);
-      expect(result.validUntil.tag).toBe(0);
-      expect(result.validUntil.value).toBe('2030-06-16T12:34:56Z');
-      expect(result.expectedUpdate).toBeInstanceOf(Tag);
-      // @ts-expect-error - optional property is present here
-      expect(result.expectedUpdate.tag).toBe(0);
-      // @ts-expect-error - optional property is present here
-      expect(result.expectedUpdate.value).toBe('2030-06-15T14:04:56Z');
+      const s4 = result.get('signed')!;
+      const vf4 = result.get('validFrom')!;
+      const vu4 = result.get('validUntil')!;
+      const eu4 = result.get('expectedUpdate')!;
+      expect(s4).toBeInstanceOf(Tag);
+      expect(s4.tag).toBe(0);
+      expect(s4.value).toBe('2030-06-15T12:34:56Z');
+      expect(vf4).toBeInstanceOf(Tag);
+      expect(vf4.tag).toBe(0);
+      expect(vf4.value).toBe('2030-06-15T14:34:56Z');
+      expect(vu4).toBeInstanceOf(Tag);
+      expect(vu4.tag).toBe(0);
+      expect(vu4.value).toBe('2030-06-16T12:34:56Z');
+      expect(eu4).toBeInstanceOf(Tag);
+      expect(eu4.tag).toBe(0);
+      expect(eu4.value).toBe('2030-06-15T14:04:56Z');
     });
   });
 
@@ -193,15 +205,18 @@ describe('buildValidityInfo', () => {
       });
 
       // Verify our structure uses Tag(0)
-      expect(ourValidityInfo.signed).toBeInstanceOf(Tag);
-      expect(ourValidityInfo.signed.tag).toBe(0);
-      expect(ourValidityInfo.validFrom).toBeInstanceOf(Tag);
-      expect(ourValidityInfo.validFrom.tag).toBe(0);
-      expect(ourValidityInfo.validUntil).toBeInstanceOf(Tag);
-      expect(ourValidityInfo.validUntil.tag).toBe(0);
-      expect(ourValidityInfo.expectedUpdate).toBeInstanceOf(Tag);
-      // @ts-expect-error - optional property is present here
-      expect(ourValidityInfo.expectedUpdate.tag).toBe(0);
+      const os = ourValidityInfo.get('signed')!;
+      const ovf = ourValidityInfo.get('validFrom')!;
+      const ovu = ourValidityInfo.get('validUntil')!;
+      const oe = ourValidityInfo.get('expectedUpdate')!;
+      expect(os).toBeInstanceOf(Tag);
+      expect(os.tag).toBe(0);
+      expect(ovf).toBeInstanceOf(Tag);
+      expect(ovf.tag).toBe(0);
+      expect(ovu).toBeInstanceOf(Tag);
+      expect(ovu.tag).toBe(0);
+      expect(oe).toBeInstanceOf(Tag);
+      expect(oe.tag).toBe(0);
 
       // auth0/mdl decodes ValidityInfo as Date objects
       expect(auth0ValidityInfo.signed).toBeInstanceOf(Date);
@@ -210,19 +225,10 @@ describe('buildValidityInfo', () => {
       expect(auth0ValidityInfo.expectedUpdate).toBeInstanceOf(Date);
 
       // Verify our Tag(0) values produce parseable dates
-      expect(new Date(ourValidityInfo.signed.value).getTime()).toBe(
-        signed.getTime()
-      );
-      expect(new Date(ourValidityInfo.validFrom.value).getTime()).toBe(
-        validFrom.getTime()
-      );
-      expect(new Date(ourValidityInfo.validUntil.value).getTime()).toBe(
-        validUntil.getTime()
-      );
-      // @ts-expect-error - optional property is present here
-      expect(new Date(ourValidityInfo.expectedUpdate.value).getTime()).toBe(
-        expectedUpdate.getTime()
-      );
+      expect(new Date(os.value).getTime()).toBe(signed.getTime());
+      expect(new Date(ovf.value).getTime()).toBe(validFrom.getTime());
+      expect(new Date(ovu.value).getTime()).toBe(validUntil.getTime());
+      expect(new Date(oe.value).getTime()).toBe(expectedUpdate.getTime());
 
       // Verify auth0/mdl's Date objects match expected values
       expect(auth0ValidityInfo.signed.getTime()).toBe(signed.getTime());
@@ -233,17 +239,16 @@ describe('buildValidityInfo', () => {
       );
 
       // Verify both produce the same timestamp
-      expect(new Date(ourValidityInfo.signed.value).getTime()).toBe(
+      expect(new Date(os.value).getTime()).toBe(
         auth0ValidityInfo.signed.getTime()
       );
-      expect(new Date(ourValidityInfo.validFrom.value).getTime()).toBe(
+      expect(new Date(ovf.value).getTime()).toBe(
         auth0ValidityInfo.validFrom.getTime()
       );
-      expect(new Date(ourValidityInfo.validUntil.value).getTime()).toBe(
+      expect(new Date(ovu.value).getTime()).toBe(
         auth0ValidityInfo.validUntil.getTime()
       );
-      // @ts-expect-error - optional property is present here
-      expect(new Date(ourValidityInfo.expectedUpdate.value).getTime()).toBe(
+      expect(new Date(oe.value).getTime()).toBe(
         auth0ValidityInfo.expectedUpdate?.getTime()
       );
     });
@@ -293,12 +298,15 @@ describe('buildValidityInfo', () => {
       });
 
       // Verify our structure uses Tag(0)
-      expect(ourValidityInfo.signed).toBeInstanceOf(Tag);
-      expect(ourValidityInfo.signed.tag).toBe(0);
-      expect(ourValidityInfo.validFrom).toBeInstanceOf(Tag);
-      expect(ourValidityInfo.validFrom.tag).toBe(0);
-      expect(ourValidityInfo.validUntil).toBeInstanceOf(Tag);
-      expect(ourValidityInfo.validUntil.tag).toBe(0);
+      const os2 = ourValidityInfo.get('signed')!;
+      const ovf2 = ourValidityInfo.get('validFrom')!;
+      const ovu2 = ourValidityInfo.get('validUntil')!;
+      expect(os2).toBeInstanceOf(Tag);
+      expect(os2.tag).toBe(0);
+      expect(ovf2).toBeInstanceOf(Tag);
+      expect(ovf2.tag).toBe(0);
+      expect(ovu2).toBeInstanceOf(Tag);
+      expect(ovu2.tag).toBe(0);
 
       // auth0/mdl decodes ValidityInfo as Date objects
       expect(auth0ValidityInfo.signed).toBeInstanceOf(Date);
@@ -306,15 +314,9 @@ describe('buildValidityInfo', () => {
       expect(auth0ValidityInfo.validUntil).toBeInstanceOf(Date);
 
       // Verify our Tag(0) values produce correct timestamps
-      expect(new Date(ourValidityInfo.signed.value).getTime()).toBe(
-        signed.getTime()
-      );
-      expect(new Date(ourValidityInfo.validFrom.value).getTime()).toBe(
-        validFrom.getTime()
-      );
-      expect(new Date(ourValidityInfo.validUntil.value).getTime()).toBe(
-        validUntil.getTime()
-      );
+      expect(new Date(os2.value).getTime()).toBe(signed.getTime());
+      expect(new Date(ovf2.value).getTime()).toBe(validFrom.getTime());
+      expect(new Date(ovu2.value).getTime()).toBe(validUntil.getTime());
 
       // Verify auth0/mdl's Date objects match expected values
       expect(auth0ValidityInfo.signed.getTime()).toBe(signed.getTime());
@@ -322,18 +324,18 @@ describe('buildValidityInfo', () => {
       expect(auth0ValidityInfo.validUntil.getTime()).toBe(validUntil.getTime());
 
       // Verify both produce the same timestamp
-      expect(new Date(ourValidityInfo.signed.value).getTime()).toBe(
+      expect(new Date(os2.value).getTime()).toBe(
         auth0ValidityInfo.signed.getTime()
       );
-      expect(new Date(ourValidityInfo.validFrom.value).getTime()).toBe(
+      expect(new Date(ovf2.value).getTime()).toBe(
         auth0ValidityInfo.validFrom.getTime()
       );
-      expect(new Date(ourValidityInfo.validUntil.value).getTime()).toBe(
+      expect(new Date(ovu2.value).getTime()).toBe(
         auth0ValidityInfo.validUntil.getTime()
       );
 
       // Verify expectedUpdate is undefined in both
-      expect(ourValidityInfo.expectedUpdate).toBeUndefined();
+      expect(ourValidityInfo.get('expectedUpdate')).toBeUndefined();
       expect(auth0ValidityInfo.expectedUpdate).toBeUndefined();
     });
 
@@ -398,12 +400,15 @@ describe('buildValidityInfo', () => {
         });
 
         // Verify our structure uses Tag(0)
-        expect(ourValidityInfo.signed).toBeInstanceOf(Tag);
-        expect(ourValidityInfo.signed.tag).toBe(0);
-        expect(ourValidityInfo.validFrom).toBeInstanceOf(Tag);
-        expect(ourValidityInfo.validFrom.tag).toBe(0);
-        expect(ourValidityInfo.validUntil).toBeInstanceOf(Tag);
-        expect(ourValidityInfo.validUntil.tag).toBe(0);
+        const os3 = ourValidityInfo.get('signed')!;
+        const ovf3 = ourValidityInfo.get('validFrom')!;
+        const ovu3 = ourValidityInfo.get('validUntil')!;
+        expect(os3).toBeInstanceOf(Tag);
+        expect(os3.tag).toBe(0);
+        expect(ovf3).toBeInstanceOf(Tag);
+        expect(ovf3.tag).toBe(0);
+        expect(ovu3).toBeInstanceOf(Tag);
+        expect(ovu3.tag).toBe(0);
 
         // auth0/mdl decodes ValidityInfo as Date objects
         expect(auth0ValidityInfo.signed).toBeInstanceOf(Date);
@@ -411,13 +416,13 @@ describe('buildValidityInfo', () => {
         expect(auth0ValidityInfo.validUntil).toBeInstanceOf(Date);
 
         // Verify timestamps match between our implementation and auth0/mdl
-        expect(new Date(ourValidityInfo.signed.value).getTime()).toBe(
+        expect(new Date(os3.value).getTime()).toBe(
           auth0ValidityInfo.signed.getTime()
         );
-        expect(new Date(ourValidityInfo.validFrom.value).getTime()).toBe(
+        expect(new Date(ovf3.value).getTime()).toBe(
           auth0ValidityInfo.validFrom.getTime()
         );
-        expect(new Date(ourValidityInfo.validUntil.value).getTime()).toBe(
+        expect(new Date(ovu3.value).getTime()).toBe(
           auth0ValidityInfo.validUntil.getTime()
         );
       }

@@ -1,117 +1,125 @@
 import { z } from 'zod';
-import { createRequiredSchema } from './Required';
 import { Tag } from 'cbor-x';
 import { createTag0 } from '@/cbor';
+import { getTypeName } from '@/utils/getTypeName';
 
 /**
- * Creates an error message for invalid date-time format
- * @param target - The target field name to include in the error message
- * @returns Error message string indicating expected YYYY-MM-DDTHH:MM:SSZ format
- */
-export const dateTimeInvalidFormatMessage = (target: string): string =>
-  `${target}: Expected YYYY-MM-DDTHH:MM:SSZ string, but received a different format.`;
-
-/**
- * Creates an error message for invalid date-time type
- * @param target - The target field name to include in the error message
- * @returns Error message string indicating expected string (YYYY-MM-DDTHH:MM:SSZ) or Tag0 type
- */
-export const dateTimeInvalidTypeMessage = (target: string): string =>
-  `${target}: Expected YYYY-MM-DDTHH:MM:SSZ string or Tag0, but received a different type.`;
-
-/**
- * Creates an error message for invalid CBOR Tag0 type
- * @param target - The target field name to include in the error message
- * @returns Error message string indicating expected CBOR Tag(0) with RFC 3339 date-time string
- */
-export const dateTimeInvalidTag0Message = (target: string): string =>
-  `${target}: Expected CBOR Tag(0) containing an RFC 3339 date-time string, but received a different type.`;
-
-/**
- * Creates the inner schema for date-time validation
+ * Error message for invalid date-time format
  * @description
- * This schema accepts either:
- * - a string in YYYY-MM-DDTHH:MM:SSZ format (or any parseable ISO 8601 date-time),
- * - a Tag0 instance, or
- * - a Date instance
- * and transforms the input into a CBOR Tag(0) whose value is a validated date-time
- * string without milliseconds (YYYY-MM-DDTHH:MM:SSZ). String and Tag0 inputs are
- * normalized; Date inputs are normalized using `toISODateTimeString` and wrapped
- * in Tag(0).
- *
- * @param target - The target field name used in error messages
- * @returns A Zod schema that validates and transforms inputs to YYYY-MM-DDTHH:MM:SSZ strings
+ * Used when a string is provided but cannot be parsed as a valid date-time.
+ * The string must be in YYYY-MM-DDTHH:MM:SSZ format or any parseable ISO 8601 date-time.
  */
-const createDateTimeInnerSchema = (
-  target: string
-): z.ZodType<Tag, z.ZodTypeDef, string | Tag | Date> =>
-  z.union(
-    [
-      z.string().transform((value, ctx) => {
-        try {
-          return createTag0(new Date(value));
-        } catch (error) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: dateTimeInvalidFormatMessage(target),
-          });
-          return z.NEVER;
-        }
-      }),
-      z
-        .instanceof(Tag)
-        .refine((tag) => tag.tag === 0 && typeof tag.value === 'string', {
-          message: dateTimeInvalidTag0Message(target),
-        })
-        .transform((tag, ctx) => {
-          try {
-            return createTag0(new Date(tag.value as string));
-          } catch (error) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: dateTimeInvalidFormatMessage(target),
-            });
-            return z.NEVER;
-          }
-        }),
-      z.instanceof(Date).transform((date, ctx) => {
-        try {
-          return createTag0(date);
-        } catch (error) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: dateTimeInvalidFormatMessage(target),
-          });
-          return z.NEVER;
-        }
-      }),
-    ],
-    {
-      errorMap: () => ({
-        message: dateTimeInvalidTypeMessage(target),
-      }),
+export const DATE_TIME_INVALID_FORMAT_MESSAGE =
+  'Expected YYYY-MM-DDTHH:MM:SSZ string, but received a different format.';
+
+/**
+ * Error message for invalid date-time type
+ * @description
+ * Used when the input is not one of the expected types (string, Tag0, or Date).
+ * This is the union error message for the dateTimeSchema.
+ */
+export const dateTimeInvalidTypeMessage = (value: unknown): string =>
+  `Expected YYYY-MM-DDTHH:MM:SSZ string, Tag0, or Date, but received ${getTypeName(
+    value
+  )}`;
+
+/**
+ * Error message for invalid CBOR Tag0 type
+ * @description
+ * Used when a Tag instance is provided but is not a valid Tag(0) with a string value.
+ * The Tag must have tag number 0 and contain an RFC 3339 date-time string.
+ */
+export const DATE_TIME_INVALID_TAG0_MESSAGE =
+  'Expected CBOR Tag(0) containing YYYY-MM-DDTHH:MM:SSZ string, but received a different type.';
+
+/**
+ * Zod schema for validating and normalizing date-time values to CBOR Tag(0) format.
+ *
+ * @description
+ * Accepts a variety of common input types and produces a CBOR Tag(0) object
+ * containing a normalized RFC 3339 date-time string (in the form YYYY-MM-DDTHH:MM:SSZ).
+ *
+ * ### Supported Input Types
+ * - `string`: Any parseable ISO 8601 date-time string
+ *   - Example: "2024-03-20T10:00:00Z"
+ * - `Tag`: CBOR Tag(0) instance wrapping a date-time string
+ * - `Date`: JavaScript Date object
+ *
+ * ### Output
+ * - All valid inputs are transformed to a CBOR Tag(0) whose value is the normalized date-time string
+ *   in UTC ("YYYY-MM-DDTHH:MM:SSZ" format, without milliseconds).
+ *
+ * ### Error Handling
+ * - If a string is provided but cannot be parsed as a valid date-time, returns {@link DATE_TIME_INVALID_FORMAT_MESSAGE}.
+ * - If a Tag is provided but is not a valid Tag(0) with a string value, returns {@link DATE_TIME_INVALID_TAG0_MESSAGE}.
+ * - If the input is not a supported type (string, Tag(0), or Date), returns {@link dateTimeInvalidTypeMessage}.
+ *
+ * @example
+ * ```typescript
+ * // ISO String input
+ * dateTimeSchema.parse('2024-03-20T10:00:00.123Z');
+ * // -> Tag(0) with value "2024-03-20T10:00:00Z"
+ *
+ * // Date input
+ * dateTimeSchema.parse(new Date('2024-03-20T10:00:00Z'));
+ * // -> Tag(0) with value "2024-03-20T10:00:00Z"
+ *
+ * // Tag input
+ * dateTimeSchema.parse(new Tag('2024-03-20T10:00:00Z', 0));
+ * // -> Tag(0) with value "2024-03-20T10:00:00Z"
+ * ```
+ *
+ * @see createTag0
+ * @returns Zod schema for date-time fields
+ */
+export const dateTimeSchema = z.any().transform((value, ctx) => {
+  if (typeof value === 'string') {
+    try {
+      return createTag0(new Date(value));
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: DATE_TIME_INVALID_FORMAT_MESSAGE,
+      });
+      return z.NEVER;
     }
-  );
+  }
 
-/**
- * Builds a date-time schema that validates date-time strings and Tag0 instances.
- * @description
- * The resulting schema:
- * - Accepts a string in YYYY-MM-DDTHH:MM:SSZ format (or parseable ISO date-time), a Tag0 instance, or a Date
- * - Returns a CBOR Tag(0) whose value is a normalized date-time string in YYYY-MM-DDTHH:MM:SSZ format (milliseconds stripped)
- * - Provides target-prefixed error messages for invalid formats and types
- *
- * This schema is designed for validating date-time values that can come from either:
- * - Direct string input (e.g., from JSON)
- * - Direct Date input (runtime-generated dates)
- * - CBOR decoding where Tag(0) is automatically converted to Tag0 instances
- *
- * Example accepted inputs are normalized to the exact format:
- * - "2024-03-20T15:30:00.123Z" -> "2024-03-20T15:30:00Z"
- * - "2024-03-20T15:30:00+09:00" -> "2024-03-20T06:30:00Z" (UTC)
- * - new Date("2024-03-20T15:30:00.123Z") -> new Tag("2024-03-20T15:30:00Z", 0)
- *
- * @param target - Prefix used in error messages (e.g., "ValidityInfo", "IssuerAuth")
- */
-export const createDateTimeSchema = (target: string): z.ZodType<Tag> =>
-  createRequiredSchema(target).pipe(createDateTimeInnerSchema(target));
+  if (value instanceof Tag) {
+    const tag = value as Tag;
+    if (!(tag.tag === 0 && typeof tag.value === 'string')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: DATE_TIME_INVALID_TAG0_MESSAGE,
+      });
+      return z.NEVER;
+    }
+    try {
+      return createTag0(new Date(tag.value as string));
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: DATE_TIME_INVALID_FORMAT_MESSAGE,
+      });
+      return z.NEVER;
+    }
+  }
+
+  if (value instanceof Date) {
+    try {
+      return createTag0(value);
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: DATE_TIME_INVALID_FORMAT_MESSAGE,
+      });
+      return z.NEVER;
+    }
+  }
+
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    message: dateTimeInvalidTypeMessage(value),
+  });
+  return z.NEVER;
+});

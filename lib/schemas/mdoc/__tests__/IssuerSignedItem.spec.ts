@@ -239,7 +239,7 @@ describe('IssuerSignedItem', () => {
           expect(zodError.issues[0].message).toBe(
             strictMapKeyValueMessage(
               'IssuerSignedItem',
-              'digestID',
+              ['digestID'],
               uintInvalidTypeMessage('DigestID')
             )
           );
@@ -265,7 +265,7 @@ describe('IssuerSignedItem', () => {
           expect(zodError.issues[0].message).toBe(
             strictMapKeyValueMessage(
               'IssuerSignedItem',
-              'random',
+              ['random'],
               requiredMessage('random')
             )
           );
@@ -291,7 +291,7 @@ describe('IssuerSignedItem', () => {
           expect(zodError.issues[0].message).toBe(
             strictMapKeyValueMessage(
               'IssuerSignedItem',
-              'elementIdentifier',
+              ['elementIdentifier'],
               nonEmptyTextEmptyMessage('DataElementIdentifier')
             )
           );

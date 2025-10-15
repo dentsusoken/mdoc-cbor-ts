@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { createBytesSchema } from '@/schemas/common/Bytes';
-import { createFullDateSchema } from '@/index';
+import { fullDateSchema } from '@/index';
+import { createRequiredSchema } from '@/schemas/common/Required';
 
 /**
  * Schema for driving privilege codes
@@ -49,8 +50,12 @@ export const drivingPrivilegesSchema = z
     return z
       .object({
         vehicle_category_code: z.string(),
-        issue_date: createFullDateSchema('issue_date').optional(),
-        expiry_date: createFullDateSchema('expiry_date').optional(),
+        issue_date: createRequiredSchema('issue_date')
+          .pipe(fullDateSchema)
+          .optional(),
+        expiry_date: createRequiredSchema('expiry_date')
+          .pipe(fullDateSchema)
+          .optional(),
         codes: z.array(codeSchema).optional(),
       })
       .parse(Object.fromEntries(v));
@@ -200,9 +205,9 @@ export const mdlSchema = z
   .object({
     family_name: z.string(),
     given_name: z.string(),
-    birth_date: createFullDateSchema('birth_date'),
-    issue_date: createFullDateSchema('issue_date'),
-    expiry_date: createFullDateSchema('expiry_date'),
+    birth_date: createRequiredSchema('birth_date').pipe(fullDateSchema),
+    issue_date: createRequiredSchema('issue_date').pipe(fullDateSchema),
+    expiry_date: createRequiredSchema('expiry_date').pipe(fullDateSchema),
     issuing_country: z.string(),
     issuing_authority: z.string(),
     document_number: z.string(),
@@ -217,7 +222,9 @@ export const mdlSchema = z
     hair_colour: z.string(),
     birth_place: z.string(),
     resident_address: z.string(),
-    portrait_capture_date: createFullDateSchema('portrait_capture_date'),
+    portrait_capture_date: createRequiredSchema('portrait_capture_date').pipe(
+      fullDateSchema
+    ),
     age_in_years: z.number().int().positive(),
     age_birth_year: z.number().int().positive(),
     issuing_jurisdiction: z.string(),

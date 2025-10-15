@@ -2,15 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { Tag } from 'cbor-x';
 import {
-  createDateTimeSchema,
+  dateTimeSchema,
   dateTimeInvalidTypeMessage,
-  dateTimeInvalidFormatMessage,
+  DATE_TIME_INVALID_FORMAT_MESSAGE,
+  DATE_TIME_INVALID_TAG0_MESSAGE,
 } from '../DateTime';
-import { requiredMessage } from '../Required';
 
-describe('createDateTimeSchema', () => {
-  const target = 'TestTarget';
-  const schema = createDateTimeSchema(target);
+describe('dateTimeSchema', () => {
+  const schema = dateTimeSchema;
 
   describe('valid cases', () => {
     it('should accept ISO string with Z and return Tag(0) with normalized value', () => {
@@ -45,88 +44,129 @@ describe('createDateTimeSchema', () => {
   });
 
   describe('invalid cases', () => {
-    it('should throw required error for undefined', () => {
-      try {
-        schema.parse(undefined);
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(requiredMessage(target));
-        }
-      }
-    });
+    describe('invalid type', () => {
+      const cases: Array<{ name: string; value: unknown }> = [
+        { name: 'undefined', value: undefined },
+        { name: 'null', value: null },
+        { name: 'number', value: 123 },
+        { name: 'boolean', value: true },
+        { name: 'object', value: {} },
+      ];
 
-    it('should throw required error for null', () => {
-      try {
-        schema.parse(null);
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(requiredMessage(target));
-        }
-      }
-    });
-
-    const wrongTypeCases: Array<{ name: string; value: unknown }> = [
-      { name: 'number', value: 123 },
-      { name: 'boolean', value: true },
-      { name: 'object', value: {} },
-    ];
-
-    wrongTypeCases.forEach(({ name, value }) => {
-      it(`invalid type: ${name}`, () => {
-        try {
-          schema.parse(value);
-          throw new Error('Expected error');
-        } catch (error) {
-          expect(error).toBeInstanceOf(z.ZodError);
-          if (error instanceof z.ZodError) {
-            expect(error.issues[0].message).toBe(
-              dateTimeInvalidTypeMessage(target)
-            );
+      cases.forEach(({ name, value }) => {
+        it(name, () => {
+          try {
+            schema.parse(value);
+            throw new Error('Expected error');
+          } catch (error) {
+            expect(error).toBeInstanceOf(z.ZodError);
+            if (error instanceof z.ZodError) {
+              expect(error.issues[0].message).toBe(
+                dateTimeInvalidTypeMessage(value)
+              );
+            }
           }
-        }
+        });
       });
     });
 
-    const invalidFormatCases: Array<{ name: string; value: string }> = [
-      { name: 'empty string', value: '' },
-      { name: 'non-date string', value: 'invalid-date' },
-    ];
+    describe('invalid Tag', () => {
+      const cases: Array<{ name: string; value: Tag }> = [
+        {
+          name: 'Tag(1) with string',
+          value: new Tag('2024-03-20T15:30:00Z', 1),
+        },
+        { name: 'Tag(0) with number', value: new Tag(123, 0) },
+        { name: 'Tag(0) with boolean', value: new Tag(true, 0) },
+        { name: 'Tag(0) with object', value: new Tag({}, 0) },
+      ];
 
-    invalidFormatCases.forEach(({ name, value }) => {
-      it(`invalid format: ${name}`, () => {
-        try {
-          schema.parse(value);
-          throw new Error('Expected error');
-        } catch (error) {
-          expect(error).toBeInstanceOf(z.ZodError);
-          if (error instanceof z.ZodError) {
-            expect(error.issues[0].message).toBe(
-              dateTimeInvalidFormatMessage(target)
-            );
+      cases.forEach(({ name, value }) => {
+        it(name, () => {
+          try {
+            schema.parse(value);
+            throw new Error('Expected error');
+          } catch (error) {
+            expect(error).toBeInstanceOf(z.ZodError);
+            if (error instanceof z.ZodError) {
+              expect(error.issues[0].message).toBe(
+                DATE_TIME_INVALID_TAG0_MESSAGE
+              );
+            }
           }
-        }
+        });
       });
     });
 
-    it('should throw when Date.toISOString throws', () => {
-      const badDate = new Date('invalid');
-      // Date.toISOString will throw for invalid Date
-      try {
-        // simulate user passing a Date indirectly (schema expects string or Tag0)
-        schema.parse(badDate);
-        throw new Error('Expected error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        if (error instanceof z.ZodError) {
-          expect(error.issues[0].message).toBe(
-            dateTimeInvalidFormatMessage(target)
-          );
-        }
-      }
+    describe('invalid Tag(0) format', () => {
+      const cases: Array<{ name: string; value: Tag }> = [
+        {
+          name: 'Tag(0) with invalid date string',
+          value: new Tag('invalid-date', 0),
+        },
+        { name: 'Tag(0) with empty string', value: new Tag('', 0) },
+      ];
+
+      cases.forEach(({ name, value }) => {
+        it(name, () => {
+          try {
+            schema.parse(value);
+            throw new Error('Expected error');
+          } catch (error) {
+            expect(error).toBeInstanceOf(z.ZodError);
+            if (error instanceof z.ZodError) {
+              expect(error.issues[0].message).toBe(
+                DATE_TIME_INVALID_FORMAT_MESSAGE
+              );
+            }
+          }
+        });
+      });
+    });
+
+    describe('invalid string format', () => {
+      const cases: Array<{ name: string; value: string }> = [
+        { name: 'empty string', value: '' },
+        { name: 'non-date string', value: 'invalid-date' },
+      ];
+
+      cases.forEach(({ name, value }) => {
+        it(name, () => {
+          try {
+            schema.parse(value);
+            throw new Error('Expected error');
+          } catch (error) {
+            expect(error).toBeInstanceOf(z.ZodError);
+            if (error instanceof z.ZodError) {
+              expect(error.issues[0].message).toBe(
+                DATE_TIME_INVALID_FORMAT_MESSAGE
+              );
+            }
+          }
+        });
+      });
+    });
+
+    describe('invalid Date instance', () => {
+      const cases: Array<{ name: string; value: Date }> = [
+        { name: 'Date.toISOString throws', value: new Date('invalid') },
+      ];
+
+      cases.forEach(({ name, value }) => {
+        it(name, () => {
+          try {
+            schema.parse(value);
+            throw new Error('Expected error');
+          } catch (error) {
+            expect(error).toBeInstanceOf(z.ZodError);
+            if (error instanceof z.ZodError) {
+              expect(error.issues[0].message).toBe(
+                DATE_TIME_INVALID_FORMAT_MESSAGE
+              );
+            }
+          }
+        });
+      });
     });
   });
 });

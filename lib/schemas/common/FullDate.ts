@@ -1,151 +1,139 @@
 import { z } from 'zod';
-import { createRequiredSchema } from './Required';
 import { Tag } from 'cbor-x';
 import { createTag1004 } from '@/cbor/createTag1004';
-import { toISOFullDateString } from '@/utils/toISOFullDateString';
+import { getTypeName } from '@/utils/getTypeName';
 
 /**
- * Creates an error message for invalid full-date format
- * @param target - The target field name to include in the error message
- * @returns Error message string indicating expected YYYY-MM-DD format
- */
-export const fullDateInvalidFormatMessage = (target: string): string =>
-  `${target}: Expected YYYY-MM-DD string, but received a different format.`;
-
-/**
- * Creates an error message for invalid full-date type
- * @param target - The target field name to include in the error message
- * @returns Error message string indicating expected string (YYYY-MM-DD) or CBOR Tag(1004) type
- */
-export const fullDateInvalidTypeMessage = (target: string): string =>
-  `${target}: Expected YYYY-MM-DD string or Tag1004, but received a different type.`;
-
-/**
- * Creates an error message for invalid CBOR Tag1004 type
- * @param target - The target field name to include in the error message
- * @returns Error message string indicating expected CBOR Tag(1004) with full-date string
- */
-export const fullDateInvalidTag1004Message = (target: string): string =>
-  `${target}: Expected CBOR Tag(1004) containing a full-date string, but received a different type.`;
-
-/**
- * Creates the inner schema for full-date validation
+ * Error message for invalid full-date format (YYYY-MM-DD).
  * @description
- * This schema accepts either:
- * - a string in YYYY-MM-DD format (or any parseable ISO date),
- * - a CBOR Tag(1004) instance, or
- * - a Date instance
- * and transforms the input to a validated date string in YYYY-MM-DD format.
- * String and Tag inputs are normalized by parsing as dates and recreating as Tag(1004);
- * Date inputs are normalized using `toISOFullDateString`.
+ * Used when a string or input is provided that cannot be parsed as a valid full-date.
  *
- * @param target - The target field name used in error messages
- * @returns A Zod schema that validates and transforms date inputs to YYYY-MM-DD strings
+ * The value must be parseable as "YYYY-MM-DD" or as an ISO 8601 date string that normalizes to a valid date.
+ *
+ * @see {@link fullDateSchema}
  */
-const createFullDateInnerSchema = (
-  target: string
-): z.ZodType<string, z.ZodTypeDef, string | Tag | Date> =>
-  z.union(
-    [
-      z.string().transform((value, ctx) => {
-        try {
-          const tag1004 = createTag1004(new Date(value));
-          return tag1004.value as string;
-        } catch (error) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: fullDateInvalidFormatMessage(target),
-          });
-          return z.NEVER;
-        }
-      }),
-      z
-        .instanceof(Tag)
-        .refine((tag) => tag.tag === 1004 && typeof tag.value === 'string', {
-          message: fullDateInvalidTag1004Message(target),
-        })
-        .transform((tag, ctx) => {
-          try {
-            const tag1004 = createTag1004(new Date(tag.value as string));
-            return tag1004.value as string;
-          } catch (error) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: fullDateInvalidFormatMessage(target),
-            });
-            return z.NEVER;
-          }
-        }),
-      z.instanceof(Date).transform((date, ctx) => {
-        try {
-          return toISOFullDateString(date);
-        } catch (error) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: fullDateInvalidFormatMessage(target),
-          });
-          return z.NEVER;
-        }
-      }),
-    ],
-    {
-      errorMap: () => ({
-        message: fullDateInvalidTypeMessage(target),
-      }),
+export const FULL_DATE_INVALID_FORMAT_MESSAGE =
+  'Expected YYYY-MM-DD string, but received a different format.';
+
+/**
+ * Builds an error message for when the input is not a valid full-date input type.
+ * @description
+ * Used when the value is not one of the supported types: string (YYYY-MM-DD), CBOR Tag(1004), or Date instance.
+ * Includes the actual input type (via {@link getTypeName}) in the message.
+ *
+ * @param value - The value that was provided as input.
+ * @returns Error message specifying the supported types and actual type.
+ *
+ * @see {@link fullDateSchema}
+ */
+export const fullDateInvalidTypeMessage = (value: unknown): string =>
+  `Expected YYYY-MM-DD string, Tag(1004), or Date, but received ${getTypeName(value)}`;
+
+/**
+ * Error message for invalid CBOR Tag(1004) type.
+ * @description
+ * Used when a CBOR Tag is provided, but it is not Tag(1004) or does not
+ * contain a string value suitable for a full-date.
+ *
+ * @see {@link fullDateSchema}
+ */
+export const FULL_DATE_INVALID_TAG1004_MESSAGE =
+  'Expected CBOR Tag(1004) containing YYYY-MM-DD string, but received a different type.';
+
+/**
+ * Zod schema for validating and normalizing "full-date" values to the RFC 3339 format "YYYY-MM-DD".
+ *
+ * @description
+ * This schema accepts values representing a full-date from common sources and returns a string in
+ * the normalized form "YYYY-MM-DD" (UTC, zero-padded month and day). It supports:
+ *
+ * - `string`: Any value parseable as an ISO 8601 date, normalized to "YYYY-MM-DD".
+ *   - Example: "2023-07-15" or "2023-07-15T10:30:00Z" ⇒ "2023-07-15"
+ * - `Tag`: CBOR Tag(1004) instance wrapping a full-date string.
+ *   - Example: `new Tag("2023-07-15", 1004)` ⇒ "2023-07-15"
+ * - `Date`: JavaScript `Date` object
+ *   - Example: `new Date("2023-07-15T00:00:00Z")` ⇒ "2023-07-15"
+ *
+ * @remarks
+ * ### Output
+ * - Valid input is always returned as a string in "YYYY-MM-DD" normalized format (UTC, zero-padded).
+ *
+ * ### Error Handling
+ * - If a value is not parseable as a valid date (as a string or inside a tag), returns {@link FULL_DATE_INVALID_FORMAT_MESSAGE}.
+ * - If a CBOR Tag is not Tag(1004) with a string value, returns {@link FULL_DATE_INVALID_TAG1004_MESSAGE}.
+ * - If the input type is not one of the supported ones, returns {@link fullDateInvalidTypeMessage}.
+ *
+ * @example
+ * // String input
+ * fullDateSchema.parse("2023-07-15"); // "2023-07-15"
+ * fullDateSchema.parse("2023-07-15T09:33:00Z"); // "2023-07-15"
+ *
+ * // Date input
+ * fullDateSchema.parse(new Date("2023-07-15T00:00:00Z")); // "2023-07-15"
+ *
+ * // Tag input
+ * fullDateSchema.parse(new Tag("2023-07-15", 1004)); // "2023-07-15"
+ *
+ * @returns Zod schema that validates and transforms date-like inputs to normalized YYYY-MM-DD strings.
+ */
+export const fullDateSchema = z.any().transform((value, ctx) => {
+  if (typeof value === 'string') {
+    try {
+      return createTag1004(new Date(value));
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: FULL_DATE_INVALID_FORMAT_MESSAGE,
+      });
+      return z.NEVER;
     }
-  );
+  }
+
+  if (value instanceof Tag) {
+    const tag = value as Tag;
+    if (!(tag.tag === 1004 && typeof tag.value === 'string')) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: FULL_DATE_INVALID_TAG1004_MESSAGE,
+      });
+      return z.NEVER;
+    }
+    try {
+      return createTag1004(new Date(tag.value as string));
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: FULL_DATE_INVALID_FORMAT_MESSAGE,
+      });
+      return z.NEVER;
+    }
+  }
+
+  if (value instanceof Date) {
+    try {
+      return createTag1004(value);
+    } catch (error) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: FULL_DATE_INVALID_FORMAT_MESSAGE,
+      });
+      return z.NEVER;
+    }
+  }
+
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    message: fullDateInvalidTypeMessage(value),
+  });
+  return z.NEVER;
+});
 
 /**
- * Builds a full-date schema that validates date strings and CBOR Tag(1004) instances.
- * @description
- * The resulting schema:
- * - Accepts a string in YYYY-MM-DD format (or parseable ISO date), a CBOR Tag(1004) instance, or a Date
- * - Returns a validated date string in YYYY-MM-DD format
- * - Provides target-prefixed error messages for invalid formats and types
+ * Type definition for a validated full-date string.
  *
- * This schema is designed for validating date values that can come from either:
- * - Direct string input (e.g., from JSON)
- * - Direct Date input (runtime-generated dates)
- * - CBOR decoding where Tag(1004) is automatically converted to Tag instances
- *
- * String inputs are validated by parsing as dates and normalizing to YYYY-MM-DD format.
- * Tag instances are validated to ensure they are Tag(1004) with string values, then normalized.
- * Date instances are converted directly to YYYY-MM-DD format.
- *
- * Example accepted inputs are normalized to the exact format:
- * - "2024-03-20" -> "2024-03-20"
- * - "2024-03-20T15:30:00Z" -> "2024-03-20"
- * - new Date("2024-03-20T15:30:00Z") -> "2024-03-20"
- *
- * ```cddl
- * full-date = tstr ; YYYY-MM-DD format
- * ```
- *
- * @param target - Prefix used in error messages (e.g., "ValidityInfo", "IssuerAuth")
+ * This type represents a string in the "YYYY-MM-DD" format as validated and normalized by {@link fullDateSchema}.
  *
  * @example
- * ```typescript
- * const validityInfoSchema = createFullDateSchema('ValidityInfo');
- * const value1 = validityInfoSchema.parse('2024-03-20'); // '2024-03-20'
- * const value2 = validityInfoSchema.parse(new Tag('2024-03-20', 1004)); // '2024-03-20'
- * const value3 = validityInfoSchema.parse(new Date('2024-03-20T15:30:00Z')); // '2024-03-20'
- * ```
- *
- * @example
- * ```typescript
- * // Throws ZodError (invalid format)
- * // Message: "ValidityInfo: Expected YYYY-MM-DD string, but received a different format."
- * const validityInfoSchema = createFullDateSchema('ValidityInfo');
- * validityInfoSchema.parse('invalid-date');
- * ```
- *
- * @example
- * ```typescript
- * // Throws ZodError (invalid type)
- * // Message: "ValidityInfo: Expected YYYY-MM-DD string or Tag1004, but received a different type."
- * const validityInfoSchema = createFullDateSchema('ValidityInfo');
- * validityInfoSchema.parse(123); // Number instead of string or Tag
- * ```
+ * const dateString: FullDate = fullDateSchema.parse('2024-03-20T12:00:00Z'); // "2024-03-20"
  */
-export const createFullDateSchema = (target: string): z.ZodType<string> =>
-  createRequiredSchema(target).pipe(createFullDateInnerSchema(target));
+export type FullDate = z.output<typeof fullDateSchema>;

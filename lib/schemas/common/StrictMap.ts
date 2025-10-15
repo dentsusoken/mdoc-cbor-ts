@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { StrictMap, StrictMapEntries } from '@/strict-map/types';
+import { getTypeName } from '@/utils/getTypeName';
 
 /**
  * Mode for handling unknown keys in StrictMap schemas
@@ -101,6 +102,131 @@ export const strictMapKeyValueMessage = (
   return `${label}: ${originalMessage}`;
 };
 
+type BuildEntriesIndexResult = {
+  schemaMap: Map<string | number, z.ZodType>;
+  requiredKeys: Set<string | number>;
+  allKeys: Set<string | number>;
+};
+
+/**
+ * Builds indexes for entries of a StrictMap schema.
+ *
+ * Iterates over each entry `[key, schema]` and creates:
+ * - `schemaMap`: maps keys to their Zod schemas for quick lookup.
+ * - `requiredKeys`: all keys whose schemas are NOT optional (i.e., must be present in the input).
+ * - `allKeys`: all declared keys. If `unknownKeys` is `'strict'`, allKeys includes only the declared keys (used for unknown key error checking).
+ *
+ * @param entries - Array of `[key, schema]` tuples, usually as `as const`.
+ * @param unknownKeys - Determines handling for unknown keys, can be `'strip'`, `'passthrough'`, or `'strict'`.
+ * @returns An object containing `schemaMap`, `requiredKeys`, and `allKeys`.
+ *
+ * @example
+ * const entries = [
+ *   ['name', z.string()],
+ *   ['age', z.number()],
+ *   ['active', z.boolean().optional()],
+ * ] as const;
+ * const { schemaMap, requiredKeys, allKeys } = buildEntriesIndex(entries, 'strict');
+ * // schemaMap.get('name') is z.string()
+ * // requiredKeys contains 'name' and 'age'
+ * // allKeys contains 'name', 'age', 'active'
+ */
+export const buildEntriesIndex = (
+  entries: StrictMapEntries,
+  unknownKeys?: UnknownKeysMode
+): BuildEntriesIndexResult => {
+  const schemaMap = new Map<string | number, z.ZodType>();
+  const requiredKeys = new Set<string | number>();
+  const allKeys = new Set<string | number>();
+
+  for (const [key, schema] of entries) {
+    schemaMap.set(key, schema);
+
+    if (unknownKeys === 'strict') {
+      allKeys.add(key);
+    }
+
+    allKeys.add(key);
+
+    // Check if the schema is optional
+    if (!schema.isOptional()) {
+      requiredKeys.add(key);
+    }
+  }
+
+  return { schemaMap, requiredKeys, allKeys };
+};
+
+/**
+ * Validate values for declared keys and collect them into an output map.
+ * Optionally include unknown keys as-is (passthroughMode=true for SemiStrictMap).
+ */
+type ValidateAndCollectKnownEntriesParams = {
+  /** Name of the schema for prefixing error messages */
+  target: string;
+  /** Input map being validated */
+  inputMap: Map<unknown, unknown>;
+  /** Lookup of declared keys to their Zod schemas */
+  schemaMap: Map<string | number, z.ZodType>;
+  /** Zod refinement context for reporting issues */
+  ctx: z.RefinementCtx;
+  /** When true, unknown keys are copied to output (passthrough); otherwise they are ignored (strip) */
+  passthroughMode?: boolean;
+};
+
+/**
+ * Validates values for declared keys in a Map using provided Zod schemas, and collects them into an output map.
+ * Optionally includes unknown keys as-is if `passthroughMode` is enabled (typically for semi-strict validation).
+ *
+ * - For each entry in the input map:
+ *   - If the key is declared in `schemaMap`, validate the value using its Zod schema.
+ *     - If validation fails, issues are added to the provided Zod refinement context (`ctx`)
+ *       with path and a custom error message using `strictMapKeyValueMessage`.
+ *     - If validation succeeds, the parsed value is included in the output map.
+ *   - If the key is not declared but `passthroughMode` is true, include the key-value pair in the output unmodified.
+ * - Keys with values `undefined` are included if explicitly present in input map.
+ *
+ * @param params - Validation parameters including the schema name, input map, schema map, Zod context, and passthrough flag.
+ * @returns A new Map containing only the declared keys (and/or unknown keys if `passthroughMode`) with validated and/or original values.
+ */
+export const validateAndCollectKnownEntries = ({
+  target,
+  inputMap,
+  schemaMap,
+  ctx,
+  passthroughMode = false,
+}: ValidateAndCollectKnownEntriesParams): Map<string | number, unknown> => {
+  const outputMap = new Map<string | number, unknown>();
+
+  for (const [key, value] of inputMap.entries()) {
+    const typedKey = key as string | number;
+    const valueSchema = schemaMap.get(typedKey);
+
+    if (valueSchema) {
+      const result = valueSchema.safeParse(value);
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          const path = [typedKey, ...issue.path];
+          const message = issue.message || 'Invalid value';
+          ctx.addIssue({
+            ...issue,
+            path,
+            message: strictMapKeyValueMessage(target, path, message),
+          });
+        }
+      } else {
+        if (result.data !== undefined || inputMap.has(typedKey)) {
+          outputMap.set(typedKey, result.data);
+        }
+      }
+    } else if (passthroughMode) {
+      outputMap.set(typedKey, value);
+    }
+  }
+
+  return outputMap;
+};
+
 type CreateStrictMapSchemaParams<T extends StrictMapEntries> = {
   target: string;
   entries: T;
@@ -171,102 +297,56 @@ export const createStrictMapSchema = <T extends StrictMapEntries>({
   z.ZodTypeDef,
   Map<unknown, unknown>
 > => {
-  // Create a record of key -> schema for efficient lookup
-  const schemaMap = new Map<string | number, z.ZodType>();
-  const requiredKeys = new Set<string | number>();
-  const allKeys = new Set<string | number>();
-
-  for (const [key, schema] of entries) {
-    schemaMap.set(key, schema);
-    allKeys.add(key);
-
-    // Check if the schema is optional
-    if (!schema.isOptional()) {
-      requiredKeys.add(key);
-    }
-  }
-
-  // Create base schema with custom Map validation that includes actual type
-  const schema: z.ZodTypeAny = z.any().refine(
-    (input) => input instanceof Map,
-    (input) => {
-      const actualType =
-        typeof input === 'object' && input !== null
-          ? input.constructor.name
-          : typeof input;
-      return {
-        message: strictMapNotMapMessage(target, actualType),
-      };
-    }
-  );
-
-  // Required and unknown key validations are performed in transform to avoid
-  // chaining additional refines that may execute during internal probes.
+  const { schemaMap, requiredKeys, allKeys } = buildEntriesIndex(entries);
 
   // Transform to validate and build output map
-  return schema.transform(
-    (map: Map<unknown, unknown>, ctx: z.RefinementCtx) => {
-      // Ensure map is valid before processing; prior refine handles errors
-      if (!map || !(map instanceof Map)) {
-        return map as unknown as Map<string | number, unknown>;
-      }
+  return z.any().transform((input, ctx) => {
+    if (!(input instanceof Map)) {
+      const actualType = getTypeName(input);
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: strictMapNotMapMessage(target, actualType),
+        path: [],
+      });
+      return z.NEVER;
+    }
 
-      // Validate required keys
-      const missingKeys = [...requiredKeys].filter((key) => !map.has(key));
-      if (missingKeys.length > 0) {
+    const inputMap = input as Map<unknown, unknown>;
+
+    // Validate required keys
+    const missingKeys = [...requiredKeys].filter((key) => !inputMap.has(key));
+    if (missingKeys.length > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: strictMapMissingKeysMessage(target, missingKeys),
+        path: [],
+      });
+      return z.NEVER;
+    }
+
+    // Validate unexpected keys in strict mode
+    if (unknownKeys === 'strict') {
+      const unexpectedKeys = [...inputMap.keys()].filter(
+        (key) => !allKeys.has(key as string | number)
+      ) as (string | number)[];
+      if (unexpectedKeys.length > 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: strictMapMissingKeysMessage(target, missingKeys),
+          message: strictMapUnexpectedKeysMessage(target, unexpectedKeys),
           path: [],
         });
+        return z.NEVER;
       }
-
-      // Validate unexpected keys in strict mode
-      if (unknownKeys === 'strict') {
-        const unexpectedKeys = [...map.keys()].filter(
-          (key) => !allKeys.has(key as string | number)
-        ) as (string | number)[];
-        if (unexpectedKeys.length > 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: strictMapUnexpectedKeysMessage(target, unexpectedKeys),
-            path: [],
-          });
-        }
-      }
-
-      const outputMap = new Map<string | number, unknown>();
-
-      // Validate and add known keys
-      for (const [key, value] of map.entries()) {
-        const typedKey = key as string | number;
-        const keySchema = schemaMap.get(typedKey);
-
-        if (keySchema) {
-          // Known key - validate with schema
-          const result = keySchema.safeParse(value);
-          if (!result.success) {
-            for (const issue of result.error.issues) {
-              const path = [String(typedKey), ...issue.path];
-              ctx.addIssue({
-                ...issue,
-                path,
-                message: issue.message
-                  ? strictMapKeyValueMessage(target, path, issue.message)
-                  : undefined,
-              });
-            }
-          } else {
-            // Only add if parsed value is not undefined or key was present
-            if (result.data !== undefined || map.has(typedKey)) {
-              outputMap.set(typedKey, result.data);
-            }
-          }
-        }
-        // In strip mode, unknown keys are simply ignored
-      }
-
-      return outputMap;
     }
-  ) as z.ZodType<StrictMap<T>, z.ZodTypeDef, Map<unknown, unknown>>;
+
+    const outputMap = validateAndCollectKnownEntries({
+      target,
+      inputMap,
+      schemaMap,
+      ctx,
+      passthroughMode: false,
+    });
+
+    return outputMap as unknown as StrictMap<T>;
+  }) as unknown as z.ZodType<StrictMap<T>, z.ZodTypeDef, Map<unknown, unknown>>;
 };

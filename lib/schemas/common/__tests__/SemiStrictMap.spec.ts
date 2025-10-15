@@ -1,11 +1,11 @@
 import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
+import { createSemiStrictMapSchema } from '../SemiStrictMap';
 import {
-  createSemiStrictMapSchema,
-  semiStrictMapNotMapMessage,
-  semiStrictMapMissingKeysMessage,
-  semiStrictMapKeyValueMessage,
-} from '../SemiStrictMap';
+  strictMapNotMapMessage,
+  strictMapMissingKeysMessage,
+  strictMapKeyValueMessage,
+} from '../StrictMap';
 
 describe('createSemiStrictMapSchema', () => {
   describe('successful validation', () => {
@@ -350,7 +350,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual([]);
         expect(zodError.issues[0].message).toBe(
-          semiStrictMapMissingKeysMessage('User', ['age'])
+          strictMapMissingKeysMessage('User', ['age'])
         );
       }
     });
@@ -375,7 +375,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['age']);
         expect(zodError.issues[0].message).toBe(
-          semiStrictMapKeyValueMessage(
+          strictMapKeyValueMessage(
             'User',
             ['age'],
             'Expected number, received string'
@@ -414,7 +414,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['user', 'age']);
         expect(zodError.issues[0].message).toBe(
-          semiStrictMapKeyValueMessage(
+          strictMapKeyValueMessage(
             'Data',
             ['user', 'age'],
             'Expected number, received string'
@@ -464,7 +464,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['payload', 'user', 'age']);
         expect(zodError.issues[0].message).toBe(
-          semiStrictMapKeyValueMessage(
+          strictMapKeyValueMessage(
             'Container',
             ['payload', 'user', 'age'],
             'Expected number, received string'
@@ -518,7 +518,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['type']);
         expect(zodError.issues[0].message).toBe(
-          semiStrictMapKeyValueMessage(
+          strictMapKeyValueMessage(
             'User',
             ['type'],
             'Invalid literal value, expected "user"'
@@ -534,10 +534,10 @@ describe('createSemiStrictMapSchema', () => {
       const cases: Array<[string, unknown, string]> = [
         ['plain object', {}, 'Object'],
         ['array', [], 'Array'],
-        ['string', 'hello', 'string'],
-        ['number', 123, 'number'],
-        ['boolean', true, 'boolean'],
-        ['null', null, 'object'],
+        ['string', 'hello', 'String'],
+        ['number', 123, 'Number'],
+        ['boolean', true, 'Boolean'],
+        ['null', null, 'null'],
         ['undefined', undefined, 'undefined'],
       ];
 
@@ -551,7 +551,7 @@ describe('createSemiStrictMapSchema', () => {
             const zodError = error as z.ZodError;
             expect(zodError.issues[0].path).toEqual([]);
             expect(zodError.issues[0].message).toBe(
-              semiStrictMapNotMapMessage('User', expectedType)
+              strictMapNotMapMessage('User', expectedType)
             );
           }
 
@@ -561,7 +561,7 @@ describe('createSemiStrictMapSchema', () => {
           expect(result.success).toBe(false);
           if (!result.success) {
             expect(result.error.issues[0].message).toBe(
-              semiStrictMapNotMapMessage('User', expectedType)
+              strictMapNotMapMessage('User', expectedType)
             );
           }
         });

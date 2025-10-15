@@ -1,8 +1,13 @@
 import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
+import { Tag } from 'cbor-x';
 import { toISODateTimeString } from '@/utils/toISODateTimeString';
-import { validityInfoSchema, type ValidityInfo } from '../ValidityInfo';
-import { dateTimeInvalidFormatMessage } from '@/schemas/common/DateTime';
+import {
+  validityInfoSchema,
+  type ValidityInfo,
+  createValidityInfo,
+} from '../ValidityInfo';
+import { DATE_TIME_INVALID_FORMAT_MESSAGE } from '@/schemas/common/DateTime';
 
 const INVALID_ISO = 'not-a-datetime';
 
@@ -87,27 +92,13 @@ describe('ValidityInfo Schema', () => {
       ]);
       const result = validityInfoSchema.parse(input);
 
-      // Test that get method returns the correct types
-      const signed = result.get('signed');
-      const validFrom = result.get('validFrom');
-      const validUntil = result.get('validUntil');
-      const expectedUpdate = result.get('expectedUpdate');
-
-      // These should be Tag objects - test runtime behavior
-      expect(typeof signed).toBe('object');
-      expect(typeof validFrom).toBe('object');
-      expect(typeof validUntil).toBe('object');
-      expect(typeof expectedUpdate).toBe('object');
-
-      // Test that they have the correct Tag structure
-      expect(signed).toHaveProperty('tag', 0);
-      expect(signed).toHaveProperty('value');
-      expect(validFrom).toHaveProperty('tag', 0);
-      expect(validFrom).toHaveProperty('value');
-      expect(validUntil).toHaveProperty('tag', 0);
-      expect(validUntil).toHaveProperty('value');
-      expect(expectedUpdate).toHaveProperty('tag', 0);
-      expect(expectedUpdate).toHaveProperty('value');
+      // Type assertions for get method
+      expectTypeOf(result.get('signed')).toEqualTypeOf<Tag | undefined>();
+      expectTypeOf(result.get('validFrom')).toEqualTypeOf<Tag | undefined>();
+      expectTypeOf(result.get('validUntil')).toEqualTypeOf<Tag | undefined>();
+      expectTypeOf(result.get('expectedUpdate')).toEqualTypeOf<
+        Tag | undefined
+      >();
     });
 
     it('should have correct key types', () => {
@@ -125,6 +116,57 @@ describe('ValidityInfo Schema', () => {
       expect(keys).toContain('validUntil');
       expect(keys).not.toContain('expectedUpdate');
     });
+
+    describe('createValidityInfo', () => {
+      it('should create empty map and support typed set/get', () => {
+        const map = createValidityInfo();
+        expect(map).toBeInstanceOf(Map);
+
+        // set Tag(0) values for required keys
+        map.set('signed', new Tag('2024-03-20T10:00:00Z', 0));
+        map.set('validFrom', new Tag('2024-03-20T10:00:00Z', 0));
+        map.set('validUntil', new Tag('2025-03-20T10:00:00Z', 0));
+
+        // get returns Tag | undefined (type-level); runtime shape check
+        expect(map.get('signed')).toEqual(new Tag('2024-03-20T10:00:00Z', 0));
+        expect(map.get('validFrom')).toEqual(
+          new Tag('2024-03-20T10:00:00Z', 0)
+        );
+        expect(map.get('validUntil')).toEqual(
+          new Tag('2025-03-20T10:00:00Z', 0)
+        );
+      });
+
+      it('should accept initial entries with correct types', () => {
+        const initial = [
+          ['signed', new Tag('2024-03-20T10:00:00Z', 0)],
+          ['validFrom', new Tag('2024-03-20T10:00:00Z', 0)],
+          ['validUntil', new Tag('2025-03-20T10:00:00Z', 0)],
+        ] as const;
+
+        const map = createValidityInfo(initial);
+        expect(map).toBeInstanceOf(Map);
+        expect(map.get('signed')).toEqual(new Tag('2024-03-20T10:00:00Z', 0));
+        expect(map.get('validFrom')).toEqual(
+          new Tag('2024-03-20T10:00:00Z', 0)
+        );
+        expect(map.get('validUntil')).toEqual(
+          new Tag('2025-03-20T10:00:00Z', 0)
+        );
+        expect(map.get('expectedUpdate')).toBeUndefined();
+      });
+    });
+
+    it('should support createValidityInfo with correct types', () => {
+      const map = createValidityInfo();
+      expectTypeOf(map).toEqualTypeOf<ValidityInfo>();
+      // Runtime: it's a Map
+      expect(map).toBeInstanceOf(Map);
+      // Type-safe set/get checks (compile-time):
+      // map.set('signed', new Tag('2024-03-20T10:00:00Z', 0));
+      // const v = map.get('validFrom');
+      // expectTypeOf(v).toEqualTypeOf<Tag | undefined>();
+    });
   });
 
   describe('invalid cases', () => {
@@ -141,7 +183,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.signed: ${dateTimeInvalidFormatMessage('Signed')}`
+            `ValidityInfo.signed: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
           );
         }
       }
@@ -160,7 +202,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.validFrom: ${dateTimeInvalidFormatMessage('ValidFrom')}`
+            `ValidityInfo.validFrom: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
           );
         }
       }
@@ -179,7 +221,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.validUntil: ${dateTimeInvalidFormatMessage('ValidUntil')}`
+            `ValidityInfo.validUntil: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
           );
         }
       }
@@ -199,7 +241,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.expectedUpdate: ${dateTimeInvalidFormatMessage('ExpectedUpdate')}`
+            `ValidityInfo.expectedUpdate: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
           );
         }
       }
