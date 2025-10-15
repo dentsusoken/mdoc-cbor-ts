@@ -1,7 +1,10 @@
 import { Tag } from 'cbor-x';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
-import { issuerSignedItemSchema } from '../IssuerSignedItem';
+import {
+  issuerSignedItemSchema,
+  createIssuerSignedItem,
+} from '../IssuerSignedItem';
 import {
   strictMapNotMapMessage,
   strictMapKeyValueMessage,
@@ -11,6 +14,92 @@ import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
 
 describe('IssuerSignedItem', () => {
+  describe('createIssuerSignedItem', () => {
+    it('should create a valid IssuerSignedItem Map with string elementValue', () => {
+      const item = createIssuerSignedItem([
+        ['digestID', 1],
+        ['random', Uint8Array.from([])],
+        ['elementIdentifier', 'given_name'],
+        ['elementValue', 'John'],
+      ]);
+
+      expect(item).toBeInstanceOf(Map);
+      expect(item.get('digestID')).toBe(1);
+      expect(item.get('random')).toEqual(Uint8Array.from([]));
+      expect(item.get('elementIdentifier')).toBe('given_name');
+      expect(item.get('elementValue')).toBe('John');
+
+      // Test type safety of get method
+      expectTypeOf(item.get('digestID')).toEqualTypeOf<number | undefined>();
+      expectTypeOf(item.get('random')).toEqualTypeOf<Uint8Array | undefined>();
+      expectTypeOf(item.get('elementIdentifier')).toEqualTypeOf<
+        string | undefined
+      >();
+      expectTypeOf(item.get('elementValue')).toEqualTypeOf<unknown>();
+    });
+
+    it('should create a valid IssuerSignedItem Map with number elementValue', () => {
+      const item = createIssuerSignedItem([
+        ['digestID', 2],
+        ['random', Uint8Array.from([1, 2, 3])],
+        ['elementIdentifier', 'age'],
+        ['elementValue', 30],
+      ]);
+
+      expect(item).toBeInstanceOf(Map);
+      expect(item.get('digestID')).toBe(2);
+      expect(item.get('random')).toEqual(Uint8Array.from([1, 2, 3]));
+      expect(item.get('elementIdentifier')).toBe('age');
+      expect(item.get('elementValue')).toBe(30);
+
+      // Test type safety of get method
+      expectTypeOf(item.get('digestID')).toEqualTypeOf<number | undefined>();
+      expectTypeOf(item.get('random')).toEqualTypeOf<Uint8Array | undefined>();
+      expectTypeOf(item.get('elementIdentifier')).toEqualTypeOf<
+        string | undefined
+      >();
+      expectTypeOf(item.get('elementValue')).toEqualTypeOf<unknown>();
+    });
+
+    it('should create a valid IssuerSignedItem Map with tagged elementValue', () => {
+      const item = createIssuerSignedItem([
+        ['digestID', 3],
+        ['random', Uint8Array.from([4, 5, 6])],
+        ['elementIdentifier', 'photo'],
+        ['elementValue', new Tag(0, 24)],
+      ]);
+
+      expect(item).toBeInstanceOf(Map);
+      expect(item.get('digestID')).toBe(3);
+      expect(item.get('random')).toEqual(Uint8Array.from([4, 5, 6]));
+      expect(item.get('elementIdentifier')).toBe('photo');
+      expect(item.get('elementValue')).toEqual(new Tag(0, 24));
+
+      // Test type safety of get method
+      expectTypeOf(item.get('digestID')).toEqualTypeOf<number | undefined>();
+      expectTypeOf(item.get('random')).toEqualTypeOf<Uint8Array | undefined>();
+      expectTypeOf(item.get('elementIdentifier')).toEqualTypeOf<
+        string | undefined
+      >();
+      expectTypeOf(item.get('elementValue')).toEqualTypeOf<unknown>();
+    });
+
+    it('should be compatible with issuerSignedItemSchema validation', () => {
+      const item = createIssuerSignedItem([
+        ['digestID', 1],
+        ['random', Uint8Array.from([])],
+        ['elementIdentifier', 'given_name'],
+        ['elementValue', 'John'],
+      ]);
+
+      // Should not throw when parsing with schema
+      expect(() => issuerSignedItemSchema.parse(item)).not.toThrow();
+
+      const result = issuerSignedItemSchema.parse(item);
+      expect(result).toEqual(item);
+    });
+  });
+
   describe('valid issuer signed items', () => {
     it('should accept string elementValue', () => {
       const item = new Map<string, unknown>([
@@ -21,6 +110,16 @@ describe('IssuerSignedItem', () => {
       ]);
       const result = issuerSignedItemSchema.parse(item);
       expect(result).toEqual(item);
+
+      // Test type safety of get method
+      expectTypeOf(result.get('digestID')).toEqualTypeOf<number | undefined>();
+      expectTypeOf(result.get('random')).toEqualTypeOf<
+        Uint8Array | undefined
+      >();
+      expectTypeOf(result.get('elementIdentifier')).toEqualTypeOf<
+        string | undefined
+      >();
+      expectTypeOf(result.get('elementValue')).toEqualTypeOf<unknown>();
     });
 
     it('should accept number elementValue', () => {
@@ -32,6 +131,16 @@ describe('IssuerSignedItem', () => {
       ]);
       const result = issuerSignedItemSchema.parse(item);
       expect(result).toEqual(item);
+
+      // Test type safety of get method
+      expectTypeOf(result.get('digestID')).toEqualTypeOf<number | undefined>();
+      expectTypeOf(result.get('random')).toEqualTypeOf<
+        Uint8Array | undefined
+      >();
+      expectTypeOf(result.get('elementIdentifier')).toEqualTypeOf<
+        string | undefined
+      >();
+      expectTypeOf(result.get('elementValue')).toEqualTypeOf<unknown>();
     });
 
     it('should accept tagged elementValue', () => {
@@ -43,6 +152,16 @@ describe('IssuerSignedItem', () => {
       ]);
       const result = issuerSignedItemSchema.parse(item);
       expect(result).toEqual(item);
+
+      // Test type safety of get method
+      expectTypeOf(result.get('digestID')).toEqualTypeOf<number | undefined>();
+      expectTypeOf(result.get('random')).toEqualTypeOf<
+        Uint8Array | undefined
+      >();
+      expectTypeOf(result.get('elementIdentifier')).toEqualTypeOf<
+        string | undefined
+      >();
+      expectTypeOf(result.get('elementValue')).toEqualTypeOf<unknown>();
     });
   });
 

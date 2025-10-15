@@ -4,6 +4,7 @@ import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentif
 import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
 import { digestIDSchema } from '@/index';
 import { createStrictMapSchema } from '../common/StrictMap';
+import { createStrictMap } from '@/strict-map';
 
 /**
  * Object schema for issuer-signed items in mdoc
@@ -33,6 +34,25 @@ export const issuerSignedItemEntries = [
   ['elementIdentifier', dataElementIdentifierSchema],
   ['elementValue', dataElementValueSchema],
 ] as const;
+
+/**
+ * Type helper for constructing a strongly-typed IssuerSignedItem Map.
+ * @description
+ * Use this for typing when creating IssuerSignedItem entries using {@link createStrictMap}.
+ *
+ * @example
+ * ```typescript
+ * const item = createIssuerSignedItem([
+ *   ['digestID', 1],
+ *   ['random', new Uint8Array([1, 2, 3])],
+ *   ['elementIdentifier', 'given_name'],
+ *   ['elementValue', 'John']
+ * ]);
+ * ```
+ */
+export const createIssuerSignedItem = createStrictMap<
+  typeof issuerSignedItemEntries
+>;
 
 /**
  * Schema for issuer-signed items in mdoc

@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import { buildValueDigests } from '../buildValueDigests';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
-import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
+import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { calculateDigest } from '@/utils/calculateDigest';
 import { createTag24 } from '@/cbor/createTag24';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
@@ -20,12 +20,12 @@ const createIssuerSignedItemTag24 = (
   elementIdentifier = 'given_name',
   elementValue: unknown = 'JOHN'
 ): ReturnType<typeof createTag24> => {
-  const issuerSignedItem: IssuerSignedItem = {
-    digestID,
-    random: new Uint8Array(16),
-    elementIdentifier,
-    elementValue,
-  };
+  const issuerSignedItem = createIssuerSignedItem([
+    ['digestID', digestID],
+    ['random', new Uint8Array(16)],
+    ['elementIdentifier', elementIdentifier],
+    ['elementValue', elementValue],
+  ]);
   return createTag24(issuerSignedItem);
 };
 

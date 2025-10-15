@@ -66,6 +66,6 @@ export const buildValueDigest = ({
 
   return {
     digest,
-    digestID: issuerSignedItem.digestID,
+    digestID: issuerSignedItem.get('digestID')!,
   };
 };
