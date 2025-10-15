@@ -24,29 +24,56 @@ export const semiStrictMapMissingKeysMessage = (
 ): string => `${target}: Missing required keys: ${keys.join(', ')}`;
 
 /**
- * Creates an error message for a specific key's value validation failure
- * @param target - The name of the target schema being validated
- * @param key - The key that failed validation
- * @param originalMessage - The original Zod error message
- * @returns A formatted error message string
+ * Creates an error message for a specific key's value validation failure within a SemiStrictMap.
+ *
+ * @param target - The name of the target schema being validated (e.g., "UserData").
+ * @param path - An array representing the path to the nested key(s) that failed validation,
+ *     where each element is a key string (e.g., ['age'] or for nested: ['user', 'age']).
+ * @param originalMessage - The original Zod error message produced by the key's schema.
+ * @returns A formatted error message string, prefixed with the target and path.
+ *
+ * @example
+ * // Given:
+ * //   target = "UserData"
+ * //   path = ["age"]
+ * //   originalMessage = "age: Expected number, received string"
+ * //
+ * // Returns: "UserData.age: Expected number, received string" (duplication avoided)
  */
 export const semiStrictMapKeyValueMessage = (
   target: string,
-  key: string | number,
+  path: (string | number)[],
   originalMessage: string
 ): string => {
+  const label = [target, ...path].join('.');
+
   const colonIndex = originalMessage.indexOf(':');
   if (colonIndex === -1) {
-    return `${target}.${key}: ${originalMessage}`;
+    return `${label}: ${originalMessage}`;
   }
 
-  const keyPart = originalMessage.substring(0, colonIndex).trim();
-  const messagePart = originalMessage.substring(colonIndex + 1).trim();
-  // Preserve the full nested path after the first segment to retain hierarchy
-  const firstDotIndex = keyPart.indexOf('.');
-  const nestedPath =
-    firstDotIndex !== -1 ? keyPart.substring(firstDotIndex + 1) : keyPart;
-  return `${target}.${key}.${nestedPath}: ${messagePart}`;
+  // Check if the original message already contains the full path to avoid duplication
+  const originalPrefix = originalMessage.substring(0, colonIndex).trim();
+
+  // If the original message already contains the full path, just use the message part
+  if (originalPrefix === label) {
+    const messagePart = originalMessage.substring(colonIndex + 1).trim();
+    return `${label}: ${messagePart}`;
+  }
+
+  // If the original message already contains a path that ends with our current path,
+  // extract just the message part to avoid duplication
+  const pathSuffix = path[path.length - 1];
+  if (
+    originalPrefix.endsWith(`.${pathSuffix}`) ||
+    originalPrefix === String(pathSuffix)
+  ) {
+    const messagePart = originalMessage.substring(colonIndex + 1).trim();
+    return `${label}: ${messagePart}`;
+  }
+
+  // Otherwise, keep the full original message
+  return `${label}: ${originalMessage}`;
 };
 
 type CreateSemiStrictMapSchemaParams<T extends StrictMapEntries> = {
@@ -166,20 +193,12 @@ export const createSemiStrictMapSchema = <
           const result = keySchema.safeParse(value);
           if (!result.success) {
             for (const issue of result.error.issues) {
+              const path = [String(typedKey), ...issue.path];
+              const message = issue.message || 'Invalid value';
               ctx.addIssue({
                 ...issue,
-                path: [String(typedKey), ...issue.path],
-                message: issue.message
-                  ? semiStrictMapKeyValueMessage(
-                      target,
-                      typedKey,
-                      issue.message
-                    )
-                  : semiStrictMapKeyValueMessage(
-                      target,
-                      typedKey,
-                      'Invalid value'
-                    ),
+                path,
+                message: semiStrictMapKeyValueMessage(target, path, message),
               });
             }
           } else {

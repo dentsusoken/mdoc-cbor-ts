@@ -377,7 +377,7 @@ describe('createSemiStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           semiStrictMapKeyValueMessage(
             'User',
-            'age',
+            ['age'],
             'Expected number, received string'
           )
         );
@@ -416,12 +416,8 @@ describe('createSemiStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           semiStrictMapKeyValueMessage(
             'Data',
-            'user',
-            semiStrictMapKeyValueMessage(
-              'User',
-              'age',
-              'Expected number, received string'
-            )
+            ['user', 'age'],
+            'Expected number, received string'
           )
         );
       }
@@ -470,16 +466,8 @@ describe('createSemiStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           semiStrictMapKeyValueMessage(
             'Container',
-            'payload',
-            semiStrictMapKeyValueMessage(
-              'Data',
-              'user',
-              semiStrictMapKeyValueMessage(
-                'User',
-                'age',
-                'Expected number, received string'
-              )
-            )
+            ['payload', 'user', 'age'],
+            'Expected number, received string'
           )
         );
       }
@@ -532,7 +520,7 @@ describe('createSemiStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           semiStrictMapKeyValueMessage(
             'User',
-            'type',
+            ['type'],
             'Invalid literal value, expected "user"'
           )
         );

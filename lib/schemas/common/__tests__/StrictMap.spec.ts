@@ -411,7 +411,7 @@ describe('createStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           strictMapKeyValueMessage(
             'User',
-            'age',
+            ['age'],
             'Expected number, received string'
           )
         );
@@ -450,12 +450,8 @@ describe('createStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           strictMapKeyValueMessage(
             'Data',
-            'user',
-            strictMapKeyValueMessage(
-              'User',
-              'age',
-              'Expected number, received string'
-            )
+            ['user', 'age'],
+            'Expected number, received string'
           )
         );
       }
@@ -504,35 +500,11 @@ describe('createStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           strictMapKeyValueMessage(
             'Container',
-            'payload',
-            strictMapKeyValueMessage(
-              'Data',
-              'user',
-              strictMapKeyValueMessage(
-                'User',
-                'age',
-                'Expected number, received string'
-              )
-            )
+            ['payload', 'user', 'age'],
+            'Expected number, received string'
           )
         );
       }
-
-      console.log(
-        strictMapKeyValueMessage(
-          'Container',
-          'payload',
-          strictMapKeyValueMessage(
-            'Data',
-            'user',
-            strictMapKeyValueMessage(
-              'User',
-              'age',
-              'Expected number, received string'
-            )
-          )
-        )
-      );
     });
 
     it('should provide detailed error messages for multiple validation errors', () => {
@@ -583,7 +555,7 @@ describe('createStrictMapSchema', () => {
         expect(zodError.issues[0].message).toBe(
           strictMapKeyValueMessage(
             'User',
-            'type',
+            ['type'],
             'Invalid literal value, expected "user"'
           )
         );
