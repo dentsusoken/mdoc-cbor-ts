@@ -3,7 +3,6 @@ import { createBytesSchema } from '@/schemas/common/Bytes';
 import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
 import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
 import { digestIDSchema } from '@/index';
-import { createStructSchema } from '../common/Struct';
 import { createStrictMapSchema } from '../common/StrictMap';
 
 /**

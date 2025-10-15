@@ -2,10 +2,13 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { issuerSignedItemSchema } from '../IssuerSignedItem';
+import {
+  strictMapNotMapMessage,
+  strictMapKeyValueMessage,
+} from '@/schemas/common/StrictMap';
 import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
-import { mapInvalidTypeMessage } from '@/schemas/common/Map';
 
 describe('IssuerSignedItem', () => {
   describe('valid issuer signed items', () => {
@@ -17,7 +20,7 @@ describe('IssuerSignedItem', () => {
         ['elementValue', 'John'],
       ]);
       const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(Object.fromEntries(item));
+      expect(result).toEqual(item);
     });
 
     it('should accept number elementValue', () => {
@@ -28,7 +31,7 @@ describe('IssuerSignedItem', () => {
         ['elementValue', 30],
       ]);
       const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(Object.fromEntries(item));
+      expect(result).toEqual(item);
     });
 
     it('should accept tagged elementValue', () => {
@@ -39,7 +42,7 @@ describe('IssuerSignedItem', () => {
         ['elementValue', new Tag(0, 24)],
       ]);
       const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(Object.fromEntries(item));
+      expect(result).toEqual(item);
     });
   });
 
@@ -52,32 +55,35 @@ describe('IssuerSignedItem', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: requiredMessage('IssuerSignedItem'),
+        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'object'),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: requiredMessage('IssuerSignedItem'),
+        expectedMessage: strictMapNotMapMessage(
+          'IssuerSignedItem',
+          'undefined'
+        ),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
+        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'boolean'),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
+        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'number'),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
+        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'string'),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: mapInvalidTypeMessage('IssuerSignedItem'),
+        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'Array'),
       },
     ];
 
@@ -112,7 +118,11 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
           expect(zodError.issues[0].message).toBe(
-            uintInvalidTypeMessage('DigestID')
+            strictMapKeyValueMessage(
+              'IssuerSignedItem',
+              'digestID',
+              uintInvalidTypeMessage('DigestID')
+            )
           );
         }
       });
@@ -133,7 +143,13 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['random']);
-          expect(zodError.issues[0].message).toBe(requiredMessage('random'));
+          expect(zodError.issues[0].message).toBe(
+            strictMapKeyValueMessage(
+              'IssuerSignedItem',
+              'random',
+              requiredMessage('random')
+            )
+          );
         }
       });
     });
@@ -154,7 +170,11 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            nonEmptyTextEmptyMessage('DataElementIdentifier')
+            strictMapKeyValueMessage(
+              'IssuerSignedItem',
+              'elementIdentifier',
+              nonEmptyTextEmptyMessage('DataElementIdentifier')
+            )
           );
         }
       });
