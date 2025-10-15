@@ -4,6 +4,7 @@ import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentif
 import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
 import { digestIDSchema } from '@/index';
 import { createStructSchema } from '../common/Struct';
+import { createStrictMapSchema } from '../common/StrictMap';
 
 /**
  * Object schema for issuer-signed items in mdoc
@@ -27,12 +28,12 @@ import { createStructSchema } from '../common/Struct';
  * - elementIdentifier: {@link DataElementIdentifier} - Identifier for the data element
  * - elementValue: {@link DataElementValue} - The actual data element value
  */
-export const issuerSignedItemObjectSchema = z.object({
-  digestID: digestIDSchema,
-  random: createBytesSchema('random'),
-  elementIdentifier: dataElementIdentifierSchema,
-  elementValue: dataElementValueSchema,
-});
+export const issuerSignedItemEntries = [
+  ['digestID', digestIDSchema],
+  ['random', createBytesSchema('random')],
+  ['elementIdentifier', dataElementIdentifierSchema],
+  ['elementValue', dataElementValueSchema],
+] as const;
 
 /**
  * Schema for issuer-signed items in mdoc
@@ -58,9 +59,9 @@ export const issuerSignedItemObjectSchema = z.object({
  * @see {@link DataElementValue}
  * @see {@link issuerSignedItemObjectSchema}
  */
-export const issuerSignedItemSchema = createStructSchema({
+export const issuerSignedItemSchema = createStrictMapSchema({
   target: 'IssuerSignedItem',
-  objectSchema: issuerSignedItemObjectSchema,
+  entries: issuerSignedItemEntries,
 });
 
 /**

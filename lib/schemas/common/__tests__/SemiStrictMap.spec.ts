@@ -16,7 +16,7 @@ describe('createSemiStrictMapSchema', () => {
         ['active', z.boolean()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('Person', entries);
+      const schema = createSemiStrictMapSchema({ target: 'Person', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -42,7 +42,7 @@ describe('createSemiStrictMapSchema', () => {
         [4, z.string()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('Headers', entries);
+      const schema = createSemiStrictMapSchema({ target: 'Headers', entries });
 
       const validMap = new Map<string | number, unknown>([
         [1, -7],
@@ -65,7 +65,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -87,7 +87,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map([['name', 'Alice']]);
 
@@ -106,7 +106,7 @@ describe('createSemiStrictMapSchema', () => {
         ['middleName', z.string().nullable()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('Person', entries);
+      const schema = createSemiStrictMapSchema({ target: 'Person', entries });
 
       const validMap = new Map([
         ['name', 'Alice'],
@@ -125,21 +125,25 @@ describe('createSemiStrictMapSchema', () => {
     });
 
     it('should validate map with nested maps', () => {
-      const userSchema = createSemiStrictMapSchema('User', [
-        ['name', z.string()],
-        ['age', z.number()],
-      ] as const);
+      const userSchema = createSemiStrictMapSchema({
+        target: 'User',
+        entries: [
+          ['name', z.string()],
+          ['age', z.number()],
+        ] as const,
+      });
 
-      const metadataSchema = createSemiStrictMapSchema('Metadata', [
-        ['version', z.number()],
-      ] as const);
+      const metadataSchema = createSemiStrictMapSchema({
+        target: 'Metadata',
+        entries: [['version', z.number()]] as const,
+      });
 
       const entries = [
         ['user', userSchema],
         ['metadata', metadataSchema],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('Data', entries);
+      const schema = createSemiStrictMapSchema({ target: 'Data', entries });
 
       const validMap = new Map<string | number, unknown>([
         [
@@ -175,7 +179,7 @@ describe('createSemiStrictMapSchema', () => {
         ['scores', z.array(z.number())],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('Config', entries);
+      const schema = createSemiStrictMapSchema({ target: 'Config', entries });
 
       const validMap = new Map([
         ['tags', ['foo', 'bar', 'baz']],
@@ -197,7 +201,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -219,7 +223,10 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('OptionalData', entries);
+      const schema = createSemiStrictMapSchema({
+        target: 'OptionalData',
+        entries,
+      });
 
       const emptyMap = new Map();
 
@@ -231,7 +238,7 @@ describe('createSemiStrictMapSchema', () => {
     it('should work with union types', () => {
       const entries = [['value', z.union([z.string(), z.number()])]] as const;
 
-      const schema = createSemiStrictMapSchema('Data', entries);
+      const schema = createSemiStrictMapSchema({ target: 'Data', entries });
 
       const map1 = new Map([['value', 'string value']]);
       const map2 = new Map([['value', 42]]);
@@ -256,7 +263,7 @@ describe('createSemiStrictMapSchema', () => {
         ['status', z.enum(['active', 'inactive'])],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map([
         ['type', 'user'],
@@ -281,7 +288,7 @@ describe('createSemiStrictMapSchema', () => {
       ] as const;
 
       it('should preserve unknown keys as-is', () => {
-        const schema = createSemiStrictMapSchema('User', entries);
+        const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
         const inputMap = new Map<string | number, unknown>([
           ['name', 'Alice'],
@@ -305,7 +312,10 @@ describe('createSemiStrictMapSchema', () => {
           ['optional', z.number().optional()],
         ] as const;
 
-        const schema = createSemiStrictMapSchema('Data', entriesWithOptional);
+        const schema = createSemiStrictMapSchema({
+          target: 'Data',
+          entries: entriesWithOptional,
+        });
 
         const inputMap = new Map<string | number, unknown>([
           ['required', 'value'],
@@ -329,7 +339,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([['name', 'Alice']]);
 
@@ -351,7 +361,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([
         ['name', 'Alice'],
@@ -375,14 +385,17 @@ describe('createSemiStrictMapSchema', () => {
     });
 
     it('should fail validation for nested maps with incorrect structure', () => {
-      const userSchema = createSemiStrictMapSchema('User', [
-        ['name', z.string()],
-        ['age', z.number()],
-      ] as const);
+      const userSchema = createSemiStrictMapSchema({
+        target: 'User',
+        entries: [
+          ['name', z.string()],
+          ['age', z.number()],
+        ] as const,
+      });
 
       const entries = [['user', userSchema]] as const;
 
-      const schema = createSemiStrictMapSchema('Data', entries);
+      const schema = createSemiStrictMapSchema({ target: 'Data', entries });
 
       const invalidMap = new Map<string | number, unknown>([
         [
@@ -415,18 +428,23 @@ describe('createSemiStrictMapSchema', () => {
     });
 
     it('should fail validation for deeper nested maps with incorrect structure', () => {
-      const userSchema = createSemiStrictMapSchema('User', [
-        ['name', z.string()],
-        ['age', z.number()],
-      ] as const);
+      const userSchema = createSemiStrictMapSchema({
+        target: 'User',
+        entries: [
+          ['name', z.string()],
+          ['age', z.number()],
+        ] as const,
+      });
 
-      const dataSchema = createSemiStrictMapSchema('Data', [
-        ['user', userSchema],
-      ] as const);
+      const dataSchema = createSemiStrictMapSchema({
+        target: 'Data',
+        entries: [['user', userSchema]] as const,
+      });
 
-      const containerSchema = createSemiStrictMapSchema('Container', [
-        ['payload', dataSchema],
-      ] as const);
+      const containerSchema = createSemiStrictMapSchema({
+        target: 'Container',
+        entries: [['payload', dataSchema]] as const,
+      });
 
       const invalidMap = new Map<string | number, unknown>([
         [
@@ -474,7 +492,7 @@ describe('createSemiStrictMapSchema', () => {
         ['email', z.string().email()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map<string | number, unknown>([
         ['name', 123],
@@ -498,7 +516,7 @@ describe('createSemiStrictMapSchema', () => {
         ['status', z.enum(['active', 'inactive'])],
       ] as const;
 
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([
         ['type', 'admin'],
@@ -523,7 +541,7 @@ describe('createSemiStrictMapSchema', () => {
 
     describe('non-Map inputs', () => {
       const entries = [['name', z.string()]] as const;
-      const schema = createSemiStrictMapSchema('User', entries);
+      const schema = createSemiStrictMapSchema({ target: 'User', entries });
 
       const cases: Array<[string, unknown, string]> = [
         ['plain object', {}, 'Object'],

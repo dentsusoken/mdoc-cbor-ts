@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { StrictMap, StrictMapEntries } from './strict-map/types';
+import type { StrictMap, StrictMapEntries } from '@/strict-map/types';
 
 /**
  * Mode for handling unknown keys in StrictMap schemas
@@ -74,111 +74,76 @@ export const strictMapKeyValueMessage = (
   return `${target}.${key}.${nestedPath}: ${messagePart}`;
 };
 
+type CreateStrictMapSchemaParams<T extends StrictMapEntries> = {
+  target: string;
+  entries: T;
+  unknownKeys?: UnknownKeysMode;
+};
+
 /**
- * Creates a Zod schema that validates and returns a StrictMap
- * @description
- * This function creates a Zod schema that:
- * - Validates that the input is a Map
- * - Validates each key-value pair according to the provided entries schema
- * - Returns a type-safe StrictMap on successful validation
- * - Includes target name in all error messages for better debugging
- * - Handles unknown keys based on the unknownKeys mode
+ * Creates a Zod schema for validating and returning a StrictMap structure from a Map input.
  *
- * This is particularly useful when:
- * - Decoding CBOR data that should be a StrictMap
- * - Validating API responses containing Maps
- * - Ensuring runtime type safety for Map structures
+ * This utility helps enforce a well-defined set of keys, value types, and structural integrity
+ * for Maps, especially when dealing with decoded CBOR data or API responses using Map structures.
  *
- * @template T - The entries array type (must be `as const`)
- * @param target - Name used in error messages (e.g., "DeviceAuth", "ProtectedHeaders")
- * @param entries - Array of [key, schema] tuples defining the expected map structure
- * @param unknownKeys - How to handle keys not defined in entries (default: 'strict')
- *   - 'strip': Remove unknown keys from output (safe, recommended for most cases)
- *   - 'passthrough': Include unknown keys in output (use with caution)
- *   - 'strict': Throw error if unknown keys are present (default, most strict)
+ * Features:
+ * - Asserts the input is a Map (with user-friendly type error messages).
+ * - Each key's presence and value type is checked per the provided `entries`.
+ * - Ensures all required keys are present, and optionally enforces or strips unknown keys.
+ * - All validation errors are prefixed with the target schema name for better debugging.
+ * - Returned Maps are strongly typed by the input schema (`StrictMap<T>`).
+ *
+ * @template T Array of `[key, schema]` tuples ("entries"), usually written with `as const`.
+ * @param target String name to identify the schema in error messages (e.g., `'DeviceAuth'`).
+ * @param entries Array of `[key, z.ZodType]` for all allowed keys (and their schemas); must be `as const`.
+ * @param unknownKeys How to handle keys not listed in `entries`:
+ *   - 'strip' (default): remove unknown keys from output.
+ *   - 'passthrough': allow unknown keys in output, unvalidated.
+ *   - 'strict': error on unknown keys.
+ *
+ * @returns A `z.ZodType` that parses a Map to a `StrictMap<T>`.
  *
  * @example
- * ```typescript
- * import { z } from 'zod';
- * import { createStrictMapSchema } from './createStrictMapSchema';
- *
+ * // Enforce three fields, error on extraneous keys (default)
  * const entries = [
+ *   ['id', z.number()],
  *   ['name', z.string()],
- *   ['age', z.number()],
- *   ['active', z.boolean()],
+ *   ['enabled', z.boolean()],
  * ] as const;
- *
- * // Default (strict mode): extra keys cause an error
- * const schema1 = createStrictMapSchema('Person', entries);
- *
- * const validMap = new Map([
- *   ['name', 'Alice'],
- *   ['age', 25],
- *   ['active', true],
- * ]);
- * const result = schema1.parse(validMap); // StrictMap<typeof entries>
- *
- * // With extra key - throws error in strict mode
- * const invalidMap = new Map([
- *   ['name', 'Alice'],
- *   ['age', 25],
- *   ['active', true],
- *   ['extra', 'value'],
- * ]);
- * schema1.parse(invalidMap); // Throws: "Person: Unexpected keys: extra"
- * ```
+ * const mapSchema = createStrictMapSchema({ target: 'User', entries });
+ * mapSchema.parse(new Map([['id', 1], ['name', 'x'], ['enabled', true]])); // OK
  *
  * @example
- * ```typescript
- * // Strip mode: extra keys are removed (safe, recommended)
- * const schema2 = createStrictMapSchema('Person', entries, 'strip');
- *
- * const result2 = schema2.parse(new Map([
- *   ['name', 'Alice'],
- *   ['age', 25],
- *   ['active', true],
- *   ['extra', 'removed'],
- * ]));
- * // result2: Map { 'name' => 'Alice', 'age' => 25, 'active' => true }
- * // 'extra' key is removed
- * ```
+ * // Strip unknown keys
+ * const mapSchema = createStrictMapSchema({ target: 'User', entries, unknownKeys: 'strip' });
+ * mapSchema.parse(new Map([['id', 2], ['name', 'y'], ['foo', 9]])); // unknown 'foo' dropped
  *
  * @example
- * ```typescript
- * // Passthrough mode: extra keys are included (use with caution)
- * const schema3 = createStrictMapSchema('Person', entries, 'passthrough');
- *
- * const result3 = schema3.parse(new Map([
- *   ['name', 'Alice'],
- *   ['age', 25],
- *   ['active', true],
- *   ['extra', 'kept'],
- * ]));
- * // result3: Map { 'name' => 'Alice', 'age' => 25, 'active' => true, 'extra' => 'kept' }
- * ```
+ * // Passthrough: include unknown keys
+ * const mapSchema = createStrictMapSchema({ target: 'User', entries, unknownKeys: 'passthrough' });
+ * mapSchema.parse(new Map([['id', 3], ['name', 'z'], ['unknown', 123]])); // 'unknown' stays
  *
  * @example
- * ```typescript
- * // With CBOR decoding
- * import { decodeCbor } from '../../../cbor/codec';
- *
- * const entries = [
- *   [1, z.number()],  // Algorithm
- *   [4, z.string()],  // Key ID
- * ] as const;
- *
- * const headerSchema = createStrictMapSchema('ProtectedHeaders', entries);
- *
- * const encoded = encodeCbor(new Map([[1, -7], [4, 'key-123']]));
- * const decoded = decodeCbor(encoded); // Returns a Map
- * const validated = headerSchema.parse(decoded); // StrictMap with type safety
- * ```
+ * // CBOR decoded header (with integer keys)
+ * const protectedHeaderSchema = createStrictMapSchema({
+ *   target: 'ProtectedHeaders',
+ *   entries: [
+ *     [1, z.number()], // Algorithm
+ *     [4, z.string()], // Key ID
+ *   ] as const,
+ * });
+ * const decoded = decodeCbor(encoded); // Map from CBOR
+ * protectedHeaderSchema.parse(decoded); // validated StrictMap
  */
-export const createStrictMapSchema = <T extends StrictMapEntries>(
-  target: string,
-  entries: T,
-  unknownKeys: UnknownKeysMode = 'strip'
-): z.ZodType<StrictMap<T>, z.ZodTypeDef, Map<unknown, unknown>> => {
+export const createStrictMapSchema = <T extends StrictMapEntries>({
+  target,
+  entries,
+  unknownKeys = 'strip',
+}: CreateStrictMapSchemaParams<T>): z.ZodType<
+  StrictMap<T>,
+  z.ZodTypeDef,
+  Map<unknown, unknown>
+> => {
   // Create a record of key -> schema for efficient lookup
   const schemaMap = new Map<string | number, z.ZodType>();
   const requiredKeys = new Set<string | number>();

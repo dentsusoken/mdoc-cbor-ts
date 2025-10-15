@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { SemiStrictMap, StrictMapEntries } from './strict-map/types';
+import type { SemiStrictMap, StrictMapEntries } from '@/strict-map/types';
 
 /**
  * Creates an error message when input is not a Map
@@ -49,46 +49,71 @@ export const semiStrictMapKeyValueMessage = (
   return `${target}.${key}.${nestedPath}: ${messagePart}`;
 };
 
+type CreateSemiStrictMapSchemaParams<T extends StrictMapEntries> = {
+  target: string;
+  entries: T;
+};
+
 /**
- * Creates a Zod schema that validates and returns a SemiStrictMap
- * @description
- * This function creates a Zod schema that:
- * - Validates that the input is a Map instance
- * - Validates required keys are present
- * - Validates known keys have correct value types
- * - Handles unknown keys according to the specified mode
- * - Returns a SemiStrictMap with type-safe operations
+ * Creates a Zod schema for validating and returning a SemiStrictMap structure from a Map input.
  *
- * @template T - The entries array type (must be `as const`)
- * @template U - The type constraint for additional allowed keys
- * @param target - The name of the target schema for error messages
- * @param entries - Array of [key, schema] tuples defining the map structure
- * @param unknownKeys - How to handle unknown keys (always 'passthrough' for SemiStrictMap)
+ * This utility helps enforce a well-defined set of keys and value types for Maps while allowing
+ * additional unknown keys to pass through, especially useful when dealing with decoded CBOR data
+ * or API responses using Map structures where some keys may be optional or unknown.
+ *
+ * Features:
+ * - Asserts the input is a Map (with user-friendly type error messages).
+ * - Each key's presence and value type is checked per the provided `entries`.
+ * - Ensures all required keys are present.
+ * - Unknown keys are always included in the output (passthrough behavior).
+ * - All validation errors are prefixed with the target schema name for better debugging.
+ * - Returned Maps are strongly typed by the input schema (`SemiStrictMap<T, U>`).
+ *
+ * @template T Array of `[key, schema]` tuples ("entries"), usually written with `as const`.
+ * @template U Type constraint for additional allowed keys (defaults to `string | number`).
+ * @param target String name to identify the schema in error messages (e.g., `'UserData'`).
+ * @param entries Array of `[key, z.ZodType]` for all allowed keys (and their schemas); must be `as const`.
+ *
+ * @returns A `z.ZodType` that parses a Map to a `SemiStrictMap<T, U>`.
  *
  * @example
- * ```typescript
+ * // Basic usage with required fields
  * const entries = [
+ *   ['id', z.number()],
  *   ['name', z.string()],
- *   ['age', z.number()],
  * ] as const;
+ * const mapSchema = createSemiStrictMapSchema({ target: 'User', entries });
+ * mapSchema.parse(new Map([['id', 1], ['name', 'Alice'], ['extra', 'value']])); // OK, 'extra' included
  *
- * const schema = createSemiStrictMapSchema('User', entries);
- * const result = schema.parse(userMap); // SemiStrictMap<typeof entries, string | number>
- * ```
+ * @example
+ * // With optional fields
+ * const entries = [
+ *   ['required', z.string()],
+ *   ['optional', z.number().optional()],
+ * ] as const;
+ * const mapSchema = createSemiStrictMapSchema({ target: 'Config', entries });
+ * mapSchema.parse(new Map([['required', 'value'], ['unknown', 123]])); // OK, both included
  */
 export const createSemiStrictMapSchema = <
   T extends StrictMapEntries,
   U extends string | number = string | number,
->(
-  target: string,
-  entries: T
-): z.ZodType<SemiStrictMap<T, U>, z.ZodTypeDef, Map<unknown, unknown>> => {
+>({
+  target,
+  entries,
+}: CreateSemiStrictMapSchemaParams<T>): z.ZodType<
+  SemiStrictMap<T, U>,
+  z.ZodTypeDef,
+  Map<unknown, unknown>
+> => {
   // Build schema map and track required keys
   const schemaMap = new Map<string | number, z.ZodType>();
   const requiredKeys = new Set<string | number>();
   const allKeys = new Set<string | number>();
 
-  for (const [key, schema] of entries) {
+  for (const [key, schema] of entries as unknown as readonly [
+    string | number,
+    z.ZodType,
+  ][]) {
     schemaMap.set(key, schema);
     allKeys.add(key);
     if (!schema.isOptional()) {

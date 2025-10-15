@@ -17,7 +17,7 @@ describe('createStrictMapSchema', () => {
         ['active', z.boolean()],
       ] as const;
 
-      const schema = createStrictMapSchema('Person', entries);
+      const schema = createStrictMapSchema({ target: 'Person', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -43,7 +43,7 @@ describe('createStrictMapSchema', () => {
         [4, z.string()],
       ] as const;
 
-      const schema = createStrictMapSchema('Headers', entries);
+      const schema = createStrictMapSchema({ target: 'Headers', entries });
 
       const validMap = new Map<string | number, unknown>([
         [1, -7],
@@ -66,7 +66,7 @@ describe('createStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -89,7 +89,7 @@ describe('createStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map([['name', 'Alice']]);
 
@@ -109,7 +109,7 @@ describe('createStrictMapSchema', () => {
         ['middleName', z.string().nullable()],
       ] as const;
 
-      const schema = createStrictMapSchema('Person', entries);
+      const schema = createStrictMapSchema({ target: 'Person', entries });
 
       const validMap = new Map([
         ['name', 'Alice'],
@@ -129,21 +129,25 @@ describe('createStrictMapSchema', () => {
     });
 
     it('should validate map with nested maps', () => {
-      const userSchema = createStrictMapSchema('User', [
-        ['name', z.string()],
-        ['age', z.number()],
-      ] as const);
+      const userSchema = createStrictMapSchema({
+        target: 'User',
+        entries: [
+          ['name', z.string()],
+          ['age', z.number()],
+        ] as const,
+      });
 
-      const metadataSchema = createStrictMapSchema('Metadata', [
-        ['version', z.number()],
-      ] as const);
+      const metadataSchema = createStrictMapSchema({
+        target: 'Metadata',
+        entries: [['version', z.number()]] as const,
+      });
 
       const entries = [
         ['user', userSchema],
         ['metadata', metadataSchema],
       ] as const;
 
-      const schema = createStrictMapSchema('Data', entries);
+      const schema = createStrictMapSchema({ target: 'Data', entries });
 
       const validMap = new Map<string | number, unknown>([
         [
@@ -182,7 +186,7 @@ describe('createStrictMapSchema', () => {
         ['scores', z.array(z.number())],
       ] as const;
 
-      const schema = createStrictMapSchema('Config', entries);
+      const schema = createStrictMapSchema({ target: 'Config', entries });
 
       const validMap = new Map([
         ['tags', ['foo', 'bar', 'baz']],
@@ -205,7 +209,7 @@ describe('createStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -227,7 +231,7 @@ describe('createStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createStrictMapSchema('OptionalData', entries);
+      const schema = createStrictMapSchema({ target: 'OptionalData', entries });
 
       const emptyMap = new Map();
 
@@ -239,7 +243,7 @@ describe('createStrictMapSchema', () => {
     it('should work with union types', () => {
       const entries = [['value', z.union([z.string(), z.number()])]] as const;
 
-      const schema = createStrictMapSchema('Data', entries);
+      const schema = createStrictMapSchema({ target: 'Data', entries });
 
       const map1 = new Map([['value', 'string value']]);
       const map2 = new Map([['value', 42]]);
@@ -265,7 +269,7 @@ describe('createStrictMapSchema', () => {
         ['status', z.enum(['active', 'inactive'])],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map([
         ['type', 'user'],
@@ -291,7 +295,11 @@ describe('createStrictMapSchema', () => {
       ] as const;
 
       it('should strip unknown keys in strip mode', () => {
-        const schema = createStrictMapSchema('User', entries, 'strip');
+        const schema = createStrictMapSchema({
+          target: 'User',
+          entries,
+          unknownKeys: 'strip',
+        });
 
         const inputMap = new Map<string | number, unknown>([
           ['name', 'Alice'],
@@ -310,7 +318,11 @@ describe('createStrictMapSchema', () => {
       });
 
       it('should handle multiple unknown keys in strip mode', () => {
-        const schema = createStrictMapSchema('Config', entries, 'strip');
+        const schema = createStrictMapSchema({
+          target: 'Config',
+          entries,
+          unknownKeys: 'strip',
+        });
 
         const inputMap = new Map<string | number, unknown>([
           ['name', 'Config1'],
@@ -333,11 +345,11 @@ describe('createStrictMapSchema', () => {
           ['optional', z.number().optional()],
         ] as const;
 
-        const schema = createStrictMapSchema(
-          'Data',
-          entriesWithOptional,
-          'strip'
-        );
+        const schema = createStrictMapSchema({
+          target: 'Data',
+          entries: entriesWithOptional,
+          unknownKeys: 'strip',
+        });
 
         const inputMap = new Map<string | number, unknown>([
           ['required', 'value'],
@@ -361,7 +373,7 @@ describe('createStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([['name', 'Alice']]);
 
@@ -383,7 +395,7 @@ describe('createStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([
         ['name', 'Alice'],
@@ -407,14 +419,17 @@ describe('createStrictMapSchema', () => {
     });
 
     it('should fail validation for nested maps with incorrect structure', () => {
-      const userSchema = createStrictMapSchema('User', [
-        ['name', z.string()],
-        ['age', z.number()],
-      ] as const);
+      const userSchema = createStrictMapSchema({
+        target: 'User',
+        entries: [
+          ['name', z.string()],
+          ['age', z.number()],
+        ] as const,
+      });
 
       const entries = [['user', userSchema]] as const;
 
-      const schema = createStrictMapSchema('Data', entries);
+      const schema = createStrictMapSchema({ target: 'Data', entries });
 
       const invalidMap = new Map<string | number, unknown>([
         [
@@ -447,18 +462,23 @@ describe('createStrictMapSchema', () => {
     });
 
     it('should fail validation for deeper nested maps with incorrect structure', () => {
-      const userSchema = createStrictMapSchema('User', [
-        ['name', z.string()],
-        ['age', z.number()],
-      ] as const);
+      const userSchema = createStrictMapSchema({
+        target: 'User',
+        entries: [
+          ['name', z.string()],
+          ['age', z.number()],
+        ] as const,
+      });
 
-      const dataSchema = createStrictMapSchema('Data', [
-        ['user', userSchema],
-      ] as const);
+      const dataSchema = createStrictMapSchema({
+        target: 'Data',
+        entries: [['user', userSchema]] as const,
+      });
 
-      const containerSchema = createStrictMapSchema('Container', [
-        ['payload', dataSchema],
-      ] as const);
+      const containerSchema = createStrictMapSchema({
+        target: 'Container',
+        entries: [['payload', dataSchema]] as const,
+      });
 
       const invalidMap = new Map<string | number, unknown>([
         [
@@ -522,7 +542,7 @@ describe('createStrictMapSchema', () => {
         ['email', z.string().email()],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map<string | number, unknown>([
         ['name', 123], // Wrong type
@@ -547,7 +567,7 @@ describe('createStrictMapSchema', () => {
         ['status', z.enum(['active', 'inactive'])],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([
         ['type', 'admin'],
@@ -576,7 +596,11 @@ describe('createStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createStrictMapSchema('User', entries, 'strict');
+      const schema = createStrictMapSchema({
+        target: 'User',
+        entries,
+        unknownKeys: 'strict',
+      });
 
       const inputMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -598,7 +622,7 @@ describe('createStrictMapSchema', () => {
 
     describe('non-Map inputs', () => {
       const entries = [['name', z.string()]] as const;
-      const schema = createStrictMapSchema('User', entries);
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const cases: Array<[string, unknown, string]> = [
         ['plain object', {}, 'Object'],
