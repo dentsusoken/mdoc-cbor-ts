@@ -6,7 +6,7 @@ import {
   deviceAuthSchema,
   DEVICE_AUTH_AT_LEAST_ONE_MESSAGE,
 } from '../DeviceAuth';
-import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 import { fixedTupleLengthInvalidTypeMessage } from '@/schemas/common/FixedTupleLength';
 

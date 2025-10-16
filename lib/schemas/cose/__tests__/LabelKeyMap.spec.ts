@@ -5,7 +5,7 @@ import { labelInvalidTypeMessage } from '../Label';
 import {
   mapInvalidTypeMessage,
   mapEmptyMessage,
-} from '@/schemas/common/container/Map';
+} from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('LabelKeyMap', () => {

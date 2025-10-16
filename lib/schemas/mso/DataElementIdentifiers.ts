@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
-import { createArraySchema } from '@/schemas/common/container/Array';
+import { dataElementIdentifierSchema } from '@/schemas/common/values/DataElementIdentifier';
+import { createArraySchema } from '@/schemas/common/containers/Array';
 
 /**
  * Schema for DataElementIdentifiers in MSO

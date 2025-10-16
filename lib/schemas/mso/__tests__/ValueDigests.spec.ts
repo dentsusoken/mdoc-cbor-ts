@@ -4,7 +4,7 @@ import { valueDigestsSchema } from '../ValueDigests';
 import {
   mapInvalidTypeMessage,
   mapEmptyMessage,
-} from '@/schemas/common/container/Map';
+} from '@/schemas/common/containers/Map';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
 const digestIDs = new Map<number, Uint8Array>([

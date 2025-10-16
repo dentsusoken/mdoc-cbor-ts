@@ -7,7 +7,7 @@ import {
   type ValidityInfo,
   createValidityInfo,
 } from '../ValidityInfo';
-import { DATE_TIME_INVALID_FORMAT_MESSAGE } from '@/schemas/common/DateTime';
+import { DATE_TIME_INVALID_FORMAT_MESSAGE } from '@/schemas/common/values/DateTime';
 
 const INVALID_ISO = 'not-a-datetime';
 

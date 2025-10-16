@@ -2,7 +2,7 @@ import { Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { issuerSignedSchema } from '../IssuerSigned';
 import { createTag24 } from '@/cbor/createTag24';
-import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';
 

@@ -1,3 +1,5 @@
+import { valueInvalidTypeMessage } from './valueInvalidTypeMessage';
+
 type ContainerInvalidTypeMessageParams = {
   target: string;
   expected: string;
@@ -26,4 +28,4 @@ export const containerInvalidTypeMessage = ({
   expected,
   received,
 }: ContainerInvalidTypeMessageParams): string =>
-  `${target}: Expected ${expected}, received ${received}`;
+  `${target}: ${valueInvalidTypeMessage({ expected, received })}`;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createUintKeyMapSchema } from '../UintKeyMap';
 import { z } from 'zod';
-import { mapInvalidTypeMessage } from '../container/Map';
+import { mapInvalidTypeMessage } from '../containers/Map';
 import { uintIntegerMessage } from '../Uint';
 import { requiredMessage } from '../Required';
 

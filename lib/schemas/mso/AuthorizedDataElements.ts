@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
-import { createMapSchema } from '@/schemas/common/container/Map';
+import { createMapSchema } from '@/schemas/common/containers/Map';
 import { dataElementIdentifiersSchema } from '@/schemas/mso/DataElementIdentifiers';
 
 /**

@@ -4,7 +4,7 @@ import { dataElementIdentifiersSchema } from '../DataElementIdentifiers';
 import {
   arrayInvalidTypeMessage,
   arrayEmptyMessage,
-} from '@/schemas/common/container/Array';
+} from '@/schemas/common/containers/Array';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DataElementIdentifiers', () => {

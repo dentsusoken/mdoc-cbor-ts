@@ -1,6 +1,6 @@
 import { labelSchema } from './Label';
 import { z } from 'zod';
-import { createMapSchema } from '@/schemas/common/container/Map';
+import { createMapSchema } from '@/schemas/common/containers/Map';
 import { createRequiredSchema } from '../common/Required';
 
 /**

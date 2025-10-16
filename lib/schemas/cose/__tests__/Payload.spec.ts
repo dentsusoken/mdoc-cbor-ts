@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { payloadSchema } from '../Payload';
-import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
+import { bytesInvalidTypeMessage } from '@/schemas/common/values/Bytes';
 
 describe('Payload', () => {
   describe('should accept valid byte inputs', () => {

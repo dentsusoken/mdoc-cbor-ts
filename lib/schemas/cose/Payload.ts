@@ -1,4 +1,4 @@
-import { createBytesSchema } from '@/schemas/common/Bytes';
+import { createBytesSchema } from '@/schemas/common/values/Bytes';
 
 /**
  * Schema for COSE payload

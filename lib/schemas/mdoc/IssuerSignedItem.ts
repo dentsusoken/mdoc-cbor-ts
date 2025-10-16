@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { createBytesSchema } from '@/schemas/common/Bytes';
-import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
+import { createBytesSchema } from '@/schemas/common/values/Bytes';
+import { dataElementIdentifierSchema } from '@/schemas/common/values/DataElementIdentifier';
 import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
 import { digestIDSchema } from '@/index';
-import { createStrictMapSchema } from '../common/container/StrictMap';
+import { createStrictMapSchema } from '../common/containers/StrictMap';
 import { createStrictMap } from '@/strict-map';
 
 /**

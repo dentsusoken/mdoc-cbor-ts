@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createBytesSchema } from '@/schemas/common/Bytes';
+import { createBytesSchema } from '@/schemas/common/values/Bytes';
 import { fullDateSchema } from '@/index';
 import { createRequiredSchema } from '@/schemas/common/Required';
 

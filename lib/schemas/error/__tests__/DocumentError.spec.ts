@@ -3,7 +3,7 @@ import { documentErrorSchema } from '../DocumentError';
 import {
   mapEmptyMessage,
   mapInvalidTypeMessage,
-} from '@/schemas/common/container/Map';
+} from '@/schemas/common/containers/Map';
 import { intIntegerMessage } from '@/schemas/common/Int';
 import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';

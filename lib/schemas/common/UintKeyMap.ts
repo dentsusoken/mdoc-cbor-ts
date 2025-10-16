@@ -1,4 +1,4 @@
-import { createMapSchema } from '@/schemas/common/container/Map';
+import { createMapSchema } from '@/schemas/common/containers/Map';
 import { createUintSchema } from '@/schemas/common/Uint';
 import { z } from 'zod';
 

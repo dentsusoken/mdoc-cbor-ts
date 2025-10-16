@@ -10,7 +10,7 @@ import {
   nonEmptyTextEmptyMessage,
   nonEmptyTextInvalidTypeMessage,
 } from '@/schemas/common/NonEmptyText';
-import { arrayEmptyMessage } from '@/schemas/common/container/Array';
+import { arrayEmptyMessage } from '@/schemas/common/containers/Array';
 
 describe('NameSpaceElementIdentifiers', () => {
   describe('valid cases', () => {

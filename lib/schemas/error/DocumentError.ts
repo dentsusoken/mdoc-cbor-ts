@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { docTypeSchema } from '@/schemas/common/DocType';
 import { errorCodeSchema } from './ErrorCode';
-import { createMapSchema } from '@/schemas/common/container/Map';
+import { createMapSchema } from '@/schemas/common/containers/Map';
 
 /**
  * Schema for document errors in MDOC

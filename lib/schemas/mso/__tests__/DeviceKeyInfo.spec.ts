@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceKeyInfoSchema } from '../DeviceKeyInfo';
-import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DeviceKeyInfo', () => {

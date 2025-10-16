@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { dateTimeSchema } from '@/schemas/common/DateTime';
-import { createStrictMapSchema } from '@/schemas/common/container/StrictMap';
+import { dateTimeSchema } from '@/schemas/common/values/DateTime';
+import { createStrictMapSchema } from '@/schemas/common/containers/StrictMap';
 import { createStrictMap } from '@/strict-map';
 
 /**

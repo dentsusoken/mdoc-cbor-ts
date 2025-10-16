@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { unprotectedHeadersSchema } from '../UnprotectedHeaders';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
-import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('UnprotectedHeaders', () => {

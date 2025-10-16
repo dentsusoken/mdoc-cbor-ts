@@ -5,8 +5,8 @@ import {
   strictMapMissingKeysMessage,
   strictMapNotMapMessage,
   strictMapKeyValueMessage,
-} from '@/schemas/common/container/StrictMap';
-import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
+} from '@/schemas/common/containers/StrictMap';
+import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
 import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
 import { deviceKeySchema } from '../DeviceKey';
 import { VERSION_INVALID_VALUE_MESSAGE } from '@/schemas/common/Version';

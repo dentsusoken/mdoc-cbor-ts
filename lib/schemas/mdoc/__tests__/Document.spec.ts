@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { documentSchema } from '../Document';
 import { createTag24 } from '@/cbor/createTag24';
-import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 import { Document, MDoc } from '@auth0/mdl';
 import { createTag1004 } from '@/cbor/createTag1004';

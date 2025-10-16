@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { mapInvalidTypeMessage } from './container/Map';
+import { mapInvalidTypeMessage } from './containers/Map';
 import { createRequiredSchema } from './Required';
 
 type CreateStructParams<O extends Record<string, unknown>, I = unknown> = {

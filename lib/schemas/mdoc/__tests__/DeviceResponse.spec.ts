@@ -1,6 +1,6 @@
 import { decodeCbor } from '@/cbor/codec';
 import { deviceResponseSchema } from '../DeviceResponse';
-import { arrayEmptyMessage } from '@/schemas/common/container/Array';
+import { arrayEmptyMessage } from '@/schemas/common/containers/Array';
 import { mdocAtLeastOneDocumentOrErrorMessage } from '../MDoc';
 import { z } from 'zod';
 //import { issuerSignedSchema } from '@/schemas/mdoc/IssuerSigned';

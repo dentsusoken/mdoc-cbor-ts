@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createBytesSchema } from '../common/Bytes';
+import { createBytesSchema } from '../common/values/Bytes';
 
 /**
  * Schema for digest in MSO

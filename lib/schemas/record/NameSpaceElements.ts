@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { createRecordSchema } from '../common/Record';
 import { nameSpaceSchema } from '../common/NameSpace';
-import { dataElementIdentifierSchema } from '../common/DataElementIdentifier';
+import { dataElementIdentifierSchema } from '../common/values/DataElementIdentifier';
 import { dataElementValueSchema } from '../common/DataElementValue';
 
 /**

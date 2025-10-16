@@ -5,7 +5,7 @@ import { deviceNameSpacesSchema } from '../DeviceNameSpaces';
 import {
   mapEmptyMessage,
   mapInvalidTypeMessage,
-} from '@/schemas/common/container/Map';
+} from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 

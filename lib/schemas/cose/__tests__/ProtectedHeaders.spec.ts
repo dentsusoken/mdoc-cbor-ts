@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { protectedHeadersSchema } from '../ProtectedHeaders';
-import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
+import { bytesInvalidTypeMessage } from '@/schemas/common/values/Bytes';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('ProtectedHeaders', () => {

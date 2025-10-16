@@ -4,9 +4,9 @@ import { authorizedDataElementsSchema } from '../AuthorizedDataElements';
 import {
   mapInvalidTypeMessage,
   mapEmptyMessage,
-} from '@/schemas/common/container/Map';
+} from '@/schemas/common/containers/Map';
 import { requiredMessage } from '@/schemas/common/Required';
-import { arrayEmptyMessage } from '@/schemas/common/container/Array';
+import { arrayEmptyMessage } from '@/schemas/common/containers/Array';
 import {
   nonEmptyTextInvalidTypeMessage,
   nonEmptyTextEmptyMessage,

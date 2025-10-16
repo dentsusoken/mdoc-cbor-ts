@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { issuerSignedItemBytesSchema } from './IssuerSignedItemBytes';
-import { createMapSchema } from '@/schemas/common/container/Map';
-import { createArraySchema } from '@/schemas/common/container/Array';
+import { createMapSchema } from '@/schemas/common/containers/Map';
+import { createArraySchema } from '@/schemas/common/containers/Array';
 
 /**
  * Schema for issuer-signed namespaces in mdoc
