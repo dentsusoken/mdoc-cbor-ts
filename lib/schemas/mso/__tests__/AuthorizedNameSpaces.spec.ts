@@ -4,7 +4,7 @@ import { authorizedNameSpacesSchema } from '../AuthorizedNameSpaces';
 import {
   arrayInvalidTypeMessage,
   arrayEmptyMessage,
-} from '@/schemas/common/Array';
+} from '@/schemas/common/container/Array';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('AuthorizedNameSpaces', () => {

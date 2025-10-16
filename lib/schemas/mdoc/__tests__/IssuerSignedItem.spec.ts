@@ -8,7 +8,7 @@ import {
 import {
   strictMapNotMapMessage,
   strictMapKeyValueMessage,
-} from '@/schemas/common/StrictMap';
+} from '@/schemas/common/container/StrictMap';
 import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';

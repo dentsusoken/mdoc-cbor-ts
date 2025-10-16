@@ -5,7 +5,7 @@ import {
   type MapWithTypedGetFromEntries,
   defineBuilderFactoryWithUnknownKeys,
   createStrictMapSchemaWithUnknownKeys,
-} from '../common/StrictMap';
+} from '../common/container/StrictMap';
 import { createAlgorithmsSchema } from './Algorithms';
 
 /**

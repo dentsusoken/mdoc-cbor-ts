@@ -3,7 +3,7 @@ import { documentSchema } from './Document';
 import { documentErrorSchema } from '@/schemas/error';
 import { statusSchema } from './Status';
 import { versionSchema } from '@/schemas/common/Version';
-import { createArraySchema } from '@/schemas/common/Array';
+import { createArraySchema } from '@/schemas/common/container/Array';
 import { createStructSchema } from '@/schemas/common/Struct';
 
 /**

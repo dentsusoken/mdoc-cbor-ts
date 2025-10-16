@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { StrictMap, StrictMapEntries } from '@/strict-map/types';
 import { getTypeName } from '@/utils/getTypeName';
+import { containerInvalidValueMessage } from './common-messages/containerInvalidValueMessage';
 
 /**
  * Mode for handling unknown keys in StrictMap schemas
@@ -48,59 +49,6 @@ export const strictMapUnexpectedKeysMessage = (
   target: string,
   keys: (string | number)[]
 ): string => `${target}: Unexpected keys: ${keys.join(', ')}`;
-
-/**
- * Creates an error message for a specific key's value validation failure within a StrictMap.
- *
- * @param target - The name of the target schema being validated (e.g., "ValidityInfo").
- * @param path - An array representing the path to the nested key(s) that failed validation,
- *     where each element is a key string (e.g., ['validFrom'] or for nested: ['prop1', 'subfield']).
- * @param originalMessage - The original Zod error message produced by the key's schema.
- * @returns A formatted error message string, prefixed with the target and path.
- *
- * @example
- * // Given:
- * //   target = "ValidityInfo"
- * //   path = ["validFrom"]
- * //   originalMessage = "ValidFrom: Expected date string"
- * //
- * // Returns: "ValidityInfo.validFrom: Expected date string" (duplication avoided)
- */
-export const strictMapKeyValueMessage = (
-  target: string,
-  path: (string | number)[],
-  originalMessage: string
-): string => {
-  const label = [target, ...path].join('.');
-
-  const colonIndex = originalMessage.indexOf(':');
-  if (colonIndex === -1) {
-    return `${label}: ${originalMessage}`;
-  }
-
-  // Check if the original message already contains the full path to avoid duplication
-  const originalPrefix = originalMessage.substring(0, colonIndex).trim();
-
-  // If the original message already contains the full path, just use the message part
-  if (originalPrefix === label) {
-    const messagePart = originalMessage.substring(colonIndex + 1).trim();
-    return `${label}: ${messagePart}`;
-  }
-
-  // If the original message already contains a path that ends with our current path,
-  // extract just the message part to avoid duplication
-  const pathSuffix = path[path.length - 1];
-  if (
-    originalPrefix.endsWith(`.${pathSuffix}`) ||
-    originalPrefix === String(pathSuffix)
-  ) {
-    const messagePart = originalMessage.substring(colonIndex + 1).trim();
-    return `${label}: ${messagePart}`;
-  }
-
-  // Otherwise, keep the full original message
-  return `${label}: ${originalMessage}`;
-};
 
 type BuildEntriesIndexResult = {
   schemaMap: Map<string | number, z.ZodType>;
@@ -207,11 +155,10 @@ export const validateAndCollectKnownEntries = ({
       if (!result.success) {
         for (const issue of result.error.issues) {
           const path = [typedKey, ...issue.path];
-          const message = issue.message || 'Invalid value';
           ctx.addIssue({
             ...issue,
             path,
-            message: strictMapKeyValueMessage(target, path, message),
+            message: containerInvalidValueMessage(target, path, issue.message),
           });
         }
       } else {

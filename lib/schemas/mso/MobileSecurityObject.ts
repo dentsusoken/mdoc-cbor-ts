@@ -5,7 +5,7 @@ import { digestAlgorithmSchema } from './DigestAlgorithm';
 import { validityInfoSchema } from './ValidityInfo';
 import { valueDigestsSchema } from './ValueDigests';
 import { versionSchema } from '@/schemas/common/Version';
-import { createStrictMapSchema } from '../common/StrictMap';
+import { createStrictMapSchema } from '../common/container/StrictMap';
 import { createStrictMap } from '@/strict-map';
 
 /**

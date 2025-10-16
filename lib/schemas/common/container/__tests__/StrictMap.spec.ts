@@ -1,13 +1,16 @@
 import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
-import { createSemiStrictMapSchema } from '../SemiStrictMap';
 import {
+  createStrictMapSchema,
   strictMapNotMapMessage,
   strictMapMissingKeysMessage,
-  strictMapKeyValueMessage,
+  strictMapUnexpectedKeysMessage,
+  buildEntriesIndex,
+  validateAndCollectKnownEntries,
 } from '../StrictMap';
+import { containerInvalidValueMessage } from '../common-messages/containerInvalidValueMessage';
 
-describe('createSemiStrictMapSchema', () => {
+describe('createStrictMapSchema', () => {
   describe('successful validation', () => {
     it('should validate a valid map with all required keys', () => {
       const entries = [
@@ -16,7 +19,7 @@ describe('createSemiStrictMapSchema', () => {
         ['active', z.boolean()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'Person', entries });
+      const schema = createStrictMapSchema({ target: 'Person', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -30,7 +33,7 @@ describe('createSemiStrictMapSchema', () => {
       expect(result.get('age')).toBe(25);
       expect(result.get('active')).toBe(true);
 
-      // Type safety for known keys
+      // Test type safety of get method
       expectTypeOf(result.get('name')).toEqualTypeOf<string | undefined>();
       expectTypeOf(result.get('age')).toEqualTypeOf<number | undefined>();
       expectTypeOf(result.get('active')).toEqualTypeOf<boolean | undefined>();
@@ -42,7 +45,7 @@ describe('createSemiStrictMapSchema', () => {
         [4, z.string()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'Headers', entries });
+      const schema = createStrictMapSchema({ target: 'Headers', entries });
 
       const validMap = new Map<string | number, unknown>([
         [1, -7],
@@ -54,7 +57,7 @@ describe('createSemiStrictMapSchema', () => {
       expect(result.get(1)).toBe(-7);
       expect(result.get(4)).toBe('key-123');
 
-      // Type safety for known number keys
+      // Test type safety of get method with number keys
       expectTypeOf(result.get(1)).toEqualTypeOf<number | undefined>();
       expectTypeOf(result.get(4)).toEqualTypeOf<string | undefined>();
     });
@@ -65,7 +68,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -77,6 +80,7 @@ describe('createSemiStrictMapSchema', () => {
       expect(result.get('name')).toBe('Alice');
       expect(result.get('age')).toBe(25);
 
+      // Test type safety of get method with optional keys
       expectTypeOf(result.get('name')).toEqualTypeOf<string | undefined>();
       expectTypeOf(result.get('age')).toEqualTypeOf<number | undefined>();
     });
@@ -87,7 +91,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map([['name', 'Alice']]);
 
@@ -96,6 +100,7 @@ describe('createSemiStrictMapSchema', () => {
       expect(result.get('name')).toBe('Alice');
       expect(result.get('age')).toBeUndefined();
 
+      // Test type safety of get method with missing optional keys
       expectTypeOf(result.get('name')).toEqualTypeOf<string | undefined>();
       expectTypeOf(result.get('age')).toEqualTypeOf<number | undefined>();
     });
@@ -106,7 +111,7 @@ describe('createSemiStrictMapSchema', () => {
         ['middleName', z.string().nullable()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'Person', entries });
+      const schema = createStrictMapSchema({ target: 'Person', entries });
 
       const validMap = new Map([
         ['name', 'Alice'],
@@ -118,6 +123,7 @@ describe('createSemiStrictMapSchema', () => {
       expect(result.get('name')).toBe('Alice');
       expect(result.get('middleName')).toBeNull();
 
+      // Test type safety of get method with nullable values
       expectTypeOf(result.get('name')).toEqualTypeOf<string | undefined>();
       expectTypeOf(result.get('middleName')).toEqualTypeOf<
         string | null | undefined
@@ -125,7 +131,7 @@ describe('createSemiStrictMapSchema', () => {
     });
 
     it('should validate map with nested maps', () => {
-      const userSchema = createSemiStrictMapSchema({
+      const userSchema = createStrictMapSchema({
         target: 'User',
         entries: [
           ['name', z.string()],
@@ -133,7 +139,7 @@ describe('createSemiStrictMapSchema', () => {
         ] as const,
       });
 
-      const metadataSchema = createSemiStrictMapSchema({
+      const metadataSchema = createStrictMapSchema({
         target: 'Metadata',
         entries: [['version', z.number()]] as const,
       });
@@ -143,7 +149,7 @@ describe('createSemiStrictMapSchema', () => {
         ['metadata', metadataSchema],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'Data', entries });
+      const schema = createStrictMapSchema({ target: 'Data', entries });
 
       const validMap = new Map<string | number, unknown>([
         [
@@ -166,6 +172,9 @@ describe('createSemiStrictMapSchema', () => {
       expect(user!.get('age')).toBe(25);
       expect(metadata!.get('version')).toBe(1);
 
+      // Test type safety of get method with nested maps
+      // Note: createStrictMapSchema returns StrictMap<T>, so nested maps are also StrictMap instances
+      // Test the nested map values directly
       expectTypeOf(user!.get('name')).toEqualTypeOf<string | undefined>();
       expectTypeOf(user!.get('age')).toEqualTypeOf<number | undefined>();
       expectTypeOf(metadata!.get('version')).toEqualTypeOf<
@@ -179,7 +188,7 @@ describe('createSemiStrictMapSchema', () => {
         ['scores', z.array(z.number())],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'Config', entries });
+      const schema = createStrictMapSchema({ target: 'Config', entries });
 
       const validMap = new Map([
         ['tags', ['foo', 'bar', 'baz']],
@@ -191,6 +200,7 @@ describe('createSemiStrictMapSchema', () => {
       expect(result.get('tags')).toEqual(['foo', 'bar', 'baz']);
       expect(result.get('scores')).toEqual([85, 90, 95]);
 
+      // Test type safety of get method with array values
       expectTypeOf(result.get('tags')).toEqualTypeOf<string[] | undefined>();
       expectTypeOf(result.get('scores')).toEqualTypeOf<number[] | undefined>();
     });
@@ -201,7 +211,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map<string | number, unknown>([
         ['name', 'Alice'],
@@ -223,10 +233,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number().optional()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({
-        target: 'OptionalData',
-        entries,
-      });
+      const schema = createStrictMapSchema({ target: 'OptionalData', entries });
 
       const emptyMap = new Map();
 
@@ -238,7 +245,7 @@ describe('createSemiStrictMapSchema', () => {
     it('should work with union types', () => {
       const entries = [['value', z.union([z.string(), z.number()])]] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'Data', entries });
+      const schema = createStrictMapSchema({ target: 'Data', entries });
 
       const map1 = new Map([['value', 'string value']]);
       const map2 = new Map([['value', 42]]);
@@ -249,6 +256,7 @@ describe('createSemiStrictMapSchema', () => {
       expect(result1.get('value')).toBe('string value');
       expect(result2.get('value')).toBe(42);
 
+      // Test type safety of get method with union types
       expectTypeOf(result1.get('value')).toEqualTypeOf<
         string | number | undefined
       >();
@@ -263,7 +271,7 @@ describe('createSemiStrictMapSchema', () => {
         ['status', z.enum(['active', 'inactive'])],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const validMap = new Map([
         ['type', 'user'],
@@ -275,59 +283,103 @@ describe('createSemiStrictMapSchema', () => {
       expect(result.get('type')).toBe('user');
       expect(result.get('status')).toBe('active');
 
+      // Test type safety of get method with literal and enum types
       expectTypeOf(result.get('type')).toEqualTypeOf<'user' | undefined>();
       expectTypeOf(result.get('status')).toEqualTypeOf<
         'active' | 'inactive' | undefined
       >();
     });
 
-    describe('unknown keys passthrough', () => {
+    it('should allow undefined when schema is optional', () => {
+      const entries = [['name', z.string()]] as const;
+      const optionalSchema = createStrictMapSchema({
+        target: 'UserOptional',
+        entries,
+      }).optional();
+
+      const result = optionalSchema.safeParse(undefined);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data).toBeUndefined();
+      }
+
+      expect(optionalSchema.parse(undefined)).toBeUndefined();
+    });
+
+    describe('unknownKeys modes', () => {
       const entries = [
         ['name', z.string()],
         ['age', z.number()],
       ] as const;
 
-      it('should preserve unknown keys as-is', () => {
-        const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      it('should strip unknown keys in strip mode', () => {
+        const schema = createStrictMapSchema({
+          target: 'User',
+          entries,
+          unknownKeys: 'strip',
+        });
 
         const inputMap = new Map<string | number, unknown>([
           ['name', 'Alice'],
           ['age', 25],
-          ['extra1', 'kept'],
-          ['extra2', 123],
+          ['extra1', 'removed'],
+          ['extra2', 'also removed'],
         ]);
 
         const result = schema.parse(inputMap);
 
         expect(result.get('name')).toBe('Alice');
         expect(result.get('age')).toBe(25);
-        expect(result.get('extra1' as 'name')).toBe('kept');
-        expect(result.get('extra2' as 'name')).toBe(123);
-        expect(result.size).toBe(4);
+        expect(result.has('extra1' as 'name')).toBe(false);
+        expect(result.has('extra2' as 'name')).toBe(false);
+        expect(result.size).toBe(2);
       });
 
-      it('should work with optional keys and unknown keys', () => {
+      it('should handle multiple unknown keys in strip mode', () => {
+        const schema = createStrictMapSchema({
+          target: 'Config',
+          entries,
+          unknownKeys: 'strip',
+        });
+
+        const inputMap = new Map<string | number, unknown>([
+          ['name', 'Config1'],
+          ['age', 10],
+          ['unknown1', 'value1'],
+          ['unknown2', 'value2'],
+          ['unknown3', 'value3'],
+        ]);
+
+        const result = schema.parse(inputMap);
+
+        expect(result.size).toBe(2);
+        expect(result.get('name')).toBe('Config1');
+        expect(result.get('age')).toBe(10);
+      });
+
+      it('should work with optional keys in strip mode', () => {
         const entriesWithOptional = [
           ['required', z.string()],
           ['optional', z.number().optional()],
         ] as const;
 
-        const schema = createSemiStrictMapSchema({
+        const schema = createStrictMapSchema({
           target: 'Data',
           entries: entriesWithOptional,
+          unknownKeys: 'strip',
         });
 
         const inputMap = new Map<string | number, unknown>([
           ['required', 'value'],
-          ['extra', 'present'],
+          ['extra', 'removed'],
         ]);
 
         const result = schema.parse(inputMap);
 
         expect(result.get('required')).toBe('value');
-        expect(result.get('optional' as 'required')).toBeUndefined();
-        expect(result.get('extra' as 'required')).toBe('present');
-        expect(result.size).toBe(2);
+        expect(result.has('optional' as 'required')).toBe(false);
+        expect(result.has('extra' as 'required')).toBe(false);
+        expect(result.size).toBe(1);
       });
     });
   });
@@ -339,7 +391,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([['name', 'Alice']]);
 
@@ -361,7 +413,7 @@ describe('createSemiStrictMapSchema', () => {
         ['age', z.number()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([
         ['name', 'Alice'],
@@ -375,7 +427,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['age']);
         expect(zodError.issues[0].message).toBe(
-          strictMapKeyValueMessage(
+          containerInvalidValueMessage(
             'User',
             ['age'],
             'Expected number, received string'
@@ -385,7 +437,7 @@ describe('createSemiStrictMapSchema', () => {
     });
 
     it('should fail validation for nested maps with incorrect structure', () => {
-      const userSchema = createSemiStrictMapSchema({
+      const userSchema = createStrictMapSchema({
         target: 'User',
         entries: [
           ['name', z.string()],
@@ -395,7 +447,7 @@ describe('createSemiStrictMapSchema', () => {
 
       const entries = [['user', userSchema]] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'Data', entries });
+      const schema = createStrictMapSchema({ target: 'Data', entries });
 
       const invalidMap = new Map<string | number, unknown>([
         [
@@ -414,7 +466,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['user', 'age']);
         expect(zodError.issues[0].message).toBe(
-          strictMapKeyValueMessage(
+          containerInvalidValueMessage(
             'Data',
             ['user', 'age'],
             'Expected number, received string'
@@ -424,7 +476,7 @@ describe('createSemiStrictMapSchema', () => {
     });
 
     it('should fail validation for deeper nested maps with incorrect structure', () => {
-      const userSchema = createSemiStrictMapSchema({
+      const userSchema = createStrictMapSchema({
         target: 'User',
         entries: [
           ['name', z.string()],
@@ -432,12 +484,12 @@ describe('createSemiStrictMapSchema', () => {
         ] as const,
       });
 
-      const dataSchema = createSemiStrictMapSchema({
+      const dataSchema = createStrictMapSchema({
         target: 'Data',
         entries: [['user', userSchema]] as const,
       });
 
-      const containerSchema = createSemiStrictMapSchema({
+      const containerSchema = createStrictMapSchema({
         target: 'Container',
         entries: [['payload', dataSchema]] as const,
       });
@@ -464,7 +516,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['payload', 'user', 'age']);
         expect(zodError.issues[0].message).toBe(
-          strictMapKeyValueMessage(
+          containerInvalidValueMessage(
             'Container',
             ['payload', 'user', 'age'],
             'Expected number, received string'
@@ -480,12 +532,12 @@ describe('createSemiStrictMapSchema', () => {
         ['email', z.string().email()],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map<string | number, unknown>([
-        ['name', 123],
-        ['age', 'not a number'],
-        ['email', 'invalid-email'],
+        ['name', 123], // Wrong type
+        ['age', 'not a number'], // Wrong type
+        ['email', 'invalid-email'], // Invalid format
       ]);
 
       try {
@@ -493,6 +545,7 @@ describe('createSemiStrictMapSchema', () => {
         expect.fail('Should have thrown validation error');
       } catch (error) {
         expect(error).toBeDefined();
+        // Check that multiple errors are reported
         const zodError = error as z.ZodError;
         expect(zodError.issues.length).toBe(3);
       }
@@ -504,7 +557,7 @@ describe('createSemiStrictMapSchema', () => {
         ['status', z.enum(['active', 'inactive'])],
       ] as const;
 
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const invalidMap = new Map([
         ['type', 'admin'],
@@ -518,7 +571,7 @@ describe('createSemiStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['type']);
         expect(zodError.issues[0].message).toBe(
-          strictMapKeyValueMessage(
+          containerInvalidValueMessage(
             'User',
             ['type'],
             'Invalid literal value, expected "user"'
@@ -527,9 +580,39 @@ describe('createSemiStrictMapSchema', () => {
       }
     });
 
+    it('should fail validation for unknown keys in strict mode', () => {
+      const entries = [
+        ['name', z.string()],
+        ['age', z.number()],
+      ] as const;
+
+      const schema = createStrictMapSchema({
+        target: 'User',
+        entries,
+        unknownKeys: 'strict',
+      });
+
+      const inputMap = new Map<string | number, unknown>([
+        ['name', 'Alice'],
+        ['age', 25],
+        ['extra', 'causes error'],
+      ]);
+
+      try {
+        schema.parse(inputMap);
+        expect.fail('Should have thrown validation error');
+      } catch (error) {
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual([]);
+        expect(zodError.issues[0].message).toBe(
+          strictMapUnexpectedKeysMessage('User', ['extra'])
+        );
+      }
+    });
+
     describe('non-Map inputs', () => {
       const entries = [['name', z.string()]] as const;
-      const schema = createSemiStrictMapSchema({ target: 'User', entries });
+      const schema = createStrictMapSchema({ target: 'User', entries });
 
       const cases: Array<[string, unknown, string]> = [
         ['plain object', {}, 'Object'],
@@ -547,7 +630,6 @@ describe('createSemiStrictMapSchema', () => {
             schema.parse(input as unknown as Map<unknown, unknown>);
             expect.fail('Should have thrown validation error');
           } catch (error) {
-            expect(error).toBeInstanceOf(z.ZodError);
             const zodError = error as z.ZodError;
             expect(zodError.issues[0].path).toEqual([]);
             expect(zodError.issues[0].message).toBe(
@@ -566,6 +648,148 @@ describe('createSemiStrictMapSchema', () => {
           }
         });
       }
+    });
+  });
+
+  describe('buildEntriesIndex', () => {
+    it('should build schemaMap, requiredKeys, and allKeys correctly', () => {
+      const entries = [
+        ['name', z.string()],
+        ['age', z.number().optional()],
+        [1, z.boolean()],
+      ] as const;
+
+      const { schemaMap, requiredKeys, allKeys } = buildEntriesIndex(entries);
+
+      // schemaMap
+      expect(schemaMap.has('name')).toBe(true);
+      expect(schemaMap.has('age')).toBe(true);
+      expect(schemaMap.has(1)).toBe(true);
+      expect(schemaMap.get('name')!.safeParse('alice').success).toBe(true);
+      expect(schemaMap.get('name')!.safeParse(1).success).toBe(false);
+      expect(schemaMap.get(1)!.safeParse(true).success).toBe(true);
+      expect(schemaMap.get(1)!.safeParse('no').success).toBe(false);
+
+      // requiredKeys (age is optional)
+      expect(requiredKeys.has('name')).toBe(true);
+      expect(requiredKeys.has(1)).toBe(true);
+      expect(requiredKeys.has('age')).toBe(false);
+
+      // allKeys contains all declared keys
+      expect(allKeys.has('name')).toBe(true);
+      expect(allKeys.has('age')).toBe(true);
+      expect(allKeys.has(1)).toBe(true);
+    });
+
+    it('should handle only-number keys', () => {
+      const entries = [
+        [1, z.number()],
+        [4, z.string()],
+      ] as const;
+
+      const { schemaMap, requiredKeys, allKeys } = buildEntriesIndex(entries);
+
+      expect(schemaMap.get(1)!.safeParse(-7).success).toBe(true);
+      expect(schemaMap.get(4)!.safeParse('kid').success).toBe(true);
+      expect(requiredKeys.has(1)).toBe(true);
+      expect(requiredKeys.has(4)).toBe(true);
+      expect(allKeys.has(1)).toBe(true);
+      expect(allKeys.has(4)).toBe(true);
+    });
+  });
+
+  describe('validateAndCollectKnownEntries', () => {
+    it('should validate and collect declared keys and ignore unknown when passthroughMode=false', () => {
+      const entries = [
+        ['name', z.string()],
+        ['age', z.number()],
+      ] as const;
+      const { schemaMap } = buildEntriesIndex(entries);
+
+      const inputMap = new Map<string | number, unknown>([
+        ['name', 'Alice'],
+        ['age', 30],
+        ['unknown', 'ignored'],
+      ]);
+
+      const issues: z.ZodIssue[] = [];
+      const ctx = {
+        addIssue: (issue: z.ZodIssue) => issues.push(issue),
+      } as unknown as z.RefinementCtx;
+
+      const result = validateAndCollectKnownEntries({
+        target: 'User',
+        inputMap,
+        schemaMap,
+        ctx,
+        passthroughMode: false,
+      });
+
+      expect(issues.length).toBe(0);
+      expect(result.get('name')).toBe('Alice');
+      expect(result.get('age')).toBe(30);
+      expect(result.has('unknown' as 'name')).toBe(false);
+    });
+
+    it('should include unknown keys when passthroughMode=true', () => {
+      const entries = [['id', z.number()]] as const;
+      const { schemaMap } = buildEntriesIndex(entries);
+
+      const inputMap = new Map<string | number, unknown>([
+        ['id', 1],
+        ['extra', 'kept'],
+      ]);
+
+      const issues: z.ZodIssue[] = [];
+      const ctx = {
+        addIssue: (issue: z.ZodIssue) => issues.push(issue),
+      } as unknown as z.RefinementCtx;
+
+      const result = validateAndCollectKnownEntries({
+        target: 'Data',
+        inputMap,
+        schemaMap,
+        ctx,
+        passthroughMode: true,
+      });
+
+      expect(issues.length).toBe(0);
+      expect(result.get('id')).toBe(1);
+      expect(result.get('extra')).toBe('kept');
+    });
+
+    it('should report issues for invalid values with correct path and message', () => {
+      const entries = [['age', z.number()]] as const;
+      const { schemaMap } = buildEntriesIndex(entries);
+
+      const inputMap = new Map<string | number, unknown>([
+        ['age', 'not a number'],
+      ]);
+
+      const issues: z.ZodIssue[] = [];
+      const ctx = {
+        addIssue: (issue: z.ZodIssue) => issues.push(issue),
+      } as unknown as z.RefinementCtx;
+
+      const result = validateAndCollectKnownEntries({
+        target: 'User',
+        inputMap,
+        schemaMap,
+        ctx,
+        passthroughMode: false,
+      });
+
+      expect(result.size).toBe(0);
+      expect(issues.length).toBeGreaterThan(0);
+      const first = issues[0];
+      expect(first.path).toEqual(['age']);
+      expect(first.message).toBe(
+        containerInvalidValueMessage(
+          'User',
+          ['age'],
+          'Expected number, received string'
+        )
+      );
     });
   });
 });

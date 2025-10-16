@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
-import { createArraySchema } from '@/schemas/common/Array';
+import { createArraySchema } from '@/schemas/common/container/Array';
 
 /**
  * Schema for authorized namespaces in MSO

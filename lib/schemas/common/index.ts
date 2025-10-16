@@ -1,4 +1,4 @@
-export * from './Array';
+export * from './container/Array';
 export * from './Bytes';
 export * from './DataElementIdentifier';
 export * from './DataElementValue';
