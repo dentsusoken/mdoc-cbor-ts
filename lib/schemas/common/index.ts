@@ -2,7 +2,7 @@ export * from './containers/Array';
 export * from './values/Bytes';
 export * from './values/DataElementIdentifier';
 export * from './DataElementValue';
-export * from './FullDate';
+export * from './values/FullDate';
 export * from './values/DateTime';
 export * from './DocType';
 export * from './Entry';
