@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestIDsSchema } from '../DigestIDs';
-import { mapEmptyMessage } from '@/schemas/common/Map';
+import { mapEmptyMessage } from '@/schemas/common/container/Map';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
 import { bytesInvalidTypeMessage } from '@/schemas/common/Bytes';
 

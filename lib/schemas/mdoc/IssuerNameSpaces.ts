@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { issuerSignedItemBytesSchema } from './IssuerSignedItemBytes';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 import { createArraySchema } from '@/schemas/common/container/Array';
 
 /**

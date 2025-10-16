@@ -2,7 +2,10 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceSignedItemsSchema } from '../DeviceSignedItems';
-import { mapEmptyMessage, mapInvalidTypeMessage } from '@/schemas/common/Map';
+import {
+  mapEmptyMessage,
+  mapInvalidTypeMessage,
+} from '@/schemas/common/container/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 

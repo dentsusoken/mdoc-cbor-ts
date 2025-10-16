@@ -3,10 +3,10 @@ import type { SemiStrictMap, StrictMapEntries } from '@/strict-map/types';
 import {
   buildEntriesIndex,
   strictMapMissingKeysMessage,
-  strictMapNotMapMessage,
   validateAndCollectKnownEntries,
 } from './StrictMap';
 import { getTypeName } from '@/utils/getTypeName';
+import { containerInvalidTypeMessage } from '../messages/containerInvalidTypeMessage';
 
 type CreateSemiStrictMapSchemaParams<T extends StrictMapEntries> = {
   target: string;
@@ -69,10 +69,13 @@ export const createSemiStrictMapSchema = <
   // Transform to validate and build output map
   return z.any().transform((input: unknown, ctx: z.RefinementCtx) => {
     if (!(input instanceof Map)) {
-      const actualType = getTypeName(input);
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: strictMapNotMapMessage(target, actualType),
+        message: containerInvalidTypeMessage({
+          target,
+          expected: 'Map',
+          received: getTypeName(input),
+        }),
         path: [],
       });
       return z.NEVER;

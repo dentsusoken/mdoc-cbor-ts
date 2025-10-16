@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { Entry } from '@/schemas/common/Entry';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { deviceSignedItemsSchema } from './DeviceSignedItems';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 
 /**
  * Schema for device-signed namespaces in mdoc
@@ -27,7 +27,7 @@ export const deviceNameSpacesSchema = createMapSchema({
   target: 'DeviceNameSpaces',
   keySchema: nameSpaceSchema,
   valueSchema: deviceSignedItemsSchema,
-  allowEmpty: true,
+  nonempty: true,
 });
 
 /**

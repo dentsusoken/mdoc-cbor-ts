@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { Entry } from '@/schemas/common/Entry';
 import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { errorItemsSchema } from './ErrorItems';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 
 /**
  * Schema for errors in MDOC

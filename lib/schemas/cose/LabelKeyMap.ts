@@ -1,6 +1,6 @@
 import { labelSchema } from './Label';
 import { z } from 'zod';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 import { createRequiredSchema } from '../common/Required';
 
 /**
@@ -57,5 +57,5 @@ export const createLabelKeyMapSchema = (
     target,
     keySchema: labelSchema,
     valueSchema: z.unknown(),
-    allowEmpty,
+    nonempty: allowEmpty,
   });

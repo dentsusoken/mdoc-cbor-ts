@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { dataElementIdentifierSchema } from '@/schemas/common/DataElementIdentifier';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 import { errorCodeSchema } from './ErrorCode';
 
 /**

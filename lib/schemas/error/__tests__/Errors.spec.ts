@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { errorsSchema } from '../Errors';
-import { mapEmptyMessage, mapInvalidTypeMessage } from '@/schemas/common/Map';
+import {
+  mapEmptyMessage,
+  mapInvalidTypeMessage,
+} from '@/schemas/common/container/Map';
 import { intIntegerMessage } from '@/schemas/common/Int';
 import { requiredMessage } from '@/schemas/common/Required';
 import { z } from 'zod';

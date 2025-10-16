@@ -1,12 +1,11 @@
 import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
-import {
-  createArraySchema,
-  arrayInvalidTypeMessage,
-  arrayEmptyMessage,
-} from '../Array';
-import { containerInvalidValueMessage } from '../common-messages/containerInvalidValueMessage';
+import { createArraySchema } from '../Array';
+import { containerEmptyMessage } from '../../messages/containerEmptyMessage';
+import { containerInvalidValueMessage } from '../../messages/containerInvalidValueMessage';
+import { containerInvalidTypeMessage } from '../../messages/containerInvalidTypeMessage';
 import { createStrictMapSchema } from '../StrictMap';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('createArraySchema', () => {
   const TARGET = 'Tags';
@@ -21,19 +20,6 @@ describe('createArraySchema', () => {
       expect(result).toEqual(['a', 'b']);
       expectTypeOf(result).toEqualTypeOf<string[]>();
     });
-
-    it('should accept empty array when allowEmpty is true', () => {
-      const itemSchema = z.string();
-      const schema = createArraySchema({
-        target: TARGET,
-        itemSchema,
-        allowEmpty: true,
-      });
-
-      const result = schema.parse([]);
-      expect(result).toEqual([]);
-      expectTypeOf(result).toEqualTypeOf<string[]>();
-    });
   });
 
   describe('non-array inputs', () => {
@@ -45,13 +31,26 @@ describe('createArraySchema', () => {
       ['object', { key: 'value' }],
       ['string', 'hello'],
       ['number', 123],
+      ['symbol', Symbol('s')],
+      ['bigint', 1n],
+      ['date', new Date()],
+      ['regexp', /a/],
+      ['class', new (class MyClass {})()],
+      ['function', (): number => 1],
+      ['map', new Map()],
+      ['set', new Set()],
       ['null', null],
       ['undefined', undefined],
     ];
 
     for (const [name, input] of cases) {
       it(`should reject ${name} input with arrayInvalidTypeMessage`, () => {
-        const expected = arrayInvalidTypeMessage(TARGET, input);
+        z.getParsedType;
+        const expected = containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'array',
+          received: getTypeName(input),
+        });
 
         // parse throws
         try {
@@ -60,8 +59,9 @@ describe('createArraySchema', () => {
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
-          expect(zodError.issues[0].path).toEqual([]);
-          expect(zodError.issues[0].message).toBe(expected);
+          const issue = zodError.issues[0];
+          expect(issue.path).toEqual([]);
+          expect(issue.message).toBe(expected);
         }
 
         // safeParse returns error with same message
@@ -77,7 +77,11 @@ describe('createArraySchema', () => {
   describe('empty array handling', () => {
     it('should reject empty array by default', () => {
       const itemSchema = z.string();
-      const schema = createArraySchema({ target: TARGET, itemSchema });
+      const schema = createArraySchema({
+        target: TARGET,
+        itemSchema,
+        nonempty: true,
+      });
 
       try {
         schema.parse([]);
@@ -86,7 +90,7 @@ describe('createArraySchema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual([]);
-        expect(zodError.issues[0].message).toBe(arrayEmptyMessage(TARGET));
+        expect(zodError.issues[0].message).toBe(containerEmptyMessage(TARGET));
       }
     });
   });

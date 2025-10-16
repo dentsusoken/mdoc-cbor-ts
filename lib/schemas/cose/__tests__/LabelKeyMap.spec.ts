@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createLabelKeyMapSchema } from '../LabelKeyMap';
 import { labelInvalidTypeMessage } from '../Label';
-import { mapInvalidTypeMessage, mapEmptyMessage } from '@/schemas/common/Map';
+import {
+  mapInvalidTypeMessage,
+  mapEmptyMessage,
+} from '@/schemas/common/container/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('LabelKeyMap', () => {

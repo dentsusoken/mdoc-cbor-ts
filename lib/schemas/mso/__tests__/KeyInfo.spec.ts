@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { keyInfoSchema } from '../KeyInfo';
 import { intIntegerMessage } from '@/schemas/common/Int';
-import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('KeyInfo', () => {

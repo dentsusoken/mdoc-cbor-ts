@@ -2,13 +2,13 @@ import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
 import {
   createStrictMapSchema,
-  strictMapNotMapMessage,
   strictMapMissingKeysMessage,
   strictMapUnexpectedKeysMessage,
   buildEntriesIndex,
   validateAndCollectKnownEntries,
 } from '../StrictMap';
-import { containerInvalidValueMessage } from '../common-messages/containerInvalidValueMessage';
+import { containerInvalidValueMessage } from '../../messages/containerInvalidValueMessage';
+import { containerInvalidTypeMessage } from '../../messages/containerInvalidTypeMessage';
 
 describe('createStrictMapSchema', () => {
   describe('successful validation', () => {
@@ -615,11 +615,11 @@ describe('createStrictMapSchema', () => {
       const schema = createStrictMapSchema({ target: 'User', entries });
 
       const cases: Array<[string, unknown, string]> = [
-        ['plain object', {}, 'Object'],
-        ['array', [], 'Array'],
-        ['string', 'hello', 'String'],
-        ['number', 123, 'Number'],
-        ['boolean', true, 'Boolean'],
+        ['plain object', {}, 'object'],
+        ['array', [], 'array'],
+        ['string', 'hello', 'string'],
+        ['number', 123, 'number'],
+        ['boolean', true, 'boolean'],
         ['null', null, 'null'],
         ['undefined', undefined, 'undefined'],
       ];
@@ -633,7 +633,11 @@ describe('createStrictMapSchema', () => {
             const zodError = error as z.ZodError;
             expect(zodError.issues[0].path).toEqual([]);
             expect(zodError.issues[0].message).toBe(
-              strictMapNotMapMessage('User', expectedType)
+              containerInvalidTypeMessage({
+                target: 'User',
+                expected: 'Map',
+                received: expectedType,
+              })
             );
           }
 
@@ -643,7 +647,11 @@ describe('createStrictMapSchema', () => {
           expect(result.success).toBe(false);
           if (!result.success) {
             expect(result.error.issues[0].message).toBe(
-              strictMapNotMapMessage('User', expectedType)
+              containerInvalidTypeMessage({
+                target: 'User',
+                expected: 'Map',
+                received: expectedType,
+              })
             );
           }
         });

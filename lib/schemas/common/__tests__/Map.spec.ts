@@ -3,7 +3,7 @@ import {
   createMapSchema,
   mapEmptyMessage,
   mapInvalidTypeMessage,
-} from '../Map';
+} from '../container/Map';
 import { requiredMessage } from '../Required';
 import { z } from 'zod';
 
@@ -40,7 +40,7 @@ describe('createMapSchema', () => {
         target: 'Target',
         keySchema: z.string(),
         valueSchema: z.number(),
-        allowEmpty: true,
+        nonempty: true,
       });
       const result = schema.parse(new Map());
       expect(result).toBeInstanceOf(Map);

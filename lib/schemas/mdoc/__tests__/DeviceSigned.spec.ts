@@ -2,7 +2,7 @@ import { Mac0, Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceSignedSchema } from '../DeviceSigned';
-import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 import { createTag24 } from '@/cbor';
 

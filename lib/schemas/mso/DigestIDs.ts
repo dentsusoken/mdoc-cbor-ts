@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { digestSchema } from './Digest';
 import { digestIDSchema } from './DigestID';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 
 /**
  * Schema for digest IDs in MSO

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { valueDigestsSchema } from '../ValueDigests';
-import { mapInvalidTypeMessage, mapEmptyMessage } from '@/schemas/common/Map';
+import {
+  mapInvalidTypeMessage,
+  mapEmptyMessage,
+} from '@/schemas/common/container/Map';
 import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
 
 const digestIDs = new Map<number, Uint8Array>([

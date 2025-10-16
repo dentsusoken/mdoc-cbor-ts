@@ -1,103 +1,76 @@
 import { z } from 'zod';
 import { getTypeName } from '@/utils/getTypeName';
-import { containerInvalidValueMessage } from './common-messages/containerInvalidValueMessage';
+import { containerInvalidValueMessage } from '../messages/containerInvalidValueMessage';
+import { containerInvalidTypeMessage } from '../messages/containerInvalidTypeMessage';
+import { containerEmptyMessage } from '../messages/containerEmptyMessage';
 
 /**
- * Creates an error message when a non-array value is provided where an array is expected.
+ * Parameters for creating an array schema with validation.
  *
- * @description
- * Returns a standardized error message indicating the expected type (array) and the actual type received,
- * for use in schema validation error reporting.
- *
- * @param target - The name of the schema, container, or field being validated (e.g., "Tags", "Addresses").
- * @param value - The value that failed validation by not being an array.
- * @returns A formatted error message string indicating the type mismatch,
- * e.g., "Tags: Expected an array, but received String".
- *
- * @example
- * const message = arrayInvalidTypeMessage("Tags", {});
- * // Returns: "Tags: Expected an array, but received Object"
+ * @template Output The type of the data output by each item after validation.
+ * @template Input The input type for each item before validation. Defaults to Output.
  */
-export const arrayInvalidTypeMessage = (
-  target: string,
-  value: unknown
-): string => `${target}: Expected an array, but received ${getTypeName(value)}`;
-
-/**
- * Creates an error message when an array is empty but a non-empty array is required.
- *
- * @description
- * Generates a standardized error message for use in schema validation when an empty array
- * is encountered but the schema requires at least one entry.
- *
- * @param target - The name of the schema, container, or field being validated (e.g., "Tags", "Addresses").
- * @returns A formatted error message string indicating that the array cannot be empty.
- *
- * @example
- * const message = arrayEmptyMessage("Tags");
- * // Returns: "Tags: At least one entry must be provided. The array cannot be empty."
- */
-export const arrayEmptyMessage = (target: string): string =>
-  `${target}: At least one entry must be provided. The array cannot be empty.`;
-
 type CreateArraySchemaParams<Output, Input = Output> = {
+  /**
+   * A string label for the target array, used in error messages.
+   */
   target: string;
+  /**
+   * The Zod schema for validating individual items of the array.
+   */
   itemSchema: z.ZodType<Output, z.ZodTypeDef, Input>;
-  allowEmpty?: boolean;
+  /**
+   * If true, the schema will reject empty arrays.
+   * @default false
+   */
+  nonempty?: boolean;
 };
 
 /**
- * Creates a Zod schema for validating and transforming arrays of items,
- * with optional control over allowing empty arrays and detailed error messages.
+ * Creates a Zod schema for arrays with detailed custom error messages.
  *
- * This utility validates that the input is an array, checks for optional empty allowance,
- * and applies the provided `itemSchema` to each element, collecting errors per index.
- * Error messages are prefixed with the container/target name for more helpful diagnostics.
+ * - Rejects values that are not arrays with a custom error.
+ * - Optionally rejects empty arrays (when nonempty is true).
+ * - Provides scoped, context-rich error messages for invalid items.
  *
- * @template Output - Output type of the item schema (e.g., string, User type, etc.)
- * @template Input - Input type accepted by the item schema (defaults to Output)
- * @param params.target - The name of the schema, container, or field for use in validation error messages.
- * @param params.itemSchema - A Zod schema for validating each item in the array.
- * @param params.allowEmpty - Whether to allow empty arrays; defaults to false (empty not allowed).
- * @returns A Zod schema that parses and validates arrays of the given item type, with improved user-facing error messages.
+ * @template Output The output type of validated items (and array).
+ * @template Input The input type of array items (defaults to Output).
+ * @param params The schema options, including `target`, `itemSchema`, and `nonempty`.
+ * @returns A Zod array schema that parses arrays of validated items.
  *
  * @example
- * const schema = createArraySchema({
- *   target: "Tags",
- *   itemSchema: z.string().min(1)
- * });
- * schema.parse(['a', 'b']); // OK
- * schema.parse([]); // Throws with message "Tags: At least one entry must be provided. The array cannot be empty."
- * schema.parse([123]); // Throws with item-level message
+ * const schema = createArraySchema({ target: 'Tags', itemSchema: z.string(), nonempty: true });
  */
 export const createArraySchema = <Output, Input = Output>({
   target,
   itemSchema,
-  allowEmpty = false,
+  nonempty = false,
 }: CreateArraySchemaParams<Output, Input>): z.ZodType<
   Output[],
   z.ZodTypeDef,
   Input[]
 > =>
   z.any().transform((data, ctx) => {
-    if (!Array.isArray(data)) {
-      ctx.addIssue({
+    if (!(data instanceof Array)) {
+      return ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: arrayInvalidTypeMessage(target, data),
+        message: containerInvalidTypeMessage({
+          target,
+          expected: 'array',
+          received: getTypeName(data),
+        }),
       });
-      return z.NEVER;
     }
 
-    if (!allowEmpty && data.length === 0) {
-      ctx.addIssue({
+    if (nonempty && data.length === 0) {
+      return ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: arrayEmptyMessage(target),
+        message: containerEmptyMessage(target),
       });
-      return z.NEVER;
     }
 
-    const output = [] as Output[];
     let hasError = false;
+    const output = [] as Output[];
 
     data.forEach((item, index) => {
       const result = itemSchema.safeParse(item);
@@ -121,4 +94,4 @@ export const createArraySchema = <Output, Input = Output>({
     }
 
     return output;
-  });
+  }) as unknown as z.ZodType<Output[], z.ZodTypeDef, Input[]>;

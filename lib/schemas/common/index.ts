@@ -7,7 +7,7 @@ export * from './DateTime';
 export * from './DocType';
 export * from './Entry';
 export * from './Int';
-export * from './Map';
+export * from './container/Map';
 export * from './NameSpace';
 export * from './NonEmptyText';
 export * from './Required';

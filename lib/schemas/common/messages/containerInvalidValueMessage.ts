@@ -1,3 +1,6 @@
+import { formatMessage } from './formatMessage';
+import { formatPath } from './formatPath';
+
 /**
  * Creates an error message for a specific key's value validation failure within a container-like map or object.
  *
@@ -16,21 +19,10 @@
  * //   target = "UserProfile"
  * //   path = ["addresses", 0, "city"]
  * //   originalMessage = "City: Required"
- * // Returns: "UserProfile.addresses.0.city: Required"
+ * // Returns: "UserProfile.addresses[0].city: Required"
  */
 export const containerInvalidValueMessage = (
   target: string,
   path: (string | number)[],
-  originalMessage: string = 'Invalid value'
-): string => {
-  const label = [target, ...path].join('.');
-
-  const colonIndex = originalMessage.indexOf(':');
-  if (colonIndex === -1) {
-    return `${label}: ${originalMessage}`;
-  }
-
-  const messagePart = originalMessage.substring(colonIndex + 1).trim();
-
-  return `${label}: ${messagePart}`;
-};
+  originalMessage?: string
+): string => `${formatPath(target, path)}: ${formatMessage(originalMessage)}`;

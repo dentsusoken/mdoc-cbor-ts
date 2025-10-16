@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { keyAuthorizationsSchema } from '../KeyAuthorizations';
-import { mapInvalidTypeMessage } from '@/schemas/common/Map';
+import { mapInvalidTypeMessage } from '@/schemas/common/container/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('KeyAuthorizations', () => {

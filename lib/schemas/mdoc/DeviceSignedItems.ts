@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { dataElementIdentifierSchema } from '../common/DataElementIdentifier';
 import { dataElementValueSchema } from '../common/DataElementValue';
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 
 /**
  * Schema for device-signed items in mdoc

@@ -1,4 +1,4 @@
-import { createMapSchema } from '@/schemas/common/Map';
+import { createMapSchema } from '@/schemas/common/container/Map';
 import { createUintSchema } from '@/schemas/common/Uint';
 import { z } from 'zod';
 
@@ -27,5 +27,5 @@ export const createUintKeyMapSchema = (
     target,
     keySchema: createUintSchema('Key'),
     valueSchema: z.any(),
-    allowEmpty: true,
+    nonempty: true,
   });

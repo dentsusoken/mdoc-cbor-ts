@@ -7,15 +7,15 @@ describe('containerInvalidValueMessage', () => {
     const path = ['addresses', 0, 'city'];
     const original = 'City is required';
     const result = containerInvalidValueMessage(target, path, original);
-    expect(result).toBe('UserProfile.addresses.0.city: City is required');
+    expect(result).toBe('UserProfile.addresses[0].city: City is required');
   });
 
   it('should remove label before the first colon and trim spaces', () => {
     const target = 'UserProfile';
     const path = ['addresses', 0, 'city'];
-    const original = 'UserProfile.addresses.0.city:   Required  ';
+    const original = 'UserProfile.addresses[0].city:   Required  ';
     const result = containerInvalidValueMessage(target, path, original);
-    expect(result).toBe('UserProfile.addresses.0.city: Required');
+    expect(result).toBe('UserProfile.addresses[0].city: Required');
   });
 
   it('should keep text after the first colon when multiple colons exist', () => {
@@ -24,7 +24,7 @@ describe('containerInvalidValueMessage', () => {
     const original = 'City: must be one of: Tokyo, Osaka';
     const result = containerInvalidValueMessage(target, path, original);
     expect(result).toBe(
-      'UserProfile.addresses.0.city: must be one of: Tokyo, Osaka'
+      'UserProfile.addresses[0].city: must be one of: Tokyo, Osaka'
     );
   });
 
@@ -41,7 +41,7 @@ describe('containerInvalidValueMessage', () => {
     const path = ['items', 1];
     const original = 'items.1:   Invalid valu  ';
     const result = containerInvalidValueMessage(target, path, original);
-    expect(result).toBe('Data.items.1: Invalid valu');
+    expect(result).toBe('Data.items[1]: Invalid valu');
   });
 
   it('should handle empty original message', () => {
@@ -57,7 +57,7 @@ describe('containerInvalidValueMessage', () => {
     const path = ['addresses', 0, 'city'];
     const original = 'UserProfile.addresses.0.city:';
     const result = containerInvalidValueMessage(target, path, original);
-    expect(result).toBe('UserProfile.addresses.0.city: ');
+    expect(result).toBe('UserProfile.addresses[0].city: ');
   });
 
   it('should handle original message that is undefined', () => {

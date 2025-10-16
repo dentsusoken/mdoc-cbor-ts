@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createStructSchema } from '../Struct';
-import { mapInvalidTypeMessage } from '../Map';
+import { mapInvalidTypeMessage } from '../container/Map';
 import { requiredMessage } from '../Required';
 
 describe('createStructSchema', () => {

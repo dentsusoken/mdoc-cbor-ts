@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import type { StrictMap, StrictMapEntries } from '@/strict-map/types';
 import { getTypeName } from '@/utils/getTypeName';
-import { containerInvalidValueMessage } from './common-messages/containerInvalidValueMessage';
+import { containerInvalidValueMessage } from '../messages/containerInvalidValueMessage';
+import { containerInvalidTypeMessage } from '../messages/containerInvalidTypeMessage';
 
 /**
  * Mode for handling unknown keys in StrictMap schemas
@@ -13,20 +14,6 @@ import { containerInvalidValueMessage } from './common-messages/containerInvalid
  * Note: 'passthrough' is not available for StrictMap as it contradicts the strict nature
  */
 type UnknownKeysMode = 'strip' | 'strict';
-
-/**
- * Creates an error message when input is not a Map
- * @param target - The name of the target schema being validated
- * @param actualType - The actual type of the input (optional)
- * @returns A formatted error message string
- */
-export const strictMapNotMapMessage = (
-  target: string,
-  actualType?: string
-): string =>
-  actualType
-    ? `${target}: Must be a Map, received ${actualType}`
-    : `${target}: Must be a Map`;
 
 /**
  * Creates an error message when required keys are missing
@@ -249,10 +236,13 @@ export const createStrictMapSchema = <T extends StrictMapEntries>({
   // Transform to validate and build output map
   return z.any().transform((input, ctx) => {
     if (!(input instanceof Map)) {
-      const actualType = getTypeName(input);
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: strictMapNotMapMessage(target, actualType),
+        message: containerInvalidTypeMessage({
+          target,
+          expected: 'Map',
+          received: getTypeName(input),
+        }),
         path: [],
       });
       return z.NEVER;

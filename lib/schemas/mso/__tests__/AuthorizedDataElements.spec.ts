@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { authorizedDataElementsSchema } from '../AuthorizedDataElements';
-import { mapInvalidTypeMessage, mapEmptyMessage } from '@/schemas/common/Map';
+import {
+  mapInvalidTypeMessage,
+  mapEmptyMessage,
+} from '@/schemas/common/container/Map';
 import { requiredMessage } from '@/schemas/common/Required';
 import { arrayEmptyMessage } from '@/schemas/common/container/Array';
 import {
