@@ -1,66 +1,70 @@
 import { describe, expect, expectTypeOf, it } from 'vitest';
 import { z } from 'zod';
 import { createSemiStrictMap } from '../createSemiStrictMap';
+import { EnumNumberValues } from '@/types';
 
 describe('createSemiStrictMap', () => {
   it('should have type-safe set/get for known keys', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
       IV = 5,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>();
+    const map = createSemiStrictMap<typeof entries, HeadersValues>();
 
     // Known keys - fully type-safe
-    map.set(Headers.Algorithm, -7);
-    map.set(Headers.KeyId, 'key-123');
+    map.set(Header.Algorithm, -7);
+    map.set(Header.KeyId, 'key-123');
+    map.set(Header.ContentType, 'application/json');
 
     // Runtime checks
-    expect(map.get(Headers.Algorithm)).toBe(-7);
-    expect(map.get(Headers.KeyId)).toBe('key-123');
+    expect(map.get(Header.Algorithm)).toBe(-7);
+    expect(map.get(Header.KeyId)).toBe('key-123');
+    expect(map.get(Header.ContentType)).toBe('application/json');
 
     // Type checks for known keys
-    expectTypeOf(map.get(Headers.Algorithm)).toEqualTypeOf<
-      number | undefined
-    >();
-    expectTypeOf(map.get(Headers.KeyId)).toEqualTypeOf<string | undefined>();
+    expectTypeOf(map.get(Header.Algorithm)).toEqualTypeOf<number | undefined>();
+    expectTypeOf(map.get(Header.KeyId)).toEqualTypeOf<string | undefined>();
+    expectTypeOf(map.get(Header.ContentType)).toEqualTypeOf<unknown>();
   });
 
   it('should accept any value for unknown keys', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
       IV = 5,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>();
+    const map = createSemiStrictMap<typeof entries, HeadersValues>();
 
     // Unknown keys - key is checked, value is flexible
-    map.set(Headers.ContentType, 'application/cbor');
-    map.set(Headers.IV, new Uint8Array([1, 2, 3]));
-    map.set(Headers.IV, 'string value'); // ✓ any value accepted
-    map.set(Headers.IV, 123); // ✓ any value accepted
+    map.set(Header.ContentType, 'application/cbor');
+    map.set(Header.IV, new Uint8Array([1, 2, 3]));
+    map.set(Header.IV, 'string value'); // ✓ any value accepted
+    map.set(Header.IV, 123); // ✓ any value accepted
 
     // Runtime checks
-    expect(map.get(Headers.ContentType)).toBe('application/cbor');
-    expect(map.get(Headers.IV)).toBe(123);
+    expect(map.get(Header.ContentType)).toBe('application/cbor');
+    expect(map.get(Header.IV)).toBe(123);
 
     // Type checks for unknown keys
-    expectTypeOf(map.get(Headers.ContentType)).toEqualTypeOf<unknown>();
-    expectTypeOf(map.get(Headers.IV)).toEqualTypeOf<unknown>();
+    expectTypeOf(map.get(Header.ContentType)).toEqualTypeOf<unknown>();
+    expectTypeOf(map.get(Header.IV)).toEqualTypeOf<unknown>();
   });
 
   it('should work with string keys and enum', () => {
@@ -96,100 +100,104 @@ describe('createSemiStrictMap', () => {
   });
 
   it('should support method chaining', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>()
-      .set(Headers.Algorithm, -7)
-      .set(Headers.KeyId, 'key-123')
-      .set(Headers.ContentType, 'application/cbor');
+    const map = createSemiStrictMap<typeof entries, HeadersValues>()
+      .set(Header.Algorithm, -7)
+      .set(Header.KeyId, 'key-123')
+      .set(Header.ContentType, 'application/cbor');
 
-    expect(map.get(Headers.Algorithm)).toBe(-7);
-    expect(map.get(Headers.KeyId)).toBe('key-123');
-    expect(map.get(Headers.ContentType)).toBe('application/cbor');
+    expect(map.get(Header.Algorithm)).toBe(-7);
+    expect(map.get(Header.KeyId)).toBe('key-123');
+    expect(map.get(Header.ContentType)).toBe('application/cbor');
   });
 
   it('should work with mixed known and unknown keys', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
       IV = 5,
       CustomHeader = 100,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>();
+    const map = createSemiStrictMap<typeof entries, HeadersValues>();
 
     // Set known keys with type-safe values
-    map.set(Headers.Algorithm, -7);
-    map.set(Headers.KeyId, 'key-123');
+    map.set(Header.Algorithm, -7);
+    map.set(Header.KeyId, 'key-123');
 
     // Set unknown keys with any values
-    map.set(Headers.ContentType, 'text/plain');
-    map.set(Headers.IV, new Uint8Array([1, 2, 3]));
-    map.set(Headers.CustomHeader, { custom: 'data' });
+    map.set(Header.ContentType, 'text/plain');
+    map.set(Header.IV, new Uint8Array([1, 2, 3]));
+    map.set(Header.CustomHeader, { custom: 'data' });
 
     // All keys are accessible
-    expect(map.has(Headers.Algorithm)).toBe(true);
-    expect(map.has(Headers.KeyId)).toBe(true);
-    expect(map.has(Headers.ContentType)).toBe(true);
-    expect(map.has(Headers.IV)).toBe(true);
-    expect(map.has(Headers.CustomHeader)).toBe(true);
+    expect(map.has(Header.Algorithm)).toBe(true);
+    expect(map.has(Header.KeyId)).toBe(true);
+    expect(map.has(Header.ContentType)).toBe(true);
+    expect(map.has(Header.IV)).toBe(true);
+    expect(map.has(Header.CustomHeader)).toBe(true);
 
     expect(map.size).toBe(5);
   });
 
   it('should support delete for both known and unknown keys', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>();
+    const map = createSemiStrictMap<typeof entries, HeadersValues>();
 
-    map.set(Headers.Algorithm, -7);
-    map.set(Headers.KeyId, 'key-123');
-    map.set(Headers.ContentType, 'application/cbor');
+    map.set(Header.Algorithm, -7);
+    map.set(Header.KeyId, 'key-123');
+    map.set(Header.ContentType, 'application/cbor');
 
     // Delete known key
-    expect(map.delete(Headers.Algorithm)).toBe(true);
-    expect(map.has(Headers.Algorithm)).toBe(false);
+    expect(map.delete(Header.Algorithm)).toBe(true);
+    expect(map.has(Header.Algorithm)).toBe(false);
 
     // Delete unknown key
-    expect(map.delete(Headers.ContentType)).toBe(true);
-    expect(map.has(Headers.ContentType)).toBe(false);
+    expect(map.delete(Header.ContentType)).toBe(true);
+    expect(map.has(Header.ContentType)).toBe(false);
 
     expect(map.size).toBe(1);
   });
 
   it('should be a pure Map instance', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
-    const entries = [[Headers.Algorithm, z.number()]] as const;
+    const entries = [[Header.Algorithm, z.number()]] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>();
+    const map = createSemiStrictMap<typeof entries, HeadersValues>();
 
     // Should be a pure Map instance for cbor-x serialization
     expect(Object.prototype.toString.call(map)).toBe('[object Map]');
@@ -256,38 +264,37 @@ describe('createSemiStrictMap', () => {
   });
 
   it('should accept initial entries in constructor', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
       IV = 5,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>([
-      [Headers.Algorithm, -7],
-      [Headers.KeyId, 'key-123'],
-      [Headers.ContentType, 'application/cbor'],
+    const map = createSemiStrictMap<typeof entries, HeadersValues>([
+      [Header.Algorithm, -7],
+      [Header.KeyId, 'key-123'],
+      [Header.ContentType, 'application/cbor'],
     ]);
 
     // Runtime checks - known keys
-    expect(map.get(Headers.Algorithm)).toBe(-7);
-    expect(map.get(Headers.KeyId)).toBe('key-123');
+    expect(map.get(Header.Algorithm)).toBe(-7);
+    expect(map.get(Header.KeyId)).toBe('key-123');
 
     // Runtime checks - unknown keys
-    expect(map.get(Headers.ContentType)).toBe('application/cbor');
+    expect(map.get(Header.ContentType)).toBe('application/cbor');
     expect(map.size).toBe(3);
 
     // Type checks
-    expectTypeOf(map.get(Headers.Algorithm)).toEqualTypeOf<
-      number | undefined
-    >();
-    expectTypeOf(map.get(Headers.KeyId)).toEqualTypeOf<string | undefined>();
-    expectTypeOf(map.get(Headers.ContentType)).toEqualTypeOf<unknown>();
+    expectTypeOf(map.get(Header.Algorithm)).toEqualTypeOf<number | undefined>();
+    expectTypeOf(map.get(Header.KeyId)).toEqualTypeOf<string | undefined>();
+    expectTypeOf(map.get(Header.ContentType)).toEqualTypeOf<unknown>();
   });
 
   it('should accept initial entries with mixed known and unknown keys', () => {
@@ -319,30 +326,31 @@ describe('createSemiStrictMap', () => {
   });
 
   it('should accept partial initial entries', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>([
-      [Headers.Algorithm, -7],
+    const map = createSemiStrictMap<typeof entries, HeadersValues>([
+      [Header.Algorithm, -7],
     ]);
 
-    expect(map.get(Headers.Algorithm)).toBe(-7);
-    expect(map.get(Headers.KeyId)).toBeUndefined();
+    expect(map.get(Header.Algorithm)).toBe(-7);
+    expect(map.get(Header.KeyId)).toBeUndefined();
     expect(map.size).toBe(1);
 
     // Can still add more entries after creation
-    map.set(Headers.KeyId, 'key-123');
-    map.set(Headers.ContentType, 'application/cbor');
-    expect(map.get(Headers.KeyId)).toBe('key-123');
-    expect(map.get(Headers.ContentType)).toBe('application/cbor');
+    map.set(Header.KeyId, 'key-123');
+    map.set(Header.ContentType, 'application/cbor');
+    expect(map.get(Header.KeyId)).toBe('key-123');
+    expect(map.get(Header.ContentType)).toBe('application/cbor');
     expect(map.size).toBe(3);
   });
 
@@ -378,21 +386,22 @@ describe('createSemiStrictMap', () => {
   });
 
   it('should have type-safe entries() method', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>([
-      [Headers.Algorithm, -7],
-      [Headers.KeyId, 'key-123'],
-      [Headers.ContentType, 'application/cbor'],
+    const map = createSemiStrictMap<typeof entries, HeadersValues>([
+      [Header.Algorithm, -7],
+      [Header.KeyId, 'key-123'],
+      [Header.ContentType, 'application/cbor'],
     ]);
 
     // Runtime checks
@@ -412,20 +421,21 @@ describe('createSemiStrictMap', () => {
   });
 
   it('should have type-safe keys() method', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>([
-      [Headers.Algorithm, -7],
-      [Headers.ContentType, 'application/cbor'],
+    const map = createSemiStrictMap<typeof entries, HeadersValues>([
+      [Header.Algorithm, -7],
+      [Header.ContentType, 'application/cbor'],
     ]);
 
     // Runtime checks
@@ -435,25 +445,26 @@ describe('createSemiStrictMap', () => {
 
     // Type checks
     for (const key of map.keys()) {
-      expectTypeOf(key).toEqualTypeOf<Headers>();
+      expectTypeOf(key).toEqualTypeOf<Header>();
     }
   });
 
   it('should have type-safe values() method', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>([
-      [Headers.Algorithm, -7],
-      [Headers.ContentType, 'application/cbor'],
+    const map = createSemiStrictMap<typeof entries, HeadersValues>([
+      [Header.Algorithm, -7],
+      [Header.ContentType, 'application/cbor'],
     ]);
 
     // Runtime checks
@@ -468,19 +479,20 @@ describe('createSemiStrictMap', () => {
   });
 
   it('should have type-safe Symbol.iterator', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
     }
+    type HeadersValues = EnumNumberValues<typeof Header>;
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
-    const map = createSemiStrictMap<typeof entries, Headers>([
-      [Headers.Algorithm, -7],
-      [Headers.KeyId, 'key-123'],
+    const map = createSemiStrictMap<typeof entries, HeadersValues>([
+      [Header.Algorithm, -7],
+      [Header.KeyId, 'key-123'],
     ]);
 
     // Runtime checks - should be iterable
