@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createBytesSchema } from '@/schemas/common/values/Bytes';
+import { createBytesSchema } from '@/schemas/cbor/Bytes';
 import { dataElementIdentifierSchema } from '@/schemas/common/values/DataElementIdentifier';
 import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
 import { digestIDSchema } from '@/index';

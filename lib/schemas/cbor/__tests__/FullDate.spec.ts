@@ -4,8 +4,8 @@ import { Tag } from 'cbor-x';
 import {
   fullDateSchema,
   fullDateInvalidTypeMessage,
-  FULL_DATE_INVALID_FORMAT_MESSAGE,
-  FULL_DATE_INVALID_TAG1004_MESSAGE,
+  fullDateInvalidFormatMessage,
+  fullDateInvalidTagMessage,
 } from '../FullDate';
 // No Required wrapper here; test the raw schema like DateTime
 
@@ -119,7 +119,7 @@ describe('fullDateSchema', () => {
             expect(error).toBeInstanceOf(z.ZodError);
             if (error instanceof z.ZodError) {
               expect(error.issues[0].message).toBe(
-                FULL_DATE_INVALID_FORMAT_MESSAGE
+                fullDateInvalidFormatMessage(value)
               );
             }
           }
@@ -136,7 +136,7 @@ describe('fullDateSchema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            FULL_DATE_INVALID_FORMAT_MESSAGE
+            fullDateInvalidFormatMessage(badDate)
           );
         }
       }
@@ -159,7 +159,7 @@ describe('fullDateSchema', () => {
             expect(error).toBeInstanceOf(z.ZodError);
             if (error instanceof z.ZodError) {
               expect(error.issues[0].message).toBe(
-                FULL_DATE_INVALID_TAG1004_MESSAGE
+                fullDateInvalidTagMessage(value)
               );
             }
           }

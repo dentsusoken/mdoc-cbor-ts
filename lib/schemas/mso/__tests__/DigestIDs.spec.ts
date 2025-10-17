@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { digestIDsSchema } from '../DigestIDs';
 import { mapEmptyMessage } from '@/schemas/common/containers/Map';
 import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
-import { bytesInvalidTypeMessage } from '@/schemas/common/values/Bytes';
+import { bytesInvalidTypeMessage } from '@/schemas/cbor/Bytes';
 
 describe('DigestIDs', () => {
   describe('valid inputs', () => {

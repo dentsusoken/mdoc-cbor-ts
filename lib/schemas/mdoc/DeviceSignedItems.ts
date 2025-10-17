@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema } from '../common/values/DataElementIdentifier';
+import { dataElementIdentifierSchema } from '../cbor/DataElementIdentifier';
 import { dataElementValueSchema } from '../common/DataElementValue';
 import { createMapSchema } from '@/schemas/common/containers/Map';
 

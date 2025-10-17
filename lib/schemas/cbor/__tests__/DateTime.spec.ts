@@ -4,8 +4,8 @@ import { Tag } from 'cbor-x';
 import {
   dateTimeSchema,
   dateTimeInvalidTypeMessage,
-  DATE_TIME_INVALID_FORMAT_MESSAGE,
-  DATE_TIME_INVALID_TAG0_MESSAGE,
+  dateTimeInvalidFormatMessage,
+  dateTimeInvalidTagMessage,
 } from '../DateTime';
 
 describe('dateTimeSchema', () => {
@@ -90,7 +90,7 @@ describe('dateTimeSchema', () => {
             expect(error).toBeInstanceOf(z.ZodError);
             if (error instanceof z.ZodError) {
               expect(error.issues[0].message).toBe(
-                DATE_TIME_INVALID_TAG0_MESSAGE
+                dateTimeInvalidTagMessage(value)
               );
             }
           }
@@ -115,8 +115,9 @@ describe('dateTimeSchema', () => {
           } catch (error) {
             expect(error).toBeInstanceOf(z.ZodError);
             if (error instanceof z.ZodError) {
+              const invalid = value.value as string;
               expect(error.issues[0].message).toBe(
-                DATE_TIME_INVALID_FORMAT_MESSAGE
+                dateTimeInvalidFormatMessage(invalid)
               );
             }
           }
@@ -139,7 +140,7 @@ describe('dateTimeSchema', () => {
             expect(error).toBeInstanceOf(z.ZodError);
             if (error instanceof z.ZodError) {
               expect(error.issues[0].message).toBe(
-                DATE_TIME_INVALID_FORMAT_MESSAGE
+                dateTimeInvalidFormatMessage(value)
               );
             }
           }
@@ -161,7 +162,7 @@ describe('dateTimeSchema', () => {
             expect(error).toBeInstanceOf(z.ZodError);
             if (error instanceof z.ZodError) {
               expect(error.issues[0].message).toBe(
-                DATE_TIME_INVALID_FORMAT_MESSAGE
+                dateTimeInvalidFormatMessage(value)
               );
             }
           }

@@ -2,18 +2,24 @@ import { z } from 'zod';
 import { Tag } from 'cbor-x';
 import { createTag1004 } from '@/cbor/createTag1004';
 import { getTypeName } from '@/utils/getTypeName';
+import { valueInvalidTypeMessage } from '../messages';
 
 /**
- * Error message for invalid full-date format (YYYY-MM-DD).
+ * Generates an error message for an invalid full-date string or Date instance format.
  * @description
- * Used when a string or input is provided that cannot be parsed as a valid full-date.
+ * Used when a provided string or Date instance cannot be parsed as a valid full-date.
+ * The expected format is an ISO 8601 date that normalizes to "YYYY-MM-DD".
  *
- * The value must be parseable as "YYYY-MM-DD" or as an ISO 8601 date string that normalizes to a valid date.
- *
- * @see {@link fullDateSchema}
+ * @param invalidValue - The value (string or Date) that could not be parsed to a proper full-date.
+ * @returns A standardized error message indicating the expected full-date format and the value received.
  */
-export const FULL_DATE_INVALID_FORMAT_MESSAGE =
-  'Expected YYYY-MM-DD string, but received a different format.';
+export const fullDateInvalidFormatMessage = (
+  invalidValue: string | Date
+): string =>
+  valueInvalidTypeMessage({
+    expected: 'YYYY-MM-DD format',
+    received: String(invalidValue),
+  });
 
 /**
  * Builds an error message for when the input is not a valid full-date input type.
@@ -27,18 +33,19 @@ export const FULL_DATE_INVALID_FORMAT_MESSAGE =
  * @see {@link fullDateSchema}
  */
 export const fullDateInvalidTypeMessage = (value: unknown): string =>
-  `Expected YYYY-MM-DD string, Tag(1004), or Date, but received ${getTypeName(value)}`;
+  `Expected YYYY-MM-DD string, Tag(1004), or Date, received ${getTypeName(value)}`;
 
 /**
- * Error message for invalid CBOR Tag(1004) type.
+ * Generates an error message for invalid CBOR Tag(1004) used for full-date.
  * @description
- * Used when a CBOR Tag is provided, but it is not Tag(1004) or does not
- * contain a string value suitable for a full-date.
+ * Returns a standardized error message when a Tag instance is provided but is not a valid CBOR Tag(1004)
+ * containing a full-date string ("YYYY-MM-DD").
  *
- * @see {@link fullDateSchema}
+ * @param invalidTag - The Tag instance that failed validation.
+ * @returns A formatted error message describing the expected type and the actual received value.
  */
-export const FULL_DATE_INVALID_TAG1004_MESSAGE =
-  'Expected CBOR Tag(1004) containing YYYY-MM-DD string, but received a different type.';
+export const fullDateInvalidTagMessage = (invalidTag: Tag): string =>
+  `Expected CBOR Tag(1004) containing YYYY-MM-DD string, received ${JSON.stringify(invalidTag)}.`;
 
 /**
  * Zod schema for validating and normalizing "full-date" values to the RFC 3339 format "YYYY-MM-DD".
@@ -83,7 +90,7 @@ export const fullDateSchema = z.any().transform((value, ctx) => {
     } catch (error) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: FULL_DATE_INVALID_FORMAT_MESSAGE,
+        message: fullDateInvalidFormatMessage(value),
       });
       return z.NEVER;
     }
@@ -94,7 +101,7 @@ export const fullDateSchema = z.any().transform((value, ctx) => {
     if (!(tag.tag === 1004 && typeof tag.value === 'string')) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: FULL_DATE_INVALID_TAG1004_MESSAGE,
+        message: fullDateInvalidTagMessage(tag),
       });
       return z.NEVER;
     }
@@ -103,7 +110,7 @@ export const fullDateSchema = z.any().transform((value, ctx) => {
     } catch (error) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: FULL_DATE_INVALID_FORMAT_MESSAGE,
+        message: fullDateInvalidFormatMessage(tag.value as string),
       });
       return z.NEVER;
     }
@@ -115,7 +122,7 @@ export const fullDateSchema = z.any().transform((value, ctx) => {
     } catch (error) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: FULL_DATE_INVALID_FORMAT_MESSAGE,
+        message: fullDateInvalidFormatMessage(value),
       });
       return z.NEVER;
     }

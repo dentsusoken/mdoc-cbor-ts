@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { dateTimeSchema } from '@/schemas/common/values/DateTime';
+import { dateTimeSchema } from '@/schemas/cbor/DateTime';
 import { createStrictMapSchema } from '@/schemas/common/containers/StrictMap';
 import { createStrictMap } from '@/strict-map';
 

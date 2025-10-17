@@ -1,6 +1,6 @@
 import { Buffer } from 'node:buffer';
 import { z } from 'zod';
-import { valueInvalidTypeMessage } from '../messages';
+import { valueInvalidTypeMessage } from '@/schemas/messages';
 import { getTypeName } from '@/utils/getTypeName';
 
 /**

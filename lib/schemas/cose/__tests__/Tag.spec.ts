@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { tagSchema } from '../Tag';
-import { bytesInvalidTypeMessage } from '@/schemas/common/values/Bytes';
+import { bytesInvalidTypeMessage } from '@/schemas/cbor/Bytes';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('Tag', () => {

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { createMapSchema } from '../Map';
 import { createStrictMapSchema } from '../StrictMap';
-import { createArraySchema } from '../Array';
 import { containerEmptyMessage } from '../../messages/containerEmptyMessage';
 import { containerInvalidTypeMessage } from '../../messages/containerInvalidTypeMessage';
 import { containerInvalidValueMessage } from '../../messages/containerInvalidValueMessage';

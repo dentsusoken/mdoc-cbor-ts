@@ -1,4 +1,4 @@
-import { createBytesSchema } from '@/schemas/common/values/Bytes';
+import { createBytesSchema } from '@/schemas/cbor/Bytes';
 
 /**
  * Schema for COSE protected headers
