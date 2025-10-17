@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { SignBase } from '../SignBase';
-import { Headers } from '../types';
+import { Header } from '../types';
 import { encodeCbor } from '@/cbor/codec';
 import { createSelfSignedCertificate } from '@/x509/createSelfSignedCertificate';
 import { certificateToDerBytes } from '@/x509/certificateToDerBytes';
@@ -22,7 +22,7 @@ const pickEcPublicJwkFields = (
 describe('SignBase', () => {
   describe('constructor behavior', () => {
     it('stores protected headers as CBOR bytes and decodes to map', () => {
-      const ph = new Map<number, unknown>([[Headers.ContentType, 42]]);
+      const ph = new Map<number, unknown>([[Header.ContentType, 42]]);
       const encoded = encodeCbor(ph);
       const uh = new Map<number, unknown>();
       const sig = new Uint8Array([1, 2, 3]);
@@ -31,7 +31,7 @@ describe('SignBase', () => {
 
       expect(sb).toBeInstanceOf(SignBase);
       expect(sb.protectedHeaders).toEqual(encoded);
-      expect(sb.decodedProtectedHeaders.get(Headers.ContentType)).toBe(42);
+      expect(sb.decodedProtectedHeaders.get(Header.ContentType)).toBe(42);
       expect(sb.signature).toEqual(sig);
     });
   });
@@ -39,7 +39,7 @@ describe('SignBase', () => {
   describe('x5chain getter', () => {
     it('returns chain from protected headers', () => {
       const der = new Uint8Array([0x01, 0x02]);
-      const ph = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
+      const ph = new Map<number, unknown>([[Header.X5Chain, [der]]]);
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
@@ -50,7 +50,7 @@ describe('SignBase', () => {
     it('returns chain from unprotected headers when not in protected', () => {
       const der = new Uint8Array([0x0a, 0x0b]);
       const ph = new Map<number, unknown>();
-      const uh = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
+      const uh = new Map<number, unknown>([[Header.X5Chain, [der]]]);
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
@@ -59,7 +59,7 @@ describe('SignBase', () => {
 
     it('converts single certificate to array from protected headers', () => {
       const der = new Uint8Array([0x03, 0x04]);
-      const ph = new Map<number, unknown>([[Headers.X5Chain, der]]);
+      const ph = new Map<number, unknown>([[Header.X5Chain, der]]);
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
@@ -72,7 +72,7 @@ describe('SignBase', () => {
     it('converts single certificate to array from unprotected headers', () => {
       const der = new Uint8Array([0x05, 0x06]);
       const ph = new Map<number, unknown>();
-      const uh = new Map<number, unknown>([[Headers.X5Chain, der]]);
+      const uh = new Map<number, unknown>([[Header.X5Chain, der]]);
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
 
@@ -117,7 +117,7 @@ describe('SignBase', () => {
       });
       const der = certificateToDerBytes(cert);
 
-      const ph = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
+      const ph = new Map<number, unknown>([[Header.X5Chain, [der]]]);
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
@@ -154,7 +154,7 @@ describe('SignBase', () => {
       const derB = certificateToDerBytes(certB);
 
       // Intentionally incorrect chain order/issuers: leaf A followed by unrelated B
-      const ph = new Map<number, unknown>([[Headers.X5Chain, [derA, derB]]]);
+      const ph = new Map<number, unknown>([[Header.X5Chain, [derA, derB]]]);
       const uh = new Map<number, unknown>();
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());

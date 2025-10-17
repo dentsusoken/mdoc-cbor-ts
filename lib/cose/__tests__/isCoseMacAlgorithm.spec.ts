@@ -1,21 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { isCoseMacAlgorithm } from '../isCoseMacAlgorithm';
-import { MacAlgorithms } from '../types';
+import { MacAlgorithm } from '../types';
 
 describe('isCoseMacAlgorithm', () => {
   describe('should return true', () => {
     it('for valid HS256 algorithm', () => {
-      const result = isCoseMacAlgorithm(MacAlgorithms.HS256);
+      const result = isCoseMacAlgorithm(MacAlgorithm.HS256);
       expect(result).toBe(true);
     });
 
     it('for valid HS384 algorithm', () => {
-      const result = isCoseMacAlgorithm(MacAlgorithms.HS384);
+      const result = isCoseMacAlgorithm(MacAlgorithm.HS384);
       expect(result).toBe(true);
     });
 
     it('for valid HS512 algorithm', () => {
-      const result = isCoseMacAlgorithm(MacAlgorithms.HS512);
+      const result = isCoseMacAlgorithm(MacAlgorithm.HS512);
       expect(result).toBe(true);
     });
 
@@ -35,15 +35,15 @@ describe('isCoseMacAlgorithm', () => {
     });
 
     it('for enum values', () => {
-      expect(isCoseMacAlgorithm(MacAlgorithms.HS256)).toBe(true);
-      expect(isCoseMacAlgorithm(MacAlgorithms.HS384)).toBe(true);
-      expect(isCoseMacAlgorithm(MacAlgorithms.HS512)).toBe(true);
+      expect(isCoseMacAlgorithm(MacAlgorithm.HS256)).toBe(true);
+      expect(isCoseMacAlgorithm(MacAlgorithm.HS384)).toBe(true);
+      expect(isCoseMacAlgorithm(MacAlgorithm.HS512)).toBe(true);
     });
 
     it('for all enum values systematically', () => {
-      const allAlgorithms = Object.values(MacAlgorithms).filter(
+      const allAlgorithms = Object.values(MacAlgorithm).filter(
         (v) => typeof v === 'number'
-      ) as MacAlgorithms[];
+      ) as MacAlgorithm[];
 
       allAlgorithms.forEach((algorithm) => {
         expect(isCoseMacAlgorithm(algorithm)).toBe(true);

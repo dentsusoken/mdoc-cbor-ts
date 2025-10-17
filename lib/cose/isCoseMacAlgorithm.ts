@@ -1,4 +1,4 @@
-import { MacAlgorithms } from './types';
+import { MacAlgorithm } from './types';
 
 /**
  * Checks if a given number is a valid COSE MAC algorithm.
@@ -8,10 +8,10 @@ import { MacAlgorithms } from './types';
  */
 export const isCoseMacAlgorithm = (
   algorithm: unknown
-): algorithm is MacAlgorithms => {
+): algorithm is MacAlgorithm => {
   if (typeof algorithm !== 'number') {
     return false;
   }
 
-  return Object.values(MacAlgorithms).includes(algorithm as MacAlgorithms);
+  return Object.values(MacAlgorithm).includes(algorithm as MacAlgorithm);
 };

@@ -1,7 +1,7 @@
 import { CoseBase } from './CoseBase';
 import { generateHmac } from '@/utils/generateHmac';
 import { compareUint8Arrays, decodeBase64Url } from 'u8a-utils';
-import { Headers, MacAlgorithms } from './types';
+import { Header, MacAlgorithm } from './types';
 import { isCoseMacAlgorithm } from './isCoseMacAlgorithm';
 import { MAC_ALGORITHM_TO_DIGEST_ALGORITHM } from './constants';
 import { JwkOctKey } from '@/jwk/types';
@@ -140,8 +140,8 @@ export class MacBase extends CoseBase {
    * }
    * ```
    */
-  get macAlgorithm(): MacAlgorithms {
-    const alg = this.getHeader(Headers.Algorithm);
+  get macAlgorithm(): MacAlgorithm {
+    const alg = this.getHeader(Header.Algorithm);
 
     if (!isCoseMacAlgorithm(alg)) {
       throw new Error(`Invalid MAC algorithm: ${alg}`);

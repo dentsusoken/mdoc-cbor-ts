@@ -1,4 +1,4 @@
-import { Curves } from './types';
+import { Curve } from './types';
 import { JWK_TO_COSE_CURVES } from './constants';
 import { toJwkCurve } from '@/jwk/toJwkCurve';
 
@@ -18,6 +18,6 @@ import { toJwkCurve } from '@/jwk/toJwkCurve';
  * jwkToCoseCurve('invalid-curve'); // Throws: Unsupported JWK curve: invalid-curve
  * ```
  */
-export const jwkToCoseCurve = (curve: string): Curves => {
+export const jwkToCoseCurve = (curve: string): Curve => {
   return JWK_TO_COSE_CURVES[toJwkCurve(curve)];
 };

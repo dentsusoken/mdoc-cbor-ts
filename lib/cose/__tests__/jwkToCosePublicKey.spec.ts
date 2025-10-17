@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCosePublicKey } from '../jwkToCosePublicKey';
 import { JwkPublicKey, JwkAlgorithms, JwkCurves } from '@/jwk/types';
-import { KeyParams, KeyTypes, Curves, Algorithms, KeyOps } from '../types';
+import { KeyParam, KeyType, Curve, Algorithm, KeyOp } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
 
 describe('jwkToCosePublicKey', () => {
@@ -34,11 +34,11 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result).toBeInstanceOf(Map);
-      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
-      expect(result.get(KeyParams.Curve)).toBe(Curves.P256);
-      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.ES256);
-      expect(result.get(KeyParams.x)).toEqual(xCoord);
-      expect(result.get(KeyParams.y)).toEqual(yCoord);
+      expect(result.get(KeyParam.KeyType)).toBe(KeyType.EC);
+      expect(result.get(KeyParam.Curve)).toBe(Curve.P256);
+      expect(result.get(KeyParam.Algorithm)).toBe(Algorithm.ES256);
+      expect(result.get(KeyParam.x)).toEqual(xCoord);
+      expect(result.get(KeyParam.y)).toEqual(yCoord);
     });
 
     it('for P-256 JWK with algorithm specified', () => {
@@ -47,9 +47,9 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
-      expect(result.get(KeyParams.Curve)).toBe(Curves.P256);
-      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.ES256);
+      expect(result.get(KeyParam.KeyType)).toBe(KeyType.EC);
+      expect(result.get(KeyParam.Curve)).toBe(Curve.P256);
+      expect(result.get(KeyParam.Algorithm)).toBe(Algorithm.ES256);
     });
 
     it('for P-384 JWK', () => {
@@ -58,9 +58,9 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
-      expect(result.get(KeyParams.Curve)).toBe(Curves.P384);
-      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.ES384);
+      expect(result.get(KeyParam.KeyType)).toBe(KeyType.EC);
+      expect(result.get(KeyParam.Curve)).toBe(Curve.P384);
+      expect(result.get(KeyParam.Algorithm)).toBe(Algorithm.ES384);
     });
 
     it('for P-521 JWK', () => {
@@ -69,9 +69,9 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.EC);
-      expect(result.get(KeyParams.Curve)).toBe(Curves.P521);
-      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.ES512);
+      expect(result.get(KeyParam.KeyType)).toBe(KeyType.EC);
+      expect(result.get(KeyParam.Curve)).toBe(Curve.P521);
+      expect(result.get(KeyParam.Algorithm)).toBe(Algorithm.ES512);
     });
 
     it('for JWK with key operations', () => {
@@ -80,10 +80,7 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyOps)).toEqual([
-        KeyOps.Sign,
-        KeyOps.Verify,
-      ]);
+      expect(result.get(KeyParam.KeyOps)).toEqual([KeyOp.Sign, KeyOp.Verify]);
     });
   });
 
@@ -93,11 +90,11 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result).toBeInstanceOf(Map);
-      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.OKP);
-      expect(result.get(KeyParams.Curve)).toBe(Curves.Ed25519);
-      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.EdDSA);
-      expect(result.get(KeyParams.x)).toEqual(edPublicKey);
-      expect(result.get(KeyParams.y)).toBeUndefined();
+      expect(result.get(KeyParam.KeyType)).toBe(KeyType.OKP);
+      expect(result.get(KeyParam.Curve)).toBe(Curve.Ed25519);
+      expect(result.get(KeyParam.Algorithm)).toBe(Algorithm.EdDSA);
+      expect(result.get(KeyParam.x)).toEqual(edPublicKey);
+      expect(result.get(KeyParam.y)).toBeUndefined();
     });
 
     it('for Ed25519 JWK with algorithm specified', () => {
@@ -106,10 +103,10 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyType)).toBe(KeyTypes.OKP);
-      expect(result.get(KeyParams.Curve)).toBe(Curves.Ed25519);
-      expect(result.get(KeyParams.Algorithm)).toBe(Algorithms.EdDSA);
-      expect(result.get(KeyParams.y)).toBeUndefined();
+      expect(result.get(KeyParam.KeyType)).toBe(KeyType.OKP);
+      expect(result.get(KeyParam.Curve)).toBe(Curve.Ed25519);
+      expect(result.get(KeyParam.Algorithm)).toBe(Algorithm.EdDSA);
+      expect(result.get(KeyParam.y)).toBeUndefined();
     });
 
     it('for JWK with key operations', () => {
@@ -118,10 +115,7 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyOps)).toEqual([
-        KeyOps.Sign,
-        KeyOps.Verify,
-      ]);
+      expect(result.get(KeyParam.KeyOps)).toEqual([KeyOp.Sign, KeyOp.Verify]);
     });
   });
 
@@ -268,7 +262,7 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyOps)).toEqual([]);
+      expect(result.get(KeyParam.KeyOps)).toEqual([]);
     });
 
     it('for JWK with single key operation', () => {
@@ -277,7 +271,7 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyOps)).toEqual([KeyOps.Sign]);
+      expect(result.get(KeyParam.KeyOps)).toEqual([KeyOp.Sign]);
     });
 
     it('for JWK with all possible key operations', () => {
@@ -295,15 +289,15 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyOps)).toEqual([
-        KeyOps.Sign,
-        KeyOps.Verify,
-        KeyOps.Encrypt,
-        KeyOps.Decrypt,
-        KeyOps.WrapKey,
-        KeyOps.UnwrapKey,
-        KeyOps.DeriveKey,
-        KeyOps.DeriveBits,
+      expect(result.get(KeyParam.KeyOps)).toEqual([
+        KeyOp.Sign,
+        KeyOp.Verify,
+        KeyOp.Encrypt,
+        KeyOp.Decrypt,
+        KeyOp.WrapKey,
+        KeyOp.UnwrapKey,
+        KeyOp.DeriveKey,
+        KeyOp.DeriveBits,
       ]);
     });
 
@@ -313,11 +307,11 @@ describe('jwkToCosePublicKey', () => {
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(KeyParams.KeyOps)).toEqual([
-        KeyOps.Sign,
-        KeyOps.Sign,
-        KeyOps.Verify,
-        KeyOps.Verify,
+      expect(result.get(KeyParam.KeyOps)).toEqual([
+        KeyOp.Sign,
+        KeyOp.Sign,
+        KeyOp.Verify,
+        KeyOp.Verify,
       ]);
     });
   });

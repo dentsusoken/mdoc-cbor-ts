@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Mac0 } from '../Mac0';
-import { Headers, MacAlgorithms } from '../types';
+import { Header, MacAlgorithm } from '../types';
 import { encodeCbor } from '@/cbor/codec';
 import { generateJwkOctKey } from '@/jwk/generateJwkOctKey';
 import { JwkMacAlgorithms } from '@/jwk/types';
@@ -17,7 +17,7 @@ describe('Mac0', () => {
         });
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(ph);
         const payload = new Uint8Array([1, 2, 3, 4, 5]);
@@ -42,7 +42,7 @@ describe('Mac0', () => {
         });
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(ph);
         const payload = new Uint8Array([1, 2, 3, 4, 5]);
@@ -66,7 +66,7 @@ describe('Mac0', () => {
         });
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS384],
+          [Header.Algorithm, MacAlgorithm.HS384],
         ]);
         const protectedHeaders = encodeCbor(ph);
         const payload = new Uint8Array([10, 20, 30, 40]);
@@ -91,7 +91,7 @@ describe('Mac0', () => {
         });
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS384],
+          [Header.Algorithm, MacAlgorithm.HS384],
         ]);
         const protectedHeaders = encodeCbor(ph);
         const payload = new Uint8Array([10, 20, 30, 40]);
@@ -115,7 +115,7 @@ describe('Mac0', () => {
         });
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS512],
+          [Header.Algorithm, MacAlgorithm.HS512],
         ]);
         const protectedHeaders = encodeCbor(ph);
         const payload = new Uint8Array([0xff, 0xee, 0xdd]);
@@ -140,7 +140,7 @@ describe('Mac0', () => {
         });
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS512],
+          [Header.Algorithm, MacAlgorithm.HS512],
         ]);
         const protectedHeaders = encodeCbor(ph);
         const payload = new Uint8Array([0xff, 0xee, 0xdd]);
@@ -165,10 +165,10 @@ describe('Mac0', () => {
         });
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const uh = new Map<number, unknown>([
-          [Headers.KeyId, new Uint8Array([0x01, 0x02])],
+          [Header.KeyId, new Uint8Array([0x01, 0x02])],
         ]);
         const protectedHeaders = encodeCbor(ph);
         const payload = new Uint8Array([1, 2, 3]);
@@ -181,7 +181,7 @@ describe('Mac0', () => {
         });
 
         expect(mac0.unprotectedHeaders).toBe(uh);
-        expect(mac0.unprotectedHeaders.get(Headers.KeyId)).toEqual(
+        expect(mac0.unprotectedHeaders.get(Header.KeyId)).toEqual(
           new Uint8Array([0x01, 0x02])
         );
       });
@@ -197,7 +197,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
@@ -222,7 +222,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
@@ -251,7 +251,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const detachedPayload = new Uint8Array([1, 1, 2, 3, 5, 8]);
@@ -274,7 +274,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const detachedPayload = new Uint8Array([1, 1, 2, 3, 5, 8]);
@@ -298,7 +298,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const detachedPayload = new Uint8Array([1, 1, 2, 3, 5, 8]);
@@ -323,7 +323,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const detachedPayload = new Uint8Array([0xff, 0xee]);
@@ -352,7 +352,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
 
@@ -375,7 +375,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([1, 2, 3]);
@@ -400,7 +400,7 @@ describe('Mac0', () => {
       };
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([1, 2, 3]);
@@ -429,7 +429,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([1, 2, 3, 4, 5]);
@@ -458,7 +458,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([1, 2, 3, 4, 5]);
@@ -484,10 +484,10 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const uh = new Map<number, unknown>([
-        [Headers.KeyId, new Uint8Array([0x01])],
+        [Header.KeyId, new Uint8Array([0x01])],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([1, 2, 3, 4]);
@@ -518,7 +518,7 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const detachedPayload = new Uint8Array([1, 2, 3, 4]);
@@ -546,10 +546,10 @@ describe('Mac0', () => {
       });
 
       const ph = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const uh = new Map<number, unknown>([
-        [Headers.ContentType, 'application/json'],
+        [Header.ContentType, 'application/json'],
       ]);
       const protectedHeaders = encodeCbor(ph);
       const payload = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
@@ -564,7 +564,7 @@ describe('Mac0', () => {
 
       // Verify structure
       expect(mac0).toBeInstanceOf(Mac0);
-      expect(mac0.macAlgorithm).toBe(MacAlgorithms.HS256);
+      expect(mac0.macAlgorithm).toBe(MacAlgorithm.HS256);
       expect(mac0.payload).toEqual(payload);
 
       // Get encoding content

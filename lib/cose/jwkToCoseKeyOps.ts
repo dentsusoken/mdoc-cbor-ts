@@ -1,4 +1,4 @@
-import { KeyOps } from './types';
+import { KeyOp } from './types';
 import { jwkToCoseKeyOp } from './jwkToCoseKeyOp';
 
 /**
@@ -17,6 +17,6 @@ import { jwkToCoseKeyOp } from './jwkToCoseKeyOp';
  * jwkToCoseKeyOps(['sign', 'invalid-operation']); // Throws: Unsupported JWK key operation: invalid-operation
  * ```
  */
-export const jwkToCoseKeyOps = (jwkKeyOps: string[]): KeyOps[] => {
+export const jwkToCoseKeyOps = (jwkKeyOps: string[]): KeyOp[] => {
   return jwkKeyOps.map((keyOp) => jwkToCoseKeyOp(keyOp));
 };

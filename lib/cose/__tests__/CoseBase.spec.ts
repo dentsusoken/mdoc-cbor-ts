@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { CoseBase } from '../CoseBase';
 import { encodeCbor } from '@/cbor/codec';
-import { Headers, Algorithms } from '../types';
+import { Header, Algorithm } from '../types';
 
 describe('CoseBase', () => {
   describe('constructor', () => {
     it('should initialize with protected and unprotected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
-        [Headers.KeyId, new Uint8Array([1, 2, 3])],
+        [Header.Algorithm, Algorithm.ES256],
+        [Header.KeyId, new Uint8Array([1, 2, 3])],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
 
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'application/json'],
+        [Header.ContentType, 'application/json'],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
@@ -25,7 +25,7 @@ describe('CoseBase', () => {
 
     it('should initialize with empty unprotected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
+        [Header.Algorithm, Algorithm.ES256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -41,7 +41,7 @@ describe('CoseBase', () => {
       const protectedHeadersMap = new Map<number, unknown>();
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'application/cbor'],
+        [Header.ContentType, 'application/cbor'],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
@@ -55,7 +55,7 @@ describe('CoseBase', () => {
   describe('protectedHeaders', () => {
     it('should store the raw CBOR-encoded bytes', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
+        [Header.Algorithm, Algorithm.ES256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -68,7 +68,7 @@ describe('CoseBase', () => {
 
     it('should be readonly and not modifiable', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES384],
+        [Header.Algorithm, Algorithm.ES384],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -85,22 +85,22 @@ describe('CoseBase', () => {
   describe('unprotectedHeaders', () => {
     it('should store the unprotected headers map', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES512],
+        [Header.Algorithm, Algorithm.ES512],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'text/plain'],
-        [Headers.KeyId, new Uint8Array([7, 8, 9])],
+        [Header.ContentType, 'text/plain'],
+        [Header.KeyId, new Uint8Array([7, 8, 9])],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
       expect(coseBase.unprotectedHeaders).toBe(unprotectedHeaders);
       expect(coseBase.unprotectedHeaders.size).toBe(2);
-      expect(coseBase.unprotectedHeaders.get(Headers.ContentType)).toBe(
+      expect(coseBase.unprotectedHeaders.get(Header.ContentType)).toBe(
         'text/plain'
       );
-      expect(coseBase.unprotectedHeaders.get(Headers.KeyId)).toEqual(
+      expect(coseBase.unprotectedHeaders.get(Header.KeyId)).toEqual(
         new Uint8Array([7, 8, 9])
       );
     });
@@ -131,8 +131,8 @@ describe('CoseBase', () => {
   describe('decodedProtectedHeaders', () => {
     it('should automatically decode protected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
-        [Headers.ContentType, 'application/json'],
+        [Header.Algorithm, Algorithm.ES256],
+        [Header.ContentType, 'application/json'],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -140,18 +140,18 @@ describe('CoseBase', () => {
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
       expect(coseBase.decodedProtectedHeaders).toBeInstanceOf(Map);
-      expect(coseBase.decodedProtectedHeaders.get(Headers.Algorithm)).toBe(
-        Algorithms.ES256
+      expect(coseBase.decodedProtectedHeaders.get(Header.Algorithm)).toBe(
+        Algorithm.ES256
       );
-      expect(coseBase.decodedProtectedHeaders.get(Headers.ContentType)).toBe(
+      expect(coseBase.decodedProtectedHeaders.get(Header.ContentType)).toBe(
         'application/json'
       );
     });
 
     it('should decode protected headers with various data types', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES384],
-        [Headers.KeyId, new Uint8Array([0xff, 0xee, 0xdd])],
+        [Header.Algorithm, Algorithm.ES384],
+        [Header.KeyId, new Uint8Array([0xff, 0xee, 0xdd])],
         [10, 'custom-value'],
         [11, 42],
         [12, true],
@@ -161,10 +161,10 @@ describe('CoseBase', () => {
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
-      expect(coseBase.decodedProtectedHeaders.get(Headers.Algorithm)).toBe(
-        Algorithms.ES384
+      expect(coseBase.decodedProtectedHeaders.get(Header.Algorithm)).toBe(
+        Algorithm.ES384
       );
-      expect(coseBase.decodedProtectedHeaders.get(Headers.KeyId)).toEqual(
+      expect(coseBase.decodedProtectedHeaders.get(Header.KeyId)).toEqual(
         new Uint8Array([0xff, 0xee, 0xdd])
       );
       expect(coseBase.decodedProtectedHeaders.get(10)).toBe('custom-value');
@@ -176,7 +176,7 @@ describe('CoseBase', () => {
       const protectedHeadersMap = new Map<number, unknown>();
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'text/plain'],
+        [Header.ContentType, 'text/plain'],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
@@ -187,7 +187,7 @@ describe('CoseBase', () => {
 
     it('should create a separate Map instance from the original', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
+        [Header.Algorithm, Algorithm.ES256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -198,8 +198,8 @@ describe('CoseBase', () => {
       coseBase.decodedProtectedHeaders.set(99, 'modified');
 
       expect(coseBase.decodedProtectedHeaders.get(99)).toBe('modified');
-      expect(coseBase.decodedProtectedHeaders.get(Headers.Algorithm)).toBe(
-        Algorithms.ES256
+      expect(coseBase.decodedProtectedHeaders.get(Header.Algorithm)).toBe(
+        Algorithm.ES256
       );
     });
   });
@@ -207,65 +207,65 @@ describe('CoseBase', () => {
   describe('getHeader', () => {
     it('should retrieve header from protected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
-        [Headers.KeyId, new Uint8Array([1, 2, 3])],
+        [Header.Algorithm, Algorithm.ES256],
+        [Header.KeyId, new Uint8Array([1, 2, 3])],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
-      expect(coseBase.getHeader(Headers.Algorithm)).toBe(Algorithms.ES256);
-      expect(coseBase.getHeader(Headers.KeyId)).toEqual(
+      expect(coseBase.getHeader(Header.Algorithm)).toBe(Algorithm.ES256);
+      expect(coseBase.getHeader(Header.KeyId)).toEqual(
         new Uint8Array([1, 2, 3])
       );
     });
 
     it('should retrieve header from unprotected headers when not in protected', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES384],
+        [Header.Algorithm, Algorithm.ES384],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'application/json'],
-        [Headers.X5Chain, [new Uint8Array([0xaa, 0xbb])]],
+        [Header.ContentType, 'application/json'],
+        [Header.X5Chain, [new Uint8Array([0xaa, 0xbb])]],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
-      expect(coseBase.getHeader(Headers.ContentType)).toBe('application/json');
-      expect(coseBase.getHeader(Headers.X5Chain)).toEqual([
+      expect(coseBase.getHeader(Header.ContentType)).toBe('application/json');
+      expect(coseBase.getHeader(Header.X5Chain)).toEqual([
         new Uint8Array([0xaa, 0xbb]),
       ]);
     });
 
     it('should prioritize protected headers over unprotected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
+        [Header.Algorithm, Algorithm.ES256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES384], // Same key, different value
+        [Header.Algorithm, Algorithm.ES384], // Same key, different value
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
       // Should return value from protected headers
-      expect(coseBase.getHeader(Headers.Algorithm)).toBe(Algorithms.ES256);
+      expect(coseBase.getHeader(Header.Algorithm)).toBe(Algorithm.ES256);
     });
 
     it('should return undefined for non-existent header', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES512],
+        [Header.Algorithm, Algorithm.ES512],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'text/plain'],
+        [Header.ContentType, 'text/plain'],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
-      expect(coseBase.getHeader(Headers.KeyId)).toBeUndefined();
+      expect(coseBase.getHeader(Header.KeyId)).toBeUndefined();
       expect(coseBase.getHeader(999)).toBeUndefined();
     });
 
@@ -318,8 +318,8 @@ describe('CoseBase', () => {
   describe('integration', () => {
     it('should handle complete COSE header setup', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
-        [Headers.KeyId, new Uint8Array([0x01, 0x02, 0x03])],
+        [Header.Algorithm, Algorithm.ES256],
+        [Header.KeyId, new Uint8Array([0x01, 0x02, 0x03])],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
 
@@ -329,23 +329,23 @@ describe('CoseBase', () => {
       ];
 
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.X5Chain, x5chain],
-        [Headers.ContentType, 'application/cose'],
+        [Header.X5Chain, x5chain],
+        [Header.ContentType, 'application/cose'],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
       // Verify protected headers
-      expect(coseBase.decodedProtectedHeaders.get(Headers.Algorithm)).toBe(
-        Algorithms.ES256
+      expect(coseBase.decodedProtectedHeaders.get(Header.Algorithm)).toBe(
+        Algorithm.ES256
       );
-      expect(coseBase.decodedProtectedHeaders.get(Headers.KeyId)).toEqual(
+      expect(coseBase.decodedProtectedHeaders.get(Header.KeyId)).toEqual(
         new Uint8Array([0x01, 0x02, 0x03])
       );
 
       // Verify unprotected headers
-      expect(coseBase.unprotectedHeaders.get(Headers.X5Chain)).toBe(x5chain);
-      expect(coseBase.unprotectedHeaders.get(Headers.ContentType)).toBe(
+      expect(coseBase.unprotectedHeaders.get(Header.X5Chain)).toBe(x5chain);
+      expect(coseBase.unprotectedHeaders.get(Header.ContentType)).toBe(
         'application/cose'
       );
 
@@ -356,18 +356,18 @@ describe('CoseBase', () => {
 
     it('should use getHeader to access headers from either location', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, Algorithms.ES256],
+        [Header.Algorithm, Algorithm.ES256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.X5Chain, [new Uint8Array([1, 2, 3])]],
+        [Header.X5Chain, [new Uint8Array([1, 2, 3])]],
       ]);
 
       const coseBase = new CoseBase(protectedHeaders, unprotectedHeaders);
 
       // Use getHeader for unified access
-      expect(coseBase.getHeader(Headers.Algorithm)).toBe(Algorithms.ES256);
-      expect(coseBase.getHeader(Headers.X5Chain)).toEqual([
+      expect(coseBase.getHeader(Header.Algorithm)).toBe(Algorithm.ES256);
+      expect(coseBase.getHeader(Header.X5Chain)).toEqual([
         new Uint8Array([1, 2, 3]),
       ]);
     });

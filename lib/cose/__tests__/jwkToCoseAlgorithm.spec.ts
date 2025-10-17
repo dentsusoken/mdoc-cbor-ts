@@ -1,31 +1,31 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseAlgorithm } from '../jwkToCoseAlgorithm';
 import { JwkAlgorithms } from '@/jwk/types';
-import { Algorithms } from '../types';
+import { Algorithm } from '../types';
 
 describe('jwkToCoseAlgorithm', () => {
   describe('should return correct COSE algorithms', () => {
     it('for valid JwkAlgorithms enum values', () => {
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.EdDSA)).toBe(Algorithms.EdDSA);
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES256)).toBe(Algorithms.ES256);
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES384)).toBe(Algorithms.ES384);
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES512)).toBe(Algorithms.ES512);
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.EdDSA)).toBe(Algorithm.EdDSA);
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES256)).toBe(Algorithm.ES256);
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES384)).toBe(Algorithm.ES384);
+      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES512)).toBe(Algorithm.ES512);
     });
 
     it('for string values that match JwkAlgorithms', () => {
-      expect(jwkToCoseAlgorithm('EdDSA')).toBe(Algorithms.EdDSA);
-      expect(jwkToCoseAlgorithm('ES256')).toBe(Algorithms.ES256);
-      expect(jwkToCoseAlgorithm('ES384')).toBe(Algorithms.ES384);
-      expect(jwkToCoseAlgorithm('ES512')).toBe(Algorithms.ES512);
+      expect(jwkToCoseAlgorithm('EdDSA')).toBe(Algorithm.EdDSA);
+      expect(jwkToCoseAlgorithm('ES256')).toBe(Algorithm.ES256);
+      expect(jwkToCoseAlgorithm('ES384')).toBe(Algorithm.ES384);
+      expect(jwkToCoseAlgorithm('ES512')).toBe(Algorithm.ES512);
     });
 
     it('for all enum values systematically', () => {
       const allJwkAlgorithms = Object.values(JwkAlgorithms);
       const expectedCoseAlgorithms = [
-        Algorithms.EdDSA,
-        Algorithms.ES256,
-        Algorithms.ES384,
-        Algorithms.ES512,
+        Algorithm.EdDSA,
+        Algorithm.ES256,
+        Algorithm.ES384,
+        Algorithm.ES512,
       ];
 
       allJwkAlgorithms.forEach((jwkAlgorithm, index) => {

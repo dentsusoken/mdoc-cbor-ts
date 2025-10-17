@@ -1,8 +1,10 @@
+import { EnumKeys, EnumNumberValues } from '@/types';
+
 /**
  * COSE Header labels registered in the IANA "COSE Header Parameters" registry.
  * Reference: https://www.iana.org/assignments/cose/cose.xhtml#header-parameters
  */
-export enum Headers {
+export enum Header {
   Algorithm = 1,
   Critical = 2,
   ContentType = 3,
@@ -18,6 +20,18 @@ export enum Headers {
   X5T = 34,
   X5U = 35,
 }
+
+/**
+ * Type representing the keys of the {@link Header} enum.
+ * Useful for extracting a union of all header parameter names as strings.
+ */
+export type HeaderKeys = EnumKeys<typeof Header>;
+
+/**
+ * Type representing the possible numeric values of the {@link Header} enum.
+ * Useful for extracting a union of all header parameter numbers.
+ */
+export type HeaderValues = EnumNumberValues<typeof Header>;
 
 /**
  * COSE Algorithm identifiers registered in the IANA "COSE Algorithms" registry.
@@ -36,9 +50,9 @@ export enum Headers {
  * ```
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
- * @see {@link Headers.Algorithm} - Algorithm header parameter
+ * @see {@link Header.Algorithm} - Algorithm header parameter
  */
-export enum Algorithms {
+export enum Algorithm {
   /** EdDSA signature algorithms */
   EdDSA = -8,
   /** ECDSA using P-256 curve and SHA-256 */
@@ -48,6 +62,18 @@ export enum Algorithms {
   /** ECDSA using P-521 curve and SHA-512 */
   ES512 = -36,
 }
+
+/**
+ * Type representing the keys of the {@link Algorithm} enum.
+ * Useful for extracting a union of all algorithm names as strings.
+ */
+export type AlgorithmKeys = EnumKeys<typeof Algorithm>;
+
+/**
+ * Type representing the possible numeric values of the {@link Algorithm} enum.
+ * Useful for extracting a union of all algorithm numbers.
+ */
+export type AlgorithmValues = EnumNumberValues<typeof Algorithm>;
 
 /**
  * COSE MAC (Message Authentication Code) Algorithm identifiers.
@@ -66,7 +92,7 @@ export enum Algorithms {
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
  */
-export enum MacAlgorithms {
+export enum MacAlgorithm {
   /** HMAC using SHA-256 */
   HS256 = 5,
   /** HMAC using SHA-384 */
@@ -74,6 +100,18 @@ export enum MacAlgorithms {
   /** HMAC using SHA-512 */
   HS512 = 7,
 }
+
+/**
+ * Type representing the keys of the {@link MacAlgorithm} enum.
+ * Useful for extracting a union of all MAC algorithm names as strings.
+ */
+export type MacAlgorithmKeys = EnumKeys<typeof MacAlgorithm>;
+
+/**
+ * Type representing the possible numeric values of the {@link MacAlgorithm} enum.
+ * Useful for extracting a union of all MAC algorithm numbers.
+ */
+export type MacAlgorithmValues = EnumNumberValues<typeof MacAlgorithm>;
 
 /**
  * COSE Encryption Algorithm identifiers.
@@ -92,7 +130,7 @@ export enum MacAlgorithms {
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
  */
-export enum EncryptionAlgorithms {
+export enum EncryptionAlgorithm {
   /** AES-GCM mode with 128-bit key */
   A128GCM = 1,
   /** AES-GCM mode with 192-bit key */
@@ -102,6 +140,20 @@ export enum EncryptionAlgorithms {
   /** Direct use of CEK (Content Encryption Key) */
   Direct = -6,
 }
+
+/**
+ * Type representing the keys of the {@link EncryptionAlgorithm} enum.
+ * Useful for extracting a union of all encryption algorithm names as strings.
+ */
+export type EncryptionAlgorithmKeys = EnumKeys<typeof EncryptionAlgorithm>;
+
+/**
+ * Type representing the possible numeric values of the {@link EncryptionAlgorithm} enum.
+ * Useful for extracting a union of all encryption algorithm numbers.
+ */
+export type EncryptionAlgorithmValues = EnumNumberValues<
+  typeof EncryptionAlgorithm
+>;
 
 /**
  * COSE Key Type identifiers registered in the IANA "COSE Key Types" registry.
@@ -123,7 +175,7 @@ export enum EncryptionAlgorithms {
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-type} - IANA COSE Key Types registry
  */
-export enum KeyTypes {
+export enum KeyType {
   /** Octet Key Pair - Used for EdDSA and ECDH-ES with Curve25519/Curve448 */
   OKP = 1,
   /** Elliptic Curve - Used for ECDSA and ECDH-ES with NIST curves */
@@ -131,6 +183,17 @@ export enum KeyTypes {
   /** Octet sequence - Used for symmetric keys */
   oct = 4,
 }
+/**
+ * Type representing the keys of the {@link KeyType} enum.
+ * Useful for extracting a union of all key type names as strings.
+ */
+export type KeyTypeKeys = EnumKeys<typeof KeyType>;
+
+/**
+ * Type representing the possible numeric values of the {@link KeyType} enum.
+ * Useful for extracting a union of all key type numbers.
+ */
+export type KeyTypeValues = EnumNumberValues<typeof KeyType>;
 
 /**
  * COSE Elliptic Curve identifiers registered in the IANA "COSE Elliptic Curves" registry.
@@ -154,10 +217,10 @@ export enum KeyTypes {
  * ```
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves} - IANA COSE Elliptic Curves registry
- * @see {@link KeyTypes.EC} - Elliptic Curve key type
- * @see {@link KeyTypes.OKP} - Octet Key Pair type
+ * @see {@link KeyType.EC} - Elliptic Curve key type
+ * @see {@link KeyType.OKP} - Octet Key Pair type
  */
-export enum Curves {
+export enum Curve {
   /** NIST P-256 curve (secp256r1) */
   P256 = 1,
   /** NIST P-384 curve (secp384r1) */
@@ -169,6 +232,19 @@ export enum Curves {
   /** Ed448 for EdDSA */
   Ed448 = 7,
 }
+
+/**
+ * Type representing the keys of the {@link Curve} enum.
+ * Useful for extracting a union of all curve names as strings.
+ */
+export type CurveKeys = EnumKeys<typeof Curve>;
+
+/**
+ * Type representing the possible numeric values of the {@link Curve} enum.
+ * Useful for extracting a union of all curve numbers.
+ */
+
+export type CurveValues = EnumNumberValues<typeof Curve>;
 
 /**
  * COSE Key Common Parameters registered in the IANA "COSE Key Common Parameters" registry.
@@ -196,11 +272,11 @@ export enum Curves {
  * ```
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-common-parameters} - IANA COSE Key Common Parameters registry
- * @see {@link KeyTypes} - COSE key types
- * @see {@link Algorithms} - COSE algorithms
- * @see {@link Curves} - COSE elliptic curves
+ * @see {@link KeyType} - COSE key types
+ * @see {@link Algorithm} - COSE algorithms
+ * @see {@link Curve} - COSE elliptic curves
  */
-export enum KeyParams {
+export enum KeyParam {
   /** Key type identifier */
   KeyType = 1,
   /** Key identifier */
@@ -220,6 +296,19 @@ export enum KeyParams {
   /** Symmetric key value */
   k = -1,
 }
+
+/**
+ * Type representing the keys of the {@link KeyParam} enum.
+ * Useful for extracting a union of all key param names as strings.
+ */
+export type KeyParamKeys = EnumKeys<typeof KeyParam>;
+
+/**
+ * Type representing the possible numeric values of the {@link KeyParam} enum.
+ * Useful for extracting a union of all key param numbers.
+ */
+
+export type KeyParamValues = EnumNumberValues<typeof KeyParam>;
 
 /**
  * COSE Key Operations registered in the IANA "COSE Key Operations" registry.
@@ -250,9 +339,9 @@ export enum KeyParams {
  * ```
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-ops} - IANA COSE Key Operations registry
- * @see {@link KeyParams.KeyOps} - Key operations parameter
+ * @see {@link KeyParam.KeyOps} - Key operations parameter
  */
-export enum KeyOps {
+export enum KeyOp {
   /** Compute digital signature */
   Sign = 1,
   /** Verify digital signature */
@@ -274,6 +363,18 @@ export enum KeyOps {
   /** Verify MAC */
   MACVerify = 10,
 }
+
+/**
+ * Type representing the keys of the {@link KeyOp} enum.
+ * Useful for extracting a union of all key op names as strings.
+ */
+export type KeyOpKeys = EnumKeys<typeof KeyOp>;
+
+/**
+ * Type representing the possible numeric values of the {@link KeyOp} enum.
+ * Useful for extracting a union of all key op numbers.
+ */
+export type KeyOpValues = EnumNumberValues<typeof KeyOp>;
 
 /**
  * Options for verifying COSE signatures.

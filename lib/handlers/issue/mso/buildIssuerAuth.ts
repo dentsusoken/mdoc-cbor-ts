@@ -7,7 +7,7 @@ import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
 import { Sign1 } from '@/cose/Sign1';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { jwkToCoseCurveAlgorithm } from '@/cose/jwkToCoseCurveAlgorithm';
-import { Headers } from '@/cose/types';
+import { Header } from '@/cose/types';
 
 /**
  * Parameters for building an IssuerAuth structure using COSE_Sign1.
@@ -134,10 +134,10 @@ export const buildIssuerAuth = ({
   const msoTag24 = createTag24(mso);
   const { algorithm } = jwkToCoseCurveAlgorithm(issuerJwkPrivateKey);
   const protectedHeaders = encodeCbor(
-    new Map<number, unknown>([[Headers.Algorithm, algorithm]])
+    new Map<number, unknown>([[Header.Algorithm, algorithm]])
   );
   const unprotectedHeaders = new Map<number, unknown>([
-    [Headers.X5Chain, x5chain],
+    [Header.X5Chain, x5chain],
   ]);
 
   const sign1 = Sign1.sign({

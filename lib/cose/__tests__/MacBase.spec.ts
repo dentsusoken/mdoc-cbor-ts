@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { MacBase } from '../MacBase';
-import { Headers, MacAlgorithms } from '../types';
+import { Header, MacAlgorithm } from '../types';
 import { encodeCbor } from '@/cbor/codec';
 import { generateHmac } from '@/utils/generateHmac';
 import { randomBytes } from '@noble/hashes/utils';
@@ -11,13 +11,13 @@ describe('MacBase', () => {
   describe('constructor', () => {
     it('should initialize with protected headers, unprotected headers, and tag', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
-        [Headers.KeyId, new Uint8Array([1, 2, 3])],
+        [Header.Algorithm, MacAlgorithm.HS256],
+        [Header.KeyId, new Uint8Array([1, 2, 3])],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
 
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'application/json'],
+        [Header.ContentType, 'application/json'],
       ]);
 
       const tag = new Uint8Array(32); // 32 bytes for HS256
@@ -32,7 +32,7 @@ describe('MacBase', () => {
 
     it('should initialize with empty unprotected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS384],
+        [Header.Algorithm, MacAlgorithm.HS384],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -48,7 +48,7 @@ describe('MacBase', () => {
 
     it('should properly extend CoseBase', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS512],
+        [Header.Algorithm, MacAlgorithm.HS512],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -57,14 +57,14 @@ describe('MacBase', () => {
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
       // Should have CoseBase functionality
-      expect(macBase.getHeader(Headers.Algorithm)).toBe(MacAlgorithms.HS512);
+      expect(macBase.getHeader(Header.Algorithm)).toBe(MacAlgorithm.HS512);
     });
   });
 
   describe('tag property', () => {
     it('should store the MAC tag bytes', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -83,7 +83,7 @@ describe('MacBase', () => {
 
     it('should be readonly and not modifiable', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -97,14 +97,14 @@ describe('MacBase', () => {
 
     it('should handle different tag lengths for different algorithms', () => {
       const algorithms = [
-        { alg: MacAlgorithms.HS256, length: 32 },
-        { alg: MacAlgorithms.HS384, length: 48 },
-        { alg: MacAlgorithms.HS512, length: 64 },
+        { alg: MacAlgorithm.HS256, length: 32 },
+        { alg: MacAlgorithm.HS384, length: 48 },
+        { alg: MacAlgorithm.HS512, length: 64 },
       ];
 
       algorithms.forEach(({ alg, length }) => {
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, alg],
+          [Header.Algorithm, alg],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const tag = new Uint8Array(length);
@@ -123,7 +123,7 @@ describe('MacBase', () => {
   describe('macAlgorithm getter', () => {
     it('should return HS256 from protected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -131,12 +131,12 @@ describe('MacBase', () => {
 
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
-      expect(macBase.macAlgorithm).toBe(MacAlgorithms.HS256);
+      expect(macBase.macAlgorithm).toBe(MacAlgorithm.HS256);
     });
 
     it('should return HS384 from protected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS384],
+        [Header.Algorithm, MacAlgorithm.HS384],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -144,12 +144,12 @@ describe('MacBase', () => {
 
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
-      expect(macBase.macAlgorithm).toBe(MacAlgorithms.HS384);
+      expect(macBase.macAlgorithm).toBe(MacAlgorithm.HS384);
     });
 
     it('should return HS512 from protected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS512],
+        [Header.Algorithm, MacAlgorithm.HS512],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -157,36 +157,36 @@ describe('MacBase', () => {
 
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
-      expect(macBase.macAlgorithm).toBe(MacAlgorithms.HS512);
+      expect(macBase.macAlgorithm).toBe(MacAlgorithm.HS512);
     });
 
     it('should return MAC algorithm from unprotected headers when not in protected', () => {
       const protectedHeadersMap = new Map<number, unknown>();
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const tag = new Uint8Array(32);
 
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
-      expect(macBase.macAlgorithm).toBe(MacAlgorithms.HS256);
+      expect(macBase.macAlgorithm).toBe(MacAlgorithm.HS256);
     });
 
     it('should prioritize protected headers over unprotected headers', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
+        [Header.Algorithm, MacAlgorithm.HS256],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS384], // Different value
+        [Header.Algorithm, MacAlgorithm.HS384], // Different value
       ]);
       const tag = new Uint8Array(32);
 
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
       // Should return value from protected headers
-      expect(macBase.macAlgorithm).toBe(MacAlgorithms.HS256);
+      expect(macBase.macAlgorithm).toBe(MacAlgorithm.HS256);
     });
 
     it('should throw error for missing algorithm header', () => {
@@ -204,7 +204,7 @@ describe('MacBase', () => {
 
     it('should throw error for invalid MAC algorithm (signature algorithm)', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, -7], // ES256 (signature algorithm, not MAC)
+        [Header.Algorithm, -7], // ES256 (signature algorithm, not MAC)
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -219,7 +219,7 @@ describe('MacBase', () => {
 
     it('should throw error for invalid MAC algorithm (random number)', () => {
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, 999],
+        [Header.Algorithm, 999],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
       const unprotectedHeaders = new Map<number, unknown>();
@@ -251,7 +251,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -283,7 +283,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -315,7 +315,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -348,7 +348,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS384],
+          [Header.Algorithm, MacAlgorithm.HS384],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -380,7 +380,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS384],
+          [Header.Algorithm, MacAlgorithm.HS384],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -413,7 +413,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS512],
+          [Header.Algorithm, MacAlgorithm.HS512],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -445,7 +445,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS512],
+          [Header.Algorithm, MacAlgorithm.HS512],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -480,7 +480,7 @@ describe('MacBase', () => {
 
         // COSE header has HS256
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -513,7 +513,7 @@ describe('MacBase', () => {
 
         // COSE header has HS512
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS512],
+          [Header.Algorithm, MacAlgorithm.HS512],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -546,7 +546,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -577,7 +577,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -603,7 +603,7 @@ describe('MacBase', () => {
         });
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -642,7 +642,7 @@ describe('MacBase', () => {
         corruptedTag[0] ^= 0x01;
 
         const protectedHeadersMap = new Map<number, unknown>([
-          [Headers.Algorithm, MacAlgorithms.HS256],
+          [Header.Algorithm, MacAlgorithm.HS256],
         ]);
         const protectedHeaders = encodeCbor(protectedHeadersMap);
         const unprotectedHeaders = new Map<number, unknown>();
@@ -681,24 +681,24 @@ describe('MacBase', () => {
       });
 
       const protectedHeadersMap = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS256],
-        [Headers.KeyId, new Uint8Array([0x01, 0x02, 0x03])],
+        [Header.Algorithm, MacAlgorithm.HS256],
+        [Header.KeyId, new Uint8Array([0x01, 0x02, 0x03])],
       ]);
       const protectedHeaders = encodeCbor(protectedHeadersMap);
 
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.ContentType, 'application/cose'],
+        [Header.ContentType, 'application/cose'],
       ]);
 
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
       // Verify properties
-      expect(macBase.macAlgorithm).toBe(MacAlgorithms.HS256);
-      expect(macBase.getHeader(Headers.Algorithm)).toBe(MacAlgorithms.HS256);
-      expect(macBase.getHeader(Headers.KeyId)).toEqual(
+      expect(macBase.macAlgorithm).toBe(MacAlgorithm.HS256);
+      expect(macBase.getHeader(Header.Algorithm)).toBe(MacAlgorithm.HS256);
+      expect(macBase.getHeader(Header.KeyId)).toEqual(
         new Uint8Array([0x01, 0x02, 0x03])
       );
-      expect(macBase.getHeader(Headers.ContentType)).toBe('application/cose');
+      expect(macBase.getHeader(Header.ContentType)).toBe('application/cose');
 
       // Verify MAC
       const isValid = macBase.internalVerify({
@@ -727,12 +727,12 @@ describe('MacBase', () => {
       const protectedHeaders = encodeCbor(protectedHeadersMap);
 
       const unprotectedHeaders = new Map<number, unknown>([
-        [Headers.Algorithm, MacAlgorithms.HS384],
+        [Header.Algorithm, MacAlgorithm.HS384],
       ]);
 
       const macBase = new MacBase(protectedHeaders, unprotectedHeaders, tag);
 
-      expect(macBase.macAlgorithm).toBe(MacAlgorithms.HS384);
+      expect(macBase.macAlgorithm).toBe(MacAlgorithm.HS384);
 
       const isValid = macBase.internalVerify({
         jwkOctKey,

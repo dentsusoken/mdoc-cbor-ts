@@ -1,40 +1,39 @@
 import { z } from 'zod';
-import { Algorithms } from '../../cose/types';
+import { Algorithm } from '@/cose/types';
+import { valueInvalidTypeMessage } from '../messages';
 
 /**
- * Creates a Zod schema for validating COSE Algorithm identifiers
- * @description
- * Validates that the input is a valid COSE Algorithm value as defined in the
- * IANA "COSE Algorithms" registry for signature algorithms.
+ * Generates an error message when a value is not a valid COSE algorithm number.
  *
- * Accepted values:
- * - `-8`: EdDSA signature algorithms
- * - `-7`: ECDSA using P-256 curve and SHA-256 (ES256)
- * - `-35`: ECDSA using P-384 curve and SHA-384 (ES384)
- * - `-36`: ECDSA using P-521 curve and SHA-512 (ES512)
- *
- * @param target - The name of the target schema (used in error messages)
- * @returns A Zod schema that validates COSE Algorithm enum values
+ * @param invalidValue - The provided value which failed validation.
+ * @returns A string describing the expected and received values.
  *
  * @example
- * ```typescript
- * const schema = createAlgorithmsSchema('ProtectedHeaders');
- * schema.parse(-7);  // ES256
- * schema.parse(-8);  // EdDSA
- * schema.parse(Algorithms.ES256); // -7
- *
- * // Invalid algorithm throws ZodError with target prefix
- * schema.parse(999); // throws "ProtectedHeaders: Invalid algorithm..."
- * ```
- *
- * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
- * @see {@link Algorithms} - COSE Algorithms enum
+ * algorithmInvalidTypeMessage('abc');
+ * // => 'Expected EdDSA (-8), ES256 (-7), ES384 (-35), or ES512 (-36), received abc'
  */
-export const createAlgorithmsSchema = (
-  target: string
-): z.ZodNativeEnum<typeof Algorithms> =>
-  z.nativeEnum(Algorithms, {
-    errorMap: () => ({
-      message: `${target}: Invalid algorithm. Must be one of: EdDSA (-8), ES256 (-7), ES384 (-35), ES512 (-36)`,
-    }),
+export const algorithmInvalidTypeMessage = (invalidValue: unknown): string =>
+  valueInvalidTypeMessage({
+    expected: 'EdDSA (-8), ES256 (-7), ES384 (-35), or ES512 (-36)',
+    received: JSON.stringify(invalidValue),
   });
+/**
+ * Zod schema for validating COSE algorithm numbers, supporting only Algorithms defined in the Algorithms enum.
+ *
+ * @description
+ * This schema validates that a given value matches one of the allowed COSE algorithm values:
+ * - EdDSA (-8)
+ * - ES256 (-7)
+ * - ES384 (-35)
+ * - ES512 (-36)
+ *
+ * If an invalid algorithm value is provided, a custom error message is returned:
+ * "Expected EdDSA (-8), ES256 (-7), ES384 (-35), or ES512 (-36), received <value>"
+ *
+ * @example
+ * algorithmsSchema.parse(-7); // OK (ES256)
+ * algorithmsSchema.parse(-9); // throws ZodError with custom message
+ */
+export const algorithmsSchema = z.nativeEnum(Algorithm);
+
+export type Algorithms = z.output<typeof algorithmsSchema>;

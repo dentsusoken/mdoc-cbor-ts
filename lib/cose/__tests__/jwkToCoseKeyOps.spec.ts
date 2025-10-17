@@ -1,61 +1,61 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseKeyOps } from '../jwkToCoseKeyOps';
-import { KeyOps } from '../types';
+import { KeyOp } from '../types';
 import { JwkKeyOps } from '@/jwk/types';
 
 describe('jwkToCoseKeyOps', () => {
   describe('should return the correct COSE KeyOps array', () => {
     it('for valid JWK key operation string arrays', () => {
       const result = jwkToCoseKeyOps(['sign', 'verify']);
-      expect(result).toEqual([KeyOps.Sign, KeyOps.Verify]);
+      expect(result).toEqual([KeyOp.Sign, KeyOp.Verify]);
 
       const encryptOps = jwkToCoseKeyOps(['encrypt', 'decrypt']);
-      expect(encryptOps).toEqual([KeyOps.Encrypt, KeyOps.Decrypt]);
+      expect(encryptOps).toEqual([KeyOp.Encrypt, KeyOp.Decrypt]);
 
       const wrapOps = jwkToCoseKeyOps(['wrapKey', 'unwrapKey']);
-      expect(wrapOps).toEqual([KeyOps.WrapKey, KeyOps.UnwrapKey]);
+      expect(wrapOps).toEqual([KeyOp.WrapKey, KeyOp.UnwrapKey]);
 
       const deriveOps = jwkToCoseKeyOps(['deriveKey', 'deriveBits']);
-      expect(deriveOps).toEqual([KeyOps.DeriveKey, KeyOps.DeriveBits]);
+      expect(deriveOps).toEqual([KeyOp.DeriveKey, KeyOp.DeriveBits]);
     });
 
     it('for JwkKeyOps enum value arrays', () => {
       const result = jwkToCoseKeyOps([JwkKeyOps.Sign, JwkKeyOps.Verify]);
-      expect(result).toEqual([KeyOps.Sign, KeyOps.Verify]);
+      expect(result).toEqual([KeyOp.Sign, KeyOp.Verify]);
 
       const encryptOps = jwkToCoseKeyOps([
         JwkKeyOps.Encrypt,
         JwkKeyOps.Decrypt,
       ]);
-      expect(encryptOps).toEqual([KeyOps.Encrypt, KeyOps.Decrypt]);
+      expect(encryptOps).toEqual([KeyOp.Encrypt, KeyOp.Decrypt]);
 
       const wrapOps = jwkToCoseKeyOps([JwkKeyOps.WrapKey, JwkKeyOps.UnwrapKey]);
-      expect(wrapOps).toEqual([KeyOps.WrapKey, KeyOps.UnwrapKey]);
+      expect(wrapOps).toEqual([KeyOp.WrapKey, KeyOp.UnwrapKey]);
 
       const deriveOps = jwkToCoseKeyOps([
         JwkKeyOps.DeriveKey,
         JwkKeyOps.DeriveBits,
       ]);
-      expect(deriveOps).toEqual([KeyOps.DeriveKey, KeyOps.DeriveBits]);
+      expect(deriveOps).toEqual([KeyOp.DeriveKey, KeyOp.DeriveBits]);
     });
 
     it('for mixed string and enum values', () => {
       const result = jwkToCoseKeyOps(['sign', JwkKeyOps.Verify]);
-      expect(result).toEqual([KeyOps.Sign, KeyOps.Verify]);
+      expect(result).toEqual([KeyOp.Sign, KeyOp.Verify]);
 
       const mixedOps = jwkToCoseKeyOps([JwkKeyOps.Encrypt, 'decrypt']);
-      expect(mixedOps).toEqual([KeyOps.Encrypt, KeyOps.Decrypt]);
+      expect(mixedOps).toEqual([KeyOp.Encrypt, KeyOp.Decrypt]);
     });
 
     it('for single operation arrays', () => {
       const signOnly = jwkToCoseKeyOps(['sign']);
-      expect(signOnly).toEqual([KeyOps.Sign]);
+      expect(signOnly).toEqual([KeyOp.Sign]);
 
       const verifyOnly = jwkToCoseKeyOps(['verify']);
-      expect(verifyOnly).toEqual([KeyOps.Verify]);
+      expect(verifyOnly).toEqual([KeyOp.Verify]);
 
       const encryptOnly = jwkToCoseKeyOps(['encrypt']);
-      expect(encryptOnly).toEqual([KeyOps.Encrypt]);
+      expect(encryptOnly).toEqual([KeyOp.Encrypt]);
     });
 
     it('for all operations in one array', () => {
@@ -70,14 +70,14 @@ describe('jwkToCoseKeyOps', () => {
         'deriveBits',
       ]);
       expect(allOps).toEqual([
-        KeyOps.Sign,
-        KeyOps.Verify,
-        KeyOps.Encrypt,
-        KeyOps.Decrypt,
-        KeyOps.WrapKey,
-        KeyOps.UnwrapKey,
-        KeyOps.DeriveKey,
-        KeyOps.DeriveBits,
+        KeyOp.Sign,
+        KeyOp.Verify,
+        KeyOp.Encrypt,
+        KeyOp.Decrypt,
+        KeyOp.WrapKey,
+        KeyOp.UnwrapKey,
+        KeyOp.DeriveKey,
+        KeyOp.DeriveBits,
       ]);
     });
 
@@ -89,16 +89,16 @@ describe('jwkToCoseKeyOps', () => {
     it('for duplicate operations', () => {
       const duplicates = jwkToCoseKeyOps(['sign', 'sign', 'verify', 'verify']);
       expect(duplicates).toEqual([
-        KeyOps.Sign,
-        KeyOps.Sign,
-        KeyOps.Verify,
-        KeyOps.Verify,
+        KeyOp.Sign,
+        KeyOp.Sign,
+        KeyOp.Verify,
+        KeyOp.Verify,
       ]);
     });
 
     it('for operations in different order', () => {
       const reverseOrder = jwkToCoseKeyOps(['verify', 'sign']);
-      expect(reverseOrder).toEqual([KeyOps.Verify, KeyOps.Sign]);
+      expect(reverseOrder).toEqual([KeyOp.Verify, KeyOp.Sign]);
 
       const mixedOrder = jwkToCoseKeyOps([
         'deriveKey',
@@ -107,10 +107,10 @@ describe('jwkToCoseKeyOps', () => {
         'verify',
       ]);
       expect(mixedOrder).toEqual([
-        KeyOps.DeriveKey,
-        KeyOps.Sign,
-        KeyOps.Encrypt,
-        KeyOps.Verify,
+        KeyOp.DeriveKey,
+        KeyOp.Sign,
+        KeyOp.Encrypt,
+        KeyOp.Verify,
       ]);
     });
   });
@@ -211,7 +211,7 @@ describe('jwkToCoseKeyOps', () => {
     it('handles large arrays of valid operations', () => {
       const largeArray = Array(100).fill('sign');
       const result = jwkToCoseKeyOps(largeArray);
-      expect(result).toEqual(Array(100).fill(KeyOps.Sign));
+      expect(result).toEqual(Array(100).fill(KeyOp.Sign));
     });
 
     it('handles arrays with many different valid operations', () => {
@@ -231,18 +231,18 @@ describe('jwkToCoseKeyOps', () => {
       ];
       const result = jwkToCoseKeyOps(manyOps);
       expect(result).toEqual([
-        KeyOps.Sign,
-        KeyOps.Verify,
-        KeyOps.Encrypt,
-        KeyOps.Decrypt,
-        KeyOps.WrapKey,
-        KeyOps.UnwrapKey,
-        KeyOps.DeriveKey,
-        KeyOps.DeriveBits,
-        KeyOps.Sign,
-        KeyOps.Verify,
-        KeyOps.Encrypt,
-        KeyOps.Decrypt,
+        KeyOp.Sign,
+        KeyOp.Verify,
+        KeyOp.Encrypt,
+        KeyOp.Decrypt,
+        KeyOp.WrapKey,
+        KeyOp.UnwrapKey,
+        KeyOp.DeriveKey,
+        KeyOp.DeriveBits,
+        KeyOp.Sign,
+        KeyOp.Verify,
+        KeyOp.Encrypt,
+        KeyOp.Decrypt,
       ]);
     });
 
@@ -256,11 +256,11 @@ describe('jwkToCoseKeyOps', () => {
       ];
       const result = jwkToCoseKeyOps(orderedOps);
       expect(result).toEqual([
-        KeyOps.DeriveBits,
-        KeyOps.Sign,
-        KeyOps.Encrypt,
-        KeyOps.Verify,
-        KeyOps.DeriveKey,
+        KeyOp.DeriveBits,
+        KeyOp.Sign,
+        KeyOp.Encrypt,
+        KeyOp.Verify,
+        KeyOp.DeriveKey,
       ]);
     });
 
@@ -279,10 +279,10 @@ describe('jwkToCoseKeyOps', () => {
       // This test verifies that jwkToCoseKeyOps is equivalent to mapping jwkToCoseKeyOp
       // over the array, which is the expected behavior based on the implementation
       expect(arrayResult).toHaveLength(operations.length);
-      expect(arrayResult[0]).toBe(KeyOps.Sign);
-      expect(arrayResult[1]).toBe(KeyOps.Verify);
-      expect(arrayResult[2]).toBe(KeyOps.Encrypt);
-      expect(arrayResult[3]).toBe(KeyOps.Decrypt);
+      expect(arrayResult[0]).toBe(KeyOp.Sign);
+      expect(arrayResult[1]).toBe(KeyOp.Verify);
+      expect(arrayResult[2]).toBe(KeyOp.Encrypt);
+      expect(arrayResult[3]).toBe(KeyOp.Decrypt);
     });
   });
 });

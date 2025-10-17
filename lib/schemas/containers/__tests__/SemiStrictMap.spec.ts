@@ -330,6 +330,73 @@ describe('createSemiStrictMapSchema', () => {
     });
   });
 
+  describe('generic U (additional allowed keys)', () => {
+    enum Headers {
+      Algorithm = 1,
+      KeyId = 4,
+      ContentType = 3,
+      IV = 5,
+    }
+
+    const entries = [
+      [Headers.Algorithm, z.number()],
+      [Headers.KeyId, z.string()],
+    ] as const;
+
+    it('parses unknown keys constrained by U and preserves types', () => {
+      const schema = createSemiStrictMapSchema<typeof entries, Headers>({
+        target: 'HeadersMap',
+        entries,
+      });
+
+      const input = new Map<string | number, unknown>([
+        [Headers.Algorithm, -7],
+        [Headers.KeyId, 'kid-123'],
+        [Headers.ContentType, 'application/cbor'],
+      ]);
+
+      const result = schema.parse(input);
+
+      // runtime
+      expect(result.get(Headers.Algorithm)).toBe(-7);
+      expect(result.get(Headers.KeyId)).toBe('kid-123');
+      const contentType = result.get(Headers.ContentType);
+      expect(contentType).toBe('application/cbor');
+
+      // types
+      expectTypeOf(result.get(Headers.Algorithm)).toEqualTypeOf<
+        number | undefined
+      >();
+      expectTypeOf(result.get(Headers.KeyId)).toEqualTypeOf<
+        string | undefined
+      >();
+      expectTypeOf(contentType).toEqualTypeOf<unknown>();
+    });
+
+    it('accepts another unknown key from U with arbitrary value type', () => {
+      const schema = createSemiStrictMapSchema<
+        typeof entries,
+        `Number(${Headers})`
+      >({
+        target: 'HeadersMap',
+        entries,
+      });
+
+      const iv = new Uint8Array([1, 2, 3]);
+      const input = new Map<string | number, unknown>([
+        [Headers.Algorithm, -7],
+        [Headers.KeyId, 'kid-123'],
+        [Headers.IV, iv],
+      ]);
+      const result = schema.parse(input);
+      result.set(Headers.Algorithm, 1);
+
+      const got = result.get(Headers.IV);
+      expect(got).toEqual(iv);
+      expectTypeOf(got).toEqualTypeOf<unknown>();
+    });
+  });
+
   describe('validation errors', () => {
     it('should fail validation when required key is missing', () => {
       const entries = [

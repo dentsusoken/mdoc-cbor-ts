@@ -2,7 +2,7 @@ import {
   createSignatureCurveRngDisallowed,
   JwkPublicKey,
 } from 'noble-curves-extended';
-import { Headers } from '@/cose/types';
+import { Header } from '@/cose/types';
 import { derBytesToX509 } from '@/x509/derBytesToX509';
 import { verifyX5Chain } from '@/x509/verifyX509s';
 import { KEYUTIL } from 'jsrsasign';
@@ -129,7 +129,7 @@ export class SignBase extends CoseBase {
    * ```
    */
   get x5chain(): Uint8Array[] | undefined {
-    const x5cHeader = this.getHeader(Headers.X5Chain);
+    const x5cHeader = this.getHeader(Header.X5Chain);
 
     if (!x5cHeader) {
       return undefined;

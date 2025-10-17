@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest';
 // ProtectedHeaders and UnprotectedHeaders classes do not exist here; use Map-based headers
-import { Headers, Algorithms } from '../types';
+import { Header, Algorithm } from '../types';
 import { Sign1 as OurSign1 } from '../Sign1';
 import { encodeCbor, decodeCbor } from '@/cbor/codec';
 import { createSelfSignedCertificate } from '@/x509/createSelfSignedCertificate';
@@ -34,9 +34,9 @@ describe('Sign1', () => {
         const der = certificateToDerBytes(cert);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
-        const uh = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
+        const uh = new Map<number, unknown>([[Header.X5Chain, [der]]]);
         const payload = new Uint8Array([1, 2, 3, 4]);
 
         const ours = OurSign1.sign({
@@ -77,7 +77,7 @@ describe('Sign1', () => {
         const der = certificateToDerBytes(cert);
 
         const ph = new Auth0ProtectedHeaders([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
         const uh = new Auth0UnprotectedHeaders();
         uh.set(Auth0Headers.X5Chain, [der]);
@@ -125,9 +125,9 @@ describe('Sign1', () => {
         const der = certificateToDerBytes(cert);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
-        const uh = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
+        const uh = new Map<number, unknown>([[Header.X5Chain, [der]]]);
         const payload = new Uint8Array([1, 2, 3, 4]);
 
         const sign1 = OurSign1.sign({
@@ -155,9 +155,9 @@ describe('Sign1', () => {
         const der = certificateToDerBytes(cert);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
-        const uh = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
+        const uh = new Map<number, unknown>([[Header.X5Chain, [der]]]);
         const payload = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
         const externalAad = new Uint8Array([0xaa, 0xbb]);
 
@@ -190,9 +190,9 @@ describe('Sign1', () => {
         const der = certificateToDerBytes(cert);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
-        const uh = new Map<number, unknown>([[Headers.X5Chain, [der]]]);
+        const uh = new Map<number, unknown>([[Header.X5Chain, [der]]]);
         const detachedPayload = new Uint8Array([1, 1, 2, 3, 5, 8]);
 
         const sign1 = OurSign1.sign({
@@ -218,7 +218,7 @@ describe('Sign1', () => {
         const jwkPublicKey = p256.toJwkPublicKey(publicKey);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
         const uh = new Map<number, unknown>(); // No X5Chain
         const payload = new Uint8Array([1, 2, 3, 4]);
@@ -241,7 +241,7 @@ describe('Sign1', () => {
         const jwkPublicKey = p256.toJwkPublicKey(publicKey);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
         const uh = new Map<number, unknown>(); // No X5Chain
         const payload = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
@@ -268,7 +268,7 @@ describe('Sign1', () => {
         const jwkPublicKey = p256.toJwkPublicKey(publicKey);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
         const uh = new Map<number, unknown>(); // No X5Chain
         const detachedPayload = new Uint8Array([1, 1, 2, 3, 5, 8, 13]);
@@ -292,7 +292,7 @@ describe('Sign1', () => {
         const jwkPublicKey = p256.toJwkPublicKey(publicKey);
 
         const ph = new Map<number, unknown>([
-          [Headers.Algorithm, Algorithms.ES256],
+          [Header.Algorithm, Algorithm.ES256],
         ]);
         const uh = new Map<number, unknown>(); // No X5Chain
         const detachedPayload = new Uint8Array([0xff, 0xee, 0xdd]);

@@ -1,7 +1,7 @@
 import { JwkPublicKey } from '@/jwk/types';
 import { jwkToCoseKeyType } from './jwkToCoseKeyType';
 import { decodeBase64Url } from 'u8a-utils';
-import { KeyParams, KeyTypes } from './types';
+import { KeyParam, KeyType } from './types';
 import { jwkToCoseKeyOps } from './jwkToCoseKeyOps';
 import { jwkToCoseCurveAlgorithm } from './jwkToCoseCurveAlgorithm';
 
@@ -22,36 +22,36 @@ import { jwkToCoseCurveAlgorithm } from './jwkToCoseCurveAlgorithm';
 export const jwkToCosePublicKey = (jwk: JwkPublicKey): Map<number, unknown> => {
   const keyType = jwkToCoseKeyType(jwk.kty);
 
-  if (keyType !== KeyTypes.EC && keyType !== KeyTypes.OKP) {
+  if (keyType !== KeyType.EC && keyType !== KeyType.OKP) {
     throw new Error('Key type must be "EC" or "OKP"');
   }
 
   const { curve, algorithm } = jwkToCoseCurveAlgorithm(jwk);
 
   if (jwk.x == null) {
-    const which = keyType === KeyTypes.OKP ? 'OKP' : 'EC';
+    const which = keyType === KeyType.OKP ? 'OKP' : 'EC';
     throw new Error(`Missing x coordinate in ${which} public key`);
   }
   const x = decodeBase64Url(jwk.x);
 
   const publicKey = new Map<number, unknown>([
-    [KeyParams.KeyType, keyType],
-    [KeyParams.Curve, curve],
-    [KeyParams.Algorithm, algorithm],
-    [KeyParams.x, x],
+    [KeyParam.KeyType, keyType],
+    [KeyParam.Curve, curve],
+    [KeyParam.Algorithm, algorithm],
+    [KeyParam.x, x],
   ]);
 
   if (jwk.key_ops) {
-    publicKey.set(KeyParams.KeyOps, jwkToCoseKeyOps(jwk.key_ops));
+    publicKey.set(KeyParam.KeyOps, jwkToCoseKeyOps(jwk.key_ops));
   }
 
-  if (keyType === KeyTypes.EC) {
+  if (keyType === KeyType.EC) {
     if (jwk.y == null) {
       throw new Error('Missing y coordinate in EC public key');
     }
 
     const y = decodeBase64Url(jwk.y);
-    publicKey.set(KeyParams.y, y);
+    publicKey.set(KeyParam.y, y);
   }
 
   return publicKey;

@@ -2,7 +2,7 @@ import { JwkBase } from '@/jwk/types';
 import { jwkToCoseAlgorithm } from './jwkToCoseAlgorithm';
 import { CURVES_TO_ALGORITHMS } from './constants';
 import { jwkToCoseCurve } from './jwkToCoseCurve';
-import { Algorithms, Curves } from './types';
+import { Algorithm, Curve } from './types';
 
 /**
  * Result of converting EC JWK metadata into COSE parameters.
@@ -12,8 +12,8 @@ import { Algorithms, Curves } from './types';
  *   or the default algorithm for the resolved curve if `alg` is absent.
  */
 type JwkToCoseCurveAlgorithmResult = {
-  curve: Curves;
-  algorithm: Algorithms;
+  curve: Curve;
+  algorithm: Algorithm;
 };
 
 /**

@@ -1,37 +1,37 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseKeyType } from '../jwkToCoseKeyType';
-import { KeyTypes } from '../types';
+import { KeyType } from '../types';
 import { JwkKeyTypes } from '@/jwk/types';
 
 describe('jwkToCoseKeyType', () => {
   it('should convert EC key type to COSE EC key type', () => {
     const result = jwkToCoseKeyType(JwkKeyTypes.EC);
-    expect(result).toBe(KeyTypes.EC);
+    expect(result).toBe(KeyType.EC);
   });
 
   it('should convert OKP key type to COSE OKP key type', () => {
     const result = jwkToCoseKeyType(JwkKeyTypes.OKP);
-    expect(result).toBe(KeyTypes.OKP);
+    expect(result).toBe(KeyType.OKP);
   });
 
   it('should convert oct key type to COSE oct key type', () => {
     const result = jwkToCoseKeyType(JwkKeyTypes.oct);
-    expect(result).toBe(KeyTypes.oct);
+    expect(result).toBe(KeyType.oct);
   });
 
   it('should convert string EC to COSE EC key type', () => {
     const result = jwkToCoseKeyType('EC');
-    expect(result).toBe(KeyTypes.EC);
+    expect(result).toBe(KeyType.EC);
   });
 
   it('should convert string OKP to COSE OKP key type', () => {
     const result = jwkToCoseKeyType('OKP');
-    expect(result).toBe(KeyTypes.OKP);
+    expect(result).toBe(KeyType.OKP);
   });
 
   it('should convert string oct to COSE oct key type', () => {
     const result = jwkToCoseKeyType('oct');
-    expect(result).toBe(KeyTypes.oct);
+    expect(result).toBe(KeyType.oct);
   });
 
   it('should throw error for unsupported key type RSA', () => {
