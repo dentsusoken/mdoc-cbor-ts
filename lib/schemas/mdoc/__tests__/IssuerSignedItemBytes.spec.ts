@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { createTag24 } from '@/cbor/createTag24';
 import { issuerSignedItemBytesSchema } from '../IssuerSignedItemBytes';
 import { requiredMessage } from '@/schemas/common/Required';
-import { tag24InvalidTypeMessage } from '@/schemas/common/Tag24';
+import { tag24InvalidTypeMessage } from '@/schemas/cbor/EmbeddedCbor';
 
 describe('IssuerSignedItemBytes', () => {
   describe('valid Tag24 inputs', () => {

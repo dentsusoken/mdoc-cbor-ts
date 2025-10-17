@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { expectTypeOf } from 'vitest';
 import { z } from 'zod';
 import { createTupleSchema } from '../Tuple';
+import { containerInvalidTypeMessage } from '../../messages/containerInvalidTypeMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('createTupleSchema', () => {
   it('parses fixed tuple and preserves output types', () => {
@@ -21,6 +23,48 @@ describe('createTupleSchema', () => {
   });
 
   describe('errors', () => {
+    describe('non-array inputs', () => {
+      const schema = createTupleSchema({
+        target: 'MyTuple',
+        itemSchemas: [z.number(), z.string()] as const,
+      });
+
+      const cases: Array<[string, unknown]> = [
+        ['boolean', true],
+        ['object', { key: 'value' }],
+        ['string', 'hello'],
+        ['number', 123],
+        ['symbol', Symbol('s')],
+        ['bigint', 1n],
+        ['date', new Date()],
+        ['regexp', /a/],
+        ['class', new (class MyClass {})()],
+        ['function', (): number => 1],
+        ['map', new Map()],
+        ['set', new Set()],
+        ['null', null],
+        ['undefined', undefined],
+      ];
+
+      for (const [name, input] of cases) {
+        it(`rejects ${name} with proper invalid type message`, () => {
+          try {
+            schema.parse(input as unknown as unknown[]);
+            throw new Error('Expected error');
+          } catch (error) {
+            expect(error).toBeInstanceOf(z.ZodError);
+            const e = error as z.ZodError;
+            expect(e.issues[0].path).toEqual([]);
+            const expected = containerInvalidTypeMessage({
+              target: 'MyTuple',
+              expected: 'Array',
+              received: getTypeName(input),
+            });
+            expect(e.issues[0].message).toBe(expected);
+          }
+        });
+      }
+    });
     describe('element type mismatch', () => {
       it('reports messages for wrong element types', () => {
         const schema = createTupleSchema({

@@ -22,19 +22,9 @@ export const getTypeName = (value: unknown): string => {
     return type;
   }
 
-  if (Array.isArray(value)) {
-    return 'array';
-  }
-
-  if (value instanceof Date) {
-    return 'date';
-  }
-
-  if (value instanceof Map) {
-    return 'map';
-  }
-  if (value instanceof Set) {
-    return 'set';
+  const constructorName = value.constructor?.name;
+  if (constructorName) {
+    return constructorName === 'Object' ? 'object' : constructorName;
   }
 
   return 'object';

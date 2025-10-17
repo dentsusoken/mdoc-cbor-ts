@@ -63,7 +63,7 @@ export const createMapSchema = <K, VO, VI = VO>({
         code: z.ZodIssueCode.custom,
         message: containerInvalidTypeMessage({
           target,
-          expected: 'map',
+          expected: 'Map',
           received: getTypeName(data),
         }),
       });

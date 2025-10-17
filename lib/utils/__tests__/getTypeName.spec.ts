@@ -40,39 +40,39 @@ describe('getTypeName', () => {
     });
 
     it('should return "array" for arrays', () => {
-      expect(getTypeName([1, 2, 3])).toBe('array');
+      expect(getTypeName([1, 2, 3])).toBe('Array');
     });
 
     it('should return "date" for Date instances', () => {
-      expect(getTypeName(new Date())).toBe('date');
+      expect(getTypeName(new Date())).toBe('Date');
     });
 
     it('should return "object" for RegExp instances', () => {
-      expect(getTypeName(/a/)).toBe('object');
+      expect(getTypeName(/a/)).toBe('RegExp');
     });
 
     it('should return "map" for Map instances', () => {
-      expect(getTypeName(new Map())).toBe('map');
+      expect(getTypeName(new Map())).toBe('Map');
     });
 
     it('should return "set" for Set instances', () => {
-      expect(getTypeName(new Set())).toBe('set');
+      expect(getTypeName(new Set())).toBe('Set');
     });
 
     it('should return "object" for WeakMap instances', () => {
-      expect(getTypeName(new WeakMap())).toBe('object');
+      expect(getTypeName(new WeakMap())).toBe('WeakMap');
     });
 
     it('should return "object" for WeakSet instances', () => {
-      expect(getTypeName(new WeakSet())).toBe('object');
+      expect(getTypeName(new WeakSet())).toBe('WeakSet');
     });
 
     it('should return "object" for Error instances', () => {
-      expect(getTypeName(new Error('x'))).toBe('object');
+      expect(getTypeName(new Error('x'))).toBe('Error');
     });
 
     it('should return "object" for Promise instances', () => {
-      expect(getTypeName(Promise.resolve(1))).toBe('object');
+      expect(getTypeName(Promise.resolve(1))).toBe('Promise');
     });
   });
 
@@ -84,7 +84,7 @@ describe('getTypeName', () => {
 
     it('should return "object" for class instances', () => {
       class MyClass {}
-      expect(getTypeName(new MyClass())).toBe('object');
+      expect(getTypeName(new MyClass())).toBe('MyClass');
     });
   });
 

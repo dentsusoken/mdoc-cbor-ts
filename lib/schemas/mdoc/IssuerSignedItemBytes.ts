@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createTag24Schema } from '@/schemas/common/Tag24';
+import { createTag24Schema } from '@/schemas/cbor/EmbeddedCbor';
 
 /**
  * Schema for CBOR-encoded issuer-signed items

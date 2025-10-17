@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { mobileSecurityObjectBytesSchema } from '../MobileSecurityObjectBytes';
 import { Tag } from 'cbor-x';
 import { createTag24 } from '@/cbor/createTag24';
-import { tag24InvalidTypeMessage } from '@/schemas/common/Tag24';
+import { tag24InvalidTypeMessage } from '@/schemas/cbor/EmbeddedCbor';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('MobileSecurityObjectBytes', () => {

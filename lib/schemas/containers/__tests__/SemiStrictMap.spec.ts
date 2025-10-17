@@ -531,7 +531,7 @@ describe('createSemiStrictMapSchema', () => {
 
       const cases: Array<[string, unknown, string]> = [
         ['plain object', {}, 'object'],
-        ['array', [], 'array'],
+        ['array', [], 'Array'],
         ['string', 'hello', 'string'],
         ['number', 123, 'number'],
         ['boolean', true, 'boolean'],

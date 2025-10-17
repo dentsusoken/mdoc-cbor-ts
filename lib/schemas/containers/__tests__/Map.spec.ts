@@ -47,7 +47,7 @@ describe('createMapSchema', () => {
       it(`should reject ${name} with exact invalid type message`, () => {
         const expected = containerInvalidTypeMessage({
           target: TARGET,
-          expected: 'map',
+          expected: 'Map',
           received: getTypeName(input),
         });
         const res = schema.safeParse(input as unknown as Map<unknown, unknown>);

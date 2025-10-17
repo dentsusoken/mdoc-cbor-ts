@@ -42,7 +42,7 @@ export const createTupleSchema = <T extends readonly unknown[]>({
         code: z.ZodIssueCode.custom,
         message: containerInvalidTypeMessage({
           target,
-          expected: 'array',
+          expected: 'Array',
           received: getTypeName(data),
         }),
       });

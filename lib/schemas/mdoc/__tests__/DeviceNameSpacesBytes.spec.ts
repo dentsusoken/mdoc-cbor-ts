@@ -3,7 +3,7 @@ import { Tag } from 'cbor-x';
 import { z } from 'zod';
 import { deviceNameSpacesBytesSchema } from '../DeviceNameSpacesBytes';
 import { createTag24 } from '@/cbor';
-import { tag24InvalidTypeMessage } from '@/schemas/common/Tag24';
+import { tag24InvalidTypeMessage } from '@/schemas/cbor/EmbeddedCbor';
 import { requiredMessage } from '@/schemas/common/Required';
 
 describe('DeviceNameSpacesBytes', () => {

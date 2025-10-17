@@ -48,7 +48,7 @@ describe('createArraySchema', () => {
         z.getParsedType;
         const expected = containerInvalidTypeMessage({
           target: TARGET,
-          expected: 'array',
+          expected: 'Array',
           received: getTypeName(input),
         });
 

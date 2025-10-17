@@ -56,7 +56,7 @@ export const createArraySchema = <Output, Input = Output>({
         code: z.ZodIssueCode.custom,
         message: containerInvalidTypeMessage({
           target,
-          expected: 'array',
+          expected: 'Array',
           received: getTypeName(data),
         }),
       });
