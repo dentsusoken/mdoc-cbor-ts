@@ -1,7 +1,7 @@
 import { JwkPublicKey } from '@/jwk/types';
 import { jwkToCoseKeyType } from './jwkToCoseKeyType';
 import { decodeBase64Url } from 'u8a-utils';
-import { KeyParam, KeyType } from './types';
+import { Key, KeyType } from './types';
 import { jwkToCoseKeyOps } from './jwkToCoseKeyOps';
 import { jwkToCoseCurveAlgorithm } from './jwkToCoseCurveAlgorithm';
 
@@ -35,14 +35,14 @@ export const jwkToCosePublicKey = (jwk: JwkPublicKey): Map<number, unknown> => {
   const x = decodeBase64Url(jwk.x);
 
   const publicKey = new Map<number, unknown>([
-    [KeyParam.KeyType, keyType],
-    [KeyParam.Curve, curve],
-    [KeyParam.Algorithm, algorithm],
-    [KeyParam.x, x],
+    [Key.KeyType, keyType],
+    [Key.Curve, curve],
+    [Key.Algorithm, algorithm],
+    [Key.x, x],
   ]);
 
   if (jwk.key_ops) {
-    publicKey.set(KeyParam.KeyOps, jwkToCoseKeyOps(jwk.key_ops));
+    publicKey.set(Key.KeyOps, jwkToCoseKeyOps(jwk.key_ops));
   }
 
   if (keyType === KeyType.EC) {
@@ -51,7 +51,7 @@ export const jwkToCosePublicKey = (jwk: JwkPublicKey): Map<number, unknown> => {
     }
 
     const y = decodeBase64Url(jwk.y);
-    publicKey.set(KeyParam.y, y);
+    publicKey.set(Key.y, y);
   }
 
   return publicKey;

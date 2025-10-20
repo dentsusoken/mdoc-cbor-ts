@@ -276,7 +276,7 @@ export type CurveValues = EnumNumberValues<typeof Curve>;
  * @see {@link Algorithm} - COSE algorithms
  * @see {@link Curve} - COSE elliptic curves
  */
-export enum KeyParam {
+export enum Key {
   /** Key type identifier */
   KeyType = 1,
   /** Key identifier */
@@ -298,17 +298,16 @@ export enum KeyParam {
 }
 
 /**
- * Type representing the keys of the {@link KeyParam} enum.
- * Useful for extracting a union of all key param names as strings.
+ * Type representing the keys of the {@link Key} enum.
+ * Useful for extracting a union of all key parameter names as strings.
  */
-export type KeyParamKeys = EnumKeys<typeof KeyParam>;
+export type KeyKeys = EnumKeys<typeof Key>;
 
 /**
- * Type representing the possible numeric values of the {@link KeyParam} enum.
- * Useful for extracting a union of all key param numbers.
+ * Type representing the possible numeric values of the {@link Key} enum.
+ * Useful for extracting a union of all key parameter numbers.
  */
-
-export type KeyParamValues = EnumNumberValues<typeof KeyParam>;
+export type KeyValues = EnumNumberValues<typeof Key>;
 
 /**
  * COSE Key Operations registered in the IANA "COSE Key Operations" registry.
@@ -339,7 +338,7 @@ export type KeyParamValues = EnumNumberValues<typeof KeyParam>;
  * ```
  *
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-ops} - IANA COSE Key Operations registry
- * @see {@link KeyParam.KeyOps} - Key operations parameter
+ * @see {@link Key.KeyOps} - Key operations parameter
  */
 export enum KeyOp {
   /** Compute digital signature */

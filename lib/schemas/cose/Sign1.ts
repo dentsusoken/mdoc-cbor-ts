@@ -1,177 +1,129 @@
 import { z } from 'zod';
-import { protectedHeadersSchema } from '@/schemas/cose/ProtectedHeaders';
-import { unprotectedHeadersSchema } from '@/schemas/cose/UnprotectedHeaders';
-import { payloadSchema } from '@/schemas/cose/Payload';
-import { signatureSchema } from './Signature';
-import { createFixedTupleLengthSchema } from '../common/FixedTupleLength';
+import { headerMapSchema } from '@/schemas/cose/HeaderMap';
 import { Tag } from 'cbor-x';
+import { createTupleSchema } from '../containers/Tuple';
+import { bytesSchema } from '../cbor/Bytes';
+import { getTypeName } from '@/utils/getTypeName';
+import { containerInvalidTypeMessage } from '../messages/containerInvalidTypeMessage';
 import { createTag18 } from '@/cbor/createTag18';
 
 /**
- * Returns an error message indicating that the structure of the COSE_Sign1 tuple is invalid.
+ * Zod schema for the COSE_Sign1 tuple structure.
  *
- * @param target - The name of the target or context for the error message
- * @returns The formatted error message describing the expected tuple structure
+ * Structure: [protected, unprotected, payload, signature]
+ *
+ * - protected: Uint8Array (Headers encoded as a bstr)
+ * - unprotected: HeaderMap (COSE headers not integrity-protected)
+ * - payload: Uint8Array | null (the actual payload bytes or null)
+ * - signature: Uint8Array (the signature computed over the structure)
+ *
+ * Used for validating the tuple shape of COSE_Sign1, not the tagged CBOR structure.
  */
-export const sign1InvalidTupleMessage = (target: string): string =>
-  `${target}: structure must be [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array]`;
+export const sign1TupleSchema = createTupleSchema({
+  target: 'Sign1',
+  itemSchemas: [
+    bytesSchema,
+    headerMapSchema,
+    bytesSchema.nullable(),
+    bytesSchema,
+  ],
+});
 
 /**
- * Returns an error message indicating that the type provided is not a valid COSE_Sign1 tuple or Tag18 wrapper.
+ * Type representing the validated 4-element tuple for COSE_Sign1.
  *
- * @param target - The name of the target or context for the error message
- * @returns The formatted error message describing the expected types
+ * Tuple shape: [protected, unprotected, payload, signature]
+ * - protected: Uint8Array (Headers encoded as a bstr)
+ * - unprotected: HeaderMap (COSE headers not integrity-protected)
+ * - payload: Uint8Array | null (the actual payload bytes or null)
+ * - signature: Uint8Array (the signature computed over the structure)
  */
-export const sign1InvalidTypeMessage = (target: string): string =>
-  `${target}: type must be [Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array] or Tag18([Uint8Array, Map<number, unknown>, Uint8Array | null, Uint8Array])`;
+export type Sign1Tuple = z.output<typeof sign1TupleSchema>;
 
 /**
- * Returns an error message indicating that verification of the COSE_Sign1 structure failed.
+ * Zod schema for validating a COSE_Sign1 structure.
  *
- * @param target - The name of the target or context for the error message
- * @param error - The error message or reason for the verification failure
- * @returns The formatted error message including the failure reason
- */
-export const sign1FailedToVerifyMessage = (
-  target: string,
-  error: string
-): string => `${target}: failed to verify: ${error}`;
-
-/**
- * Type definition for a COSE_Sign1 tuple.
+ * Accepts any of the following input types:
+ * - A 4-element COSE_Sign1 tuple: `[protected, unprotected, payload, signature]`
+ * - A CBOR `Tag(18, [...])` whose inner value matches the COSE_Sign1 tuple structure
+ * - An object with a `getContentForEncoding()` method (such as an `@auth0/cose` Sign1 instance), whose method returns a valid tuple or array
  *
- * @description
- * Represents the 4-element tuple structure of a COSE_Sign1 object:
- * - 0: Protected headers (Uint8Array)
- * - 1: Unprotected headers (Map<number, unknown>)
- * - 2: Payload (Uint8Array or null)
- * - 3: Signature (Uint8Array)
- */
-export type Sign1Tuple = [
-  Uint8Array,
-  Map<number, unknown>,
-  Uint8Array | null,
-  Uint8Array,
-];
-
-/**
- * Tuple schema for COSE_Sign1 structure validation
- * @description
- * Validates the 4-element array structure of COSE_Sign1 and wraps it in a CBOR Tag 18.
- * The payload is accepted as `Uint8Array | null` (detached payloads use `null`).
- * `undefined` is not allowed. The returned value is a CBOR Tag 18 containing
- * the validated 4-tuple.
+ * Parsing always returns a CBOR `Tag(18, tuple)` with validated contents.
  *
- * Elements:
- * - 0: Protected headers (`Uint8Array`)
- * - 1: Unprotected headers (`Map<number, unknown>`)
- * - 2: Payload (`Uint8Array | null`) – `null` if input was `null`
- * - 3: Signature (`Uint8Array`)
+ * Details:
+ * - The tuple structure is: `[protected: Uint8Array, unprotected: HeaderMap, payload: Uint8Array | null, signature: Uint8Array]`
+ * - The parser enforces that payload is explicitly `Uint8Array` or `null` (never `undefined`)
+ * - If a tagged value is passed, its tag must be 18
+ * - If an object with `getContentForEncoding()` is passed, the result is recursively validated
  *
- * Note: This schema only accepts raw tuples; see `createSign1Schema` if you
- * want to accept either a raw tuple or a pre-wrapped `Tag(18, [...])`.
- */
-const createSign1TupleSchema = (
-  target: string
-): z.ZodType<Tag, z.ZodTypeDef, Sign1Tuple> =>
-  z
-    .tuple(
-      [
-        protectedHeadersSchema, // protected headers (Bytes)
-        unprotectedHeadersSchema, // unprotected headers (LabelKeyMap)
-        // Normalize undefined/null to null so output type excludes undefined
-        payloadSchema, // payload (Bytes | null)
-        signatureSchema, // signature (Bytes)
-      ],
-      {
-        message: sign1InvalidTupleMessage(target),
-      }
-    )
-    .transform((value) => {
-      return createTag18(value);
-    });
-
-/**
- * Schema for validating COSE_Sign1 tuples or Tag(18) wrappers
- * @description
- * Accepts either:
- * - a raw 4-element COSE_Sign1 tuple
- * - a CBOR `Tag(18, [...])` whose inner value conforms to the same tuple
- * - an object with `getContentForEncoding()` method (e.g., `@auth0/cose` Sign1 instance)
+ * Input forms accepted:
+ * - `[Uint8Array, HeaderMap, Uint8Array|null, Uint8Array]`
+ * - Tag(18, [...])
+ * - `{ getContentForEncoding(): [...] }`
  *
- * In all cases, the payload must be `Uint8Array | null` (never `undefined`).
- * The parsed output is always a CBOR Tag 18 wrapping the validated tuple.
+ * If the input does not conform to any supported form, a detailed error is issued.
  *
- * ```cddl
- * COSE_Sign1 = [
- *   protected:   bstr,
- *   unprotected: {
- *     * uint => any
- *   },
- *   payload:     bstr / null,
- *   signature:   bstr
- * ]
- * ```
- *
- * Validation rules:
- * - If input is a tuple: must have exactly 4 elements and match expected types
- * - If input is a Tag: `tag` must be 18 and `value` must pass the same tuple validation
- * - If input has `getContentForEncoding()`: the method is called and the result is validated
- *
- * @param target - The name of the target schema (used in error messages)
- * @returns Zod schema that parses to a CBOR Tag 18 containing the COSE_Sign1 structure
- *
- * @example
+ * Example:
  * ```typescript
- * const schema = createSign1Schema('DeviceSignature');
- * // Tuple input
- * const t = [protectedHeaders, unprotectedHeaders, null, signature] as const;
- * const tagA = schema.parse(t); // Tag(18, [...])
- *
- * // Tag input
- * const tagB = schema.parse(createTag18(t)); // Passes as well
- *
- * // @auth0/cose Sign1 instance
- * const sign1 = await Sign1.sign(...);
- * const tagC = schema.parse(sign1); // Also works
+ * const schema = sign1Schema;
+ * schema.parse([protected, unprotected, null, signature]);         // → Tag(18, [...])
+ * schema.parse(createTag18([protected, unprotected, payload, signature])); // → Tag(18, [...])
+ * schema.parse(sign1InstanceWithGetContentForEncoding);            // → Tag(18, [...])
  * ```
  */
-export const createSign1Schema = (
-  target: string
-): z.ZodType<Tag, z.ZodTypeDef, unknown> =>
-  z.preprocess(
-    (value) => {
-      // If value has getContentForEncoding method and returns an Array, convert it to tuple
-      if (
-        typeof value === 'object' &&
-        value !== null &&
-        'getContentForEncoding' in value &&
-        typeof value.getContentForEncoding === 'function'
-      ) {
-        return value.getContentForEncoding();
-      }
-      // Otherwise return as is
-      return value;
-    },
-    z.union(
-      [
-        createFixedTupleLengthSchema(target, 4).pipe(
-          createSign1TupleSchema(target)
-        ),
-        z
-          .instanceof(Tag)
-          .refine(
-            (tag) =>
-              tag.tag === 18 &&
-              createFixedTupleLengthSchema(target, 4)
-                .pipe(createSign1TupleSchema(target))
-                .safeParse(tag.value).success
-          ),
-      ],
-      {
-        errorMap: () => ({
-          message: sign1InvalidTypeMessage(target),
+export const sign1Schema = z.any().transform((value, ctx) => {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'getContentForEncoding' in value &&
+    typeof value.getContentForEncoding === 'function'
+  ) {
+    const sign1Tuple = sign1TupleSchema.parse(value.getContentForEncoding());
+
+    return createTag18(sign1Tuple);
+  }
+
+  if (Array.isArray(value)) {
+    const sign1Tuple = sign1TupleSchema.parse(value);
+
+    return createTag18(sign1Tuple);
+  }
+
+  if (value instanceof Tag) {
+    if (value.tag !== 18) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: containerInvalidTypeMessage({
+          target: 'Sign1',
+          expected: 'Tag(18)',
+          received: `Tag(${value.tag})`,
         }),
-      }
-    )
-  );
+      });
+
+      return z.never();
+    }
+
+    const sign1Tuple = sign1TupleSchema.parse(value.value);
+
+    return createTag18(sign1Tuple);
+  }
+
+  ctx.addIssue({
+    code: z.ZodIssueCode.custom,
+    message: containerInvalidTypeMessage({
+      target: 'Sign1',
+      expected:
+        'Array[Uint8Array, HeaderMap, Uint8Array, Uint8Array] or Tag(18)',
+      received: getTypeName(value),
+    }),
+  });
+
+  return z.never();
+});
+
+/**
+ * Type representing the validated output of a COSE_Sign1 structure.
+ *
+ * This type is produced by parsing input through the `sign1Schema`.
+ */
+export type Sign1 = z.output<typeof sign1Schema>;

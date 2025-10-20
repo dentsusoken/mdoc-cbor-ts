@@ -4,6 +4,7 @@ import { createSemiStrictMapSchema } from '../SemiStrictMap';
 import { strictMapMissingKeysMessage } from '../StrictMap';
 import { containerInvalidValueMessage } from '../../messages/containerInvalidValueMessage';
 import { containerInvalidTypeMessage } from '../../messages/containerInvalidTypeMessage';
+import { HeaderValues } from '@/cose/types';
 
 describe('createSemiStrictMapSchema', () => {
   describe('successful validation', () => {
@@ -331,7 +332,7 @@ describe('createSemiStrictMapSchema', () => {
   });
 
   describe('generic U (additional allowed keys)', () => {
-    enum Headers {
+    enum Header {
       Algorithm = 1,
       KeyId = 4,
       ContentType = 3,
@@ -339,59 +340,56 @@ describe('createSemiStrictMapSchema', () => {
     }
 
     const entries = [
-      [Headers.Algorithm, z.number()],
-      [Headers.KeyId, z.string()],
+      [Header.Algorithm, z.number()],
+      [Header.KeyId, z.string()],
     ] as const;
 
     it('parses unknown keys constrained by U and preserves types', () => {
-      const schema = createSemiStrictMapSchema<typeof entries, Headers>({
+      const schema = createSemiStrictMapSchema<typeof entries, Header>({
         target: 'HeadersMap',
         entries,
       });
 
       const input = new Map<string | number, unknown>([
-        [Headers.Algorithm, -7],
-        [Headers.KeyId, 'kid-123'],
-        [Headers.ContentType, 'application/cbor'],
+        [Header.Algorithm, -7],
+        [Header.KeyId, 'kid-123'],
+        [Header.ContentType, 'application/cbor'],
       ]);
 
       const result = schema.parse(input);
 
       // runtime
-      expect(result.get(Headers.Algorithm)).toBe(-7);
-      expect(result.get(Headers.KeyId)).toBe('kid-123');
-      const contentType = result.get(Headers.ContentType);
+      expect(result.get(Header.Algorithm)).toBe(-7);
+      expect(result.get(Header.KeyId)).toBe('kid-123');
+      const contentType = result.get(Header.ContentType);
       expect(contentType).toBe('application/cbor');
 
       // types
-      expectTypeOf(result.get(Headers.Algorithm)).toEqualTypeOf<
+      expectTypeOf(result.get(Header.Algorithm)).toEqualTypeOf<
         number | undefined
       >();
-      expectTypeOf(result.get(Headers.KeyId)).toEqualTypeOf<
+      expectTypeOf(result.get(Header.KeyId)).toEqualTypeOf<
         string | undefined
       >();
       expectTypeOf(contentType).toEqualTypeOf<unknown>();
     });
 
     it('accepts another unknown key from U with arbitrary value type', () => {
-      const schema = createSemiStrictMapSchema<
-        typeof entries,
-        `Number(${Headers})`
-      >({
+      const schema = createSemiStrictMapSchema<typeof entries, HeaderValues>({
         target: 'HeadersMap',
         entries,
       });
 
       const iv = new Uint8Array([1, 2, 3]);
       const input = new Map<string | number, unknown>([
-        [Headers.Algorithm, -7],
-        [Headers.KeyId, 'kid-123'],
-        [Headers.IV, iv],
+        [Header.Algorithm, -7],
+        [Header.KeyId, 'kid-123'],
+        [Header.IV, iv],
       ]);
       const result = schema.parse(input);
-      result.set(Headers.Algorithm, 1);
+      result.set(Header.Algorithm, 1);
 
-      const got = result.get(Headers.IV);
+      const got = result.get(Header.IV);
       expect(got).toEqual(iv);
       expectTypeOf(got).toEqualTypeOf<unknown>();
     });

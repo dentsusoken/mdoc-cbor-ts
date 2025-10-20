@@ -7,14 +7,7 @@ import {
   JwkCurves,
   JwkMacAlgorithms,
 } from '@/jwk/types';
-import {
-  Algorithm,
-  Curve,
-  KeyOp,
-  KeyParam,
-  KeyType,
-  MacAlgorithm,
-} from './types';
+import { Algorithm, Curve, KeyOp, Key, KeyType, MacAlgorithm } from './types';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 
 /**
@@ -129,20 +122,20 @@ export const JWK_TO_COSE_CURVES: Record<JwkCurves, Curve> = {
  * ```
  *
  * @see {@link JwkKeyParams} - JWK key parameter string identifiers
- * @see {@link KeyParam} - COSE key parameter numeric identifiers
+ * @see {@link Key} - COSE key parameter numeric identifiers
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-common-parameters} - IANA COSE Key Common Parameters registry
  * @see {@link https://tools.ietf.org/html/rfc7517#section-4} - JWK key parameter specifications
  */
-export const JWK_TO_COSE_KEY_PARAMS: Record<JwkKeyParams, KeyParam> = {
-  [JwkKeyParams.KeyType]: KeyParam.KeyType,
-  [JwkKeyParams.KeyID]: KeyParam.KeyId,
-  [JwkKeyParams.Algorithm]: KeyParam.Algorithm,
-  [JwkKeyParams.KeyOps]: KeyParam.KeyOps,
-  [JwkKeyParams.Curve]: KeyParam.Curve,
-  [JwkKeyParams.x]: KeyParam.x,
-  [JwkKeyParams.y]: KeyParam.y,
-  [JwkKeyParams.d]: KeyParam.d,
-  [JwkKeyParams.k]: KeyParam.k,
+export const JWK_TO_COSE_KEY_PARAMS: Record<JwkKeyParams, Key> = {
+  [JwkKeyParams.KeyType]: Key.KeyType,
+  [JwkKeyParams.KeyID]: Key.KeyId,
+  [JwkKeyParams.Algorithm]: Key.Algorithm,
+  [JwkKeyParams.KeyOps]: Key.KeyOps,
+  [JwkKeyParams.Curve]: Key.Curve,
+  [JwkKeyParams.x]: Key.x,
+  [JwkKeyParams.y]: Key.y,
+  [JwkKeyParams.d]: Key.d,
+  [JwkKeyParams.k]: Key.k,
 };
 
 /**
