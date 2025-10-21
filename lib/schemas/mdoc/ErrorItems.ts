@@ -1,27 +1,23 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema } from '@/schemas/common/values/DataElementIdentifier';
-import { createMapSchema } from '@/schemas/common/containers/Map';
-import { errorCodeSchema } from './ErrorCode';
+import { createMapSchema } from '@/schemas/containers/Map';
 
 /**
  * Schema for error items in MDOC
  * @description
  * Validates a required non-empty `Map<DataElementIdentifier, ErrorCode>`, where
- * keys are text identifiers validated by `dataElementIdentifierSchema` and
- * values are integers validated by `errorCodeSchema`.
+ * keys are non-empty strings and values are integers. The Map must contain at least one entry.
  *
  * Error messages are prefixed with `ErrorItems: ...` and follow the
- * standardized messaging provided by the common Map schema utilities. The Map
- * must contain at least one entry.
+ * standardized messaging provided by the common Map schema utilities.
  *
  * Validation rules:
  * - Requires a `Map` instance
- * - Requires at least one entry (non-empty)
- * - Each key must satisfy `dataElementIdentifierSchema` (text)
- * - Each value must satisfy `errorCodeSchema` (int)
+ * - Must contain at least one entry (non-empty)
+ * - Each key must be a non-empty string (DataElementIdentifier)
+ * - Each value must be an integer (ErrorCode)
  *
  * ```cddl
- * ErrorItems = {+ DataElementIdentifier => ErrorCode}
+ * ErrorItems = {+ DataElementIdentifier => int}
  * ```
  *
  * @example
@@ -45,14 +41,13 @@ import { errorCodeSchema } from './ErrorCode';
  * // errorItemsSchema.parse({ given_name: 0 });
  * ```
  *
- * @see dataElementIdentifierSchema
- * @see errorCodeSchema
  * @see createMapSchema
  */
 export const errorItemsSchema = createMapSchema({
   target: 'ErrorItems',
-  keySchema: dataElementIdentifierSchema,
-  valueSchema: errorCodeSchema,
+  keySchema: z.string().min(1), // DataElementIdentifier
+  valueSchema: z.number().int(), // ErrorCode
+  nonempty: true,
 });
 
 /**

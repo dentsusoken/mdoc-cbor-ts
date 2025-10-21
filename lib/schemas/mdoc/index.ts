@@ -15,6 +15,7 @@ export * from './DeviceSignature';
 export * from './DeviceSigned';
 export * from './DeviceSignedItems';
 export * from './Document';
+export * from './ErrorItems';
 export * from './IssuerNameSpaces';
 export * from './IssuerSigned';
 export * from './IssuerSignedItem';

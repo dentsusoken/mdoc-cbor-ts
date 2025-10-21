@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ErrorsError } from '../ErrorsError';
-import type { Errors } from '@/schemas/error/Errors';
+import type { Errors } from '@/schemas/mdoc/Errors';
 
 describe('ErrorsError', () => {
   it('stores message and errors, and sets name', () => {

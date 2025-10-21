@@ -1,4 +1,4 @@
-import { Errors } from '@/schemas/error/Errors';
+import { Errors } from '@/schemas/mdoc/Errors';
 
 /**
  * Custom error class for handling MDOC validation errors

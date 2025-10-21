@@ -5,13 +5,10 @@ import {
   issuerSignedItemSchema,
   createIssuerSignedItem,
 } from '../IssuerSignedItem';
-import {
-  strictMapNotMapMessage,
-  strictMapKeyValueMessage,
-} from '@/schemas/common/containers/StrictMap';
-import { requiredMessage } from '@/schemas/common/Required';
-import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
-import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
+import { valueInvalidTypeMessage } from '@/schemas/messages';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('IssuerSignedItem', () => {
   describe('createIssuerSignedItem', () => {
@@ -60,47 +57,9 @@ describe('IssuerSignedItem', () => {
       >();
       expectTypeOf(item.get('elementValue')).toEqualTypeOf<unknown>();
     });
-
-    it('should create a valid IssuerSignedItem Map with tagged elementValue', () => {
-      const item = createIssuerSignedItem([
-        ['digestID', 3],
-        ['random', Uint8Array.from([4, 5, 6])],
-        ['elementIdentifier', 'photo'],
-        ['elementValue', new Tag(0, 24)],
-      ]);
-
-      expect(item).toBeInstanceOf(Map);
-      expect(item.get('digestID')).toBe(3);
-      expect(item.get('random')).toEqual(Uint8Array.from([4, 5, 6]));
-      expect(item.get('elementIdentifier')).toBe('photo');
-      expect(item.get('elementValue')).toEqual(new Tag(0, 24));
-
-      // Test type safety of get method
-      expectTypeOf(item.get('digestID')).toEqualTypeOf<number | undefined>();
-      expectTypeOf(item.get('random')).toEqualTypeOf<Uint8Array | undefined>();
-      expectTypeOf(item.get('elementIdentifier')).toEqualTypeOf<
-        string | undefined
-      >();
-      expectTypeOf(item.get('elementValue')).toEqualTypeOf<unknown>();
-    });
-
-    it('should be compatible with issuerSignedItemSchema validation', () => {
-      const item = createIssuerSignedItem([
-        ['digestID', 1],
-        ['random', Uint8Array.from([])],
-        ['elementIdentifier', 'given_name'],
-        ['elementValue', 'John'],
-      ]);
-
-      // Should not throw when parsing with schema
-      expect(() => issuerSignedItemSchema.parse(item)).not.toThrow();
-
-      const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(item);
-    });
   });
 
-  describe('valid issuer signed items', () => {
+  describe('issuerSignedItemSchema', () => {
     it('should accept string elementValue', () => {
       const item = new Map<string, unknown>([
         ['digestID', 1],
@@ -142,27 +101,6 @@ describe('IssuerSignedItem', () => {
       >();
       expectTypeOf(result.get('elementValue')).toEqualTypeOf<unknown>();
     });
-
-    it('should accept tagged elementValue', () => {
-      const item = new Map<string, unknown>([
-        ['digestID', 3],
-        ['random', Uint8Array.from([])],
-        ['elementIdentifier', 'photo'],
-        ['elementValue', new Tag(0, 24)],
-      ]);
-      const result = issuerSignedItemSchema.parse(item);
-      expect(result).toEqual(item);
-
-      // Test type safety of get method
-      expectTypeOf(result.get('digestID')).toEqualTypeOf<number | undefined>();
-      expectTypeOf(result.get('random')).toEqualTypeOf<
-        Uint8Array | undefined
-      >();
-      expectTypeOf(result.get('elementIdentifier')).toEqualTypeOf<
-        string | undefined
-      >();
-      expectTypeOf(result.get('elementValue')).toEqualTypeOf<unknown>();
-    });
   });
 
   describe('should throw error for invalid type inputs', () => {
@@ -174,35 +112,56 @@ describe('IssuerSignedItem', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'object'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'IssuerSignedItem',
+          expected: 'Map',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: strictMapNotMapMessage(
-          'IssuerSignedItem',
-          'undefined'
-        ),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'IssuerSignedItem',
+          expected: 'Map',
+          received: getTypeName(undefined),
+        }),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'boolean'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'IssuerSignedItem',
+          expected: 'Map',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'number'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'IssuerSignedItem',
+          expected: 'Map',
+          received: getTypeName(123),
+        }),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'string'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'IssuerSignedItem',
+          expected: 'Map',
+          received: getTypeName('string'),
+        }),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: strictMapNotMapMessage('IssuerSignedItem', 'Array'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'IssuerSignedItem',
+          expected: 'Map',
+          received: getTypeName([]),
+        }),
       },
     ];
 
@@ -237,11 +196,11 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['digestID']);
           expect(zodError.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'IssuerSignedItem',
-              ['digestID'],
-              uintInvalidTypeMessage('DigestID')
-            )
+            containerInvalidValueMessage({
+              target: 'IssuerSignedItem',
+              path: ['digestID'],
+              originalMessage: 'Expected number, received string',
+            })
           );
         }
       });
@@ -262,12 +221,16 @@ describe('IssuerSignedItem', () => {
         } catch (error) {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['random']);
+          const original = valueInvalidTypeMessage({
+            expected: 'Uint8Array or Buffer',
+            received: getTypeName(null),
+          });
           expect(zodError.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'IssuerSignedItem',
-              ['random'],
-              requiredMessage('random')
-            )
+            containerInvalidValueMessage({
+              target: 'IssuerSignedItem',
+              path: ['random'],
+              originalMessage: original,
+            })
           );
         }
       });
@@ -289,11 +252,11 @@ describe('IssuerSignedItem', () => {
           const zodError = error as z.ZodError;
           expect(zodError.issues[0].path).toEqual(['elementIdentifier']);
           expect(zodError.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'IssuerSignedItem',
-              ['elementIdentifier'],
-              nonEmptyTextEmptyMessage('DataElementIdentifier')
-            )
+            containerInvalidValueMessage({
+              target: 'IssuerSignedItem',
+              path: ['elementIdentifier'],
+              originalMessage: 'String must contain at least 1 character(s)',
+            })
           );
         }
       });

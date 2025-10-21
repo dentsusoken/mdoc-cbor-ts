@@ -1,44 +1,51 @@
 import { z } from 'zod';
-import { createBytesSchema } from '@/schemas/cbor/Bytes';
-import { dataElementIdentifierSchema } from '@/schemas/common/values/DataElementIdentifier';
-import { dataElementValueSchema } from '@/schemas/common/DataElementValue';
-import { digestIDSchema } from '@/index';
-import { createStrictMapSchema } from '../common/containers/StrictMap';
+import { bytesSchema } from '@/schemas/cbor/Bytes';
+import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 import { createStrictMap } from '@/strict-map';
 
 /**
- * Object schema for issuer-signed items in mdoc
+ * Entries for the IssuerSignedItem schema in mdoc.
  * @description
- * Represents a single issuer-signed data element with its identifier, value, and metadata.
- * This schema validates the structure of issuer-signed items including digest ID, random value,
- * element identifier, and element value.
+ * Defines the keys and their schemas for a single issuer-signed data element.
+ *
+ * - `"digestID"` is defined directly as a non-negative integer: `z.number().int().nonnegative()`
+ * - `"random"` is defined as a byte string (`bytesSchema`)
+ * - `"elementIdentifier"` is defined directly as a non-empty string: `z.string().min(1)`
+ * - `"elementValue"` is defined as any value: `z.unknown()`
+ *
+ * NOTE: `digestID`, `elementIdentifier`, and `elementValue` are defined inline (directly and not via imported schemas).
  *
  * ```cddl
  * IssuerSignedItem = {
- *  "digestID": uint,
- *  "random": bstr,
- *  "elementIdentifier": DataElementIdentifier,
- *  "elementValue": DataElementValue
+ *   "digestID": uint,
+ *   "random": bstr,
+ *   "elementIdentifier": DataElementIdentifier,
+ *   "elementValue": DataElementValue
  * }
  * ```
  *
- * Properties:
- * - digestID: {@link DigestID} - Unique identifier for the digest
- * - random: Byte string containing random data
- * - elementIdentifier: {@link DataElementIdentifier} - Identifier for the data element
- * - elementValue: {@link DataElementValue} - The actual data element value
+ * @example
+ * ```typescript
+ * // Use with createStrictMap for type safety.
+ * const item = createIssuerSignedItem([
+ *   ['digestID', 1],
+ *   ['random', new Uint8Array([1,2,3])],
+ *   ['elementIdentifier', 'given_name'],
+ *   ['elementValue', 'John']
+ * ]);
+ * ```
  */
 export const issuerSignedItemEntries = [
-  ['digestID', digestIDSchema],
-  ['random', createBytesSchema('random')],
-  ['elementIdentifier', dataElementIdentifierSchema],
-  ['elementValue', dataElementValueSchema],
+  ['digestID', z.number().int().nonnegative()],
+  ['random', bytesSchema],
+  ['elementIdentifier', z.string().min(1)],
+  ['elementValue', z.unknown()],
 ] as const;
 
 /**
- * Type helper for constructing a strongly-typed IssuerSignedItem Map.
+ * Strict type helper for constructing an IssuerSignedItem Map.
  * @description
- * Use this for typing when creating IssuerSignedItem entries using {@link createStrictMap}.
+ * Use when creating IssuerSignedItem objects as an array of entries.
  *
  * @example
  * ```typescript
@@ -55,28 +62,27 @@ export const createIssuerSignedItem = createStrictMap<
 >;
 
 /**
- * Schema for issuer-signed items in mdoc
+ * Zod schema for issuer-signed items in mdoc.
  * @description
- * Represents a single issuer-signed data element that has been signed by the issuer.
- * This schema accepts a Map input and transforms it to a plain object for validation.
- * The schema validates the structure of issuer-signed items including digest ID, random value,
- * element identifier, and element value.
+ * Accepts a `Map` (<string, unknown>) only with the exact required keys.
+ * Keys and values must conform to the inline definitions above.
+ *
+ * Validates:
+ *   - digestID: integer, nonnegative
+ *   - random: byte string
+ *   - elementIdentifier: non-empty string
+ *   - elementValue: unknown
  *
  * @example
  * ```typescript
  * const item = new Map([
  *   ['digestID', 1],
- *   ['random', new Uint8Array([1, 2, 3])],
+ *   ['random', new Uint8Array([1,2,3])],
  *   ['elementIdentifier', 'given_name'],
  *   ['elementValue', 'John']
  * ]);
- * const result = issuerSignedItemSchema.parse(item); // Returns IssuerSignedItem
+ * const parsed = issuerSignedItemSchema.parse(item); // Returns IssuerSignedItem
  * ```
- *
- * @see {@link DigestID}
- * @see {@link DataElementIdentifier}
- * @see {@link DataElementValue}
- * @see {@link issuerSignedItemObjectSchema}
  */
 export const issuerSignedItemSchema = createStrictMapSchema({
   target: 'IssuerSignedItem',
@@ -84,11 +90,8 @@ export const issuerSignedItemSchema = createStrictMapSchema({
 });
 
 /**
- * Type definition for issuer-signed items
+ * TypeScript type for an IssuerSignedItem in mdoc.
  * @description
- * Represents a validated issuer-signed item structure
- *
- * @see {@link DataElementIdentifier}
- * @see {@link DataElementValue}
+ * Represents the output structure conforming to the issuerSignedItemSchema.
  */
 export type IssuerSignedItem = z.output<typeof issuerSignedItemSchema>;
