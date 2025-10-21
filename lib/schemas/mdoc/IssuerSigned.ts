@@ -1,37 +1,55 @@
 import { z } from 'zod';
-import { createStructSchema } from '@/schemas/common/Struct';
+import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 import { issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { issuerNameSpacesSchema } from '@/schemas/mdoc/IssuerNameSpaces';
 
 /**
- * Object schema for issuer-signed data validation
+ * Entries definition for the IssuerSigned schema in mdoc.
  * @description
- * Validates that an issuer-signed object has the required properties and types.
- * This object schema is used internally by {@link issuerSignedSchema} after transforming
- * the input Map into a plain object.
+ * Specifies the required fields and their respective schemas for issuer-signed data.
+ * This definition is consumed by {@link createStrictMapSchema} to perform validation and
+ * type inference for issuer-signed Map inputs.
+ *
+ * Structure:
+ * - "nameSpaces": Validated by {@link issuerNameSpacesSchema}, mapping namespace strings
+ *   to arrays of issuer-signed item bytes.
+ * - "issuerAuth": Validated by {@link issuerAuthSchema}, containing issuer authentication
+ *   block with the protected header, unprotected header, payload, and signature.
  *
  * ```cddl
  * IssuerSigned = {
- *  "nameSpaces": IssuerNameSpaces,
- *  "issuerAuth": IssuerAuth
+ *   "nameSpaces": IssuerNameSpaces,
+ *   "issuerAuth": IssuerAuth
  * }
  * ```
  *
- * Properties:
- * - nameSpaces: {@link IssuerNameSpaces} - Mapping of namespaces to issuer-signed items
- * - issuerAuth: {@link IssuerAuth} - Issuer authentication data
+ * @see {@link issuerNameSpacesSchema}
+ * @see {@link issuerAuthSchema}
  */
-export const issuerSignedObjectSchema = z.object({
-  nameSpaces: issuerNameSpacesSchema,
-  issuerAuth: issuerAuthSchema,
-});
+export const issuerSignedEntries = [
+  ['nameSpaces', issuerNameSpacesSchema],
+  ['issuerAuth', issuerAuthSchema],
+] as const;
 
 /**
- * Schema for issuer-signed data in mdoc
+ * Zod schema for issuer-signed data in mdoc.
  * @description
- * Represents the portion of the mdoc that is signed by the issuer.
- * This schema validates the structure of issuer-signed data including namespaces and authentication.
- * The schema accepts a Map input and transforms it to a plain object for validation.
+ * Validates the issuer-signed section of a mobile document (mdoc), ensuring that
+ * the structure contains correctly-formed namespaces and issuer authentication data.
+ *
+ * The schema enforces that:
+ * - The object is a `Map` with exactly two required entries:
+ *   - `"nameSpaces"`: A non-empty `Map` where each key is a non-empty string (the namespace),
+ *     and each value is a non-empty array of CBOR Tag 24 objects
+ *     (representing CBOR-encoded `IssuerSignedItem` entries).
+ *   - `"issuerAuth"`: A `Map` describing the cryptographic issuer authentication container.
+ *
+ * ```cddl
+ * IssuerSigned = {
+ *   "nameSpaces": IssuerNameSpaces,
+ *   "issuerAuth": IssuerAuth
+ * }
+ * ```
  *
  * @example
  * ```typescript
@@ -44,27 +62,28 @@ export const issuerSignedObjectSchema = z.object({
  *         ['digestID', 1],
  *         ['random', new Uint8Array([])],
  *         ['elementIdentifier', 'given_name'],
- *         ['elementValue', 'John']
- *       ]))
- *     ]]
+ *         ['elementValue', 'John'],
+ *       ])),
+ *     ]],
  *   ])],
  *   ['issuerAuth', new Map([
  *     ['protected', new Uint8Array([])],
  *     ['unprotected', new Map()],
  *     ['payload', new Uint8Array([])],
- *     ['signature', new Uint8Array([])]
- *   ])]
+ *     ['signature', new Uint8Array([])],
+ *   ])],
  * ]);
  * const result = issuerSignedSchema.parse(issuerSigned); // Returns IssuerSigned
  * ```
  *
+ * @see {@link issuerNameSpacesSchema}
+ * @see {@link issuerAuthSchema}
  * @see {@link IssuerNameSpaces}
  * @see {@link IssuerAuth}
- * @see {@link issuerSignedObjectSchema}
  */
-export const issuerSignedSchema = createStructSchema({
+export const issuerSignedSchema = createStrictMapSchema({
   target: 'IssuerSigned',
-  objectSchema: issuerSignedObjectSchema,
+  entries: issuerSignedEntries,
 });
 
 /**
