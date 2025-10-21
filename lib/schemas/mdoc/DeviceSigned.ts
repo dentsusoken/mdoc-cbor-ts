@@ -27,7 +27,7 @@ import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
  * @see {@link deviceAuthSchema}
  */
 export const deviceSignedEntries = [
-  ['nameSpaces', embeddedCborSchema],
+  ['nameSpaces', embeddedCborSchema], // DeviceNameSpacesBytes
   ['deviceAuth', deviceAuthSchema],
 ] as const;
 

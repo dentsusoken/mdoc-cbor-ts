@@ -131,28 +131,25 @@ describe('DeviceSigned', () => {
   });
 
   describe('should throw error for invalid map entries', () => {
-    const sign1 = new Sign1(
-      Uint8Array.from([]),
-      new Map<number, string>([[1, 'value']]),
-      Uint8Array.from([]),
-      Uint8Array.from([])
-    );
     const tag24 = createTag24(new Map());
+    const sign1 = createTag18([
+      new Uint8Array([]),
+      new Map<number, string>([[1, 'value']]),
+      new Uint8Array([]),
+      new Uint8Array([]),
+    ]);
 
     const testCases = [
       {
         name: 'null nameSpaces',
         input: new Map<string, unknown>([
           ['nameSpaces', null],
-          [
-            'deviceAuth',
-            new Map([['deviceSignature', sign1.getContentForEncoding()]]),
-          ],
+          ['deviceAuth', new Map([['deviceSignature', sign1]])],
         ]),
         expectedMessage: containerInvalidValueMessage({
           target: 'DeviceSigned',
           path: ['nameSpaces'],
-          originalMessage: 'Expected Tag 24, received null',
+          originalMessage: 'Input not instance of Tag',
         }),
       },
       {
@@ -174,8 +171,8 @@ describe('DeviceSigned', () => {
           ['deviceAuth', new Map([['deviceSignature', null]])],
         ]),
         expectedMessage: containerInvalidValueMessage({
-          target: 'DeviceAuth',
-          path: ['deviceSignature'],
+          target: 'DeviceSigned',
+          path: ['deviceAuth', 'deviceSignature'],
           originalMessage:
             'Expected [Uint8Array, HeaderMap, Uint8Array | null, Uint8Array] or Tag(18), received null',
         }),
