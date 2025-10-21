@@ -1,4 +1,3 @@
-import { Tag } from 'cbor-x';
 import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
 import {
