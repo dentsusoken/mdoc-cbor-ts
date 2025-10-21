@@ -106,7 +106,11 @@ describe('createArraySchema', () => {
         const issue = result.error.issues[0];
         expect(issue.path).toEqual([0]);
         expect(issue.message).toBe(
-          containerInvalidValueMessage(TARGET, [0], 'Too short')
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [0],
+            originalMessage: 'Too short',
+          })
         );
       }
     });
@@ -129,7 +133,11 @@ describe('createArraySchema', () => {
         const issue = result.error.issues[0];
         expect(issue.path).toEqual([1, 'id']);
         expect(issue.message).toBe(
-          containerInvalidValueMessage(TARGET, [1, 'id'], 'Not number')
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [1, 'id'],
+            originalMessage: 'Not number',
+          })
         );
       }
     });
@@ -158,11 +166,11 @@ describe('createArraySchema', () => {
         const issue = result.error.issues[0];
         expect(issue.path).toEqual([0, 'child', 'value']);
         expect(issue.message).toBe(
-          containerInvalidValueMessage(
-            TARGET,
-            [0, 'child', 'value'],
-            'Expected string, received number'
-          )
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [0, 'child', 'value'],
+            originalMessage: 'Expected string, received number',
+          })
         );
       }
     });
@@ -195,28 +203,36 @@ describe('createArraySchema', () => {
         // First item errors
         expect(issues[0].path).toEqual([0, 'id']);
         expect(issues[0].message).toBe(
-          containerInvalidValueMessage(TARGET, [0, 'id'], 'Not number')
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [0, 'id'],
+            originalMessage: 'Not number',
+          })
         );
         expect(issues[1].path).toEqual([0, 'name']);
         expect(issues[1].message).toBe(
-          containerInvalidValueMessage(
-            TARGET,
-            [0, 'name'],
-            'Expected string, received number'
-          )
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [0, 'name'],
+            originalMessage: 'Expected string, received number',
+          })
         );
         // Second item errors
         expect(issues[2].path).toEqual([1, 'id']);
         expect(issues[2].message).toBe(
-          containerInvalidValueMessage(TARGET, [1, 'id'], 'Not number')
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [1, 'id'],
+            originalMessage: 'Not number',
+          })
         );
         expect(issues[3].path).toEqual([1, 'name']);
         expect(issues[3].message).toBe(
-          containerInvalidValueMessage(
-            TARGET,
-            [1, 'name'],
-            'Expected string, received number'
-          )
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [1, 'name'],
+            originalMessage: 'Expected string, received number',
+          })
         );
       }
     });
@@ -261,29 +277,37 @@ describe('createArraySchema', () => {
         // First outer item (index 0), first inner item (index 0)
         expect(issues[0].path).toEqual([0, 0, 'id']);
         expect(issues[0].message).toBe(
-          containerInvalidValueMessage(TARGET, [0, 0, 'id'], 'Not number')
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [0, 0, 'id'],
+            originalMessage: 'Not number',
+          })
         );
         expect(issues[1].path).toEqual([0, 0, 'name']);
         expect(issues[1].message).toBe(
-          containerInvalidValueMessage(
-            TARGET,
-            [0, 0, 'name'],
-            'Expected string, received number'
-          )
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [0, 0, 'name'],
+            originalMessage: 'Expected string, received number',
+          })
         );
 
         // Second outer item (index 1), first inner item (index 0)
         expect(issues[2].path).toEqual([1, 0, 'id']);
         expect(issues[2].message).toBe(
-          containerInvalidValueMessage(TARGET, [1, 0, 'id'], 'Not number')
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [1, 0, 'id'],
+            originalMessage: 'Not number',
+          })
         );
         expect(issues[3].path).toEqual([1, 0, 'name']);
         expect(issues[3].message).toBe(
-          containerInvalidValueMessage(
-            TARGET,
-            [1, 0, 'name'],
-            'Expected string, received number'
-          )
+          containerInvalidValueMessage({
+            target: TARGET,
+            path: [1, 0, 'name'],
+            originalMessage: 'Expected string, received number',
+          })
         );
       }
     });

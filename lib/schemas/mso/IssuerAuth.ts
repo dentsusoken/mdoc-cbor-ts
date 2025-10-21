@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createSign1Schema } from '../cose/Sign1';
+import { createSign1Schema } from '@/schemas/cose/Sign1';
 
 /**
  * Schema for issuer authentication in MSO (Mobile Security Object)

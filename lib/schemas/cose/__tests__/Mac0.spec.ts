@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { mac0Schema } from '../Mac0';
+import { createMac0Schema } from '../Mac0';
 import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
 import { Tag } from 'cbor-x';
 import { createTag17, type Tag17Content } from '@/cbor/createTag17';
@@ -9,7 +9,7 @@ import { valueInvalidTypeMessage } from '@/schemas/messages/valueInvalidTypeMess
 import { getTypeName } from '@/utils/getTypeName';
 
 describe('Mac0', (): void => {
-  const schema = mac0Schema;
+  const schema = createMac0Schema('Mac0');
 
   describe('tuple input', (): void => {
     describe('successful validation', (): void => {
@@ -74,14 +74,14 @@ describe('Mac0', (): void => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           const expectedInner = valueInvalidTypeMessage({
-            expected: 'Buffer or Uint8Array',
+            expected: 'Uint8Array or Buffer',
             received: getTypeName(payload),
           });
-          const expected = containerInvalidValueMessage(
-            'Mac0',
-            [2],
-            expectedInner
-          );
+          const expected = containerInvalidValueMessage({
+            target: 'Mac0',
+            path: [2],
+            originalMessage: expectedInner,
+          });
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
@@ -129,7 +129,7 @@ describe('Mac0', (): void => {
       containerInvalidTypeMessage({
         target: 'Mac0',
         expected:
-          'Array[Uint8Array, HeaderMap, Uint8Array, Uint8Array] or Tag(17)',
+          '[Uint8Array, HeaderMap, Uint8Array | null, Uint8Array] or Tag(17)',
         received: getTypeName(v),
       });
 
@@ -274,14 +274,14 @@ describe('Mac0', (): void => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           const expectedInner = valueInvalidTypeMessage({
-            expected: 'Buffer or Uint8Array',
+            expected: 'Uint8Array or Buffer',
             received: getTypeName(payload),
           });
-          const expected = containerInvalidValueMessage(
-            'Mac0',
-            [2],
-            expectedInner
-          );
+          const expected = containerInvalidValueMessage({
+            target: 'Mac0',
+            path: [2],
+            originalMessage: expectedInner,
+          });
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
@@ -444,14 +444,14 @@ describe('Mac0', (): void => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           const expectedInner = valueInvalidTypeMessage({
-            expected: 'Buffer or Uint8Array',
+            expected: 'Uint8Array or Buffer',
             received: 'undefined',
           });
-          const expected = containerInvalidValueMessage(
-            'Mac0',
-            [2],
-            expectedInner
-          );
+          const expected = containerInvalidValueMessage({
+            target: 'Mac0',
+            path: [2],
+            originalMessage: expectedInner,
+          });
           expect(zodError.issues[0].message).toBe(expected);
         }
       });

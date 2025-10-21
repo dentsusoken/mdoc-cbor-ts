@@ -59,7 +59,7 @@ export const createMapSchema = <K, VO, VI = VO>({
 > =>
   z.any().transform((data, ctx) => {
     if (!(data instanceof Map)) {
-      return ctx.addIssue({
+      ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: containerInvalidTypeMessage({
           target,
@@ -67,15 +67,19 @@ export const createMapSchema = <K, VO, VI = VO>({
           received: getTypeName(data),
         }),
       });
+
+      return z.NEVER;
     }
 
     const entries = [...data.entries()];
 
     if (nonempty && entries.length === 0) {
-      return ctx.addIssue({
+      ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: containerEmptyMessage(target),
       });
+
+      return z.NEVER;
     }
 
     let hasError = false;
@@ -90,7 +94,11 @@ export const createMapSchema = <K, VO, VI = VO>({
           ctx.addIssue({
             ...issue,
             path,
-            message: containerInvalidValueMessage(target, path, issue.message),
+            message: containerInvalidValueMessage({
+              target,
+              path,
+              originalMessage: issue.message,
+            }),
           });
         });
       }
@@ -103,7 +111,11 @@ export const createMapSchema = <K, VO, VI = VO>({
           ctx.addIssue({
             ...issue,
             path,
-            message: containerInvalidValueMessage(target, path, issue.message),
+            message: containerInvalidValueMessage({
+              target,
+              path,
+              originalMessage: issue.message,
+            }),
           });
         });
       }

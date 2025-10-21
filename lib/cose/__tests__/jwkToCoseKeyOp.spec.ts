@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseKeyOp } from '../jwkToCoseKeyOp';
 import { KeyOp } from '../types';
-import { JwkKeyOps } from '@/jwk/types';
+import { JwkKeyOp } from '@/jwk/types';
 
 describe('jwkToCoseKeyOp', () => {
   describe('should return the correct COSE KeyOps enum value', () => {
@@ -17,18 +17,18 @@ describe('jwkToCoseKeyOp', () => {
     });
 
     it('for JwkKeyOps enum values', () => {
-      expect(jwkToCoseKeyOp(JwkKeyOps.Sign)).toBe(KeyOp.Sign);
-      expect(jwkToCoseKeyOp(JwkKeyOps.Verify)).toBe(KeyOp.Verify);
-      expect(jwkToCoseKeyOp(JwkKeyOps.Encrypt)).toBe(KeyOp.Encrypt);
-      expect(jwkToCoseKeyOp(JwkKeyOps.Decrypt)).toBe(KeyOp.Decrypt);
-      expect(jwkToCoseKeyOp(JwkKeyOps.WrapKey)).toBe(KeyOp.WrapKey);
-      expect(jwkToCoseKeyOp(JwkKeyOps.UnwrapKey)).toBe(KeyOp.UnwrapKey);
-      expect(jwkToCoseKeyOp(JwkKeyOps.DeriveKey)).toBe(KeyOp.DeriveKey);
-      expect(jwkToCoseKeyOp(JwkKeyOps.DeriveBits)).toBe(KeyOp.DeriveBits);
+      expect(jwkToCoseKeyOp(JwkKeyOp.Sign)).toBe(KeyOp.Sign);
+      expect(jwkToCoseKeyOp(JwkKeyOp.Verify)).toBe(KeyOp.Verify);
+      expect(jwkToCoseKeyOp(JwkKeyOp.Encrypt)).toBe(KeyOp.Encrypt);
+      expect(jwkToCoseKeyOp(JwkKeyOp.Decrypt)).toBe(KeyOp.Decrypt);
+      expect(jwkToCoseKeyOp(JwkKeyOp.WrapKey)).toBe(KeyOp.WrapKey);
+      expect(jwkToCoseKeyOp(JwkKeyOp.UnwrapKey)).toBe(KeyOp.UnwrapKey);
+      expect(jwkToCoseKeyOp(JwkKeyOp.DeriveKey)).toBe(KeyOp.DeriveKey);
+      expect(jwkToCoseKeyOp(JwkKeyOp.DeriveBits)).toBe(KeyOp.DeriveBits);
     });
 
     it('for all enum values from JwkKeyOps', () => {
-      const allJwkKeyOps = Object.values(JwkKeyOps);
+      const allJwkKeyOps = Object.values(JwkKeyOp);
       const expectedCoseKeyOps = [
         KeyOp.Sign,
         KeyOp.Verify,

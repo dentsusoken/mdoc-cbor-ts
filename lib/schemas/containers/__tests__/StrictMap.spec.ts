@@ -427,11 +427,11 @@ describe('createStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['age']);
         expect(zodError.issues[0].message).toBe(
-          containerInvalidValueMessage(
-            'User',
-            ['age'],
-            'Expected number, received string'
-          )
+          containerInvalidValueMessage({
+            target: 'User',
+            path: ['age'],
+            originalMessage: 'Expected number, received string',
+          })
         );
       }
     });
@@ -466,11 +466,11 @@ describe('createStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['user', 'age']);
         expect(zodError.issues[0].message).toBe(
-          containerInvalidValueMessage(
-            'Data',
-            ['user', 'age'],
-            'Expected number, received string'
-          )
+          containerInvalidValueMessage({
+            target: 'Data',
+            path: ['user', 'age'],
+            originalMessage: 'Expected number, received string',
+          })
         );
       }
     });
@@ -516,11 +516,11 @@ describe('createStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['payload', 'user', 'age']);
         expect(zodError.issues[0].message).toBe(
-          containerInvalidValueMessage(
-            'Container',
-            ['payload', 'user', 'age'],
-            'Expected number, received string'
-          )
+          containerInvalidValueMessage({
+            target: 'Container',
+            path: ['payload', 'user', 'age'],
+            originalMessage: 'Expected number, received string',
+          })
         );
       }
     });
@@ -571,11 +571,11 @@ describe('createStrictMapSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['type']);
         expect(zodError.issues[0].message).toBe(
-          containerInvalidValueMessage(
-            'User',
-            ['type'],
-            'Invalid literal value, expected "user"'
-          )
+          containerInvalidValueMessage({
+            target: 'User',
+            path: ['type'],
+            originalMessage: 'Invalid literal value, expected "user"',
+          })
         );
       }
     });
@@ -792,11 +792,11 @@ describe('createStrictMapSchema', () => {
       const first = issues[0];
       expect(first.path).toEqual(['age']);
       expect(first.message).toBe(
-        containerInvalidValueMessage(
-          'User',
-          ['age'],
-          'Expected number, received string'
-        )
+        containerInvalidValueMessage({
+          target: 'User',
+          path: ['age'],
+          originalMessage: 'Expected number, received string',
+        })
       );
     });
   });

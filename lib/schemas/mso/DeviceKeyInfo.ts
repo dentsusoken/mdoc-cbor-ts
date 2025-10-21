@@ -2,71 +2,77 @@ import { z } from 'zod';
 import { deviceKeySchema } from './DeviceKey';
 import { keyAuthorizationsSchema } from './KeyAuthorizations';
 import { keyInfoSchema } from './KeyInfo';
-import { createStructSchema } from '@/schemas/common/Struct';
+import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 
 /**
- * Object schema for device key information validation
- * @description
- * Defines the structure for device key information with a required `deviceKey`
- * and optional `keyAuthorizations` and `keyInfo` fields. This schema is used
- * internally by `deviceKeyInfoSchema` after Map-to-object transformation.
+ * Field entries for the DeviceKeyInfo map/object schema.
  *
- * @see deviceKeySchema
- * @see keyAuthorizationsSchema
- * @see keyInfoSchema
+ * @description
+ * Describes the strict set of fields accepted in a DeviceKeyInfo structure.
+ * - "deviceKey" (required): A COSE_Key for device authentication, validated by {@link deviceKeySchema}.
+ * - "keyAuthorizations" (optional): Describes permitted usages, validated by {@link keyAuthorizationsSchema}.
+ * - "keyInfo" (optional): Arbitrary extra metadata or informational values, validated by {@link keyInfoSchema}.
+ *
+ * Enforced by {@link createStrictMapSchema}, this tuple determines which fields are accepted and their validators.
+ *
+ * @see {@link deviceKeySchema}
+ * @see {@link keyAuthorizationsSchema}
+ * @see {@link keyInfoSchema}
+ * @see {@link createStrictMapSchema}
  */
-export const deviceKeyInfoObjectSchema = z.object({
-  deviceKey: deviceKeySchema,
-  keyAuthorizations: keyAuthorizationsSchema.optional(),
-  keyInfo: keyInfoSchema.optional(),
-});
+export const deviceKeyInfoEntries = [
+  ['deviceKey', deviceKeySchema],
+  ['keyAuthorizations', keyAuthorizationsSchema.optional()],
+  ['keyInfo', keyInfoSchema.optional()],
+] as const;
 
 /**
- * Schema for device key information in MSO
+ * Zod schema for the DeviceKeyInfo structure used in MSO (Mobile Security Object).
+ *
  * @description
- * Validates a Map<string, unknown> that is transformed into a plain object and
- * checked against `deviceKeyInfoObjectSchema`. It describes a device key along
- * with optional authorizations and metadata.
+ * Validates a strict Map containing device key information, enforcing exactly the allowed fields and delegating field validation to individual schemas as follows:
  *
- * Container type/required errors are prefixed with `DeviceKeyInfo: ...` and follow
- * the shared Map message suffixes. Field-level validation is delegated to
- * `deviceKeySchema`, `keyAuthorizationsSchema`, and `keyInfoSchema`.
+ * - `"deviceKey"` (**required**): Contains a COSE_Key for the device. This field is validated by {@link deviceKeySchema}.
+ * - `"keyAuthorizations"` (optional): Specifies permitted key usages, validated by {@link keyAuthorizationsSchema}.
+ * - `"keyInfo"` (optional): Allows arbitrary extra metadata or informational entries, validated by {@link keyInfoSchema}.
  *
+ * Validation behavior:
+ * - Input must be an instance of Map. If the input is not a Map, error messages are prefixed with `DeviceKeyInfo:`.
+ * - Only the fields listed above are permitted; no additional keys are allowed (strict schema).
+ * - Errors for missing required fields, type mismatches, or incomplete/invalid data are constructed using canonical error messages with a `DeviceKeyInfo:` prefix.
+ * - Sub-field errors (for each key) use the corresponding validator for error reporting and structure.
+ *
+ * CDDL Reference:
  * ```cddl
  * DeviceKeyInfo = {
- *  "deviceKey": DeviceKey,
- *  ? "keyAuthorizations": KeyAuthorizations,
- *  ? "keyInfo": KeyInfo
+ *   "deviceKey": DeviceKey,
+ *   ? "keyAuthorizations": KeyAuthorizations,
+ *   ? "keyInfo": KeyInfo
  * }
  * ```
  *
  * @example
  * ```typescript
- * import { typedMap } from '@/utils/typedMap';
- *
- * // Map-based input (converted to object before validation)
- * const input = typedMap([
- *   ['deviceKey', [[1, 2]]],
- *   ['keyAuthorizations', [
- *     ['nameSpaces', ['org.iso.18013.5.1']],
- *   ]],
- *   ['keyInfo', [[1, 'value']]],
+ * const valid = new Map([
+ *   ['deviceKey', validDeviceKey],
+ *   ['keyAuthorizations', validKeyAuthorizations], // optional
+ *   ['keyInfo', validKeyInfo],                     // optional
  * ]);
- *
- * const value = deviceKeyInfoSchema.parse(input); // DeviceKeyInfo
+ * deviceKeyInfoSchema.parse(valid); // Passes validation
  * ```
  *
  * @example
- * Throws ZodError for invalid container type (object instead of Map).
+ * // Throws if input is not a Map:
+ * deviceKeyInfoSchema.parse({ deviceKey: validDeviceKey }); // Throws ZodError
  *
- * @see createStructSchema
+ * @see createStrictMapSchema
  * @see deviceKeySchema
  * @see keyAuthorizationsSchema
  * @see keyInfoSchema
  */
-export const deviceKeyInfoSchema = createStructSchema({
+export const deviceKeyInfoSchema = createStrictMapSchema({
   target: 'DeviceKeyInfo',
-  objectSchema: deviceKeyInfoObjectSchema,
+  entries: deviceKeyInfoEntries,
 });
 
 /**

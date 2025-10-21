@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { digestIDsSchema } from '../DigestIDs';
-import { mapEmptyMessage } from '@/schemas/common/containers/Map';
-import { uintInvalidTypeMessage } from '@/schemas/common/Uint';
-import { bytesInvalidTypeMessage } from '@/schemas/cbor/Bytes';
+import { containerEmptyMessage } from '@/schemas/messages/containerEmptyMessage';
+import { valueInvalidTypeMessage } from '@/schemas/messages/valueInvalidTypeMessage';
+import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
 
 describe('DigestIDs', () => {
   describe('valid inputs', () => {
@@ -26,7 +26,9 @@ describe('DigestIDs', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(mapEmptyMessage('DigestIDs'));
+        expect(zodError.issues[0].message).toBe(
+          containerEmptyMessage('DigestIDs')
+        );
       }
     });
 
@@ -41,7 +43,14 @@ describe('DigestIDs', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          uintInvalidTypeMessage('DigestID')
+          containerInvalidValueMessage({
+            target: 'DigestIDs',
+            path: [0, 'key'],
+            originalMessage: valueInvalidTypeMessage({
+              expected: 'number',
+              received: 'string',
+            }),
+          })
         );
       }
     });
@@ -55,7 +64,14 @@ describe('DigestIDs', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          bytesInvalidTypeMessage('Digest')
+          containerInvalidValueMessage({
+            target: 'DigestIDs',
+            path: [0, 'value'],
+            originalMessage: valueInvalidTypeMessage({
+              expected: 'Uint8Array or Buffer',
+              received: 'string',
+            }),
+          })
         );
       }
     });

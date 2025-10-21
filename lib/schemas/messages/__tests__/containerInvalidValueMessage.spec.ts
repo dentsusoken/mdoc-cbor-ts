@@ -6,7 +6,11 @@ describe('containerInvalidValueMessage', () => {
     const target = 'UserProfile';
     const path = ['addresses', 0, 'city'];
     const original = 'City is required';
-    const result = containerInvalidValueMessage(target, path, original);
+    const result = containerInvalidValueMessage({
+      target,
+      path,
+      originalMessage: original,
+    });
     expect(result).toBe('UserProfile.addresses[0].city: City is required');
   });
 
@@ -14,7 +18,11 @@ describe('containerInvalidValueMessage', () => {
     const target = 'UserProfile';
     const path = ['addresses', 0, 'city'];
     const original = 'UserProfile.addresses[0].city:   Required  ';
-    const result = containerInvalidValueMessage(target, path, original);
+    const result = containerInvalidValueMessage({
+      target,
+      path,
+      originalMessage: original,
+    });
     expect(result).toBe('UserProfile.addresses[0].city: Required');
   });
 
@@ -22,7 +30,11 @@ describe('containerInvalidValueMessage', () => {
     const target = 'UserProfile';
     const path = ['addresses', 0, 'city'];
     const original = 'City: must be one of: Tokyo, Osaka';
-    const result = containerInvalidValueMessage(target, path, original);
+    const result = containerInvalidValueMessage({
+      target,
+      path,
+      originalMessage: original,
+    });
     expect(result).toBe(
       'UserProfile.addresses[0].city: must be one of: Tokyo, Osaka'
     );
@@ -32,7 +44,11 @@ describe('containerInvalidValueMessage', () => {
     const target = 'Container';
     const path: (string | number)[] = [];
     const original = 'Field: Missing';
-    const result = containerInvalidValueMessage(target, path, original);
+    const result = containerInvalidValueMessage({
+      target,
+      path,
+      originalMessage: original,
+    });
     expect(result).toBe('Container: Missing');
   });
 
@@ -40,7 +56,11 @@ describe('containerInvalidValueMessage', () => {
     const target = 'Data';
     const path = ['items', 1];
     const original = 'items.1:   Invalid valu  ';
-    const result = containerInvalidValueMessage(target, path, original);
+    const result = containerInvalidValueMessage({
+      target,
+      path,
+      originalMessage: original,
+    });
     expect(result).toBe('Data.items[1]: Invalid valu');
   });
 
@@ -48,7 +68,11 @@ describe('containerInvalidValueMessage', () => {
     const target = 'Config';
     const path = ['env'];
     const original = '';
-    const result = containerInvalidValueMessage(target, path, original);
+    const result = containerInvalidValueMessage({
+      target,
+      path,
+      originalMessage: original,
+    });
     expect(result).toBe('Config.env: ');
   });
 
@@ -56,14 +80,18 @@ describe('containerInvalidValueMessage', () => {
     const target = 'UserProfile';
     const path = ['addresses', 0, 'city'];
     const original = 'UserProfile.addresses.0.city:';
-    const result = containerInvalidValueMessage(target, path, original);
+    const result = containerInvalidValueMessage({
+      target,
+      path,
+      originalMessage: original,
+    });
     expect(result).toBe('UserProfile.addresses[0].city: ');
   });
 
   it('should handle original message that is undefined', () => {
     const target = 'Container';
     const path: (string | number)[] = [];
-    const result = containerInvalidValueMessage(target, path);
+    const result = containerInvalidValueMessage({ target, path });
     expect(result).toBe('Container: Invalid value');
   });
 });

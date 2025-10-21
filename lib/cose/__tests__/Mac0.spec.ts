@@ -3,7 +3,7 @@ import { Mac0 } from '../Mac0';
 import { Header, MacAlgorithm } from '../types';
 import { encodeCbor } from '@/cbor/codec';
 import { generateJwkOctKey } from '@/jwk/generateJwkOctKey';
-import { JwkMacAlgorithms } from '@/jwk/types';
+import { JwkMacAlgorithm } from '@/jwk/types';
 import { randomBytes } from '@noble/hashes/utils';
 
 describe('Mac0', () => {
@@ -12,7 +12,7 @@ describe('Mac0', () => {
       it('should create Mac0 with HS256 algorithm', () => {
         const key = randomBytes(32);
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -37,7 +37,7 @@ describe('Mac0', () => {
       it('should verify Mac0 created with HS256', () => {
         const key = randomBytes(32);
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -61,7 +61,7 @@ describe('Mac0', () => {
       it('should create Mac0 with HS384 algorithm', () => {
         const key = randomBytes(48);
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS384,
+          alg: JwkMacAlgorithm.HS384,
           k: key,
         });
 
@@ -86,7 +86,7 @@ describe('Mac0', () => {
       it('should verify Mac0 created with HS384', () => {
         const key = randomBytes(48);
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS384,
+          alg: JwkMacAlgorithm.HS384,
           k: key,
         });
 
@@ -110,7 +110,7 @@ describe('Mac0', () => {
       it('should create Mac0 with HS512 algorithm', () => {
         const key = randomBytes(64);
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS512,
+          alg: JwkMacAlgorithm.HS512,
           k: key,
         });
 
@@ -135,7 +135,7 @@ describe('Mac0', () => {
       it('should verify Mac0 created with HS512', () => {
         const key = randomBytes(64);
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS512,
+          alg: JwkMacAlgorithm.HS512,
           k: key,
         });
 
@@ -159,7 +159,7 @@ describe('Mac0', () => {
       it('should create Mac0 with unprotected headers', () => {
         const key = randomBytes(32);
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
           kid: 'test-key-id',
         });
@@ -192,7 +192,7 @@ describe('Mac0', () => {
     it('should create and verify Mac0 with externalAad', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -217,7 +217,7 @@ describe('Mac0', () => {
     it('should fail verification without matching externalAad', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -246,7 +246,7 @@ describe('Mac0', () => {
     it('should create Mac0 with detached payload', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -269,7 +269,7 @@ describe('Mac0', () => {
     it('should verify Mac0 with detached payload', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -293,7 +293,7 @@ describe('Mac0', () => {
     it('should throw error if detachedPayload not provided during verification', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -318,7 +318,7 @@ describe('Mac0', () => {
     it('should create and verify with both externalAad and detached payload', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -347,7 +347,7 @@ describe('Mac0', () => {
     it('should throw error if neither payload nor detachedPayload is provided', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -370,7 +370,7 @@ describe('Mac0', () => {
     it('should throw error if both payload and detachedPayload are provided', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -419,12 +419,12 @@ describe('Mac0', () => {
       const key2 = randomBytes(32);
 
       const jwkOctKey1 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key1,
       });
 
       const jwkOctKey2 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key2,
       });
 
@@ -448,12 +448,12 @@ describe('Mac0', () => {
     it('should fail verification with wrong algorithm', () => {
       const key = randomBytes(32);
       const jwkOctKey256 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
       const jwkOctKey384 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS384,
+        alg: JwkMacAlgorithm.HS384,
         k: key,
       });
 
@@ -479,7 +479,7 @@ describe('Mac0', () => {
     it('should return correct tuple for encoding', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -513,7 +513,7 @@ describe('Mac0', () => {
     it('should return null payload for detached payload', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -540,7 +540,7 @@ describe('Mac0', () => {
     it('should handle complete Mac0 workflow', () => {
       const key = randomBytes(32);
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         kid: 'mac-key-1',
       });

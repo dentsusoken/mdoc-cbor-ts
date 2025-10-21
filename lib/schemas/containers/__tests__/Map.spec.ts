@@ -97,11 +97,11 @@ describe('createMapSchema', () => {
       if (!res.success) {
         const issue = res.error.issues[0];
         expect(issue.path).toEqual([0, 'value', 'id']);
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          'Expected number, received string'
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: 'Expected number, received string',
+        });
         expect(issue.message).toBe(expected);
       }
     });
@@ -128,11 +128,11 @@ describe('createMapSchema', () => {
       if (!res.success) {
         const issue = res.error.issues[0];
         expect(issue.path).toEqual([0, 'value', 0, 'key']);
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          'Expected number, received string'
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: 'Expected number, received string',
+        });
         expect(issue.message).toBe(expected);
       }
     });

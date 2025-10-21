@@ -1,98 +1,91 @@
 import { z } from 'zod';
-import { docTypeSchema } from '../common';
 import { deviceKeyInfoSchema } from './DeviceKeyInfo';
-import { digestAlgorithmSchema } from './DigestAlgorithm';
 import { validityInfoSchema } from './ValidityInfo';
 import { valueDigestsSchema } from './ValueDigests';
-import { versionSchema } from '@/schemas/common/Version';
-import { createStrictMapSchema } from '../common/containers/StrictMap';
+import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 import { createStrictMap } from '@/strict-map';
+import { DigestAlgorithm } from '@/cose/types';
 
 /**
- * Canonical entries for the Mobile Security Object (MSO) structure.
+ * Canonical field definitions (CDDL) for the Mobile Security Object (MSO).
  *
- * @description
- * Defines the full set of allowed keys and their associated value schemas for an MSO,
- * as per ISO 18013-5. The order of entries is canonical and must not be changed.
- * Used with strict map utilities to validate, construct, or serialize an MSO.
+ * @cddl
+ * ```
+ * MobileSecurityObject = {
+ *   version:          "1.0",
+ *   digestAlgorithm:  DigestAlgorithm,
+ *   valueDigests:     ValueDigests,
+ *   deviceKeyInfo:    DeviceKeyInfo,
+ *   docType:          tstr,
+ *   validityInfo:     ValidityInfo
+ * }
+ * ```
  *
- * Fields:
- * - `version`: MSO version string (must match `versionSchema`)
- * - `digestAlgorithm`: Digest algorithm identifier string (see `digestAlgorithmSchema`)
- * - `valueDigests`: Map of value digests (see `valueDigestsSchema`)
- * - `deviceKeyInfo`: Device public key container (see `deviceKeyInfoSchema`)
- * - `docType`: Document type string (see `docTypeSchema`)
- * - `validityInfo`: Structured validity data (see `validityInfoSchema`)
+ * Each entry specifies a required field and its schema for the MSO.
  *
- * @see {@link versionSchema}
- * @see {@link digestAlgorithmSchema}
- * @see {@link valueDigestsSchema}
- * @see {@link deviceKeyInfoSchema}
- * @see {@link docTypeSchema}
- * @see {@link validityInfoSchema}
+ * - `version`:          MSO version literal ("1.0")
+ * - `digestAlgorithm`:  Supported digest algorithm enum
+ * - `valueDigests`:     Map<NameSpace, DigestIDs>
+ * - `deviceKeyInfo`:    Device public key info container
+ * - `docType`:          Document type string (min length 1)
+ * - `validityInfo`:     Map with CBOR Tag(0) UTC datetime values for validity
  */
 export const mobileSecurityObjectEntries = [
-  ['version', versionSchema],
-  ['digestAlgorithm', digestAlgorithmSchema],
+  ['version', z.literal('1.0')],
+  ['digestAlgorithm', z.nativeEnum(DigestAlgorithm)],
   ['valueDigests', valueDigestsSchema],
   ['deviceKeyInfo', deviceKeyInfoSchema],
-  ['docType', docTypeSchema],
+  ['docType', z.string().min(1)],
   ['validityInfo', validityInfoSchema],
 ] as const;
 
 /**
- * Schema for the Mobile Security Object (MSO) according to ISO 18013-5.
+ * Utility for constructing a Mobile Security Object map with type inference.
  *
  * @description
- * Validates a `Map<string, unknown>` (such as one produced by CBOR decoding)
- * containing the expected MSO fields. Accepts only the canonical fields
- * specified in `mobileSecurityObjectEntries` and enforces type correctness
- * for each field via dedicated field schemas.
+ * Use this to create an empty or pre-populated MSO map instance that is
+ * type-safe and restricted to the canonical MSO fields.
  *
- * This schema ensures:
- * - All six fields (`version`, `digestAlgorithm`, `valueDigests`, `deviceKeyInfo`, `docType`, `validityInfo`) are present.
+ * @see {mobileSecurityObjectEntries}
+ * @see {MobileSecurityObject}
+ */
+export const createMobileSecurityObject = createStrictMap<
+  typeof mobileSecurityObjectEntries
+>;
+
+/**
+ * Zod schema for the canonical Mobile Security Object (MSO).
+ *
+ * @description
+ * Validates an MSO according to the CDDL and ISO 18013-5/7 requirements.
+ * - Enforces that all required fields are present: `version`, `digestAlgorithm`, `valueDigests`, `deviceKeyInfo`, `docType`, and `validityInfo`.
+ * - Each field is validated according to its respective schema:
+ *   - `version`: must be the literal string "1.0"
+ *   - `digestAlgorithm`: must be a supported DigestAlgorithm enum value
+ *   - `valueDigests`: must be a non-empty map from NameSpace to DigestIDs
+ *   - `deviceKeyInfo`: must contain valid device public key information
+ *   - `docType`: must be a non-empty string designating the document type
+ *   - `validityInfo`: must be a strict map with valid tagged UTC date-times
  * - No unknown fields are allowed.
- * - All value types strictly conform to their respective schemas:
- *   - `version`: MSO version string (e.g., `'1.0'`)
- *   - `digestAlgorithm`: Algorithm identifier string
- *   - `valueDigests`: Map from NameSpace to DigestIDs
- *   - `deviceKeyInfo`: Device public key container (COSE key)
- *   - `docType`: Document type string (e.g., `'org.iso.18013.5.1.mDL'`)
- *   - `validityInfo`: Map with CBOR Tag(0) UTC datetime values
  *
- * All errors are prefixed with `MobileSecurityObject:` for clarity.
- *
- * @see {@link valueDigestsSchema}
- * @see {@link deviceKeyInfoSchema}
- * @see {@link validityInfoSchema}
- * @see {@link versionSchema}
- * @see {@link digestAlgorithmSchema}
- * @see {@link docTypeSchema}
+ * @see {@link mobileSecurityObjectEntries}
+ * @see {@link MobileSecurityObject}
  *
  * @example
  * ```typescript
- * import { mobileSecurityObjectSchema } from '@/schemas/mso/MobileSecurityObject';
- *
- * // Construct a Map representing an MSO
- * const input = new Map<unknown, unknown>([
+ * const input = new Map([
  *   ['version', '1.0'],
  *   ['digestAlgorithm', 'SHA-256'],
- *   ['valueDigests', new Map([
- *     ['org.iso.18013.5.1', new Map([[1, new Uint8Array([1])]])],
- *   ])],
- *   ['deviceKeyInfo', new Map([
- *     ['deviceKey', new Map([[1, 2]])],
- *   ])],
+ *   ['valueDigests', new Map([['org.iso.18013.5.1', digestIDs]])],
+ *   ['deviceKeyInfo', { deviceKey: myDeviceKey }],
  *   ['docType', 'org.iso.18013.5.1.mDL'],
  *   ['validityInfo', new Map([
- *     ['signed', '2024-03-20T10:00:00Z'],
- *     ['validFrom', '2024-03-20T10:00:00Z'],
- *     ['validUntil', '2025-03-20T10:00:00Z'],
- *   ])],
+ *     ['signed', '2025-01-01T00:00:00Z'],
+ *     ['validFrom', '2025-01-01T00:00:00Z'],
+ *     ['validUntil', '2025-01-02T00:00:00Z']
+ *   ])]
  * ]);
- *
- * // Parse and validate with strong typing:
- * const mso = mobileSecurityObjectSchema.parse(input); // MobileSecurityObject
+ * mobileSecurityObjectSchema.parse(input); // returns validated MobileSecurityObject
  * ```
  */
 export const mobileSecurityObjectSchema = createStrictMapSchema({
@@ -109,7 +102,7 @@ export const mobileSecurityObjectSchema = createStrictMapSchema({
  * normalized according to its respective schema:
  * - `version`: string (usually "1.0")
  * - `digestAlgorithm`: string (e.g., "SHA-256")
- * - `valueDigests`: Map<NameSpace, DigestIDs>
+ * - `valueDigests`: Map<string, DigestIDs>
  * - `deviceKeyInfo`: DeviceKeyInfo
  * - `docType`: string
  * - `validityInfo`: ValidityInfo (map of tagged datetimes)
@@ -119,17 +112,3 @@ export const mobileSecurityObjectSchema = createStrictMapSchema({
  * @see {@link validityInfoSchema}
  */
 export type MobileSecurityObject = z.output<typeof mobileSecurityObjectSchema>;
-
-/**
- * Utility for constructing a Mobile Security Object map with type inference.
- *
- * @description
- * Use this to create an empty or pre-populated MSO map instance that is
- * type-safe and restricted to the canonical MSO fields.
- *
- * @see {mobileSecurityObjectEntries}
- * @see {MobileSecurityObject}
- */
-export const createMobileSecurityObject = createStrictMap<
-  typeof mobileSecurityObjectEntries
->;

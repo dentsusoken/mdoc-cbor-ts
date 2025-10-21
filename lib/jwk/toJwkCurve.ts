@@ -1,5 +1,5 @@
 import { isJwkCurve } from './isJwkCurve';
-import { JwkCurves } from './types';
+import { JwkCurve } from './types';
 
 /**
  * Converts a string to a valid JWK curve.
@@ -17,7 +17,7 @@ import { JwkCurves } from './types';
  * toJwkCurve('invalid-curve'); // Throws: Unsupported JWK curve: invalid-curve
  * ```
  */
-export const toJwkCurve = (curve: string): JwkCurves => {
+export const toJwkCurve = (curve: string): JwkCurve => {
   if (isJwkCurve(curve)) {
     return curve;
   }

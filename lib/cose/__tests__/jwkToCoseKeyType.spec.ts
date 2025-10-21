@@ -1,21 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseKeyType } from '../jwkToCoseKeyType';
 import { KeyType } from '../types';
-import { JwkKeyTypes } from '@/jwk/types';
+import { JwkKeyType } from '@/jwk/types';
 
 describe('jwkToCoseKeyType', () => {
   it('should convert EC key type to COSE EC key type', () => {
-    const result = jwkToCoseKeyType(JwkKeyTypes.EC);
+    const result = jwkToCoseKeyType(JwkKeyType.EC);
     expect(result).toBe(KeyType.EC);
   });
 
   it('should convert OKP key type to COSE OKP key type', () => {
-    const result = jwkToCoseKeyType(JwkKeyTypes.OKP);
+    const result = jwkToCoseKeyType(JwkKeyType.OKP);
     expect(result).toBe(KeyType.OKP);
   });
 
   it('should convert oct key type to COSE oct key type', () => {
-    const result = jwkToCoseKeyType(JwkKeyTypes.oct);
+    const result = jwkToCoseKeyType(JwkKeyType.oct);
     expect(result).toBe(KeyType.oct);
   });
 

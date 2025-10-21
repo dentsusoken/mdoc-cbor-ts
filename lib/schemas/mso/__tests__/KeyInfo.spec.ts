@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { keyInfoSchema } from '../KeyInfo';
-import { intIntegerMessage } from '@/schemas/common/Int';
-import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
-import { requiredMessage } from '@/schemas/common/Required';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('KeyInfo', () => {
   describe('valid inputs', () => {
@@ -35,50 +34,42 @@ describe('KeyInfo', () => {
   });
 
   describe('invalid container types', () => {
-    const cases: Array<{ name: string; input: unknown; expected: string }> = [
+    const cases: Array<{ name: string; input: unknown }> = [
       {
         name: 'string',
         input: 'not-a-map',
-        expected: mapInvalidTypeMessage('KeyInfo'),
       },
       {
         name: 'number',
         input: 123,
-        expected: mapInvalidTypeMessage('KeyInfo'),
       },
       {
         name: 'boolean',
         input: true,
-        expected: mapInvalidTypeMessage('KeyInfo'),
       },
       {
         name: 'null',
         input: null,
-        expected: requiredMessage('KeyInfo'),
       },
       {
         name: 'plain object',
         input: { 1: 'value' },
-        expected: mapInvalidTypeMessage('KeyInfo'),
       },
       {
         name: 'array',
         input: [[1, 'value']],
-        expected: mapInvalidTypeMessage('KeyInfo'),
       },
       {
         name: 'set',
         input: new Set([1]),
-        expected: mapInvalidTypeMessage('KeyInfo'),
       },
       {
         name: 'undefined',
         input: undefined,
-        expected: requiredMessage('KeyInfo'),
       },
     ];
 
-    cases.forEach(({ name, input, expected }) => {
+    cases.forEach(({ name, input }) => {
       it(`should reject ${name}`, () => {
         try {
           keyInfoSchema.parse(input);
@@ -86,6 +77,11 @@ describe('KeyInfo', () => {
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
+          const expected = containerInvalidTypeMessage({
+            target: 'KeyInfo',
+            expected: 'Map',
+            received: getTypeName(input),
+          });
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
@@ -101,7 +97,10 @@ describe('KeyInfo', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(intIntegerMessage('Label'));
+        // createMapSchema prefixes the labelSchema error with the container path
+        expect(zodError.issues[0].message).toBe(
+          'KeyInfo[0].key: Expected integer, received float'
+        );
       }
     });
   });

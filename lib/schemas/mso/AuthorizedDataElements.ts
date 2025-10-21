@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { nameSpaceSchema } from '@/schemas/common/NameSpace';
-import { createMapSchema } from '@/schemas/common/containers/Map';
+import { createMapSchema } from '@/schemas/containers/Map';
 import { dataElementIdentifiersSchema } from '@/schemas/mso/DataElementIdentifiers';
 
 /**
@@ -47,8 +46,9 @@ import { dataElementIdentifiersSchema } from '@/schemas/mso/DataElementIdentifie
  */
 export const authorizedDataElementsSchema = createMapSchema({
   target: 'AuthorizedDataElements',
-  keySchema: nameSpaceSchema,
+  keySchema: z.string().min(1),
   valueSchema: dataElementIdentifiersSchema,
+  nonempty: true,
 });
 
 /**

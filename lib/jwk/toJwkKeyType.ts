@@ -1,5 +1,5 @@
 import { isJwkKeyType } from './isJwkKeyType';
-import { JwkKeyTypes } from './types';
+import { JwkKeyType } from './types';
 
 /**
  * Converts a string to a valid JWK key type.
@@ -17,7 +17,7 @@ import { JwkKeyTypes } from './types';
  * toJwkKeyType('RSA'); // Throws: Unsupported JWK key type: RSA
  * ```
  */
-export const toJwkKeyType = (keyType: string): JwkKeyTypes => {
+export const toJwkKeyType = (keyType: string): JwkKeyType => {
   if (isJwkKeyType(keyType)) {
     return keyType;
   }

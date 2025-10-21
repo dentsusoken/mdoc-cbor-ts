@@ -1,16 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { authorizedDataElementsSchema } from '../AuthorizedDataElements';
-import {
-  mapInvalidTypeMessage,
-  mapEmptyMessage,
-} from '@/schemas/common/containers/Map';
-import { requiredMessage } from '@/schemas/common/Required';
-import { arrayEmptyMessage } from '@/schemas/common/containers/Array';
-import {
-  nonEmptyTextInvalidTypeMessage,
-  nonEmptyTextEmptyMessage,
-} from '@/schemas/common/NonEmptyText';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerEmptyMessage } from '@/schemas/messages/containerEmptyMessage';
+import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('AuthorizedDataElements', () => {
   const TARGET = 'AuthorizedDataElements';
@@ -49,48 +43,80 @@ describe('AuthorizedDataElements', () => {
       {
         name: 'boolean input',
         input: true,
-        expected: mapInvalidTypeMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'null input',
         input: null,
-        expected: requiredMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'plain object input',
         input: {},
-        expected: mapInvalidTypeMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName({}),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: requiredMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName(undefined),
+        }),
       },
       // content validations
       {
         name: 'empty map',
         input: new Map(),
-        expected: mapEmptyMessage(TARGET),
+        expected: containerEmptyMessage(TARGET),
       },
       {
         name: 'invalid namespace key type',
         input: new Map([[123 as unknown as string, ['given_name']]]),
-        expected: nonEmptyTextInvalidTypeMessage('NameSpace'),
-      },
-      {
-        name: 'empty elements array',
-        input: new Map([[`org.iso.18013.5.1`, []]]),
-        expected: arrayEmptyMessage('DataElementIdentifiers'),
+        expected: containerInvalidValueMessage({
+          target: TARGET,
+          path: [0, 'key'],
+          originalMessage: 'Expected string, received number',
+        }),
       },
       {
         name: 'invalid element type inside array',
         input: new Map([[`org.iso.18013.5.1`, [123 as unknown as string]]]),
-        expected: nonEmptyTextInvalidTypeMessage('DataElementIdentifier'),
+        expected: containerInvalidValueMessage({
+          target: TARGET,
+          path: [0, 'value', 0],
+          originalMessage: 'Expected string, received number',
+        }),
+      },
+      {
+        name: 'empty elements array',
+        input: new Map([[`org.iso.18013.5.1`, []]]),
+        expected: containerInvalidValueMessage({
+          target: TARGET,
+          path: [0, 'value'],
+          originalMessage: containerEmptyMessage('DataElementIdentifiers'),
+        }),
       },
       {
         name: 'empty string element identifier',
         input: new Map([[`org.iso.18013.5.1`, ['']]]),
-        expected: nonEmptyTextEmptyMessage('DataElementIdentifier'),
+        expected: containerInvalidValueMessage({
+          target: TARGET,
+          path: [0, 'value', 0],
+          originalMessage: 'String must contain at least 1 character(s)',
+        }),
       },
     ];
 

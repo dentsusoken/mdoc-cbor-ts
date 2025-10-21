@@ -90,11 +90,11 @@ describe('createRecordSchema', () => {
       if (!res.success) {
         const issue = res.error.issues[0];
         expect(issue.path).toEqual(['a']);
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          'Expected number, received string'
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: 'Expected number, received string',
+        });
         expect(issue.message).toBe(expected);
       }
     });
@@ -113,11 +113,11 @@ describe('createRecordSchema', () => {
       if (!res.success) {
         const issue = res.error.issues[0];
         expect(issue.path).toEqual(['a']);
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          'Expected number, received string'
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: 'Expected number, received string',
+        });
         expect(issue.message).toBe(expected);
       }
     });
@@ -142,11 +142,11 @@ describe('createRecordSchema', () => {
       if (!res.success) {
         const issue = res.error.issues[0];
         expect(issue.path).toEqual(['a', 'id']);
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          'Expected number, received string'
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: 'Expected number, received string',
+        });
         expect(issue.message).toBe(expected);
       }
     });
@@ -171,11 +171,11 @@ describe('createRecordSchema', () => {
       if (!res.success) {
         const issue = res.error.issues[0];
         expect(issue.path).toEqual(['a', 'id']);
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          'Expected number, received string'
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: 'Expected number, received string',
+        });
         expect(issue.message).toBe(expected);
       }
     });

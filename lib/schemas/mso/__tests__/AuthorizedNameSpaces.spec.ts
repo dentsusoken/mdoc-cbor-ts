@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { authorizedNameSpacesSchema } from '../AuthorizedNameSpaces';
-import {
-  arrayInvalidTypeMessage,
-  arrayEmptyMessage,
-} from '@/schemas/common/containers/Array';
-import { requiredMessage } from '@/schemas/common/Required';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerEmptyMessage } from '@/schemas/messages/containerEmptyMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('AuthorizedNameSpaces', () => {
   const TARGET = 'AuthorizedNameSpaces';
@@ -33,22 +31,38 @@ describe('AuthorizedNameSpaces', () => {
       {
         name: 'boolean input',
         input: true,
-        expected: arrayInvalidTypeMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Array',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'object input',
         input: { key: 'value' },
-        expected: arrayInvalidTypeMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Array',
+          received: getTypeName({ key: 'value' }),
+        }),
       },
       {
         name: 'null input',
         input: null,
-        expected: requiredMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Array',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: requiredMessage(TARGET),
+        expected: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Array',
+          received: getTypeName(undefined),
+        }),
       },
     ];
 
@@ -74,7 +88,7 @@ describe('AuthorizedNameSpaces', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(arrayEmptyMessage(TARGET));
+        expect(zodError.issues[0].message).toBe(containerEmptyMessage(TARGET));
       }
     });
   });

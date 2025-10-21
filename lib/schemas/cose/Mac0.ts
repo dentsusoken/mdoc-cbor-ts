@@ -1,129 +1,116 @@
 import { z } from 'zod';
 import { headerMapSchema } from '@/schemas/cose/HeaderMap';
 import { Tag } from 'cbor-x';
-import { createTag17 } from '@/cbor/createTag17';
 import { createTupleSchema } from '../containers/Tuple';
 import { bytesSchema } from '../cbor/Bytes';
 import { getTypeName } from '@/utils/getTypeName';
 import { containerInvalidTypeMessage } from '../messages/containerInvalidTypeMessage';
+import { createTag17 } from '@/cbor/createTag17';
 
 /**
- * Zod schema for the COSE_Mac0 tuple structure.
+ * Creates a Zod schema for validating a COSE_Mac0 structure in any supported input format.
  *
- * Structure: [protected, unprotected, payload, tag]
+ * ### Supported Input Forms:
+ * - **Tuple (array)**: `[protected, unprotected, payload, tag]`
+ *   - `protected` — `Uint8Array` (CBOR bstr-encoded headers)
+ *   - `unprotected` — HeaderMap (typically a Zod-validated Map/Record)
+ *   - `payload` — `Uint8Array` or `null` (the payload; must not be `undefined`)
+ *   - `tag` — `Uint8Array`
+ * - **Tagged CBOR object**: `Tag(tuple, 17)`
+ *   - A CBOR Tag where the first argument is the tuple value and the second is the tag number (must be 17), as in `Tag(tuple, 17)`
+ * - **Object with a `getContentForEncoding()` method**
+ *   - For example, an `@auth0/cose` `Mac0` instance whose method returns a COSE_Mac0 tuple or array
  *
- * - protected: Uint8Array (Headers encoded as a bstr)
- * - unprotected: HeaderMap (COSE headers not integrity-protected)
- * - payload: Uint8Array | null (the actual payload bytes or null)
- * - tag: Uint8Array (the MAC computed over the structure)
+ * ### Output:
+ * Always returns a `Tag(tuple, 17)` with a fully validated tuple for successful parsing.
  *
- * Used for validating the tuple shape, not the tagged CBOR structure.
- */
-export const mac0TupleSchema = createTupleSchema({
-  target: 'Mac0',
-  itemSchemas: [
-    bytesSchema,
-    headerMapSchema,
-    bytesSchema.nullable(),
-    bytesSchema,
-  ],
-});
-
-/**
- * Type representing the validated 4-element tuple for COSE_Mac0.
+ * ### Behavior and Validation Notes:
+ * - All tuple components are validated for type and shape; invalid inputs produce detailed Zod errors.
+ * - If a `Tag` is provided, its tag **must be 17** (i.e., `Tag(value, 17)`); otherwise an error is produced.
+ * - If the input is an object with `getContentForEncoding()`, its result is recursively validated.
+ * - Any other type (including objects or arrays with the wrong shape) produces an error, using
+ *   contextual type information in the error message.
  *
- * Tuple shape: [protected, unprotected, payload, tag]
- * - protected: Uint8Array (Headers encoded as a bstr)
- * - unprotected: HeaderMap (COSE headers not integrity-protected)
- * - payload: Uint8Array | null (the actual payload bytes or null)
- * - tag: Uint8Array (the MAC computed over the structure)
- */
-export type Mac0Tuple = z.output<typeof mac0TupleSchema>;
-
-/**
- * Zod schema for validating a COSE_Mac0 structure.
- *
- * Accepts any of the following input types:
- * - A 4-element COSE_Mac0 tuple: `[protected, unprotected, payload, tag]`
- * - A CBOR `Tag(17, [...])` whose inner value matches the COSE_Mac0 tuple structure
- * - An object with a `getContentForEncoding()` method (such as an `@auth0/cose` Mac0 instance), whose method returns a valid tuple or array
- *
- * Parsing always returns a CBOR `Tag(17, tuple)` with validated contents.
- *
- * Details:
- * - The tuple structure is: `[protected: Uint8Array, unprotected: HeaderMap, payload: Uint8Array | null, tag: Uint8Array]`
- * - The parser enforces that payload is explicitly `Uint8Array` or `null` (never `undefined`)
- * - If a tagged value is passed, its tag must be 17
- * - If an object with `getContentForEncoding()` is passed, the result is recursively validated
- *
- * Input forms accepted:
- * - `[Uint8Array, HeaderMap, Uint8Array|null, Uint8Array]`
- * - Tag(17, [...])
- * - `{ getContentForEncoding(): [...] }`
- *
- * If the input does not conform to any supported form, a detailed error is issued.
- *
- * Example:
- * ```typescript
- * const schema = mac0Schema;
- * schema.parse([protectedHeaders, unprotectedHeaders, null, tag]);         // → Tag(17, [...])
- * schema.parse(createTag17([protectedHeaders, unprotectedHeaders, payload, tag])); // → Tag(17, [...])
- * schema.parse(mac0InstanceWithGetContentForEncoding);                    // → Tag(17, [...])
+ * ### Example Usage:
+ * ```ts
+ * const schema = createMac0Schema('Mac0');
+ * schema.parse([protected, unprotected, null, tag]);  // ⇒ Tag([protected, unprotected, null, tag], 17)
+ * schema.parse(new Tag([protected, unprotected, payload, tag], 17)); // ⇒ Tag([protected, unprotected, payload, tag], 17)
+ * schema.parse(mac0InstanceWithGetContentForEncoding);     // ⇒ Tag([protected, unprotected, payload, tag], 17)
  * ```
+ *
+ * @param target - Name of the logical container, used for error messaging
+ * @returns A Zod schema that validates and normalizes a COSE_Mac0 structure as `Tag(tuple, 17)`
  */
-export const mac0Schema = z.any().transform((value, ctx) => {
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    'getContentForEncoding' in value &&
-    typeof value.getContentForEncoding === 'function'
-  ) {
-    const mac0Tuple = mac0TupleSchema.parse(value.getContentForEncoding());
+export const createMac0Schema = (
+  target: string
+): z.ZodEffects<z.ZodType<Tag, z.ZodTypeDef, unknown>> => {
+  const tupleSchema = createTupleSchema({
+    target,
+    itemSchemas: [
+      bytesSchema,
+      headerMapSchema,
+      bytesSchema.nullable(),
+      bytesSchema,
+    ],
+  });
+  const tupleToMac0 = (tuple: unknown[], ctx: z.RefinementCtx): Tag => {
+    const result = tupleSchema.safeParse(tuple);
 
-    return createTag17(mac0Tuple);
-  }
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        ctx.addIssue({ ...issue });
+      }
 
-  if (Array.isArray(value)) {
-    const mac0Tuple = mac0TupleSchema.parse(value);
-
-    return createTag17(mac0Tuple);
-  }
-
-  if (value instanceof Tag) {
-    if (value.tag !== 17) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: containerInvalidTypeMessage({
-          target: 'Mac0',
-          expected: 'Tag(17)',
-          received: `Tag(${value.tag})`,
-        }),
-      });
-
-      return z.never();
+      return z.NEVER;
     }
 
-    const mac0Tuple = mac0TupleSchema.parse(value.value);
+    return createTag17(result.data);
+  };
 
-    return createTag17(mac0Tuple);
-  }
+  return z.any().transform((value, ctx) => {
+    if (
+      typeof value === 'object' &&
+      value !== null &&
+      'getContentForEncoding' in value &&
+      typeof value.getContentForEncoding === 'function'
+    ) {
+      return tupleToMac0(value.getContentForEncoding(), ctx);
+    }
 
-  ctx.addIssue({
-    code: z.ZodIssueCode.custom,
-    message: containerInvalidTypeMessage({
-      target: 'Mac0',
-      expected:
-        'Array[Uint8Array, HeaderMap, Uint8Array, Uint8Array] or Tag(17)',
-      received: getTypeName(value),
-    }),
+    if (Array.isArray(value)) {
+      return tupleToMac0(value, ctx);
+    }
+
+    if (value instanceof Tag) {
+      if (value.tag !== 17) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: containerInvalidTypeMessage({
+            target,
+            expected: 'Tag(17)',
+            received: `Tag(${value.tag})`,
+          }),
+        });
+
+        return z.NEVER;
+      }
+
+      const tuple = tupleSchema.parse(value.value);
+
+      return createTag17(tuple);
+    }
+
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: containerInvalidTypeMessage({
+        target,
+        expected:
+          '[Uint8Array, HeaderMap, Uint8Array | null, Uint8Array] or Tag(17)',
+        received: getTypeName(value),
+      }),
+    });
+
+    return z.NEVER;
   });
-
-  return z.never();
-});
-
-/**
- * Type representing the validated output of a COSE_Mac0 structure.
- *
- * This type is produced by parsing input through the `mac0Schema`.
- */
-export type Mac0 = z.output<typeof mac0Schema>;
+};

@@ -1,6 +1,6 @@
 import { describe, expect, it, expectTypeOf } from 'vitest';
 import { z } from 'zod';
-import { keyMapSchema, type KeyMap } from '@/schemas/cose/KeyMap';
+import { createKeyMapSchema } from '@/schemas/cose/KeyMap';
 import { Key, type KeyValues } from '@/cose/types';
 import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
 import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
@@ -8,10 +8,11 @@ import { getTypeName } from '@/utils/getTypeName';
 
 describe('keyMapSchema', () => {
   const TARGET = 'KeyMap';
+  const schema = createKeyMapSchema(TARGET);
 
   describe('successful validation', () => {
     it('should parse an empty map (nonempty=false by default)', () => {
-      const res = keyMapSchema.safeParse(new Map());
+      const res = schema.safeParse(new Map());
       expect(res.success).toBe(true);
       if (res.success) {
         expect(res.data.size).toBe(0);
@@ -31,7 +32,7 @@ describe('keyMapSchema', () => {
         [Key.y, y],
       ]);
 
-      const res = keyMapSchema.safeParse(map);
+      const res = schema.safeParse(map);
       expect(res.success).toBe(true);
       if (res.success) {
         expect(res.data.get(Key.KeyType)).toBe(2);
@@ -41,8 +42,6 @@ describe('keyMapSchema', () => {
         expect(res.data.get(Key.x)).toEqual(x);
         expect(res.data.get(Key.y)).toEqual(y);
 
-        // type expectations
-        expectTypeOf(res.data).toEqualTypeOf<KeyMap>();
         expectTypeOf(res.data.get(Key.Algorithm)).toEqualTypeOf<
           unknown | undefined
         >();
@@ -71,9 +70,7 @@ describe('keyMapSchema', () => {
           expected: 'Map',
           received: getTypeName(input),
         });
-        const res = keyMapSchema.safeParse(
-          input as unknown as Map<unknown, unknown>
-        );
+        const res = schema.safeParse(input as unknown as Map<unknown, unknown>);
         expect(res.success).toBe(false);
         if (!res.success) {
           expect(res.error.issues[0].message).toBe(expected);
@@ -86,7 +83,7 @@ describe('keyMapSchema', () => {
     it('should include index and key in the error for an out-of-range number', () => {
       const input = new Map<number | string, unknown>([[999, 'x']]);
 
-      const res = keyMapSchema.safeParse(input);
+      const res = schema.safeParse(input);
       expect(res.success).toBe(false);
       if (!res.success) {
         const issue = res.error.issues[0];
@@ -95,11 +92,11 @@ describe('keyMapSchema', () => {
         // Build exact nested message using zod's native enum error
         const enumMsg = z.nativeEnum(Key).safeParse(999);
         const inner = enumMsg.success ? '' : enumMsg.error.issues[0].message;
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          inner
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: inner,
+        });
         expect(issue.message).toBe(expected);
       }
     });
@@ -107,7 +104,7 @@ describe('keyMapSchema', () => {
     it('should include index and key in the error for a wrong key type (string)', () => {
       const input = new Map<number | string, unknown>([['kty', 2]]);
 
-      const res = keyMapSchema.safeParse(input);
+      const res = schema.safeParse(input);
       expect(res.success).toBe(false);
       if (!res.success) {
         const issue = res.error.issues[0];
@@ -116,11 +113,11 @@ describe('keyMapSchema', () => {
         // Build exact nested message using zod's native enum error
         const enumMsg = z.nativeEnum(Key).safeParse('kty');
         const inner = enumMsg.success ? '' : enumMsg.error.issues[0].message;
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          inner
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: inner,
+        });
         expect(issue.message).toBe(expected);
       }
     });

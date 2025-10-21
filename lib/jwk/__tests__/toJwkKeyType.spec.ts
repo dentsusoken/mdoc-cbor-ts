@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { toJwkKeyType } from '../toJwkKeyType';
-import { JwkKeyTypes } from '../types';
+import { JwkKeyType } from '../types';
 
 describe('toJwkKeyType', () => {
   describe('should return correct values', () => {
     it('for valid key types', () => {
-      expect(toJwkKeyType('EC')).toBe(JwkKeyTypes.EC);
-      expect(toJwkKeyType('OKP')).toBe(JwkKeyTypes.OKP);
-      expect(toJwkKeyType('oct')).toBe(JwkKeyTypes.oct);
+      expect(toJwkKeyType('EC')).toBe(JwkKeyType.EC);
+      expect(toJwkKeyType('OKP')).toBe(JwkKeyType.OKP);
+      expect(toJwkKeyType('oct')).toBe(JwkKeyType.oct);
     });
 
     it('when passed enum values', () => {
-      expect(toJwkKeyType(JwkKeyTypes.EC)).toBe(JwkKeyTypes.EC);
-      expect(toJwkKeyType(JwkKeyTypes.OKP)).toBe(JwkKeyTypes.OKP);
-      expect(toJwkKeyType(JwkKeyTypes.oct)).toBe(JwkKeyTypes.oct);
+      expect(toJwkKeyType(JwkKeyType.EC)).toBe(JwkKeyType.EC);
+      expect(toJwkKeyType(JwkKeyType.OKP)).toBe(JwkKeyType.OKP);
+      expect(toJwkKeyType(JwkKeyType.oct)).toBe(JwkKeyType.oct);
     });
   });
 

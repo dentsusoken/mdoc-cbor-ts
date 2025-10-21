@@ -7,7 +7,7 @@ import {
   type ValidityInfo,
   createValidityInfo,
 } from '../ValidityInfo';
-import { DATE_TIME_INVALID_FORMAT_MESSAGE } from '@/schemas/cbor/DateTime';
+import { dateTimeInvalidFormatMessage } from '@/schemas/cbor/DateTime';
 
 const INVALID_ISO = 'not-a-datetime';
 
@@ -183,7 +183,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.signed: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
+            `ValidityInfo.signed: ${dateTimeInvalidFormatMessage(INVALID_ISO)}`
           );
         }
       }
@@ -202,7 +202,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.validFrom: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
+            `ValidityInfo.validFrom: ${dateTimeInvalidFormatMessage(INVALID_ISO)}`
           );
         }
       }
@@ -221,7 +221,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.validUntil: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
+            `ValidityInfo.validUntil: ${dateTimeInvalidFormatMessage(INVALID_ISO)}`
           );
         }
       }
@@ -241,7 +241,7 @@ describe('ValidityInfo Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            `ValidityInfo.expectedUpdate: ${DATE_TIME_INVALID_FORMAT_MESSAGE}`
+            `ValidityInfo.expectedUpdate: ${dateTimeInvalidFormatMessage(INVALID_ISO)}`
           );
         }
       }

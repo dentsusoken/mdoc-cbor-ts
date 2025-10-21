@@ -1,18 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { isJwkKeyOp } from '../isJwkKeyOp';
-import { JwkKeyOps } from '../types';
+import { JwkKeyOp } from '../types';
 
 describe('isJwkKeyOp', () => {
   describe('should return true', () => {
     it('for valid JwkKeyOps enum values', () => {
-      expect(isJwkKeyOp(JwkKeyOps.Sign)).toBe(true);
-      expect(isJwkKeyOp(JwkKeyOps.Verify)).toBe(true);
-      expect(isJwkKeyOp(JwkKeyOps.Encrypt)).toBe(true);
-      expect(isJwkKeyOp(JwkKeyOps.Decrypt)).toBe(true);
-      expect(isJwkKeyOp(JwkKeyOps.WrapKey)).toBe(true);
-      expect(isJwkKeyOp(JwkKeyOps.UnwrapKey)).toBe(true);
-      expect(isJwkKeyOp(JwkKeyOps.DeriveKey)).toBe(true);
-      expect(isJwkKeyOp(JwkKeyOps.DeriveBits)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.Sign)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.Verify)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.Encrypt)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.Decrypt)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.WrapKey)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.UnwrapKey)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.DeriveKey)).toBe(true);
+      expect(isJwkKeyOp(JwkKeyOp.DeriveBits)).toBe(true);
     });
 
     it('for string values that match JwkKeyOps enum values', () => {
@@ -27,7 +27,7 @@ describe('isJwkKeyOp', () => {
     });
 
     it('for all enum values from JwkKeyOps', () => {
-      const allEnumValues = Object.values(JwkKeyOps);
+      const allEnumValues = Object.values(JwkKeyOp);
 
       allEnumValues.forEach((value) => {
         expect(isJwkKeyOp(value)).toBe(true);

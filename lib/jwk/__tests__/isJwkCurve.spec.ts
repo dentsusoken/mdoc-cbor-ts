@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isJwkCurve } from '../isJwkCurve';
-import { JwkCurves } from '../types';
+import { JwkCurve } from '../types';
 
 describe('isJwkCurve', () => {
   describe('should return true', () => {
@@ -40,17 +40,17 @@ describe('isJwkCurve', () => {
     });
 
     it('for enum values', () => {
-      expect(isJwkCurve(JwkCurves.P256)).toBe(true);
-      expect(isJwkCurve(JwkCurves.P384)).toBe(true);
-      expect(isJwkCurve(JwkCurves.P521)).toBe(true);
-      expect(isJwkCurve(JwkCurves.Ed25519)).toBe(true);
-      expect(isJwkCurve(JwkCurves.Ed448)).toBe(true);
-      expect(isJwkCurve(JwkCurves.X25519)).toBe(true);
-      expect(isJwkCurve(JwkCurves.X448)).toBe(true);
+      expect(isJwkCurve(JwkCurve.P256)).toBe(true);
+      expect(isJwkCurve(JwkCurve.P384)).toBe(true);
+      expect(isJwkCurve(JwkCurve.P521)).toBe(true);
+      expect(isJwkCurve(JwkCurve.Ed25519)).toBe(true);
+      expect(isJwkCurve(JwkCurve.Ed448)).toBe(true);
+      expect(isJwkCurve(JwkCurve.X25519)).toBe(true);
+      expect(isJwkCurve(JwkCurve.X448)).toBe(true);
     });
 
     it('for all enum values correctly', () => {
-      const allCurves = Object.values(JwkCurves);
+      const allCurves = Object.values(JwkCurve);
 
       allCurves.forEach((curve) => {
         expect(isJwkCurve(curve)).toBe(true);

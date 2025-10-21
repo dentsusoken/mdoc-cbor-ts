@@ -1,4 +1,4 @@
-import { JwkCurves } from './types';
+import { JwkCurve } from './types';
 
 /**
  * Checks if a given string is a valid JWK curve name.
@@ -18,6 +18,6 @@ import { JwkCurves } from './types';
  * }
  * ```
  */
-export const isJwkCurve = (curve: string): curve is JwkCurves => {
-  return Object.values(JwkCurves).includes(curve as JwkCurves);
+export const isJwkCurve = (curve: string): curve is JwkCurve => {
+  return Object.values(JwkCurve).includes(curve as JwkCurve);
 };

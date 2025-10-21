@@ -145,7 +145,11 @@ export const validateAndCollectKnownEntries = ({
           ctx.addIssue({
             ...issue,
             path,
-            message: containerInvalidValueMessage(target, path, issue.message),
+            message: containerInvalidValueMessage({
+              target,
+              path,
+              originalMessage: issue.message,
+            }),
           });
         }
       } else {

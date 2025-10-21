@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { sign1Schema } from '../Sign1';
+import { createSign1Schema } from '../Sign1';
 import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
 import { Tag } from 'cbor-x';
 import { createTag18, type Tag18Content } from '@/cbor/createTag18';
@@ -9,7 +9,7 @@ import { valueInvalidTypeMessage } from '@/schemas/messages/valueInvalidTypeMess
 import { getTypeName } from '@/utils/getTypeName';
 
 describe('Sign1', (): void => {
-  const schema = sign1Schema;
+  const schema = createSign1Schema('Sign1');
 
   describe('tuple input', (): void => {
     describe('successful validation', (): void => {
@@ -74,14 +74,14 @@ describe('Sign1', (): void => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           const expectedInner = valueInvalidTypeMessage({
-            expected: 'Buffer or Uint8Array',
+            expected: 'Uint8Array or Buffer',
             received: getTypeName(payload),
           });
-          const expected = containerInvalidValueMessage(
-            'Sign1',
-            [2],
-            expectedInner
-          );
+          const expected = containerInvalidValueMessage({
+            target: 'Sign1',
+            path: [2],
+            originalMessage: expectedInner,
+          });
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
@@ -129,7 +129,7 @@ describe('Sign1', (): void => {
       containerInvalidTypeMessage({
         target: 'Sign1',
         expected:
-          'Array[Uint8Array, HeaderMap, Uint8Array, Uint8Array] or Tag(18)',
+          '[Uint8Array, HeaderMap, Uint8Array | null, Uint8Array] or Tag(18)',
         received: getTypeName(v),
       });
 
@@ -184,9 +184,9 @@ describe('Sign1', (): void => {
     });
   });
 
-  describe('tag input (Tag(18, [...]))', (): void => {
+  describe('tag input (Tag([...], 18))', (): void => {
     describe('successful validation', (): void => {
-      it('should accept Tag(18) wrapping a valid tuple', (): void => {
+      it('should accept Tag([...], 18) wrapping a valid tuple', (): void => {
         const protectedHeaders = Uint8Array.from([]);
         const unprotectedHeaders = new Map<number, unknown>();
         const payload = Uint8Array.from([]);
@@ -274,14 +274,14 @@ describe('Sign1', (): void => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           const expectedInner = valueInvalidTypeMessage({
-            expected: 'Buffer or Uint8Array',
+            expected: 'Uint8Array or Buffer',
             received: getTypeName(payload),
           });
-          const expected = containerInvalidValueMessage(
-            'Sign1',
-            [2],
-            expectedInner
-          );
+          const expected = containerInvalidValueMessage({
+            target: 'Sign1',
+            path: [2],
+            originalMessage: expectedInner,
+          });
           expect(zodError.issues[0].message).toBe(expected);
         }
       });
@@ -444,14 +444,14 @@ describe('Sign1', (): void => {
           expect(error).toBeInstanceOf(z.ZodError);
           const zodError = error as z.ZodError;
           const expectedInner = valueInvalidTypeMessage({
-            expected: 'Buffer or Uint8Array',
+            expected: 'Uint8Array or Buffer',
             received: 'undefined',
           });
-          const expected = containerInvalidValueMessage(
-            'Sign1',
-            [2],
-            expectedInner
-          );
+          const expected = containerInvalidValueMessage({
+            target: 'Sign1',
+            path: [2],
+            originalMessage: expectedInner,
+          });
           expect(zodError.issues[0].message).toBe(expected);
         }
       });

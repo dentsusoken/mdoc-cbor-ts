@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { isJwkMacAlgorithm } from '../isJwkMacAlgorithm';
-import { JwkMacAlgorithms } from '../types';
+import { JwkMacAlgorithm } from '../types';
 
 describe('isJwkMacAlgorithm', () => {
   describe('should return true', () => {
     it('for valid JwkMacAlgorithms enum values', () => {
-      expect(isJwkMacAlgorithm(JwkMacAlgorithms.HS256)).toBe(true);
-      expect(isJwkMacAlgorithm(JwkMacAlgorithms.HS384)).toBe(true);
-      expect(isJwkMacAlgorithm(JwkMacAlgorithms.HS512)).toBe(true);
+      expect(isJwkMacAlgorithm(JwkMacAlgorithm.HS256)).toBe(true);
+      expect(isJwkMacAlgorithm(JwkMacAlgorithm.HS384)).toBe(true);
+      expect(isJwkMacAlgorithm(JwkMacAlgorithm.HS512)).toBe(true);
     });
 
     it('for string values that match JwkMacAlgorithms', () => {
@@ -17,7 +17,7 @@ describe('isJwkMacAlgorithm', () => {
     });
 
     it('for all enum values systematically', () => {
-      const allAlgorithms = Object.values(JwkMacAlgorithms);
+      const allAlgorithms = Object.values(JwkMacAlgorithm);
 
       allAlgorithms.forEach((algorithm) => {
         expect(isJwkMacAlgorithm(algorithm)).toBe(true);

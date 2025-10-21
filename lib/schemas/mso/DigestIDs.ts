@@ -1,65 +1,70 @@
 import { z } from 'zod';
-import { digestSchema } from './Digest';
-import { digestIDSchema } from './DigestID';
-import { createMapSchema } from '@/schemas/common/containers/Map';
+import { createMapSchema } from '@/schemas/containers/Map';
+import { bytesSchema } from '@/schemas/cbor/Bytes';
 
 /**
- * Schema for digest IDs in MSO
+ * Zod schema for DigestIDs in MSO (Mobile Security Object).
+ *
  * @description
- * Validates a required non-empty `Map<DigestID, Digest>`, where keys are
- * positive integers validated by `digestIDSchema` and values are binary
- * digests validated by `digestSchema`.
+ * Validates a required, non-empty `Map` whose keys are digest identifiers (`DigestID`) and
+ * whose values are binary digests (`Digest`). Specifically:
+ * - Keys must be non-negative integers (validated by {@link digestIDSchema}).
+ * - Values must be `Uint8Array` instances (validated by {@link digestSchema}).
+ * - Input must be a `Map` (plain objects, arrays, etc. are rejected).
+ * - The map must contain at least one entry (non-empty).
+ * - All error messages are prefixed with `DigestIDs:` and follow standardized map schema conventions.
  *
- * Error messages are prefixed with `DigestIDs: ...` and follow the standardized
- * messaging provided by the common Map schema utilities. The Map must contain
- * at least one entry.
- *
- * Validation rules:
- * - Requires a `Map` instance
- * - Requires at least one entry (non-empty)
- * - Each key must satisfy `digestIDSchema` (positive integer)
- * - Each value must satisfy `digestSchema` (`Uint8Array` output)
- *
+ * CDDL:
  * ```cddl
  * DigestIDs = {+ DigestID => Digest}
  * ```
  *
+ * Validation rules:
+ * - Requires `Map` instance as input (not array/object).
+ * - Must not be empty, i.e., must have at least one entry.
+ * - Each key is validated to be a non-negative integer (`DigestID`).
+ * - Each value is validated to be a `Uint8Array` (`Digest`).
+ *
  * @example
  * ```typescript
+ * // Valid usage:
  * const digestIDs = new Map<number, Uint8Array>([
  *   [1, new Uint8Array([0xde, 0xad, 0xbe, 0xef])],
  * ]);
- * const result = digestIDsSchema.parse(digestIDs); // Map<number, Uint8Array>
+ * digestIDsSchema.parse(digestIDs); // success, returns Map<number, Uint8Array>
  * ```
  *
  * @example
  * ```typescript
- * // Throws ZodError (empty map is not allowed)
- * // digestIDsSchema.parse(new Map());
+ * // Invalid: empty map
+ * // Throws ZodError (empty map not allowed)
+ * digestIDsSchema.parse(new Map());
  * ```
  *
  * @example
  * ```typescript
- * // Throws ZodError (not a Map)
- * // digestIDsSchema.parse({ 1: new Uint8Array([0xde]) });
+ * // Invalid: not a Map
+ * // Throws ZodError (input must be a Map)
+ * digestIDsSchema.parse({ 1: new Uint8Array([0xde]) });
  * ```
  *
- * @see digestIDSchema
- * @see digestSchema
- * @see createMapSchema
+ * @see {@link createMapSchema}
+ * @see {@link bytesSchema}
  */
 export const digestIDsSchema = createMapSchema({
   target: 'DigestIDs',
-  keySchema: digestIDSchema,
-  valueSchema: digestSchema,
+  keySchema: z.number().int().nonnegative(),
+  valueSchema: bytesSchema,
+  nonempty: true,
 });
 
 /**
  * Type definition for digest IDs
  * @description
- * Represents a validated record of digest IDs and their digest values
+ * Represents a validated record of digest IDs and their digest values.
  *
- * @see digestIDSchema
- * @see digestSchema
+ * @see {@link digestIDsSchema}
+ * @see {@link createMapSchema}
+ * @see {@link bytesSchema}
  */
 export type DigestIDs = z.output<typeof digestIDsSchema>;

@@ -1,4 +1,4 @@
-import { JwkAlgorithms } from './types';
+import { JwkAlgorithm } from './types';
 
 /**
  * Checks if a given string is a valid JWK algorithm.
@@ -20,10 +20,10 @@ import { JwkAlgorithms } from './types';
  */
 export const isJwkAlgorithm = (
   algorithm: unknown
-): algorithm is JwkAlgorithms => {
+): algorithm is JwkAlgorithm => {
   if (typeof algorithm !== 'string') {
     return false;
   }
 
-  return Object.values(JwkAlgorithms).includes(algorithm as JwkAlgorithms);
+  return Object.values(JwkAlgorithm).includes(algorithm as JwkAlgorithm);
 };

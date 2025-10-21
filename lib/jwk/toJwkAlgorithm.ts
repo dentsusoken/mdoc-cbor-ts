@@ -1,5 +1,5 @@
 import { isJwkAlgorithm } from './isJwkAlgorithm';
-import { JwkAlgorithms } from './types';
+import { JwkAlgorithm } from './types';
 
 /**
  * Converts a string to a valid JWK algorithm.
@@ -17,7 +17,7 @@ import { JwkAlgorithms } from './types';
  * toJwkAlgorithm('invalid-algorithm'); // Throws: Unsupported JWK algorithm: invalid-algorithm
  * ```
  */
-export const toJwkAlgorithm = (algorithm: string): JwkAlgorithms => {
+export const toJwkAlgorithm = (algorithm: string): JwkAlgorithm => {
   if (isJwkAlgorithm(algorithm)) {
     return algorithm;
   }

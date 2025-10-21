@@ -1,4 +1,4 @@
-import { EnumKeys, EnumNumberValues } from '@/types';
+import { EnumKeys, EnumNumberValues, EnumStringValues } from '@/types';
 
 /**
  * COSE Header labels registered in the IANA "COSE Header Parameters" registry.
@@ -156,6 +156,56 @@ export type EncryptionAlgorithmValues = EnumNumberValues<
 >;
 
 /**
+ * Enumeration of supported COSE digest algorithm identifiers.
+ *
+ * @description
+ * Represents the supported digest (hash) algorithms used in COSE contexts. These identifiers map
+ * to the standard names used in IANA and cryptographic libraries for hash functions.
+ *
+ * - SHA-256 ("SHA-256")
+ * - SHA-384 ("SHA-384")
+ * - SHA-512 ("SHA-512")
+ *
+ * @example
+ * ```typescript
+ * // Select SHA-256 as the digest algorithm
+ * const algo = DigestAlgorithm.SHA256; // "SHA-256"
+ * ```
+ *
+ * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms}
+ */
+export enum DigestAlgorithm {
+  /** SHA-256, 256-bit Secure Hash Algorithm */
+  SHA256 = 'SHA-256',
+  /** SHA-384, 384-bit Secure Hash Algorithm */
+  SHA384 = 'SHA-384',
+  /** SHA-512, 512-bit Secure Hash Algorithm */
+  SHA512 = 'SHA-512',
+}
+
+/**
+ * Type representing the keys of the {@link DigestAlgorithm} enum.
+ * @description
+ * Extracts a union of all digest algorithm names as string literal types (e.g., "SHA256", "SHA384", "SHA512").
+ * Useful for enforcing or inferring allowed digest algorithm key names via TypeScript.
+ *
+ * @example
+ * type Key = DigestAlgorithmKeys; // "SHA256" | "SHA384" | "SHA512"
+ */
+export type DigestAlgorithmKeys = EnumKeys<typeof DigestAlgorithm>;
+
+/**
+ * Type representing the possible string values of the {@link DigestAlgorithm} enum.
+ * @description
+ * Produces a union of all supported digest algorithm string literals (e.g., "SHA-256" | "SHA-384" | "SHA-512").
+ * Useful for type-safe enforcement or inference of allowed digest algorithm values.
+ *
+ * @example
+ * type Value = DigestAlgorithmValues; // "SHA-256" | "SHA-384" | "SHA-512"
+ */
+export type DigestAlgorithmValues = EnumStringValues<typeof DigestAlgorithm>;
+
+/**
  * COSE Key Type identifiers registered in the IANA "COSE Key Types" registry.
  * @description
  * Enumeration of key types used in COSE operations. These numeric identifiers specify
@@ -258,12 +308,12 @@ export type CurveValues = EnumNumberValues<typeof Curve>;
  * ```typescript
  * // Create a COSE key with common parameters
  * const coseKey = new Map([
- *   [KeyParams.KeyType, KeyTypes.EC],     // kty: key type
- *   [KeyParams.KeyID, keyIdBytes],        // kid: key identifier
- *   [KeyParams.Algorithm, Algorithms.ES256], // alg: algorithm
- *   [KeyParams.Curve, Curves.P256],       // crv: curve
- *   [KeyParams.x, xCoordinate],           // x: x-coordinate
- *   [KeyParams.y, yCoordinate]            // y: y-coordinate
+ *   [Key.KeyType, KeyType.EC],     // kty: key type
+ *   [Key.KeyID, keyIdBytes],        // kid: key identifier
+ *   [Key.Algorithm, Algorithm.ES256], // alg: algorithm
+ *   [Key.Curve, Curve.P256],       // crv: curve
+ *   [Key.x, xCoordinate],           // x: x-coordinate
+ *   [Key.y, yCoordinate]            // y: y-coordinate
  * ]);
  *
  * // Access key parameters

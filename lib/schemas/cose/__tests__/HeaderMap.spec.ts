@@ -92,11 +92,11 @@ describe('headerMapSchema', () => {
         // Build exact nested message using zod's native enum error
         const enumMsg = z.nativeEnum(Header).safeParse(999);
         const inner = enumMsg.success ? '' : enumMsg.error.issues[0].message;
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          inner
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: inner,
+        });
         expect(issue.message).toBe(expected);
       }
     });
@@ -113,11 +113,11 @@ describe('headerMapSchema', () => {
         // Build exact nested message using zod's native enum error
         const enumMsg = z.nativeEnum(Header).safeParse('alg');
         const inner = enumMsg.success ? '' : enumMsg.error.issues[0].message;
-        const expected = containerInvalidValueMessage(
-          TARGET,
-          issue.path,
-          inner
-        );
+        const expected = containerInvalidValueMessage({
+          target: TARGET,
+          path: issue.path,
+          originalMessage: inner,
+        });
         expect(issue.message).toBe(expected);
       }
     });

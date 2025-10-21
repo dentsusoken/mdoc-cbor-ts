@@ -1,34 +1,37 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { keyAuthorizationsSchema } from '../KeyAuthorizations';
-import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
-import { requiredMessage } from '@/schemas/common/Required';
+import {
+  KeyAuthorizations,
+  keyAuthorizationsSchema,
+} from '../KeyAuthorizations';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('KeyAuthorizations', () => {
   describe('valid inputs', () => {
     const cases: Array<{
       name: string;
       input: Map<string, unknown>;
-      expected: Record<string, unknown>;
+      expected: KeyAuthorizations;
     }> = [
       {
         name: 'empty map (all fields optional)',
         input: new Map(),
-        expected: {},
+        expected: new Map(),
       },
       {
         name: 'only nameSpaces',
         input: new Map([[`nameSpaces`, ['org.iso.18013.5.1']]]),
-        expected: { nameSpaces: ['org.iso.18013.5.1'] },
+        expected: new Map([[`nameSpaces`, ['org.iso.18013.5.1']]]),
       },
       {
         name: 'only dataElements',
         input: new Map([
           ['dataElements', new Map([[`org.iso.18013.5.1`, ['given_name']]])],
         ]),
-        expected: {
-          dataElements: new Map([[`org.iso.18013.5.1`, ['given_name']]]),
-        },
+        expected: new Map([
+          ['dataElements', new Map([[`org.iso.18013.5.1`, ['given_name']]])],
+        ]),
       },
       {
         name: 'both fields present',
@@ -39,12 +42,13 @@ describe('KeyAuthorizations', () => {
             new Map([[`org.iso.18013.5.1`, ['given_name', 'family_name']]]),
           ],
         ]),
-        expected: {
-          nameSpaces: ['org.iso.18013.5.1'],
-          dataElements: new Map([
-            [`org.iso.18013.5.1`, ['given_name', 'family_name']],
-          ]),
-        },
+        expected: new Map<string, unknown>([
+          ['nameSpaces', ['org.iso.18013.5.1']],
+          [
+            'dataElements',
+            new Map([[`org.iso.18013.5.1`, ['given_name', 'family_name']]]),
+          ],
+        ]),
       },
     ];
 
@@ -57,46 +61,41 @@ describe('KeyAuthorizations', () => {
   });
 
   describe('invalid container types', () => {
+    const expectedMessage = (v: unknown): string =>
+      containerInvalidTypeMessage({
+        target: 'KeyAuthorizations',
+        expected: 'Map',
+        received: getTypeName(v),
+      });
+
     const cases: Array<{ name: string; input: unknown; expected: string }> = [
       {
         name: 'string',
         input: 'not-a-map',
-        expected: mapInvalidTypeMessage('KeyAuthorizations'),
+        expected: expectedMessage('not-a-map'),
       },
-      {
-        name: 'number',
-        input: 123,
-        expected: mapInvalidTypeMessage('KeyAuthorizations'),
-      },
-      {
-        name: 'boolean',
-        input: true,
-        expected: mapInvalidTypeMessage('KeyAuthorizations'),
-      },
-      {
-        name: 'null',
-        input: null,
-        expected: requiredMessage('KeyAuthorizations'),
-      },
+      { name: 'number', input: 123, expected: expectedMessage(123) },
+      { name: 'boolean', input: true, expected: expectedMessage(true) },
+      { name: 'null', input: null, expected: expectedMessage(null) },
       {
         name: 'plain object',
         input: { nameSpaces: [] },
-        expected: mapInvalidTypeMessage('KeyAuthorizations'),
+        expected: expectedMessage({ nameSpaces: [] }),
       },
       {
         name: 'array',
         input: [['nameSpaces', []]],
-        expected: mapInvalidTypeMessage('KeyAuthorizations'),
+        expected: expectedMessage([['nameSpaces', []]]),
       },
       {
         name: 'set',
         input: new Set([1]),
-        expected: mapInvalidTypeMessage('KeyAuthorizations'),
+        expected: expectedMessage(new Set([1])),
       },
       {
         name: 'undefined',
         input: undefined,
-        expected: requiredMessage('KeyAuthorizations'),
+        expected: expectedMessage(undefined),
       },
     ];
 

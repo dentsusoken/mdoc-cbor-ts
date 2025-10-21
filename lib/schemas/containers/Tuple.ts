@@ -58,11 +58,11 @@ export const createTupleSchema = <T extends readonly unknown[]>({
       for (const issue of result.error.issues) {
         ctx.addIssue({
           ...issue,
-          message: containerInvalidValueMessage(
+          message: containerInvalidValueMessage({
             target,
-            issue.path,
-            issue.message
-          ),
+            path: issue.path,
+            originalMessage: issue.message,
+          }),
         });
       }
       return z.NEVER;

@@ -1,19 +1,20 @@
 import { z } from 'zod';
-import { createLabelKeyMapSchema } from '@/schemas/cose/LabelKeyMap';
+import { labelSchema } from '@/schemas/cose/Label';
+import { createMapSchema } from '@/schemas/containers/Map';
 
 /**
- * Schema for key information in MSO
+ * Zod schema for key information attached to an MSO device key.
+ *
  * @description
- * Validates a Map where keys are COSE labels (integers or non-empty strings) and values are arbitrary.
- * Error messages are prefixed with `KeyInfo: ...` for container-level issues and
- * `Label: ...` for key validation issues.
+ * This schema validates a `Map` where each key is a valid COSE label—either a non-empty string or an integer—and each value can be of any type. The primary use is to express optional extra information or metadata about a device key, with flexible arbitrary entries.
  *
- * Validation rules:
- * - Requires a Map type with a target-prefixed invalid type message
- * - Allows empty Map (`allowEmpty: true`)
- * - Each key must be a valid COSE label (integer or non-empty string)
- * - Each value can be any type (`unknown`)
+ * Validation details:
+ * - The container must be a `Map` type, otherwise a `KeyInfo: ...`-prefixed error is thrown.
+ * - Empty Maps are permitted and valid.
+ * - Each key is checked using {@link labelSchema}, accepting only non-empty strings or integers. If a key fails, a `Label: ...` error is raised.
+ * - Each value can be any data (no restrictions).
  *
+ * CDDL:
  * ```cddl
  * KeyInfo = {* label => any}
  * label = int / tstr
@@ -21,22 +22,26 @@ import { createLabelKeyMapSchema } from '@/schemas/cose/LabelKeyMap';
  *
  * @example
  * ```typescript
+ * // Valid example: integer and string labels
  * const info = new Map<number | string, unknown>([
  *   [1, 'value1'],
- *   ['custom', 123],
+ *   ['customLabel', true],
  * ]);
- * const result = keyInfoSchema.parse(info); // KeyInfo
+ * const result = keyInfoSchema.parse(info); // Map(2) with keys 1 and 'customLabel'
  * ```
  *
  * @example
- * ```typescript
- * // Allows empty Map
- * const empty = keyInfoSchema.parse(new Map()); // Map(0)
- * ```
+ * // Allows an empty Map
+ * keyInfoSchema.parse(new Map()); // Map(0)
  *
- * @see createLabelKeyMapSchema
+ * @see labelSchema
+ * @see createMapSchema
  */
-export const keyInfoSchema = createLabelKeyMapSchema('KeyInfo');
+export const keyInfoSchema = createMapSchema({
+  target: 'KeyInfo',
+  keySchema: labelSchema,
+  valueSchema: z.unknown(),
+});
 
 /**
  * Type definition for key information

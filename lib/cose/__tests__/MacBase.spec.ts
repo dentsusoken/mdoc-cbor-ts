@@ -5,7 +5,7 @@ import { encodeCbor } from '@/cbor/codec';
 import { generateHmac } from '@/utils/generateHmac';
 import { randomBytes } from '@noble/hashes/utils';
 import { generateJwkOctKey } from '@/jwk/generateJwkOctKey';
-import { JwkMacAlgorithms } from '@/jwk/types';
+import { JwkMacAlgorithm } from '@/jwk/types';
 
 describe('MacBase', () => {
   describe('constructor', () => {
@@ -240,7 +240,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([1, 2, 3, 4, 5]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -272,7 +272,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([1, 2, 3, 4, 5]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: wrongKey,
         });
 
@@ -304,7 +304,7 @@ describe('MacBase', () => {
         const wrongMessage = new Uint8Array([1, 2, 3, 4, 6]); // Different
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -337,7 +337,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([10, 20, 30, 40]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS384,
+          alg: JwkMacAlgorithm.HS384,
           k: key,
         });
 
@@ -369,7 +369,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([10, 20, 30, 40]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS384,
+          alg: JwkMacAlgorithm.HS384,
           k: wrongKey,
         });
 
@@ -402,7 +402,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([0xff, 0xee, 0xdd, 0xcc]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS512,
+          alg: JwkMacAlgorithm.HS512,
           k: key,
         });
 
@@ -434,7 +434,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([0xff, 0xee, 0xdd, 0xcc]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS512,
+          alg: JwkMacAlgorithm.HS512,
           k: wrongKey,
         });
 
@@ -468,7 +468,7 @@ describe('MacBase', () => {
 
         // JWK has HS384
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS384,
+          alg: JwkMacAlgorithm.HS384,
           k: key,
         });
 
@@ -501,7 +501,7 @@ describe('MacBase', () => {
 
         // JWK has HS256
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -535,7 +535,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -566,7 +566,7 @@ describe('MacBase', () => {
         const message = randomBytes(10000); // 10KB message
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -598,7 +598,7 @@ describe('MacBase', () => {
         const wrongTag = new Uint8Array(32); // All zeros
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -627,7 +627,7 @@ describe('MacBase', () => {
         const message = new Uint8Array([1, 2, 3, 4, 5]);
 
         const jwkOctKey = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -669,7 +669,7 @@ describe('MacBase', () => {
       const message = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
 
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         kid: 'test-key-id',
       });
@@ -713,7 +713,7 @@ describe('MacBase', () => {
       const message = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
 
       const jwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS384,
+        alg: JwkMacAlgorithm.HS384,
         k: key,
       });
 

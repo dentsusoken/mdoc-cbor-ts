@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { nameSpaceSchema } from '@/schemas/common/NameSpace';
-import { createArraySchema } from '@/schemas/common/containers/Array';
+import { createArraySchema } from '@/schemas/containers/Array';
 
 /**
  * Schema for authorized namespaces in MSO
@@ -20,7 +19,8 @@ import { createArraySchema } from '@/schemas/common/containers/Array';
  */
 export const authorizedNameSpacesSchema = createArraySchema({
   target: 'AuthorizedNameSpaces',
-  itemSchema: nameSpaceSchema,
+  itemSchema: z.string().min(1),
+  nonempty: true,
 });
 
 /**

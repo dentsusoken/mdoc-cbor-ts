@@ -52,7 +52,7 @@ export const createArraySchema = <Output, Input = Output>({
 > =>
   z.any().transform((data, ctx) => {
     if (!(data instanceof Array)) {
-      return ctx.addIssue({
+      ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: containerInvalidTypeMessage({
           target,
@@ -60,13 +60,17 @@ export const createArraySchema = <Output, Input = Output>({
           received: getTypeName(data),
         }),
       });
+
+      return z.NEVER;
     }
 
     if (nonempty && data.length === 0) {
-      return ctx.addIssue({
+      ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: containerEmptyMessage(target),
       });
+
+      return z.NEVER;
     }
 
     let hasError = false;
@@ -81,7 +85,11 @@ export const createArraySchema = <Output, Input = Output>({
           ctx.addIssue({
             ...issue,
             path,
-            message: containerInvalidValueMessage(target, path, issue.message),
+            message: containerInvalidValueMessage({
+              target,
+              path,
+              originalMessage: issue.message,
+            }),
           });
         }
       } else {

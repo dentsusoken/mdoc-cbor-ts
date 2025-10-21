@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema } from '@/schemas/common/values/DataElementIdentifier';
-import { createArraySchema } from '@/schemas/common/containers/Array';
+import { createArraySchema } from '@/schemas/containers/Array';
 
 /**
  * Schema for DataElementIdentifiers in MSO
@@ -45,7 +44,8 @@ import { createArraySchema } from '@/schemas/common/containers/Array';
  */
 export const dataElementIdentifiersSchema = createArraySchema({
   target: 'DataElementIdentifiers',
-  itemSchema: dataElementIdentifierSchema,
+  itemSchema: z.string().min(1),
+  nonempty: true,
 });
 
 /**

@@ -1,11 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { valueDigestsSchema } from '../ValueDigests';
-import {
-  mapInvalidTypeMessage,
-  mapEmptyMessage,
-} from '@/schemas/common/containers/Map';
-import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
+import { containerEmptyMessage } from '@/schemas/messages/containerEmptyMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 const digestIDs = new Map<number, Uint8Array>([
   [1, new Uint8Array([0x01, 0x02, 0x03])],
@@ -35,22 +34,34 @@ describe('ValueDigests Schema', () => {
       {
         name: 'input is not a Map',
         input: {},
-        expectedMessage: mapInvalidTypeMessage('ValueDigests'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'ValueDigests',
+          expected: 'Map',
+          received: getTypeName({}),
+        }),
       },
       {
         name: 'Map is empty by default',
         input: new Map<string, unknown>(),
-        expectedMessage: mapEmptyMessage('ValueDigests'),
+        expectedMessage: containerEmptyMessage('ValueDigests'),
       },
       {
         name: 'NameSpace key is invalid (empty)',
         input: new Map<string, unknown>([['', digestIDs]]),
-        expectedMessage: nonEmptyTextEmptyMessage('NameSpace'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'ValueDigests',
+          path: [0, 'key'],
+          originalMessage: 'String must contain at least 1 character(s)',
+        }),
       },
       {
         name: 'DigestIDs value is invalid (not a Map)',
         input: new Map<string, unknown>([['org.iso.18013.5.1', {}]]),
-        expectedMessage: mapInvalidTypeMessage('DigestIDs'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'ValueDigests',
+          path: [0, 'value'],
+          originalMessage: 'Expected Map, received object',
+        }),
       },
     ];
 

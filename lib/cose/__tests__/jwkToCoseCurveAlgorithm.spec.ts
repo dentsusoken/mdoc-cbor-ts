@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseCurveAlgorithm } from '../jwkToCoseCurveAlgorithm';
 import { Algorithm, Curve } from '../types';
-import { JwkPublicKey, JwkAlgorithms, JwkCurves } from '@/jwk/types';
+import { JwkPublicKey, JwkAlgorithm, JwkCurve } from '@/jwk/types';
 
 // Helper to create a base EC public JWK with overrides
 const createJwk = (overrides: Partial<JwkPublicKey> = {}): JwkPublicKey => ({
@@ -15,7 +15,7 @@ const createJwk = (overrides: Partial<JwkPublicKey> = {}): JwkPublicKey => ({
 describe('jwkToCoseCurveAlgorithm', () => {
   describe('valid inputs', () => {
     it('maps P-256 to Curves.P256 and default Algorithms.ES256 when alg absent', () => {
-      const jwk = createJwk({ crv: JwkCurves.P256 });
+      const jwk = createJwk({ crv: JwkCurve.P256 });
       const result = jwkToCoseCurveAlgorithm(jwk);
 
       expect(result.curve).toBe(Curve.P256);
@@ -23,7 +23,7 @@ describe('jwkToCoseCurveAlgorithm', () => {
     });
 
     it('maps P-384 to Curves.P384 and default Algorithms.ES384 when alg absent', () => {
-      const jwk = createJwk({ crv: JwkCurves.P384 });
+      const jwk = createJwk({ crv: JwkCurve.P384 });
       const result = jwkToCoseCurveAlgorithm(jwk);
 
       expect(result.curve).toBe(Curve.P384);
@@ -31,7 +31,7 @@ describe('jwkToCoseCurveAlgorithm', () => {
     });
 
     it('maps P-521 to Curves.P521 and default Algorithms.ES512 when alg absent', () => {
-      const jwk = createJwk({ crv: JwkCurves.P521 });
+      const jwk = createJwk({ crv: JwkCurve.P521 });
       const result = jwkToCoseCurveAlgorithm(jwk);
 
       expect(result.curve).toBe(Curve.P521);
@@ -39,7 +39,7 @@ describe('jwkToCoseCurveAlgorithm', () => {
     });
 
     it('uses specified JWK alg to set algorithm', () => {
-      const jwk = createJwk({ crv: JwkCurves.P256, alg: JwkAlgorithms.ES256 });
+      const jwk = createJwk({ crv: JwkCurve.P256, alg: JwkAlgorithm.ES256 });
       const result = jwkToCoseCurveAlgorithm(jwk);
 
       expect(result.curve).toBe(Curve.P256);

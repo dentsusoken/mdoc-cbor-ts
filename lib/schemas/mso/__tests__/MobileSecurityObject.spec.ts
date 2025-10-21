@@ -1,16 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { mobileSecurityObjectSchema } from '../MobileSecurityObject';
-import {
-  strictMapMissingKeysMessage,
-  strictMapNotMapMessage,
-  strictMapKeyValueMessage,
-} from '@/schemas/common/containers/StrictMap';
-import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
-import { DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE } from '../DigestAlgorithm';
-import { deviceKeySchema } from '../DeviceKey';
-import { VERSION_INVALID_VALUE_MESSAGE } from '@/schemas/common/Version';
+import { strictMapMissingKeysMessage } from '@/schemas/containers/StrictMap';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
 import { Tag } from 'cbor-x';
+import { getTypeName } from '@/utils/getTypeName';
 
 const validMSOMap = new Map<string, unknown>([
   ['version', '1.0'],
@@ -53,17 +48,15 @@ describe('MobileSecurityObject Schema', () => {
       expect(digestValue).toEqual(new Uint8Array([1]));
 
       // Validate deviceKeyInfo structure (object)
-      const deviceKeyInfo = result.get('deviceKeyInfo') as {
-        deviceKey: unknown;
-      };
-      const deviceKey = deviceKeyInfo.deviceKey;
-      expect(deviceKey).toEqual(deviceKeySchema.parse(new Map([[1, 2]])));
+      const deviceKeyInfo = result.get('deviceKeyInfo');
+      const deviceKey = deviceKeyInfo?.get('deviceKey');
+      expect(deviceKey).toEqual(new Map([[1, 2]]));
 
       // Validate validityInfo structure (object)
-      const validityInfo = result.get('validityInfo') as Map<string, Tag>;
-      const signed = validityInfo.get('signed');
-      const validFrom = validityInfo.get('validFrom');
-      const validUntil = validityInfo.get('validUntil');
+      const validityInfo = result.get('validityInfo');
+      const signed = validityInfo?.get('signed');
+      const validFrom = validityInfo?.get('validFrom');
+      const validUntil = validityInfo?.get('validUntil');
       expect(signed).toEqual(new Tag('2024-03-20T10:00:00Z', 0));
       expect(validFrom).toEqual(new Tag('2024-03-20T10:00:00Z', 0));
       expect(validUntil).toEqual(new Tag('2025-03-20T10:00:00Z', 0));
@@ -79,7 +72,11 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.errors[0].message).toBe(
-            strictMapNotMapMessage('MobileSecurityObject', 'Object')
+            containerInvalidTypeMessage({
+              target: 'MobileSecurityObject',
+              expected: 'Map',
+              received: getTypeName({}),
+            })
           );
         }
       }
@@ -96,11 +93,12 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'MobileSecurityObject',
-              ['digestAlgorithm'],
-              DIGEST_ALGORITHM_INVALID_VALUE_MESSAGE
-            )
+            containerInvalidValueMessage({
+              target: 'MobileSecurityObject',
+              path: ['digestAlgorithm'],
+              originalMessage:
+                "Invalid enum value. Expected 'SHA-256' | 'SHA-384' | 'SHA-512', received 'SHA-1'",
+            })
           );
         }
       }
@@ -151,11 +149,11 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'MobileSecurityObject',
-              ['version'],
-              VERSION_INVALID_VALUE_MESSAGE
-            )
+            containerInvalidValueMessage({
+              target: 'MobileSecurityObject',
+              path: ['version'],
+              originalMessage: 'Invalid literal value, expected "1.0"',
+            })
           );
         }
       }
@@ -172,11 +170,11 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'MobileSecurityObject',
-              ['valueDigests'],
-              mapInvalidTypeMessage('ValueDigests')
-            )
+            containerInvalidValueMessage({
+              target: 'MobileSecurityObject',
+              path: ['valueDigests'],
+              originalMessage: 'Expected Map, received string',
+            })
           );
         }
       }
@@ -193,11 +191,11 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'MobileSecurityObject',
-              ['deviceKeyInfo'],
-              mapInvalidTypeMessage('DeviceKeyInfo')
-            )
+            containerInvalidValueMessage({
+              target: 'MobileSecurityObject',
+              path: ['deviceKeyInfo'],
+              originalMessage: 'Expected Map, received string',
+            })
           );
         }
       }
@@ -214,11 +212,11 @@ describe('MobileSecurityObject Schema', () => {
         expect(error).toBeInstanceOf(z.ZodError);
         if (error instanceof z.ZodError) {
           expect(error.issues[0].message).toBe(
-            strictMapKeyValueMessage(
-              'MobileSecurityObject',
-              ['validityInfo'],
-              strictMapNotMapMessage('ValidityInfo', 'String')
-            )
+            containerInvalidValueMessage({
+              target: 'MobileSecurityObject',
+              path: ['validityInfo'],
+              originalMessage: 'Expected Map, received string',
+            })
           );
         }
       }

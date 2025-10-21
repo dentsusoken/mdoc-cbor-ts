@@ -1,11 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 import { dataElementIdentifiersSchema } from '../DataElementIdentifiers';
-import {
-  arrayInvalidTypeMessage,
-  arrayEmptyMessage,
-} from '@/schemas/common/containers/Array';
-import { requiredMessage } from '@/schemas/common/Required';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerEmptyMessage } from '@/schemas/messages/containerEmptyMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('DataElementIdentifiers', () => {
   describe('success cases', () => {
@@ -22,37 +20,61 @@ describe('DataElementIdentifiers', () => {
       {
         name: 'empty array',
         input: [],
-        expected: arrayEmptyMessage('DataElementIdentifiers'),
+        expected: containerEmptyMessage('DataElementIdentifiers'),
       },
       {
         name: 'string input',
         input: 'not-array',
-        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
+        expected: containerInvalidTypeMessage({
+          target: 'DataElementIdentifiers',
+          expected: 'Array',
+          received: getTypeName('not-array'),
+        }),
       },
       {
         name: 'number input',
         input: 123,
-        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
+        expected: containerInvalidTypeMessage({
+          target: 'DataElementIdentifiers',
+          expected: 'Array',
+          received: getTypeName(123),
+        }),
       },
       {
         name: 'boolean input',
         input: true,
-        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
+        expected: containerInvalidTypeMessage({
+          target: 'DataElementIdentifiers',
+          expected: 'Array',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'null input',
         input: null,
-        expected: requiredMessage('DataElementIdentifiers'),
+        expected: containerInvalidTypeMessage({
+          target: 'DataElementIdentifiers',
+          expected: 'Array',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expected: requiredMessage('DataElementIdentifiers'),
+        expected: containerInvalidTypeMessage({
+          target: 'DataElementIdentifiers',
+          expected: 'Array',
+          received: getTypeName(undefined),
+        }),
       },
       {
         name: 'plain object input',
         input: {},
-        expected: arrayInvalidTypeMessage('DataElementIdentifiers'),
+        expected: containerInvalidTypeMessage({
+          target: 'DataElementIdentifiers',
+          expected: 'Array',
+          received: getTypeName({}),
+        }),
       },
     ];
 

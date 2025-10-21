@@ -31,7 +31,7 @@ export const bytesSchema: z.ZodType<Uint8Array> = z
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: valueInvalidTypeMessage({
-        expected: 'Buffer or Uint8Array',
+        expected: 'Uint8Array or Buffer',
         received: getTypeName(v),
       }),
     });

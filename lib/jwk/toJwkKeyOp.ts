@@ -1,5 +1,5 @@
 import { isJwkKeyOp } from './isJwkKeyOp';
-import { JwkKeyOps } from './types';
+import { JwkKeyOp } from './types';
 
 /**
  * Converts a string to a valid JWK key operation.
@@ -17,7 +17,7 @@ import { JwkKeyOps } from './types';
  * toJwkKeyOp('invalid-operation'); // Throws: Unsupported JWK key operation: invalid-operation
  * ```
  */
-export const toJwkKeyOp = (keyOp: string): JwkKeyOps => {
+export const toJwkKeyOp = (keyOp: string): JwkKeyOp => {
   if (isJwkKeyOp(keyOp)) {
     return keyOp;
   }

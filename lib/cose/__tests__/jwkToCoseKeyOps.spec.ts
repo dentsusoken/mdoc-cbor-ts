@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseKeyOps } from '../jwkToCoseKeyOps';
 import { KeyOp } from '../types';
-import { JwkKeyOps } from '@/jwk/types';
+import { JwkKeyOp } from '@/jwk/types';
 
 describe('jwkToCoseKeyOps', () => {
   describe('should return the correct COSE KeyOps array', () => {
@@ -20,30 +20,27 @@ describe('jwkToCoseKeyOps', () => {
     });
 
     it('for JwkKeyOps enum value arrays', () => {
-      const result = jwkToCoseKeyOps([JwkKeyOps.Sign, JwkKeyOps.Verify]);
+      const result = jwkToCoseKeyOps([JwkKeyOp.Sign, JwkKeyOp.Verify]);
       expect(result).toEqual([KeyOp.Sign, KeyOp.Verify]);
 
-      const encryptOps = jwkToCoseKeyOps([
-        JwkKeyOps.Encrypt,
-        JwkKeyOps.Decrypt,
-      ]);
+      const encryptOps = jwkToCoseKeyOps([JwkKeyOp.Encrypt, JwkKeyOp.Decrypt]);
       expect(encryptOps).toEqual([KeyOp.Encrypt, KeyOp.Decrypt]);
 
-      const wrapOps = jwkToCoseKeyOps([JwkKeyOps.WrapKey, JwkKeyOps.UnwrapKey]);
+      const wrapOps = jwkToCoseKeyOps([JwkKeyOp.WrapKey, JwkKeyOp.UnwrapKey]);
       expect(wrapOps).toEqual([KeyOp.WrapKey, KeyOp.UnwrapKey]);
 
       const deriveOps = jwkToCoseKeyOps([
-        JwkKeyOps.DeriveKey,
-        JwkKeyOps.DeriveBits,
+        JwkKeyOp.DeriveKey,
+        JwkKeyOp.DeriveBits,
       ]);
       expect(deriveOps).toEqual([KeyOp.DeriveKey, KeyOp.DeriveBits]);
     });
 
     it('for mixed string and enum values', () => {
-      const result = jwkToCoseKeyOps(['sign', JwkKeyOps.Verify]);
+      const result = jwkToCoseKeyOps(['sign', JwkKeyOp.Verify]);
       expect(result).toEqual([KeyOp.Sign, KeyOp.Verify]);
 
-      const mixedOps = jwkToCoseKeyOps([JwkKeyOps.Encrypt, 'decrypt']);
+      const mixedOps = jwkToCoseKeyOps([JwkKeyOp.Encrypt, 'decrypt']);
       expect(mixedOps).toEqual([KeyOp.Encrypt, KeyOp.Decrypt]);
     });
 

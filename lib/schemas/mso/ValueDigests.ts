@@ -1,25 +1,28 @@
 import { z } from 'zod';
-import { nameSpaceSchema } from '@/schemas/common/NameSpace';
 import { digestIDsSchema } from './DigestIDs';
-import { createMapSchema } from '@/schemas/common/containers/Map';
+import { createMapSchema } from '@/schemas/containers/Map';
 
 /**
- * Schema for value digests in MSO
+ * Zod schema for validating ValueDigests map in MSO.
+ *
  * @description
- * Validates a Map of namespaces to digest ID collections.
- * Input is a `Map<string, unknown>` (CBOR-decoded) that maps:
- * - key: `NameSpace` (validated by `nameSpaceSchema`)
- * - value: `DigestIDs` (validated by `digestIDsSchema`)
+ * Validates a non-empty Map of NameSpace (string) to DigestIDs collections, in accordance with the CDDL definition:
  *
  * ```cddl
  * ValueDigests = {+ NameSpace => DigestIDs}
  * ```
  *
- * Notes:
- * - Uses `createMapSchema` which enforces Map type, non-emptiness by default,
- *   and prefixes errors with the target name (`ValueDigests`).
- * - Intended to be used with CBOR-decoded Maps; plain JS objects should be
- *   converted to Maps prior to validation if needed.
+ * - Input: A CBOR-decoded `Map<string, unknown>`, where each key is a nonempty string representing NameSpace,
+ *   and each value is a DigestIDs map.
+ * - Keys are validated as nonempty strings (minimum 1 character).
+ * - Values are validated with `digestIDsSchema`.
+ * - The map must not be empty (`nonempty: true`).
+ * - Uses `createMapSchema`, which enforces the Map type and provides friendly error messages
+ *   with the 'ValueDigests' prefix.
+ * - If working with plain JS objects, convert to Map before using this schema.
+ *
+ * @note
+ * The `nonempty: true` option ensures that empty ValueDigests are rejected and a specific error is returned.
  *
  * @example
  * ```typescript
@@ -36,8 +39,9 @@ import { createMapSchema } from '@/schemas/common/containers/Map';
  */
 export const valueDigestsSchema = createMapSchema({
   target: 'ValueDigests',
-  keySchema: nameSpaceSchema,
+  keySchema: z.string().min(1),
   valueSchema: digestIDsSchema,
+  nonempty: true,
 });
 
 /**

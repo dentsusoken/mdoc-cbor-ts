@@ -1,11 +1,11 @@
 import {
-  JwkKeyOps,
-  JwkKeyParams,
-  JwkKeyTypes,
-  JwkMacKeyOps,
-  JwkAlgorithms,
-  JwkCurves,
-  JwkMacAlgorithms,
+  JwkKeyOp,
+  JwkKey,
+  JwkKeyType,
+  JwkMacKeyOp,
+  JwkAlgorithm,
+  JwkCurve,
+  JwkMacAlgorithm,
 } from '@/jwk/types';
 import { Algorithm, Curve, KeyOp, Key, KeyType, MacAlgorithm } from './types';
 import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
@@ -27,17 +27,17 @@ import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
  * const protectedHeaders = new Map([[Headers.Algorithm, JWK_TO_COSE_ALGORITHMS[JwkAlgorithms.ES256]]]);
  * ```
  *
- * @see {@link JwkAlgorithms} - JWK algorithm string identifiers
+ * @see {@link JwkAlgorithm} - JWK algorithm string identifiers
  * @see {@link Algorithm} - COSE algorithm numeric identifiers
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
  * @see {@link https://tools.ietf.org/html/rfc7518#section-3.1} - JWS algorithm specifications
  * @see {@link https://tools.ietf.org/html/rfc7518#section-4.1} - JWE algorithm specifications
  */
-export const JWK_TO_COSE_ALGORITHMS: Record<JwkAlgorithms, Algorithm> = {
-  [JwkAlgorithms.EdDSA]: Algorithm.EdDSA,
-  [JwkAlgorithms.ES256]: Algorithm.ES256,
-  [JwkAlgorithms.ES384]: Algorithm.ES384,
-  [JwkAlgorithms.ES512]: Algorithm.ES512,
+export const JWK_TO_COSE_ALGORITHMS: Record<JwkAlgorithm, Algorithm> = {
+  [JwkAlgorithm.EdDSA]: Algorithm.EdDSA,
+  [JwkAlgorithm.ES256]: Algorithm.ES256,
+  [JwkAlgorithm.ES384]: Algorithm.ES384,
+  [JwkAlgorithm.ES512]: Algorithm.ES512,
 };
 
 /**
@@ -57,15 +57,15 @@ export const JWK_TO_COSE_ALGORITHMS: Record<JwkAlgorithms, Algorithm> = {
  * const coseKey = new Map([[1, JWK_TO_COSE_KEY_TYPES[JwkKeyTypes.EC]]]); // kty parameter
  * ```
  *
- * @see {@link JwkKeyTypes} - JWK key type string identifiers
+ * @see {@link JwkKeyType} - JWK key type string identifiers
  * @see {@link KeyType} - COSE key type numeric identifiers
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-type} - IANA COSE Key Types registry
  * @see {@link https://tools.ietf.org/html/rfc7517#section-4.1} - JWK key type specifications
  */
-export const JWK_TO_COSE_KEY_TYPES: Record<JwkKeyTypes, KeyType> = {
-  [JwkKeyTypes.OKP]: KeyType.OKP,
-  [JwkKeyTypes.EC]: KeyType.EC,
-  [JwkKeyTypes.oct]: KeyType.oct,
+export const JWK_TO_COSE_KEY_TYPES: Record<JwkKeyType, KeyType> = {
+  [JwkKeyType.OKP]: KeyType.OKP,
+  [JwkKeyType.EC]: KeyType.EC,
+  [JwkKeyType.oct]: KeyType.oct,
 };
 
 /**
@@ -88,17 +88,17 @@ export const JWK_TO_COSE_KEY_TYPES: Record<JwkKeyTypes, KeyType> = {
  * ]);
  * ```
  *
- * @see {@link JwkCurves} - JWK curve string identifiers
+ * @see {@link JwkCurve} - JWK curve string identifiers
  * @see {@link Curve} - COSE curve numeric identifiers
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves} - IANA COSE Elliptic Curves registry
  * @see {@link https://tools.ietf.org/html/rfc7518#section-6.2.1} - JWK curve specifications
  */
-export const JWK_TO_COSE_CURVES: Record<JwkCurves, Curve> = {
-  [JwkCurves.P256]: Curve.P256,
-  [JwkCurves.P384]: Curve.P384,
-  [JwkCurves.P521]: Curve.P521,
-  [JwkCurves.Ed25519]: Curve.Ed25519,
-  [JwkCurves.Ed448]: Curve.Ed448,
+export const JWK_TO_COSE_CURVES: Record<JwkCurve, Curve> = {
+  [JwkCurve.P256]: Curve.P256,
+  [JwkCurve.P384]: Curve.P384,
+  [JwkCurve.P521]: Curve.P521,
+  [JwkCurve.Ed25519]: Curve.Ed25519,
+  [JwkCurve.Ed448]: Curve.Ed448,
 };
 
 /**
@@ -121,21 +121,21 @@ export const JWK_TO_COSE_CURVES: Record<JwkCurves, Curve> = {
  * ]);
  * ```
  *
- * @see {@link JwkKeyParams} - JWK key parameter string identifiers
+ * @see {@link JwkKey} - JWK key parameter string identifiers
  * @see {@link Key} - COSE key parameter numeric identifiers
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-common-parameters} - IANA COSE Key Common Parameters registry
  * @see {@link https://tools.ietf.org/html/rfc7517#section-4} - JWK key parameter specifications
  */
-export const JWK_TO_COSE_KEY_PARAMS: Record<JwkKeyParams, Key> = {
-  [JwkKeyParams.KeyType]: Key.KeyType,
-  [JwkKeyParams.KeyID]: Key.KeyId,
-  [JwkKeyParams.Algorithm]: Key.Algorithm,
-  [JwkKeyParams.KeyOps]: Key.KeyOps,
-  [JwkKeyParams.Curve]: Key.Curve,
-  [JwkKeyParams.x]: Key.x,
-  [JwkKeyParams.y]: Key.y,
-  [JwkKeyParams.d]: Key.d,
-  [JwkKeyParams.k]: Key.k,
+export const JWK_TO_COSE_KEY_PARAMS: Record<JwkKey, Key> = {
+  [JwkKey.KeyType]: Key.KeyType,
+  [JwkKey.KeyID]: Key.KeyId,
+  [JwkKey.Algorithm]: Key.Algorithm,
+  [JwkKey.KeyOps]: Key.KeyOps,
+  [JwkKey.Curve]: Key.Curve,
+  [JwkKey.x]: Key.x,
+  [JwkKey.y]: Key.y,
+  [JwkKey.d]: Key.d,
+  [JwkKey.k]: Key.k,
 };
 
 /**
@@ -162,20 +162,20 @@ export const JWK_TO_COSE_KEY_PARAMS: Record<JwkKeyParams, Key> = {
  * ]);
  * ```
  *
- * @see {@link JwkKeyOps} - JWK key operation string identifiers
+ * @see {@link JwkKeyOp} - JWK key operation string identifiers
  * @see {@link KeyOp} - COSE key operation numeric identifiers
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-ops} - IANA COSE Key Operations registry
  * @see {@link https://tools.ietf.org/html/rfc7517#section-4.3} - JWK key operations specifications
  */
-export const JWK_TO_COSE_KEY_OPS: Record<JwkKeyOps, KeyOp> = {
-  [JwkKeyOps.Sign]: KeyOp.Sign,
-  [JwkKeyOps.Verify]: KeyOp.Verify,
-  [JwkKeyOps.Encrypt]: KeyOp.Encrypt,
-  [JwkKeyOps.Decrypt]: KeyOp.Decrypt,
-  [JwkKeyOps.WrapKey]: KeyOp.WrapKey,
-  [JwkKeyOps.UnwrapKey]: KeyOp.UnwrapKey,
-  [JwkKeyOps.DeriveKey]: KeyOp.DeriveKey,
-  [JwkKeyOps.DeriveBits]: KeyOp.DeriveBits,
+export const JWK_TO_COSE_KEY_OPS: Record<JwkKeyOp, KeyOp> = {
+  [JwkKeyOp.Sign]: KeyOp.Sign,
+  [JwkKeyOp.Verify]: KeyOp.Verify,
+  [JwkKeyOp.Encrypt]: KeyOp.Encrypt,
+  [JwkKeyOp.Decrypt]: KeyOp.Decrypt,
+  [JwkKeyOp.WrapKey]: KeyOp.WrapKey,
+  [JwkKeyOp.UnwrapKey]: KeyOp.UnwrapKey,
+  [JwkKeyOp.DeriveKey]: KeyOp.DeriveKey,
+  [JwkKeyOp.DeriveBits]: KeyOp.DeriveBits,
 };
 
 /**
@@ -203,13 +203,13 @@ export const JWK_TO_COSE_KEY_OPS: Record<JwkKeyOps, KeyOp> = {
  * ]);
  * ```
  *
- * @see {@link JwkMacKeyOps} - JWK MAC operation string identifiers
+ * @see {@link JwkMacKeyOp} - JWK MAC operation string identifiers
  * @see {@link KeyOp} - COSE key operation numeric identifiers
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-ops} - IANA COSE Key Operations registry
  */
-export const JWK_TO_COSE_MAC_KEY_OPS: Record<JwkMacKeyOps, KeyOp> = {
-  [JwkMacKeyOps.MACCreate]: KeyOp.MACCreate,
-  [JwkMacKeyOps.MACVerify]: KeyOp.MACVerify,
+export const JWK_TO_COSE_MAC_KEY_OPS: Record<JwkMacKeyOp, KeyOp> = {
+  [JwkMacKeyOp.MACCreate]: KeyOp.MACCreate,
+  [JwkMacKeyOp.MACVerify]: KeyOp.MACVerify,
 };
 
 /**
@@ -270,12 +270,12 @@ export const MAC_ALGORITHM_TO_DIGEST_ALGORITHM: Record<
  * Mapping from JWK MAC algorithms to their corresponding digest algorithms.
  */
 export const JWK_MAC_ALGORITHM_TO_DIGEST_ALGORITHM: Record<
-  JwkMacAlgorithms,
+  JwkMacAlgorithm,
   DigestAlgorithm
 > = {
-  [JwkMacAlgorithms.HS256]: 'SHA-256',
-  [JwkMacAlgorithms.HS384]: 'SHA-384',
-  [JwkMacAlgorithms.HS512]: 'SHA-512',
+  [JwkMacAlgorithm.HS256]: 'SHA-256',
+  [JwkMacAlgorithm.HS384]: 'SHA-384',
+  [JwkMacAlgorithm.HS512]: 'SHA-512',
 };
 
 /**
@@ -283,9 +283,9 @@ export const JWK_MAC_ALGORITHM_TO_DIGEST_ALGORITHM: Record<
  */
 export const MAC_ALGORITHM_TO_JWK_ALGORITHM: Record<
   MacAlgorithm,
-  JwkMacAlgorithms
+  JwkMacAlgorithm
 > = {
-  [MacAlgorithm.HS256]: JwkMacAlgorithms.HS256,
-  [MacAlgorithm.HS384]: JwkMacAlgorithms.HS384,
-  [MacAlgorithm.HS512]: JwkMacAlgorithms.HS512,
+  [MacAlgorithm.HS256]: JwkMacAlgorithm.HS256,
+  [MacAlgorithm.HS384]: JwkMacAlgorithm.HS384,
+  [MacAlgorithm.HS512]: JwkMacAlgorithm.HS512,
 };

@@ -1,23 +1,18 @@
 import { encodeBase64Url } from 'u8a-utils';
-import {
-  JwkKeyTypes,
-  JwkMacAlgorithms,
-  JwkMacKeyOps,
-  JwkOctKey,
-} from './types';
+import { JwkKeyType, JwkMacAlgorithm, JwkMacKeyOp, JwkOctKey } from './types';
 
 /**
  * Parameters for generating a JWK Octet Sequence Key (JwkOctKey).
  */
 type GenerateJwkOctKeyParams = {
   /** The MAC algorithm to be used with the key (e.g., HS256, HS384, HS512). */
-  alg: JwkMacAlgorithms;
+  alg: JwkMacAlgorithm;
   /** The symmetric key value as a Uint8Array. */
   k: Uint8Array;
   /** Optional key identifier. */
   kid?: string;
   /** Optional list of permitted key operations (e.g., "sign", "verify"). */
-  key_ops?: JwkMacKeyOps[];
+  key_ops?: JwkMacKeyOp[];
 };
 
 /**
@@ -48,7 +43,7 @@ export const generateJwkOctKey = ({
   key_ops,
 }: GenerateJwkOctKeyParams): JwkOctKey => {
   return {
-    kty: JwkKeyTypes.oct,
+    kty: JwkKeyType.oct,
     alg,
     k: encodeBase64Url(k),
     kid,

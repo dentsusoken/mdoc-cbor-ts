@@ -1,25 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { toJwkAlgorithm } from '../toJwkAlgorithm';
-import { JwkAlgorithms } from '../types';
+import { JwkAlgorithm } from '../types';
 
 describe('toJwkAlgorithm', () => {
   describe('should return valid JwkAlgorithms', () => {
     it('for valid JwkAlgorithms enum values', () => {
-      expect(toJwkAlgorithm(JwkAlgorithms.EdDSA)).toBe(JwkAlgorithms.EdDSA);
-      expect(toJwkAlgorithm(JwkAlgorithms.ES256)).toBe(JwkAlgorithms.ES256);
-      expect(toJwkAlgorithm(JwkAlgorithms.ES384)).toBe(JwkAlgorithms.ES384);
-      expect(toJwkAlgorithm(JwkAlgorithms.ES512)).toBe(JwkAlgorithms.ES512);
+      expect(toJwkAlgorithm(JwkAlgorithm.EdDSA)).toBe(JwkAlgorithm.EdDSA);
+      expect(toJwkAlgorithm(JwkAlgorithm.ES256)).toBe(JwkAlgorithm.ES256);
+      expect(toJwkAlgorithm(JwkAlgorithm.ES384)).toBe(JwkAlgorithm.ES384);
+      expect(toJwkAlgorithm(JwkAlgorithm.ES512)).toBe(JwkAlgorithm.ES512);
     });
 
     it('for string values that match JwkAlgorithms', () => {
-      expect(toJwkAlgorithm('EdDSA')).toBe(JwkAlgorithms.EdDSA);
-      expect(toJwkAlgorithm('ES256')).toBe(JwkAlgorithms.ES256);
-      expect(toJwkAlgorithm('ES384')).toBe(JwkAlgorithms.ES384);
-      expect(toJwkAlgorithm('ES512')).toBe(JwkAlgorithms.ES512);
+      expect(toJwkAlgorithm('EdDSA')).toBe(JwkAlgorithm.EdDSA);
+      expect(toJwkAlgorithm('ES256')).toBe(JwkAlgorithm.ES256);
+      expect(toJwkAlgorithm('ES384')).toBe(JwkAlgorithm.ES384);
+      expect(toJwkAlgorithm('ES512')).toBe(JwkAlgorithm.ES512);
     });
 
     it('for all enum values systematically', () => {
-      const allAlgorithms = Object.values(JwkAlgorithms);
+      const allAlgorithms = Object.values(JwkAlgorithm);
 
       allAlgorithms.forEach((algorithm) => {
         expect(toJwkAlgorithm(algorithm)).toBe(algorithm);

@@ -16,10 +16,18 @@ describe('formatMessage', () => {
     );
   });
 
+  it('should not strip when the left side is not a path (contains dashes)', () => {
+    const msg = 'Expected YYYY-MM-DDTHH:MM:SSZ format, received not-a-datetime';
+    expect(formatMessage(msg)).toBe(msg);
+  });
+
+  it('should treat object/array paths as paths and strip them', () => {
+    expect(formatMessage('Aaa[0].key: hoge')).toBe('hoge');
+  });
+
   it('should return empty string when input is empty', () => {
     expect(formatMessage('')).toBe('');
   });
-
   it('should default to "Invalid value" when called without argument', () => {
     expect(formatMessage()).toBe('Invalid value');
   });

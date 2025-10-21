@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { bytesSchema } from '../Bytes';
 import { z } from 'zod';
+import { valueInvalidTypeMessage } from '@/schemas/messages/valueInvalidTypeMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('bytesSchema', () => {
   describe('valid inputs', () => {
@@ -20,6 +22,11 @@ describe('bytesSchema', () => {
   });
 
   describe('invalid inputs', () => {
+    const expectedMessage = (v: unknown): string =>
+      valueInvalidTypeMessage({
+        expected: 'Uint8Array or Buffer',
+        received: getTypeName(v),
+      });
     const invalidCases: Array<{
       name: string;
       input: unknown;
@@ -28,52 +35,52 @@ describe('bytesSchema', () => {
       {
         name: 'string',
         input: 'foo',
-        expectedMessage: 'Expected Buffer or Uint8Array, received string',
+        expectedMessage: expectedMessage('foo'),
       },
       {
         name: 'number',
         input: 123,
-        expectedMessage: 'Expected Buffer or Uint8Array, received number',
+        expectedMessage: expectedMessage(123),
       },
       {
         name: 'boolean',
         input: false,
-        expectedMessage: 'Expected Buffer or Uint8Array, received boolean',
+        expectedMessage: expectedMessage(false),
       },
       {
         name: 'array',
         input: [1, 2],
-        expectedMessage: 'Expected Buffer or Uint8Array, received array',
+        expectedMessage: expectedMessage([1, 2]),
       },
       {
         name: 'object',
         input: { a: 1 },
-        expectedMessage: 'Expected Buffer or Uint8Array, received object',
+        expectedMessage: expectedMessage({ a: 1 }),
       },
       {
         name: 'date',
         input: new Date('2020-01-01'),
-        expectedMessage: 'Expected Buffer or Uint8Array, received date',
+        expectedMessage: expectedMessage(new Date('2020-01-01')),
       },
       {
         name: 'map',
         input: new Map(),
-        expectedMessage: 'Expected Buffer or Uint8Array, received map',
+        expectedMessage: expectedMessage(new Map()),
       },
       {
         name: 'set',
         input: new Set(),
-        expectedMessage: 'Expected Buffer or Uint8Array, received set',
+        expectedMessage: expectedMessage(new Set()),
       },
       {
         name: 'null',
         input: null,
-        expectedMessage: 'Expected Buffer or Uint8Array, received null',
+        expectedMessage: expectedMessage(null),
       },
       {
         name: 'undefined',
         input: undefined,
-        expectedMessage: 'Expected Buffer or Uint8Array, received undefined',
+        expectedMessage: expectedMessage(undefined),
       },
     ];
 

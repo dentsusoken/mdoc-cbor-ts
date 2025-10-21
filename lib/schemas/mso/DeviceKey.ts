@@ -1,26 +1,40 @@
-import { COSEKey } from '@auth0/cose';
 import { z } from 'zod';
-import { createLabelKeyMapSchema } from '@/schemas/cose/LabelKeyMap';
-
-export const DEVICE_KEY_MISSING_KTY_MESSAGE =
-  'DeviceKey: COSE_Key must include label 1 (kty) or "kty".';
+import { createKeyMapSchema } from '@/schemas/cose/KeyMap';
+import { Key } from '@/cose/types';
 
 /**
- * Schema for device key in MSO
- * @description
- * Validates a required COSE_Key mapping represented as a `Map<label, value>`
- * where labels are integers or text. Ensures the presence of the key type
- * label (`1` or `'kty'`) and transforms the validated Map into a `COSEKey`
- * instance while preserving structure.
+ * Error message used when a `DeviceKey` is missing the required key type label.
  *
- * Error messages are prefixed with `DeviceKey: ...` and standardized via the
- * exported message constants.
+ * This message is shown when a COSE_Key map does not include the key type (label `1`, a.k.a. `kty`).
+ * It is used as a standardized Zod error message during validation.
  *
- * Validation rules:
- * - Requires a `Map` instance with numeric or string labels
- * - Requires presence (non-undefined)
- * - Requires that label `1` (kty) or `'kty'` is present
+ * @see {@link deviceKeySchema}
+ * @example
+ * ```typescript
+ * // Throws ZodError if label 1 is missing.
+ * // Example map without kty (only kid present):
+ * // import { Key, type KeyValues } from '@/cose/types';
+ * deviceKeySchema.parse(
+ *   new Map<KeyValues, unknown>([[Key.KeyId, new Uint8Array([1, 2, 3])]])
+ * );
+ * // => ZodError
+ * ```
+ */
+export const DEVICE_KEY_MISSING_KTY_MESSAGE =
+  'DeviceKey: COSE_Key must include label 1 (kty).';
+
+/**
+ * Zod schema for a DeviceKey (COSE_Key) used in MSO.
  *
+ * - Accepts a Map representing a COSE_Key, where keys are numeric or string labels.
+ * - Requires label `1` (kty) to be present in the map.
+ * - Validates structure and provides standardized error messages with a `DeviceKey:` prefix.
+ *
+ * Validation details:
+ * - Input must be a Map with numeric or string labels.
+ * - The key type label (1, or `KeyType`) is mandatory.
+ *
+ * CDDL reference:
  * ```cddl
  * DeviceKey = COSE_Key
  *
@@ -44,51 +58,35 @@ export const DEVICE_KEY_MISSING_KTY_MESSAGE =
  *
  * @example
  * ```typescript
- * const keyMap = new Map<unknown, unknown>([[1, 2]]); // 1 => kty (e.g., 2 for EC2)
+ * import { Key, KeyType, Algorithm, type KeyValues } from '@/cose/types';
+ *
+ * // Valid DeviceKey example (use COSE enums for labels/values):
+ * const keyMap = new Map<KeyValues, unknown>([[Key.KeyType, KeyType.EC]]);
  * const result = deviceKeySchema.parse(keyMap); // COSEKey
  * ```
  *
  * @example
  * ```typescript
- * // Throws ZodError (missing kty)
- * // Message: DeviceKey: COSE_Key must include label 1 (kty) or "kty".
- * const missingKty = new Map<unknown, unknown>([[3, 'ES256']]);
+ * import { Key, KeyType, Algorithm, type KeyValues } from '@/cose/types';
+ *
+ * // Throws ZodError for missing kty:
+ * const missingKty = new Map<KeyValues, unknown>([[Key.Algorithm, Algorithm.ES256]]);
  * deviceKeySchema.parse(missingKty);
  * ```
  *
  * @example
  * ```typescript
- * // Throws ZodError (invalid type)
- * // Message: DeviceKey: Expected a Map with numeric or string labels for COSE_Key parameters.
+ * // Throws ZodError for invalid type:
  * // @ts-expect-error
  * deviceKeySchema.parse({ 1: 2 });
  * ```
  *
- * @example
- * ```typescript
- * // Throws ZodError (required)
- * // Message: DeviceKey: This field is required. Please provide a COSE_Key mapping.
- * // @ts-expect-error
- * deviceKeySchema.parse(undefined);
- * ```
- *
- * @see {@link COSEKey}
+ * @see {@link Key}
  */
-export const deviceKeySchema = createLabelKeyMapSchema(
-  'DeviceKey',
-  false
-).superRefine((value, ctx) => {
-  if (!(value instanceof Map)) {
-    return;
-  }
-  const hasKty = value.has(1) || value.has('kty');
-  if (!hasKty) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: DEVICE_KEY_MISSING_KTY_MESSAGE,
-    });
-  }
-});
+export const deviceKeySchema = createKeyMapSchema('DeviceKey').refine(
+  (value) => (value instanceof Map ? value.has(Key.KeyType) : true),
+  { message: DEVICE_KEY_MISSING_KTY_MESSAGE }
+);
 
 /**
  * Type definition for device key

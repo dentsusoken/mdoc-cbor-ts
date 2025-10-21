@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCosePublicKey } from '../jwkToCosePublicKey';
-import { JwkPublicKey, JwkAlgorithms, JwkCurves } from '@/jwk/types';
+import { JwkPublicKey, JwkAlgorithm, JwkCurve } from '@/jwk/types';
 import { Key, KeyType, Curve, Algorithm, KeyOp } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
 
@@ -23,7 +23,7 @@ describe('jwkToCosePublicKey', () => {
     overrides: Partial<JwkPublicKey> = {}
   ): JwkPublicKey => ({
     kty: 'OKP',
-    crv: JwkCurves.Ed25519,
+    crv: JwkCurve.Ed25519,
     x: encodeBase64Url(edPublicKey),
     ...overrides,
   });
@@ -43,7 +43,7 @@ describe('jwkToCosePublicKey', () => {
 
     it('for P-256 JWK with algorithm specified', () => {
       const jwk = createValidEcJwk({
-        alg: JwkAlgorithms.ES256,
+        alg: JwkAlgorithm.ES256,
       });
       const result = jwkToCosePublicKey(jwk);
 
@@ -54,7 +54,7 @@ describe('jwkToCosePublicKey', () => {
 
     it('for P-384 JWK', () => {
       const jwk = createValidEcJwk({
-        crv: JwkCurves.P384,
+        crv: JwkCurve.P384,
       });
       const result = jwkToCosePublicKey(jwk);
 
@@ -65,7 +65,7 @@ describe('jwkToCosePublicKey', () => {
 
     it('for P-521 JWK', () => {
       const jwk = createValidEcJwk({
-        crv: JwkCurves.P521,
+        crv: JwkCurve.P521,
       });
       const result = jwkToCosePublicKey(jwk);
 
@@ -99,7 +99,7 @@ describe('jwkToCosePublicKey', () => {
 
     it('for Ed25519 JWK with algorithm specified', () => {
       const jwk = createValidOkpJwk({
-        alg: JwkAlgorithms.EdDSA,
+        alg: JwkAlgorithm.EdDSA,
       });
       const result = jwkToCosePublicKey(jwk);
 

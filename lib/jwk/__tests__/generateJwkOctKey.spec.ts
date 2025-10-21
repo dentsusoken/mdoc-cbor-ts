@@ -1,11 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateJwkOctKey } from '../generateJwkOctKey';
-import {
-  JwkKeyTypes,
-  JwkMacAlgorithms,
-  JwkMacKeyOps,
-  JwkOctKey,
-} from '../types';
+import { JwkKeyType, JwkMacAlgorithm, JwkMacKeyOp, JwkOctKey } from '../types';
 import { decodeBase64Url } from 'u8a-utils';
 
 describe('generateJwkOctKey', () => {
@@ -17,13 +12,13 @@ describe('generateJwkOctKey', () => {
       ]);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
       expect(jwk).toBeDefined();
-      expect(jwk.kty).toBe(JwkKeyTypes.oct);
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS256);
+      expect(jwk.kty).toBe(JwkKeyType.oct);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS256);
       expect(jwk.k).toBeDefined();
       expect(typeof jwk.k).toBe('string');
     });
@@ -32,12 +27,12 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(48); // 384-bit key
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS384,
+        alg: JwkMacAlgorithm.HS384,
         k: key,
       });
 
-      expect(jwk.kty).toBe(JwkKeyTypes.oct);
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS384);
+      expect(jwk.kty).toBe(JwkKeyType.oct);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS384);
       expect(jwk.k).toBeDefined();
     });
 
@@ -45,12 +40,12 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(64); // 512-bit key
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS512,
+        alg: JwkMacAlgorithm.HS512,
         k: key,
       });
 
-      expect(jwk.kty).toBe(JwkKeyTypes.oct);
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS512);
+      expect(jwk.kty).toBe(JwkKeyType.oct);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS512);
       expect(jwk.k).toBeDefined();
     });
   });
@@ -60,7 +55,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array([1, 2, 3, 4, 5]);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -72,7 +67,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array([]);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -85,7 +80,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32); // All zeros
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -98,7 +93,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32).fill(0xff);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -117,7 +112,7 @@ describe('generateJwkOctKey', () => {
         }
 
         const jwk = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
         });
 
@@ -134,7 +129,7 @@ describe('generateJwkOctKey', () => {
       const kid = 'my-key-id';
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         kid,
       });
@@ -146,7 +141,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -166,7 +161,7 @@ describe('generateJwkOctKey', () => {
 
       kidFormats.forEach((kid) => {
         const jwk = generateJwkOctKey({
-          alg: JwkMacAlgorithms.HS256,
+          alg: JwkMacAlgorithm.HS256,
           k: key,
           kid,
         });
@@ -179,7 +174,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         kid: '',
       });
@@ -193,48 +188,48 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
-        key_ops: [JwkMacKeyOps.MACCreate],
+        key_ops: [JwkMacKeyOp.MACCreate],
       });
 
-      expect(jwk.key_ops).toEqual([JwkMacKeyOps.MACCreate]);
+      expect(jwk.key_ops).toEqual([JwkMacKeyOp.MACCreate]);
     });
 
     it('should include key_ops when provided with MACVerify', () => {
       const key = new Uint8Array(32);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
-        key_ops: [JwkMacKeyOps.MACVerify],
+        key_ops: [JwkMacKeyOp.MACVerify],
       });
 
-      expect(jwk.key_ops).toEqual([JwkMacKeyOps.MACVerify]);
+      expect(jwk.key_ops).toEqual([JwkMacKeyOp.MACVerify]);
     });
 
     it('should include key_ops with both MACCreate and MACVerify', () => {
       const key = new Uint8Array(32);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
-        key_ops: [JwkMacKeyOps.MACCreate, JwkMacKeyOps.MACVerify],
+        key_ops: [JwkMacKeyOp.MACCreate, JwkMacKeyOp.MACVerify],
       });
 
       expect(jwk.key_ops).toEqual([
-        JwkMacKeyOps.MACCreate,
-        JwkMacKeyOps.MACVerify,
+        JwkMacKeyOp.MACCreate,
+        JwkMacKeyOp.MACVerify,
       ]);
-      expect(jwk.key_ops).toContain(JwkMacKeyOps.MACCreate);
-      expect(jwk.key_ops).toContain(JwkMacKeyOps.MACVerify);
+      expect(jwk.key_ops).toContain(JwkMacKeyOp.MACCreate);
+      expect(jwk.key_ops).toContain(JwkMacKeyOp.MACVerify);
     });
 
     it('should not include key_ops when not provided', () => {
       const key = new Uint8Array(32);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -245,7 +240,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         key_ops: [],
       });
@@ -263,19 +258,19 @@ describe('generateJwkOctKey', () => {
       }
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         kid: 'complete-key-id',
-        key_ops: [JwkMacKeyOps.MACCreate, JwkMacKeyOps.MACVerify],
+        key_ops: [JwkMacKeyOp.MACCreate, JwkMacKeyOp.MACVerify],
       });
 
-      expect(jwk.kty).toBe(JwkKeyTypes.oct);
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS256);
+      expect(jwk.kty).toBe(JwkKeyType.oct);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS256);
       expect(jwk.k).toBeDefined();
       expect(jwk.kid).toBe('complete-key-id');
       expect(jwk.key_ops).toEqual([
-        JwkMacKeyOps.MACCreate,
-        JwkMacKeyOps.MACVerify,
+        JwkMacKeyOp.MACCreate,
+        JwkMacKeyOp.MACVerify,
       ]);
 
       // Verify key can be decoded
@@ -287,12 +282,12 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array([0xde, 0xad, 0xbe, 0xef]);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS384,
+        alg: JwkMacAlgorithm.HS384,
         k: key,
       });
 
-      expect(jwk.kty).toBe(JwkKeyTypes.oct);
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS384);
+      expect(jwk.kty).toBe(JwkKeyType.oct);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS384);
       expect(jwk.k).toBeDefined();
       expect(jwk.kid).toBeUndefined();
       expect(jwk.key_ops).toBeUndefined();
@@ -302,10 +297,10 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32);
 
       const jwk: JwkOctKey = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS512,
+        alg: JwkMacAlgorithm.HS512,
         k: key,
         kid: 'test-key',
-        key_ops: [JwkMacKeyOps.MACCreate],
+        key_ops: [JwkMacKeyOp.MACCreate],
       });
 
       expect(jwk).toBeDefined();
@@ -322,11 +317,11 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32); // Recommended: 256 bits = 32 bytes
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS256);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS256);
       const decodedKey = decodeBase64Url(jwk.k);
       expect(decodedKey.length).toBe(32);
     });
@@ -335,11 +330,11 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(48); // Recommended: 384 bits = 48 bytes
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS384,
+        alg: JwkMacAlgorithm.HS384,
         k: key,
       });
 
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS384);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS384);
       const decodedKey = decodeBase64Url(jwk.k);
       expect(decodedKey.length).toBe(48);
     });
@@ -348,11 +343,11 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(64); // Recommended: 512 bits = 64 bytes
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS512,
+        alg: JwkMacAlgorithm.HS512,
         k: key,
       });
 
-      expect(jwk.alg).toBe(JwkMacAlgorithms.HS512);
+      expect(jwk.alg).toBe(JwkMacAlgorithm.HS512);
       const decodedKey = decodeBase64Url(jwk.k);
       expect(decodedKey.length).toBe(64);
     });
@@ -363,7 +358,7 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array([0x42]);
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
 
@@ -379,7 +374,7 @@ describe('generateJwkOctKey', () => {
       }
 
       const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS512,
+        alg: JwkMacAlgorithm.HS512,
         k: key,
       });
 
@@ -393,12 +388,12 @@ describe('generateJwkOctKey', () => {
       const key2 = new Uint8Array([1, 2, 4]);
 
       const jwk1 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key1,
       });
 
       const jwk2 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key2,
       });
 
@@ -409,13 +404,13 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array([1, 2, 3, 4, 5]);
 
       const jwk1 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         kid: 'same-id',
       });
 
       const jwk2 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
         kid: 'same-id',
       });
@@ -428,14 +423,14 @@ describe('generateJwkOctKey', () => {
     it('should always set kty to "oct"', () => {
       const key = new Uint8Array(32);
       const algorithms = [
-        JwkMacAlgorithms.HS256,
-        JwkMacAlgorithms.HS384,
-        JwkMacAlgorithms.HS512,
+        JwkMacAlgorithm.HS256,
+        JwkMacAlgorithm.HS384,
+        JwkMacAlgorithm.HS512,
       ];
 
       algorithms.forEach((alg) => {
         const jwk = generateJwkOctKey({ alg, k: key });
-        expect(jwk.kty).toBe(JwkKeyTypes.oct);
+        expect(jwk.kty).toBe(JwkKeyType.oct);
         expect(jwk.kty).toBe('oct');
       });
     });
@@ -444,19 +439,19 @@ describe('generateJwkOctKey', () => {
       const key = new Uint8Array(32);
 
       const jwkHS256 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS256,
+        alg: JwkMacAlgorithm.HS256,
         k: key,
       });
       expect(jwkHS256.alg).toBe('HS256');
 
       const jwkHS384 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS384,
+        alg: JwkMacAlgorithm.HS384,
         k: key,
       });
       expect(jwkHS384.alg).toBe('HS384');
 
       const jwkHS512 = generateJwkOctKey({
-        alg: JwkMacAlgorithms.HS512,
+        alg: JwkMacAlgorithm.HS512,
         k: key,
       });
       expect(jwkHS512.alg).toBe('HS512');

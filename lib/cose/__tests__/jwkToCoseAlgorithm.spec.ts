@@ -1,15 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCoseAlgorithm } from '../jwkToCoseAlgorithm';
-import { JwkAlgorithms } from '@/jwk/types';
+import { JwkAlgorithm } from '@/jwk/types';
 import { Algorithm } from '../types';
 
 describe('jwkToCoseAlgorithm', () => {
   describe('should return correct COSE algorithms', () => {
     it('for valid JwkAlgorithms enum values', () => {
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.EdDSA)).toBe(Algorithm.EdDSA);
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES256)).toBe(Algorithm.ES256);
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES384)).toBe(Algorithm.ES384);
-      expect(jwkToCoseAlgorithm(JwkAlgorithms.ES512)).toBe(Algorithm.ES512);
+      expect(jwkToCoseAlgorithm(JwkAlgorithm.EdDSA)).toBe(Algorithm.EdDSA);
+      expect(jwkToCoseAlgorithm(JwkAlgorithm.ES256)).toBe(Algorithm.ES256);
+      expect(jwkToCoseAlgorithm(JwkAlgorithm.ES384)).toBe(Algorithm.ES384);
+      expect(jwkToCoseAlgorithm(JwkAlgorithm.ES512)).toBe(Algorithm.ES512);
     });
 
     it('for string values that match JwkAlgorithms', () => {
@@ -20,7 +20,7 @@ describe('jwkToCoseAlgorithm', () => {
     });
 
     it('for all enum values systematically', () => {
-      const allJwkAlgorithms = Object.values(JwkAlgorithms);
+      const allJwkAlgorithms = Object.values(JwkAlgorithm);
       const expectedCoseAlgorithms = [
         Algorithm.EdDSA,
         Algorithm.ES256,

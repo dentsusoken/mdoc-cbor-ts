@@ -24,7 +24,7 @@ export const createRecordSchema = <K extends string | number, VO, VI = VO>({
   z.any().transform((data, ctx) => {
     const received = getTypeName(data);
     if (received !== 'object') {
-      return ctx.addIssue({
+      ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: containerInvalidTypeMessage({
           target,
@@ -32,15 +32,19 @@ export const createRecordSchema = <K extends string | number, VO, VI = VO>({
           received,
         }),
       });
+
+      return z.NEVER;
     }
 
     const entries = Object.entries(data);
 
     if (nonempty && entries.length === 0) {
-      return ctx.addIssue({
+      ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: containerEmptyMessage(target),
       });
+
+      return z.NEVER;
     }
 
     let hasError = false;
@@ -55,7 +59,11 @@ export const createRecordSchema = <K extends string | number, VO, VI = VO>({
           ctx.addIssue({
             ...issue,
             path,
-            message: containerInvalidValueMessage(target, path, issue.message),
+            message: containerInvalidValueMessage({
+              target,
+              path,
+              originalMessage: issue.message,
+            }),
           });
         });
       }
@@ -68,7 +76,11 @@ export const createRecordSchema = <K extends string | number, VO, VI = VO>({
           ctx.addIssue({
             ...issue,
             path,
-            message: containerInvalidValueMessage(target, path, issue.message),
+            message: containerInvalidValueMessage({
+              target,
+              path,
+              originalMessage: issue.message,
+            }),
           });
         });
       }
