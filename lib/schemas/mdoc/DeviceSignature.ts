@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { createSign1Schema } from '../cose/Sign1';
+import { createSign1Schema } from '@/schemas/cose/Sign1';
 
 /**
  * Schema for device signature in mdoc
