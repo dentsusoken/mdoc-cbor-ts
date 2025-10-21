@@ -1,4 +1,3 @@
-import { Mac0, Sign1 } from '@auth0/cose';
 import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
@@ -6,9 +5,10 @@ import {
   deviceAuthSchema,
   DEVICE_AUTH_AT_LEAST_ONE_MESSAGE,
 } from '../DeviceAuth';
-import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
-import { requiredMessage } from '@/schemas/common/Required';
-import { fixedTupleLengthInvalidTypeMessage } from '@/schemas/common/FixedTupleLength';
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
+import { getTypeName } from '@/utils/getTypeName';
+import { createTag18 } from '@/cbor/createTag18';
 
 describe('DeviceAuth', () => {
   describe('should accept valid device authentication', () => {
@@ -16,13 +16,18 @@ describe('DeviceAuth', () => {
       {
         name: 'device signature only',
         input: ((): Map<string, unknown> => {
-          const sign1 = new Sign1(
-            Uint8Array.from([]),
+          const tuple: [
+            Uint8Array,
+            Map<number, string>,
+            Uint8Array,
+            Uint8Array,
+          ] = [
+            new Uint8Array([]),
             new Map<number, string>([[1, 'value']]),
-            Uint8Array.from([]),
-            Uint8Array.from([])
-          );
-          return new Map([['deviceSignature', sign1.getContentForEncoding()]]);
+            new Uint8Array([]),
+            new Uint8Array([]),
+          ];
+          return new Map([['deviceSignature', createTag18(tuple)]]);
         })(),
         expectedSignature: true,
         expectedMac: false,
@@ -30,13 +35,13 @@ describe('DeviceAuth', () => {
       {
         name: 'device MAC only',
         input: ((): Map<string, unknown> => {
-          const mac0 = new Mac0(
-            Uint8Array.from([]),
+          const tuple = [
+            new Uint8Array([]),
             new Map<number, string>([[1, 'value']]),
-            Uint8Array.from([]),
-            Uint8Array.from([])
-          );
-          return new Map([['deviceMac', mac0.getContentForEncoding()]]);
+            new Uint8Array([]),
+            new Uint8Array([]),
+          ] as const;
+          return new Map([['deviceMac', new Tag(tuple, 17)]]);
         })(),
         expectedSignature: false,
         expectedMac: true,
@@ -44,21 +49,31 @@ describe('DeviceAuth', () => {
       {
         name: 'both device signature and MAC',
         input: ((): Map<string, unknown> => {
-          const sign1 = new Sign1(
-            Uint8Array.from([]),
+          const sign1Tuple: [
+            Uint8Array,
+            Map<number, string>,
+            Uint8Array,
+            Uint8Array,
+          ] = [
+            new Uint8Array([]),
             new Map<number, string>([[1, 'value']]),
-            Uint8Array.from([]),
-            Uint8Array.from([])
-          );
-          const mac0 = new Mac0(
-            Uint8Array.from([]),
+            new Uint8Array([]),
+            new Uint8Array([]),
+          ];
+          const mac0Tuple: [
+            Uint8Array,
+            Map<number, string>,
+            Uint8Array,
+            Uint8Array,
+          ] = [
+            new Uint8Array([]),
             new Map<number, string>([[1, 'value']]),
-            Uint8Array.from([]),
-            Uint8Array.from([])
-          );
+            new Uint8Array([]),
+            new Uint8Array([]),
+          ];
           return new Map([
-            ['deviceSignature', sign1.getContentForEncoding()],
-            ['deviceMac', mac0.getContentForEncoding()],
+            ['deviceSignature', createTag18(sign1Tuple)],
+            ['deviceMac', new Tag(mac0Tuple, 17)],
           ]);
         })(),
         expectedSignature: true,
@@ -69,17 +84,19 @@ describe('DeviceAuth', () => {
     testCases.forEach(({ name, input, expectedSignature, expectedMac }) => {
       it(`should accept ${name}`, () => {
         const result = deviceAuthSchema.parse(input);
-        const signature = result.deviceSignature;
-        const mac = result.deviceMac;
+        const signature = result.get('deviceSignature');
+        const mac = result.get('deviceMac');
 
         if (expectedSignature) {
-          expect(signature).toBeInstanceOf(Sign1);
+          expect(signature).toBeInstanceOf(Tag);
+          expect((signature as Tag).tag).toBe(18);
         } else {
           expect(signature).toBeUndefined();
         }
 
         if (expectedMac) {
-          expect(mac).toBeInstanceOf(Mac0);
+          expect(mac).toBeInstanceOf(Tag);
+          expect((mac as Tag).tag).toBe(17);
         } else {
           expect(mac).toBeUndefined();
         }
@@ -88,70 +105,125 @@ describe('DeviceAuth', () => {
   });
 
   describe('should throw error for invalid input', () => {
-    const mapInvalid = mapInvalidTypeMessage('DeviceAuth');
-    const daRequired = requiredMessage('DeviceAuth');
-    const dmRequired = requiredMessage('DeviceMac');
-    const dsRequired = requiredMessage('DeviceSignature');
-    const dmFixedTupleLengthInvalidType =
-      fixedTupleLengthInvalidTypeMessage('DeviceMac');
-    const dsFixedTupleLengthInvalidType =
-      fixedTupleLengthInvalidTypeMessage('DeviceSignature');
+    const TARGET = 'DeviceAuth';
 
     const testCases = [
       {
         name: 'null input',
         input: null,
-        expectedMessage: daRequired,
+        expectedMessage: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: daRequired,
+        expectedMessage: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName(undefined),
+        }),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: mapInvalid,
+        expectedMessage: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: mapInvalid,
+        expectedMessage: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName(123),
+        }),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: mapInvalid,
+        expectedMessage: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName('string'),
+        }),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: mapInvalid,
+        expectedMessage: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName([]),
+        }),
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage: mapInvalid,
+        expectedMessage: containerInvalidTypeMessage({
+          target: TARGET,
+          expected: 'Map',
+          received: getTypeName({}),
+        }),
       },
       {
         name: 'Map with null deviceSignature',
         input: new Map([['deviceSignature', null]]),
-        expectedMessage: dsRequired,
+        expectedMessage: containerInvalidValueMessage({
+          target: TARGET,
+          path: ['deviceSignature'],
+          originalMessage: containerInvalidTypeMessage({
+            target: 'DeviceSignature',
+            expected:
+              '[Uint8Array, HeaderMap, Uint8Array | null, Uint8Array] or Tag(18)',
+            received: getTypeName(null),
+          }),
+        }),
       },
       {
         name: 'Map with null deviceMac',
         input: new Map([['deviceMac', null]]),
-        expectedMessage: dmRequired,
+        expectedMessage: containerInvalidValueMessage({
+          target: TARGET,
+          path: ['deviceMac'],
+          originalMessage: containerInvalidTypeMessage({
+            target: 'DeviceMac',
+            expected:
+              '[Uint8Array, HeaderMap, Uint8Array | null, Uint8Array] or Tag(17)',
+            received: getTypeName(null),
+          }),
+        }),
       },
       {
         name: 'Map with Tag deviceSignature',
         input: new Map([['deviceSignature', new Tag(0, 17)]]),
-        expectedMessage: dsFixedTupleLengthInvalidType,
+        expectedMessage: containerInvalidValueMessage({
+          target: TARGET,
+          path: ['deviceSignature'],
+          originalMessage: containerInvalidTypeMessage({
+            target: 'DeviceSignature',
+            expected: 'Tag(18)',
+            received: 'Tag(17)',
+          }),
+        }),
       },
       {
         name: 'Map with Tag deviceMac',
         input: new Map([['deviceMac', new Tag(0, 18)]]),
-        expectedMessage: dmFixedTupleLengthInvalidType,
+        expectedMessage: containerInvalidValueMessage({
+          target: TARGET,
+          path: ['deviceMac'],
+          originalMessage: containerInvalidTypeMessage({
+            target: 'DeviceMac',
+            expected: 'Tag(17)',
+            received: 'Tag(18)',
+          }),
+        }),
       },
       {
         name: 'empty Map',
