@@ -1,19 +1,17 @@
 import { z } from 'zod';
-import { dataElementIdentifierSchema } from '../cbor/DataElementIdentifier';
-import { dataElementValueSchema } from '../common/DataElementValue';
-import { createMapSchema } from '@/schemas/common/containers/Map';
+import { createMapSchema } from '@/schemas/containers/Map';
 
 /**
  * Schema for device-signed items in mdoc
  * @description
- * Validates a required, non-empty `Map` of `DataElementIdentifier` to `DataElementValue`
- * representing the data elements signed by the device.
+ * Validates a required, non-empty `Map` where each key is a non-empty `string`
+ * (serving as a DataElementIdentifier) and each value is any value (DataElementValue).
  *
  * Validation rules:
- * - Requires input to be a `Map`
- * - Disallows empty maps (at least one entry is required)
- * - Keys must satisfy {@link DataElementIdentifier}
- * - Values must satisfy {@link DataElementValue}
+ * - Input must be a `Map` instance
+ * - Map must contain at least one entry (nonempty)
+ * - Keys: must be strings of length 1 or more (`z.string().min(1)`)
+ * - Values: any value is allowed (`z.unknown()`)
  *
  * Error messages are prefixed with the target name: `DeviceSignedItems: ...`.
  *
@@ -31,14 +29,12 @@ import { createMapSchema } from '@/schemas/common/containers/Map';
  * ]);
  * const result = deviceSignedItemsSchema.parse(items); // Returns Map<string, unknown>
  * ```
- *
- * @see {@link DataElementIdentifier}
- * @see {@link DataElementValue}
  */
 export const deviceSignedItemsSchema = createMapSchema({
   target: 'DeviceSignedItems',
-  keySchema: dataElementIdentifierSchema,
-  valueSchema: dataElementValueSchema,
+  keySchema: z.string().min(1), // DataElementIdentifier: string of at least length 1
+  valueSchema: z.unknown(), // DataElementValue: any value allowed
+  nonempty: true,
 });
 
 /**

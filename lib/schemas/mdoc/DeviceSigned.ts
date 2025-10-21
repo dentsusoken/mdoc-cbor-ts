@@ -1,54 +1,66 @@
 import { z } from 'zod';
 import { deviceAuthSchema } from './DeviceAuth';
-import { deviceNameSpacesBytesSchema } from './DeviceNameSpacesBytes';
-import { createStructSchema } from '@/schemas/common/Struct';
+import { embeddedCborSchema } from '@/schemas/cbor/EmbeddedCbor';
+import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 
 /**
- * Object schema for device-signed data validation
+ * Entries definition for the DeviceSigned schema in mdoc.
  * @description
- * Validates that a device-signed object has the required properties and types.
- * This object schema is used internally by {@link deviceSignedSchema} after transforming
- * the input Map into a plain object.
+ * Specifies the required fields and their associated schemas for the device-signed
+ * container as used in mdoc. This definition is provided to {@link createStrictMapSchema}
+ * to enable validation and type inference for device-signed Map inputs.
+ *
+ * Structure:
+ * - "nameSpaces": Required. Validated by {@link embeddedCborSchema}, representing a CBOR-encoded
+ *   DeviceNameSpaces structure (i.e., `DeviceNameSpacesBytes`).
+ * - "deviceAuth": Required. Validated by {@link deviceAuthSchema}, representing the device
+ *   authentication container (either signature or MAC or both).
  *
  * ```cddl
  * DeviceSigned = {
- *  "nameSpaces": DeviceNameSpacesBytes,
- *  "deviceAuth": DeviceAuth
+ *   "nameSpaces": DeviceNameSpacesBytes,
+ *   "deviceAuth": DeviceAuth
  * }
  * ```
  *
- * Properties:
- * - nameSpaces: {@link DeviceNameSpacesBytes}
- * - deviceAuth: {@link DeviceAuth}
+ * @see {@link embeddedCborSchema}
+ * @see {@link deviceAuthSchema}
  */
-export const deviceSignedObjectSchema = z.object({
-  nameSpaces: deviceNameSpacesBytesSchema,
-  deviceAuth: deviceAuthSchema,
-});
+export const deviceSignedEntries = [
+  ['nameSpaces', embeddedCborSchema],
+  ['deviceAuth', deviceAuthSchema],
+] as const;
 
 /**
  * Schema for device-signed data in mdoc
  * @description
- * Represents the portion of the mdoc that is signed by the device.
- * This schema validates the structure of device-signed data including namespaces and authentication.
- * The schema accepts a Map input and transforms it to a plain object for validation.
+ * Validates the main container of device-signed data in mdoc, ensuring the presence of mandatory
+ * "nameSpaces" (CBOR-encoded device-signed namespaces) and "deviceAuth" (authentication, either
+ * device signature, device MAC, or both). Uses a strict Map schema to enforce both presence and type.
+ *
+ * ```cddl
+ * DeviceSigned = {
+ *   "nameSpaces": DeviceNameSpacesBytes,
+ *   "deviceAuth": DeviceAuth
+ * }
+ * ```
  *
  * @example
  * ```typescript
- * const deviceSigned = new Map([
- *   ['nameSpaces', byteString],
- *   ['deviceAuth', new Map([['deviceSignature', sign1.getContentForEncoding()]])]
+ * const map = new Map<string, unknown>([
+ *   ['nameSpaces', deviceNameSpacesBytesValue],
+ *   ['deviceAuth', deviceAuthValue],
  * ]);
- * const result = deviceSignedSchema.parse(deviceSigned); // Returns DeviceSigned
+ * const result = deviceSignedSchema.parse(map); // Returns Map<string, unknown>
  * ```
  *
- * @see {@link DeviceNameSpacesBytes}
- * @see {@link DeviceAuth}
- * @see {@link deviceSignedObjectSchema}
+ * @see {@link embeddedCborSchema}
+ * @see {@link deviceAuthSchema}
+ * @see {@link DeviceSigned}
  */
-export const deviceSignedSchema = createStructSchema({
+export const deviceSignedSchema = createStrictMapSchema({
   target: 'DeviceSigned',
-  objectSchema: deviceSignedObjectSchema,
+  entries: deviceSignedEntries,
 });
 
 /**

@@ -1,51 +1,47 @@
-import { Mac0, Sign1 } from '@auth0/cose';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceSignedSchema } from '../DeviceSigned';
-import { mapInvalidTypeMessage } from '@/schemas/common/containers/Map';
-import { requiredMessage } from '@/schemas/common/Required';
-import { createTag24 } from '@/cbor';
+import {
+  containerInvalidTypeMessage,
+  containerInvalidValueMessage,
+} from '@/schemas/messages';
+import { getTypeName } from '@/utils/getTypeName';
+import { createTag18, createTag24 } from '@/cbor';
+import { createTag17 } from '@/cbor/createTag17';
 
 describe('DeviceSigned', () => {
   describe('valid device signed data', () => {
-    const sign1 = new Sign1(
+    const sign1 = createTag18([
       new Uint8Array([]),
       new Map<number, string>([[1, 'value']]),
       new Uint8Array([]),
-      new Uint8Array([])
-    );
-    const mac0 = new Mac0(
+      new Uint8Array([]),
+    ]);
+    const mac0 = createTag17([
       new Uint8Array([]),
       new Map<number, string>([[1, 'value']]),
       new Uint8Array([]),
-      new Uint8Array([])
-    );
+      new Uint8Array([]),
+    ]);
 
     it('should accept device signed data with deviceSignature', () => {
       const data = new Map<string, unknown>([
         ['nameSpaces', createTag24(new Map())],
-        [
-          'deviceAuth',
-          new Map([['deviceSignature', sign1.getContentForEncoding()]]),
-        ],
+        ['deviceAuth', new Map([['deviceSignature', sign1]])],
       ]);
 
       const result = deviceSignedSchema.parse(data);
-      expect(result.nameSpaces).toEqual(data.get('nameSpaces'));
-      expect(result.deviceAuth.deviceSignature).toBeInstanceOf(Sign1);
-      expect(result.deviceAuth.deviceSignature).toEqual(sign1);
+      expect(result).toEqual(data);
     });
 
     it('should accept device signed data with deviceMac', () => {
       const data = new Map<string, unknown>([
         ['nameSpaces', createTag24(new Map())],
-        ['deviceAuth', new Map([['deviceMac', mac0.getContentForEncoding()]])],
+        ['deviceAuth', new Map([['deviceMac', mac0]])],
       ]);
 
       const result = deviceSignedSchema.parse(data);
-      expect(result.nameSpaces).toEqual(data.get('nameSpaces'));
-      expect(result.deviceAuth.deviceMac).toBeInstanceOf(Mac0);
-      expect(result.deviceAuth.deviceMac).toEqual(mac0);
+      expect(result).toEqual(data);
     });
   });
 
@@ -58,37 +54,65 @@ describe('DeviceSigned', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: requiredMessage('DeviceSigned'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSigned',
+          expected: 'Map',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: requiredMessage('DeviceSigned'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSigned',
+          expected: 'Map',
+          received: getTypeName(undefined),
+        }),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSigned',
+          expected: 'Map',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSigned',
+          expected: 'Map',
+          received: getTypeName(123),
+        }),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSigned',
+          expected: 'Map',
+          received: getTypeName('string'),
+        }),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSigned',
+          expected: 'Map',
+          received: getTypeName([]),
+        }),
       },
       {
         name: 'object input',
         input: {},
-        expectedMessage: mapInvalidTypeMessage('DeviceSigned'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSigned',
+          expected: 'Map',
+          received: getTypeName({}),
+        }),
       },
     ];
 
@@ -125,7 +149,11 @@ describe('DeviceSigned', () => {
             new Map([['deviceSignature', sign1.getContentForEncoding()]]),
           ],
         ]),
-        expectedMessage: requiredMessage('DeviceNameSpacesBytes'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'DeviceSigned',
+          path: ['nameSpaces'],
+          originalMessage: 'Expected Tag 24, received null',
+        }),
       },
       {
         name: 'null deviceAuth',
@@ -133,7 +161,11 @@ describe('DeviceSigned', () => {
           ['nameSpaces', tag24],
           ['deviceAuth', null],
         ]),
-        expectedMessage: requiredMessage('DeviceAuth'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'DeviceSigned',
+          path: ['deviceAuth'],
+          originalMessage: 'Expected Map, received null',
+        }),
       },
       {
         name: 'null deviceSignature in deviceAuth',
@@ -141,7 +173,12 @@ describe('DeviceSigned', () => {
           ['nameSpaces', tag24],
           ['deviceAuth', new Map([['deviceSignature', null]])],
         ]),
-        expectedMessage: requiredMessage('DeviceSignature'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'DeviceAuth',
+          path: ['deviceSignature'],
+          originalMessage:
+            'Expected [Uint8Array, HeaderMap, Uint8Array | null, Uint8Array] or Tag(18), received null',
+        }),
       },
     ];
 

@@ -1,13 +1,12 @@
-import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceSignedItemsSchema } from '../DeviceSignedItems';
 import {
-  mapEmptyMessage,
-  mapInvalidTypeMessage,
-} from '@/schemas/common/containers/Map';
-import { requiredMessage } from '@/schemas/common/Required';
-import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
+  containerEmptyMessage,
+  containerInvalidTypeMessage,
+  containerInvalidValueMessage,
+} from '@/schemas/messages';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('DeviceSignedItems', () => {
   describe('should accept valid device signed items', () => {
@@ -26,22 +25,13 @@ describe('DeviceSignedItems', () => {
           ['height', 180.5],
         ]),
       },
-      {
-        name: 'tagged data',
-        input: new Map<string, unknown>([
-          ['photo', new Tag(0, 24)],
-          ['signature', new Tag(123, 24)],
-        ]),
-      },
     ];
 
     testCases.forEach(({ name, input }) => {
       it(`should accept ${name}`, () => {
         const result = deviceSignedItemsSchema.parse(input);
         expect(result).toBeInstanceOf(Map);
-        expect(Array.from(result.entries())).toEqual(
-          Array.from(input.entries())
-        );
+        expect(result).toEqual(input);
       });
     });
   });
@@ -51,37 +41,65 @@ describe('DeviceSignedItems', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: requiredMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSignedItems',
+          expected: 'Map',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: requiredMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSignedItems',
+          expected: 'Map',
+          received: getTypeName(undefined),
+        }),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSignedItems',
+          expected: 'Map',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSignedItems',
+          expected: 'Map',
+          received: getTypeName(123),
+        }),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSignedItems',
+          expected: 'Map',
+          received: getTypeName('string'),
+        }),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSignedItems',
+          expected: 'Map',
+          received: getTypeName([]),
+        }),
       },
       {
         name: 'plain object (not Map)',
         input: {},
-        expectedMessage: mapInvalidTypeMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceSignedItems',
+          expected: 'Map',
+          received: getTypeName({}),
+        }),
       },
     ];
     it('should throw the expected message for all invalid type inputs', () => {
@@ -103,17 +121,16 @@ describe('DeviceSignedItems', () => {
       {
         name: 'empty Map',
         input: new Map<string, unknown>([]),
-        expectedMessage: mapEmptyMessage('DeviceSignedItems'),
+        expectedMessage: containerEmptyMessage('DeviceSignedItems'),
       },
       {
         name: 'empty string key',
         input: new Map<string, unknown>([['', 'value']]),
-        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
-      },
-      {
-        name: 'whitespace-only key',
-        input: new Map<string, unknown>([['   ', 'value']]),
-        expectedMessage: nonEmptyTextEmptyMessage('DataElementIdentifier'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'DeviceSignedItems',
+          path: [0, 'key'],
+          originalMessage: 'String must contain at least 1 character(s)',
+        }),
       },
     ];
 
