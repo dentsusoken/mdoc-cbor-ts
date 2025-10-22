@@ -1,8 +1,6 @@
 import { Tag } from 'cbor-x';
 import { decodeCbor } from '@/cbor';
 import { issuerSignedItemSchema } from '@/schemas/mdoc/IssuerSignedItem';
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
-import { DigestID } from '@/schemas/mso/DigestID';
 import { calculateDigest } from '@/utils/calculateDigest';
 
 /**
@@ -12,7 +10,7 @@ type BuildValueDigestParams = {
   /** CBOR Tag 24 wrapped issuer signed item */
   issuerSignedItemTag: Tag;
   /** Digest algorithm to use for calculating the digest */
-  digestAlgorithm: DigestAlgorithm;
+  digestAlgorithm: string;
 };
 
 /**
@@ -25,7 +23,7 @@ export type BuildValueDigestResult = {
   /** The calculated digest of the issuer signed item tag */
   digest: Uint8Array;
   /** The digest ID from the issuer signed item */
-  digestID: DigestID;
+  digestID: number;
 };
 
 /**

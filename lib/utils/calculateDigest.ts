@@ -1,5 +1,4 @@
 import { encodeCbor } from '@/cbor/codec';
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { getShaHash } from './getShaHash';
 
 /**
@@ -30,7 +29,7 @@ import { getShaHash } from './getShaHash';
  * ```
  */
 export const calculateDigest = (
-  algorithm: DigestAlgorithm,
+  algorithm: string,
   data: unknown
 ): Uint8Array => {
   const hash = getShaHash(algorithm);

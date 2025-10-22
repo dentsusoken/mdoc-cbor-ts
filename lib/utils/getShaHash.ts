@@ -1,4 +1,3 @@
-import { DigestAlgorithm } from '@/schemas/mso';
 import { sha256 } from '@noble/hashes/sha256';
 import { sha384, sha512 } from '@noble/hashes/sha512';
 import { CHash } from '@noble/hashes/utils';
@@ -10,7 +9,7 @@ import { CHash } from '@noble/hashes/utils';
  * @returns The hash function (CHash) for the specified digest algorithm.
  * @throws {Error} If the provided digest algorithm is not supported.
  */
-export const getShaHash = (digestAlgorithm: DigestAlgorithm): CHash => {
+export const getShaHash = (digestAlgorithm: string): CHash => {
   switch (digestAlgorithm) {
     case 'SHA-256':
       return sha256;
