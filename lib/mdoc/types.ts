@@ -1,32 +1,21 @@
 /**
- * Enumeration for mdoc status codes.
+ * Enumerates possible statuses for an mdoc response.
  *
- * @description
- * Represents the set of possible status codes that an mdoc (mobile document) can have,
- * describing its current validity or error state.
- *
- * - {@link MDocStatus.Valid} (0): The document is valid and active.
- * - {@link MDocStatus.Suspended} (10): The document is suspended.
- * - {@link MDocStatus.Revoked} (11): The document has been revoked.
- * - {@link MDocStatus.Expired} (12): The document has expired.
- *
- * @example
- * ```typescript
- * const status: MDocStatus = MDocStatus.Valid;
- * if (status === MDocStatus.Revoked) {
- *   // handle revoked document
- * }
- * ```
+ * @enum {number}
+ * @property {ResponseStatus.OK} OK - Operation completed successfully.
+ * @property {ResponseStatus.GeneralError} GeneralError - A general or unspecified error occurred.
+ * @property {ResponseStatus.CborDecodingError} CborDecodingError - Error occurred while decoding CBOR data.
+ * @property {ResponseStatus.CborValidationError} CborValidationError - CBOR data failed schema or format validation.
  */
-export enum MDocStatus {
-  /** The document is valid and active. */
-  Valid = 0,
-  /** The document is suspended. */
-  Suspended = 10,
-  /** The document has been revoked. */
-  Revoked = 11,
-  /** The document has expired. */
-  Expired = 12,
+export enum ResponseStatus {
+  /** Operation completed successfully. */
+  OK = 0,
+  /** A general, unspecified error occurred. */
+  GeneralError = 10,
+  /** Failure decoding CBOR data. */
+  CborDecodingError = 11,
+  /** Failure validating CBOR against schema or specification. */
+  CborValidationError = 12,
 }
 
 /**
@@ -75,6 +64,8 @@ export enum MDocStatus {
  * ```
  */
 export enum MDocErrorCode {
+  /** Data that was requested was not returned. */
+  DataNotReturned = 0,
   /** The issuer signature is invalid. */
   IssuerSignatureInvalid = 1001,
   /** The Mobile Security Object digest does not match. */

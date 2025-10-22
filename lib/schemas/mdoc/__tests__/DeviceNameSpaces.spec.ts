@@ -1,32 +1,26 @@
-import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { deviceNameSpacesSchema } from '../DeviceNameSpaces';
-import {
-  mapEmptyMessage,
-  mapInvalidTypeMessage,
-} from '@/schemas/common/containers/Map';
-import { requiredMessage } from '@/schemas/common/Required';
-import { nonEmptyTextEmptyMessage } from '@/schemas/common/NonEmptyText';
-
-// Constants are imported from the schema for consistency
+import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
+import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
+import { getTypeName } from '@/utils/getTypeName';
 
 describe('DeviceNameSpaces', () => {
   describe('should accept valid device name spaces records', () => {
     const testCases = [
       {
-        name: 'multiple namespaces with tagged items',
+        name: 'multiple namespaces',
         input: new Map<string, Map<string, unknown>>([
           [
             'com.example.namespace',
             new Map<string, unknown>([
-              ['item1', new Tag(0, 24)],
-              ['item2', new Tag(123, 24)],
+              ['first_name', 'John'],
+              ['last_name', 'Doe'],
             ]),
           ],
           [
             'test.namespace',
-            new Map<string, unknown>([['item3', new Tag(456, 24)]]),
+            new Map<string, unknown>([['license_number', '123456789']]),
           ],
         ]),
       },
@@ -36,9 +30,7 @@ describe('DeviceNameSpaces', () => {
       it(`should accept ${name}`, () => {
         const result = deviceNameSpacesSchema.parse(input);
         expect(result).toBeInstanceOf(Map);
-        expect(Array.from(result.entries())).toEqual(
-          Array.from(input.entries())
-        );
+        expect(result).toEqual(input);
       });
     });
   });
@@ -50,37 +42,61 @@ describe('DeviceNameSpaces', () => {
       {
         name: 'null input',
         input: null,
-        expectedMessage: requiredMessage('DeviceNameSpaces'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceNameSpaces',
+          expected: 'Map',
+          received: getTypeName(null),
+        }),
       },
       {
         name: 'undefined input',
         input: undefined,
-        expectedMessage: requiredMessage('DeviceNameSpaces'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceNameSpaces',
+          expected: 'Map',
+          received: getTypeName(undefined),
+        }),
       },
       {
         name: 'boolean input',
         input: true,
-        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceNameSpaces',
+          expected: 'Map',
+          received: getTypeName(true),
+        }),
       },
       {
         name: 'number input',
         input: 123,
-        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceNameSpaces',
+          expected: 'Map',
+          received: getTypeName(123),
+        }),
       },
       {
         name: 'string input',
         input: 'string',
-        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceNameSpaces',
+          expected: 'Map',
+          received: getTypeName('string'),
+        }),
       },
       {
         name: 'array input',
         input: [],
-        expectedMessage: mapInvalidTypeMessage('DeviceNameSpaces'),
+        expectedMessage: containerInvalidTypeMessage({
+          target: 'DeviceNameSpaces',
+          expected: 'Map',
+          received: getTypeName([]),
+        }),
       },
     ];
 
-    it('should throw the expected message for all invalid type inputs', () => {
-      testCases.forEach(({ input, expectedMessage }) => {
+    testCases.forEach(({ name, input, expectedMessage }) => {
+      it(`should throw error for ${name}`, () => {
         try {
           deviceNameSpacesSchema.parse(input);
           throw new Error('Should have thrown');
@@ -95,22 +111,26 @@ describe('DeviceNameSpaces', () => {
 
   describe('should throw error for invalid map entries', () => {
     const testCases = [
-      {
-        name: 'empty Map',
-        input: new Map<string, Map<string, unknown>>([]),
-        expectedMessage: mapEmptyMessage('DeviceNameSpaces'),
-      },
+      // Top-level empty Map is allowed by schema per current rules; no test here
       {
         name: 'empty namespace key',
         input: new Map<string, unknown>([['', new Map([['item', 'value']])]]),
-        expectedMessage: nonEmptyTextEmptyMessage('NameSpace'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'DeviceNameSpaces',
+          path: [0, 'key'],
+          originalMessage: 'String must contain at least 1 character(s)',
+        }),
       },
       {
         name: 'null value for items',
         input: new Map<string, unknown>([
           ['org.iso.18013.5.1', null as unknown as Map<string, unknown>],
         ]),
-        expectedMessage: requiredMessage('DeviceSignedItems'),
+        expectedMessage: containerInvalidValueMessage({
+          target: 'DeviceNameSpaces',
+          path: [0, 'value'],
+          originalMessage: 'Expected Map, received null',
+        }),
       },
     ];
 

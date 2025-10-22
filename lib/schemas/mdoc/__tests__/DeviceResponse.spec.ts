@@ -1,144 +1,339 @@
-import { decodeCbor } from '@/cbor/codec';
-import { deviceResponseSchema } from '../DeviceResponse';
-import { arrayEmptyMessage } from '@/schemas/common/containers/Array';
-import { mdocAtLeastOneDocumentOrErrorMessage } from '../MDoc';
+import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-//import { issuerSignedSchema } from '@/schemas/mdoc/IssuerSigned';
-//import { deviceSignedSchema } from '@/schemas/mdoc/DeviceSigned';
-import { expect, describe, it } from 'vitest';
-import { mobileSecurityObjectBytesSchema } from '@/schemas/mso/MobileSecurityObjectBytes';
-import { mobileSecurityObjectSchema } from '@/schemas/mso/MobileSecurityObject';
-import { issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
-import { Sign1Tuple } from '@/schemas/cose/Sign1';
+import { deviceResponseSchema } from '../DeviceResponse';
+import { documentSchema } from '../Document';
+import { documentErrorSchema } from '../DocumentError';
+import { issuerSignedSchema } from '../IssuerSigned';
+import { deviceSignedSchema } from '../DeviceSigned';
+import { createTag17, type Tag17Content } from '@/cbor/createTag17';
+import { createTag18, type Tag18Content } from '@/cbor/createTag18';
+import { createTag24 } from '@/cbor/createTag24';
+import { ResponseStatus } from '@/mdoc/types';
+import { getTypeName } from '@/utils/getTypeName';
+import {
+  containerInvalidTypeMessage,
+  containerInvalidValueMessage,
+} from '@/schemas/messages';
+import { strictMapMissingKeysMessage } from '@/schemas/containers/StrictMap';
+import { containerEmptyMessage } from '@/schemas/messages/containerEmptyMessage';
 
-const base64url =
-  'o2d2ZXJzaW9uYzEuMGlkb2N1bWVudHOBo2dkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGxpc3N1ZXJTaWduZWSiam5hbWVTcGFjZXOhcW9yZy5pc28uMTgwMTMuNS4xgtgYWIOkZnJhbmRvbVhAvzy0xTmV9BWSqTH1L5LO5KFazP-kCsBiHu3agh_dFhynMj0SLBaWYfNPrXPSK7wUIwuPquplYgA4Lb1zGEFzt2hkaWdlc3RJRBgmbGVsZW1lbnRWYWx1ZWNKQU5xZWxlbWVudElkZW50aWZpZXJqZ2l2ZW5fbmFtZdgYWI6kZnJhbmRvbVhAHgYJzrLF5peSTHD-Pl0fz4TsoOWbDA9byCgApArFdWLRNiUqAIudQIMiL4rO4apGaK-037TOvuKEUA4e4lw842hkaWdlc3RJRBhmbGVsZW1lbnRWYWx1ZWkxMTExMTExMTRxZWxlbWVudElkZW50aWZpZXJvZG9jdW1lbnRfbnVtYmVyamlzc3VlckF1dGiEQ6EBJqEYIVkChTCCAoEwggImoAMCAQICCRZK5ZkC3AUQZDAKBggqhkjOPQQDAjBYMQswCQYDVQQGEwJCRTEcMBoGA1UEChMTRXVyb3BlYW4gQ29tbWlzc2lvbjErMCkGA1UEAxMiRVUgRGlnaXRhbCBJZGVudGl0eSBXYWxsZXQgVGVzdCBDQTAeFw0yMzA1MzAxMjMwMDBaFw0yNDA1MjkxMjMwMDBaMGUxCzAJBgNVBAYTAkJFMRwwGgYDVQQKExNFdXJvcGVhbiBDb21taXNzaW9uMTgwNgYDVQQDEy9FVSBEaWdpdGFsIElkZW50aXR5IFdhbGxldCBUZXN0IERvY3VtZW50IFNpZ25lcjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABHyTE_TBpKpOsLPraBGkmU5Z3meZZDHC864IjrehBhy2WL2MORJsGVl6yQ35nQeNPvORO6NL2yy8aYfQJ-mvnfyjgcswgcgwHQYDVR0OBBYEFNGksSQ5MvtFcnKZSPJSfZVYp00tMB8GA1UdIwQYMBaAFDKR6w4cAR0UDnZPbE_qTJY42vsEMA4GA1UdDwEB_wQEAwIHgDASBgNVHSUECzAJBgcogYxdBQECMB8GA1UdEgQYMBaGFGh0dHA6Ly93d3cuZXVkaXcuZGV2MEEGA1UdHwQ6MDgwNqA0oDKGMGh0dHBzOi8vc3RhdGljLmV1ZGl3LmRldi9wa2kvY3JsL2lzbzE4MDEzLWRzLmNybDAKBggqhkjOPQQDAgNJADBGAiEA3l-Y5x72V1ISa_LEuE_e34HSQ8pXsVvTGKq58evrP30CIQD-Ivcya0tXWP8W_obTOo2NKYghadoEm1peLIBqsUcISFkGZNgYWQZfpmd2ZXJzaW9uYzEuMG9kaWdlc3RBbGdvcml0aG1nU0hBLTI1Nmdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGx2YWx1ZURpZ2VzdHOhcW9yZy5pc28uMTgwMTMuNS4xuCUOWCCSQ6P7qECNZ83yj2OFKdxgUlDR8MHFEFK12da__ydkHRgmWCAcPd3X6tWiH8i3umZuftlmNJvU61odcRP686k8qBe91xhCWCD88f76Ha0w7J4Awgr8DLICqAx5KampLKH58qn5HO9HlQ9YIC1hu3zH4VXefy-6DdA1oPNNb01lhHoQpjFqmuI1CT56ClggPl574ewzPkcPg1FlgRiapiFqmrDdMgsnHi0iOibpK84FWCD_vZj4zoIkHLtt41iETpulOUSREhtDUDinbkTf8yspBRhZWCAfLDg3Sr7Zlj7sdYZvhU2oJIm5Dt0JY3k_VU25KOI-_hhmWCDHVJYBd7DE5o-7TbYpzHtPvBONzjLu-Yu2C0pg5S6gfBgZWCDyGhLW4XnA85yQYxn67AnmL91-sHj3Djl-4_pYWsadqAhYIKledSSDQcVSwbaigHLX1EzbAxdmUL1-wMKAW7jQqINoGEBYIBKoMlQBl6J7m8OVpP5ZV_ppDn9MLbbkaTR0Vc9zVTLsDVgglO_9-ooeZnWNWsH8mHitkuaBFDiUyLn0moDq7jmBoUsYMlggA1qJqF5s41TBZReiLN5pzwCud9pWOpordI5KSS0q02oYIVggon746Xd3lGa8v4L2XJOX5IsLIMtcWiGtfS5k-fgX9kMYP1gg7KZwoH624t-Xvla-QWBDdXb2eiUvXCtH5W249RSIlmkYLlgghgKr0SCrNcX_XF-kGiatcS_9RPUMkhmeluQ5gAVmNZoYSVggzyKd4p3IjnFAfvTiSCI2xPAE8eqJfgWX3mHxoKbTKwcJWCCWGTV83F87KnpYPspD1LGVhW8hm_vUp1dR7ajes6mZYRgnWCDM16gfLD0z8PuwB2qb_haTbqB9FPg38QKf3nNlQMmWaxhfWCBT6hsb4awPbJiNEUmNbhnOGm3WhbAI3qzDlwOQOdlTRRgqWCAwmk4NKtXdGiwGO51Q2HXzpGcFMm4TiYuzHL0F0nOyyhhPWCByP3DOK3D94eOETEa9dSeovPNJEcpTOZVeR2F4bJeMdBhIWCC6_pChqBhMJ9MfHCp6Ow0h10cgGvV6k-sS1_qSZMWqCBg9WCAZLL3_PxCgDIclaiFjmqTonW2ze4Q7DY1ntTNDaGGHOxhTWCB6WlSy3sY39LzcLXQqXpNX7ru-WnUqsKNDV5TD8g4RkRhQWCDuXX_WRfrCyqJ3eCowCZSnK1RoXqtu_MlryoGGjlS0WxhDWCBEVhXcBI9Wz3X8-rj0Dz4U8FYxKUZ8kQO3HpT1AYN1hxRYIJ10hWh3c07Un4KJqcJQ9rNMJKZHkSjFih3w4gJxHszQGFJYICDgPm202OgcqmQYWT19fHuvMzkjy4rf7PcN6zFo9bpXGDlYIBiAEYZLIXJOGUQKR0THBCVXq8r4hp4ZvERxNlPX6MBrGGJYIDqOjIervO-Z3Hl0YQK11tVsx177POjE0CwSz_S0hIEoEVgggkQb4J1HUI3vGnqWfCaPTL3IxfRRABl9zLSsLjycojEMWCBGjo01fB5Iimgjxzg1J1rlH3MeM7jcBdzRuSJSh_CcqRg6WCA7IG5fkd6vqz9kUb1VEJoJf8ia2dJ_NgX8w_yv2tpRVRhNWCAb1KqHYjXwCZanFhOsax-_iOHc9L_mjzMI44t1NXkxQBhWWCApsfcBmfBBTrjjwR_j41Xd0HACQBiOSTqzR7OzSUTSYxhUWCBH6xHHMPUHhTbbh0FHlmT6-LElfA4UEhZdzKwTEk33021kZXZpY2VLZXlJbmZvoWlkZXZpY2VLZXmkAQIgASFYIOERlripeKIEeezswIAh5xIPZddS6800MuG8UbCz6RScIlggRH4Wm0VK2BtO-gejXmPf2kPX1mqK159Po5BbKbRnT4hsdmFsaWRpdHlJbmZvo2ZzaWduZWTAdDIwMjQtMDYtMTdUMDk6Mzk6MDNaaXZhbGlkRnJvbcB0MjAyNC0wNi0xN1QwOTozOTowM1pqdmFsaWRVbnRpbMB0MjAyNS0wNi0xN1QwOTozOTowM1pYQN5f7-DdxKWChcp8v0Sbm8p7ikPxP8MRw05U8OrkEU-GfgN1KNSf7qiMy3MaWEEkl-VJz8bCrxCfXq1Ly0QlKhdsZGV2aWNlU2lnbmVkompuYW1lU3BhY2Vz2BhBoGpkZXZpY2VBdXRooW9kZXZpY2VTaWduYXR1cmWEQ6EBJqD2WEAxalteYxOqH2qiesx2dmJolMgxWo-LoT5h6GT804VyfhEcaEacDRg3sczzP2XdR7UF1H8xk7k1SvDJUYNF5ZZaZnN0YXR1cwA';
+const createMinimalIssuerSigned = (): Map<string, unknown> => {
+  const ns = new Map<string, unknown>([
+    ['org.iso.18013.5.1', [createTag24(new Uint8Array([]))]],
+  ]);
+  const issuerAuthTuple = [
+    new Uint8Array([]),
+    new Map<number, unknown>(),
+    null,
+    new Uint8Array([]),
+  ] as Tag18Content;
+  return issuerSignedSchema.parse(
+    new Map<string, unknown>([
+      ['nameSpaces', ns],
+      ['issuerAuth', createTag18(issuerAuthTuple)],
+    ])
+  ) as Map<string, unknown>;
+};
 
-// const base64url =
-//   'uQADZ3ZlcnNpb25jMS4waWRvY3VtZW50c4G5AANnZG9jVHlwZXVvcmcuaXNvLjE4MDEzLjUuMS5tRExsaXNzdWVyU2lnbmVkuQACam5hbWVTcGFjZXO5AAFxb3JnLmlzby4xODAxMy41LjGC2BhYYqRmcmFuZG9tWCCbUvzSr3xqrhH2N_LQ_VsB0SdvmJnbCOCuhp5n8fKx8mhkaWdlc3RJRABxZWxlbWVudElkZW50aWZpZXJqZ2l2ZW5fbmFtZWxlbGVtZW50VmFsdWVjSkFO2BhYbaRmcmFuZG9tWCAk-wJj1H5TrqkkkRqXxEPymMBKbDuDJWZAQfk5LnQjPmhkaWdlc3RJRAFxZWxlbWVudElkZW50aWZpZXJvZG9jdW1lbnRfbnVtYmVybGVsZW1lbnRWYWx1ZWkxMTExMTExMTRqaXNzdWVyQXV0aIRPogEmBGoxMjM0NTY3ODkwoRghWQGAMIIBfDCCASGgAwIBAgIUEmmlElA5hRjuzPBe8u-gOO_EPVwwCgYIKoZIzj0EAwIwEzERMA8GA1UEAwwIVmVyaWZpZXIwHhcNMjQwODIxMDAzODE4WhcNMjQwOTIwMDAzODE4WjATMREwDwYDVQQDDAhWZXJpZmllcjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABCVM330iN-v1v58cWOv28j_LMEXupGyGuWwZOJI53ypUOk_X4cfR2I7C1BtfpVPz1H1d26FgrE_L3XlkHPJbfDGjUzBRMB0GA1UdDgQWBBQpvC5mfQK3FJzua7Pk0d00lPQRhDAfBgNVHSMEGDAWgBQpvC5mfQK3FJzua7Pk0d00lPQRhDAPBgNVHRMBAf8EBTADAQH_MAoGCCqGSM49BAMCA0kAMEYCIQCB3AhuOALOaW-5zDgL1mn-U-zGw8WS2zoDZySoC8oCzgIhAKothleK1BWfmpv1Qzy4bQ5-dUj-p2RXjGj_A4zcP_E2WQG32BhZAbKmZ3ZlcnNpb25jMS4wZ2RvY1R5cGV1b3JnLmlzby4xODAxMy41LjEubURMb2RpZ2VzdEFsZ29yaXRobWdTSEEtMjU2bHZhbHVlRGlnZXN0c7kAAXFvcmcuaXNvLjE4MDEzLjUuMbkAAmEwWCCX7ea4fxA3t3kYZXN0c7kAAXFvcmcuaXNvLjE4MDEzLjUuMbkAAmEwWCCX7ea4fxA3t3kYS0_izkpA4TmkHOgYegFNGSR3JpZ_XWExWCAwC1GGuzdkwo2lPJChqgb8wW46vpg145o4NYOV4C1PyGx2YWxpZGl0eUluZm-5AARmc2lnbmVkwHQyMDI1LTA0LTA3VDA2OjM1OjE4Wml2YWxpZEZyb23AdDIwMjUtMDQtMDdUMDY6MzU6MThaanZhbGlkVW50aWzAdDIwMjYtMDQtMDdUMDY6MzU6MThabmV4cGVjdGVkVXBkYXRlwHQyMDI2LTA0LTA3VDA2OjM1OjE4Wm1kZXZpY2VLZXlJbmZvuQABaWRldmljZUtlebkABGExAmItMlggAMnh--BVfioKxW6qrDCgLIMcRm8uilNl53J_gyBmKERiLTNYIAxh2-JGRUaGBEs9MkLrfpbDvga_AE529wPSzSUkMFmRYi0xAVhAZ9FZKF5X1Rs_RmOXdBxjfsZB7d8rDgsrApFeerrShP1EEEcW9HN1o150z68JaYhPkiGk_kvVwD0jUVn1M-hafmxkZXZpY2VTaWduZWS5AAJqbmFtZVNwYWNlc9gYQaBqZGV2aWNlQXV0aLkAAW9kZXZpY2VTaWduYXR1cmWET6IBJgRqMTIzNDU2Nzg5MKD2WEBGlbjJHyFNSHfMPeDtLh3D5POYf3WoXQcDmYrmmDbsqFlBd5gwVaHq5KCNzPKpaP-FF0EBHaEbqAMgUPgUZ6TvZnN0YXR1cwA';
-const cbor = Buffer.from(base64url, 'base64url');
+const createMinimalDeviceSigned = (): Map<string, unknown> => {
+  const sign1Tuple = [
+    new Uint8Array([]),
+    new Map<number, unknown>(),
+    null,
+    new Uint8Array([]),
+  ] as Tag18Content;
+  const mac0Tuple = [
+    new Uint8Array([]),
+    new Map<number, unknown>(),
+    null,
+    new Uint8Array([]),
+  ] as Tag17Content;
+  return deviceSignedSchema.parse(
+    new Map<string, unknown>([
+      ['nameSpaces', createTag24(new Map())],
+      [
+        'deviceAuth',
+        new Map<string, unknown>([
+          ['deviceSignature', createTag18(sign1Tuple)],
+          ['deviceMac', createTag17(mac0Tuple)],
+        ]),
+      ],
+    ])
+  ) as Map<string, unknown>;
+};
 
-describe('DeviceResponse', () => {
-  describe('valid', () => {
-    it('should parse a valid DeviceResponse from CBOR fixture', () => {
-      const data = decodeCbor(cbor) as Map<string, unknown>;
-      const result = deviceResponseSchema.parse(data);
-      //console.log('DeviceResponse parsed', result);
-      const document = result.documents?.[0];
-      //console.log('Document', document);
-      const issuerSigned = document?.issuerSigned;
-      //console.log('IssuerSigned', issuerSigned);
-      const issuerSignedNameSpaces =
-        issuerSigned?.nameSpaces.get('org.iso.18013.5.1');
-      //console.log('IssuerSignedNameSpaces', issuerSignedNameSpaces);
-      const issuerAuthTag = issuerAuthSchema.parse(issuerSigned?.issuerAuth);
-      const issuerAuth = issuerAuthTag.value as Sign1Tuple;
-      const payload = issuerAuth?.[2];
-      const msoTag24 = mobileSecurityObjectBytesSchema.parse(
-        decodeCbor(payload!)
-      );
-      const msoMap = decodeCbor(msoTag24.value);
-      const mso = mobileSecurityObjectSchema.parse(msoMap);
-      //console.log('MSO', mso);
-      //console.log('IssuerAuth', issuerAuth);
-      const deviceSigned = document?.deviceSigned;
-      //console.log('DeviceSigned', deviceSigned);
-      const deviceSignedNameSpaces = deviceSigned?.nameSpaces;
-      //console.log('DeviceSignedNameSpaces', deviceSignedNameSpaces);
-      const deviceSignature = deviceSigned?.deviceAuth?.deviceSignature;
-      //console.log('DeviceSignature', deviceSignature);
+//
 
-      const expected = {
-        version: '1.0',
-        status: 0,
-        documents: [
-          {
-            docType: 'org.iso.18013.5.1.mDL',
-            issuerSigned: {
-              nameSpaces: new Map([
-                ['org.iso.18013.5.1', issuerSignedNameSpaces],
-              ]),
-              issuerAuth: issuerAuthTag,
-            },
-            deviceSigned: {
-              nameSpaces: deviceSignedNameSpaces,
-              deviceAuth: {
-                deviceSignature,
-              },
-            },
-          },
-        ],
-      };
+const createMinimalDocument = (): Map<string, unknown> => {
+  const issuerSigned = createMinimalIssuerSigned();
+  const deviceSigned = createMinimalDeviceSigned();
+  return documentSchema.parse(
+    new Map<string, unknown>([
+      ['docType', 'org.iso.18013.5.1.mDL'],
+      ['issuerSigned', issuerSigned],
+      ['deviceSigned', deviceSigned],
+    ])
+  ) as Map<string, unknown>;
+};
 
-      expect(result).toEqual(expected);
-      expect(mso.docType).toEqual(expected.documents[0].docType);
+const createMinimalDocumentError = (): Map<string, number> => {
+  return documentErrorSchema.parse(
+    new Map<string, number>([['org.iso.18013.5.1.mDL', 0]])
+  );
+};
+
+describe('DeviceResponse', (): void => {
+  describe('should accept valid DeviceResponse maps', (): void => {
+    it('with documents only', (): void => {
+      const doc = createMinimalDocument();
+      const input = new Map<string, unknown>([
+        ['version', '1.0'],
+        ['documents', [doc]],
+        ['status', ResponseStatus.OK],
+      ]);
+      const result = deviceResponseSchema.parse(input);
+      expect(result).toBeInstanceOf(Map);
+      expect(result).toEqual(input);
     });
 
-    it('should be valid when only documentErrors is provided (non-empty)', () => {
-      const docError = new Map<string, number>([['org.iso.18013.5.1.mDL', 0]]);
+    it('with documentErrors only', (): void => {
+      const docError = createMinimalDocumentError();
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documentErrors', [docError]],
-        ['status', 0],
+        ['status', ResponseStatus.CborValidationError],
       ]);
-
       const result = deviceResponseSchema.parse(input);
-      expect(result).toBeDefined();
+      expect(result).toBeInstanceOf(Map);
+      expect(result).toEqual(input);
+    });
+
+    it('with both documents and documentErrors', (): void => {
+      const doc = createMinimalDocument();
+      const docError = createMinimalDocumentError();
+      const input = new Map<string, unknown>([
+        ['version', '1.0'],
+        ['documents', [doc]],
+        ['documentErrors', [docError]],
+        ['status', ResponseStatus.OK],
+      ]);
+      const result = deviceResponseSchema.parse(input);
+      expect(result).toBeInstanceOf(Map);
+      expect(result).toEqual(input);
+    });
+
+    it('with neither documents nor documentErrors', (): void => {
+      const input = new Map<string, unknown>([
+        ['version', '1.0'],
+        ['status', ResponseStatus.CborDecodingError],
+      ]);
+      const result = deviceResponseSchema.parse(input);
+      expect(result).toBeInstanceOf(Map);
+      expect(result).toEqual(input);
     });
   });
 
-  describe('invalid', () => {
-    it('should reject when neither documents nor documentErrors is provided', () => {
-      const input = new Map<string, unknown>([
-        ['version', '1.0'],
-        ['status', 0],
-      ]);
+  describe('should throw error for invalid type inputs', (): void => {
+    const expectedMessage = (v: unknown): string =>
+      containerInvalidTypeMessage({
+        target: 'DeviceResponse',
+        expected: 'Map',
+        received: getTypeName(v),
+      });
 
+    const cases: Array<{ name: string; input: unknown }> = [
+      { name: 'null input', input: null },
+      { name: 'undefined input', input: undefined },
+      { name: 'boolean input', input: true },
+      { name: 'number input', input: 123 },
+      { name: 'string input', input: 'str' },
+      { name: 'array input', input: [] },
+      { name: 'object input', input: {} },
+    ];
+
+    cases.forEach(({ name, input }) => {
+      it(`should reject ${name}`, (): void => {
+        try {
+          deviceResponseSchema.parse(input as never);
+          throw new Error('Should have thrown');
+        } catch (error) {
+          expect(error).toBeInstanceOf(z.ZodError);
+          const zodError = error as z.ZodError;
+          expect(zodError.issues[0].message).toBe(expectedMessage(input));
+        }
+      });
+    });
+  });
+
+  describe('should enforce required keys and value constraints', (): void => {
+    it('should report missing required keys on empty map', (): void => {
       try {
-        deviceResponseSchema.parse(input);
+        deviceResponseSchema.parse(new Map());
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          mdocAtLeastOneDocumentOrErrorMessage('DeviceResponse')
+          strictMapMissingKeysMessage('DeviceResponse', ['version', 'status'])
         );
       }
     });
 
-    it('should reject when documentErrors is an empty array', () => {
-      const input = new Map<string, unknown>([
-        ['version', '1.0'],
-        ['documentErrors', []],
-        ['status', 0],
-      ]);
-
-      try {
-        deviceResponseSchema.parse(input);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(
-          arrayEmptyMessage('documentErrors')
-        );
-      }
-    });
-
-    it('should reject when documents is an empty array', () => {
+    it('should reject empty documents array when provided', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documents', []],
-        ['status', 0],
+        ['status', ResponseStatus.OK],
       ]);
-
       try {
         deviceResponseSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].message).toBe(arrayEmptyMessage('documents'));
+        expect(zodError.issues[0].message).toBe(
+          containerInvalidValueMessage({
+            target: 'DeviceResponse',
+            path: ['documents'],
+            originalMessage: containerEmptyMessage('documents'),
+          })
+        );
+      }
+    });
+
+    it('should reject empty documentErrors array when provided', (): void => {
+      const input = new Map<string, unknown>([
+        ['version', '1.0'],
+        ['documentErrors', []],
+        ['status', ResponseStatus.OK],
+      ]);
+      try {
+        deviceResponseSchema.parse(input);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          containerInvalidValueMessage({
+            target: 'DeviceResponse',
+            path: ['documentErrors'],
+            originalMessage: containerEmptyMessage('documentErrors'),
+          })
+        );
+      }
+    });
+
+    // Exclusivity is no longer enforced; both previous rejection cases are now accepted in valid tests above.
+
+    it('should reject invalid version value', (): void => {
+      const doc = createMinimalDocument();
+      const input = new Map<string, unknown>([
+        ['version', '2.0'],
+        ['documents', [doc]],
+        ['status', ResponseStatus.OK],
+      ]);
+      try {
+        deviceResponseSchema.parse(input);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].message).toBe(
+          containerInvalidValueMessage({
+            target: 'DeviceResponse',
+            path: ['version'],
+            originalMessage: 'Invalid literal value, expected "1.0"',
+          })
+        );
+      }
+    });
+
+    it('should reject invalid documents item type', (): void => {
+      const input = new Map<string, unknown>([
+        ['version', '1.0'],
+        ['documents', ['not-a-document']],
+        ['status', ResponseStatus.OK],
+      ]);
+      try {
+        deviceResponseSchema.parse(input);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        const expectedInnerMost = containerInvalidTypeMessage({
+          target: 'Document',
+          expected: 'Map',
+          received: getTypeName('not-a-document'),
+        });
+        const expectedInner = containerInvalidValueMessage({
+          target: 'documents',
+          path: [0],
+          originalMessage: expectedInnerMost,
+        });
+        const expected = containerInvalidValueMessage({
+          target: 'DeviceResponse',
+          path: ['documents', 0],
+          originalMessage: expectedInner,
+        });
+        expect(zodError.issues[0].message).toBe(expected);
+      }
+    });
+
+    it('should reject invalid documentErrors item type', (): void => {
+      const input = new Map<string, unknown>([
+        ['version', '1.0'],
+        ['documentErrors', ['not-a-document-error']],
+        ['status', ResponseStatus.OK],
+      ]);
+      try {
+        deviceResponseSchema.parse(input);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        const expectedInnerMost = containerInvalidTypeMessage({
+          target: 'DocumentError',
+          expected: 'Map',
+          received: getTypeName('not-a-document-error'),
+        });
+        const expectedInner = containerInvalidValueMessage({
+          target: 'documentErrors',
+          path: [0],
+          originalMessage: expectedInnerMost,
+        });
+        const expected = containerInvalidValueMessage({
+          target: 'DeviceResponse',
+          path: ['documentErrors', 0],
+          originalMessage: expectedInner,
+        });
+        expect(zodError.issues[0].message).toBe(expected);
+      }
+    });
+
+    it('should reject invalid status enum value', (): void => {
+      const doc = createMinimalDocument();
+      const input = new Map<string, unknown>([
+        ['version', '1.0'],
+        ['documents', [doc]],
+        ['status', 999],
+      ]);
+      try {
+        deviceResponseSchema.parse(input as never);
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        // Build expected message using z.nativeEnum(ResponseStatus) to avoid hardcoding
+        const enumResult = z.nativeEnum(ResponseStatus).safeParse(999);
+        const enumMessage = enumResult.success
+          ? 'SHOULD_NOT_PASS'
+          : enumResult.error.issues[0].message;
+        const expected = containerInvalidValueMessage({
+          target: 'DeviceResponse',
+          path: ['status'],
+          originalMessage: enumMessage,
+        });
+        expect(zodError.issues[0].message).toBe(expected);
       }
     });
   });

@@ -1,42 +1,42 @@
 import { z } from 'zod';
-import { docTypeSchema } from '../common';
 import { deviceSignedSchema } from './DeviceSigned';
-import { errorsSchema } from '@/schemas/error';
+import { errorsSchema } from './Errors';
 import { issuerSignedSchema } from './IssuerSigned';
-import { createStructSchema } from '../common/Struct';
+import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 
 /**
- * Object schema for mdoc document structure
+ * Entries definition for the Document schema in mdoc.
  * @description
- * Defines the object structure for validating mdoc documents with required
- * docType and issuerSigned fields, and optional deviceSigned and errors fields.
+ * Specifies the fields and their associated schemas for a Mobile Document (mdoc) structure.
+ * These entries are used by a strict map or struct schema creator to enable validation and type inference
+ * for Document objects or maps.
+ *
+ * Structure:
+ * - "docType" (required): Validated as a non-empty string (the document type, e.g., "org.iso.18013.5.1.mDL").
+ * - "issuerSigned" (required): Validated by {@link issuerSignedSchema}, representing the issuer-signed portion of the mdoc.
+ * - "deviceSigned" (optional): Validated by {@link deviceSignedSchema}, representing the device-signed portion, if present.
+ * - "errors" (optional): Validated by {@link errorsSchema}, holds error information if present.
  *
  * ```cddl
  * Document = {
- *  "docType": DocType,
- *  "issuerSigned": IssuerSigned,
- *  ? "deviceSigned": DeviceSigned,
- *  ? "errors": Errors?
+ *   "docType": DocType,
+ *   "issuerSigned": IssuerSigned,
+ *   ? "deviceSigned": DeviceSigned,
+ *   ? "errors": Errors?
  * }
  * ```
  *
- * @example
- * ```typescript
- * const documentObject = {
- *   docType: "org.iso.18013.5.1.mDL",
- *   issuerSigned: validIssuerSignedData,
- *   deviceSigned: validDeviceSignedData, // optional
- *   errors: [] // optional
- * };
- * const result = documentObjectSchema.parse(documentObject);
- * ```
+ * @see {@link issuerSignedSchema}
+ * @see {@link deviceSignedSchema}
+ * @see {@link errorsSchema}
+ * @see {@link DocType}
  */
-export const documentObjectSchema = z.object({
-  docType: docTypeSchema,
-  issuerSigned: issuerSignedSchema.optional(),
-  deviceSigned: deviceSignedSchema.optional(),
-  errors: errorsSchema.optional(),
-});
+export const documentEntries = [
+  ['docType', z.string().min(1)], // DocType, required
+  ['issuerSigned', issuerSignedSchema], // IssuerSigned, required
+  ['deviceSigned', deviceSignedSchema.optional()], // DeviceSigned, optional
+  ['errors', errorsSchema.optional()], // Errors, optional
+] as const;
 
 /**
  * Creates a schema for validating mdoc document structures
@@ -65,9 +65,9 @@ export const documentObjectSchema = z.object({
  * const result = documentSchema.parse(document); // Returns Document instance
  * ```
  */
-export const documentSchema = createStructSchema({
+export const documentSchema = createStrictMapSchema({
   target: 'Document',
-  objectSchema: documentObjectSchema,
+  entries: documentEntries,
 });
 
 /**
