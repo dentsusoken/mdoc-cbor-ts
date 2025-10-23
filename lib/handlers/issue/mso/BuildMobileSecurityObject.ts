@@ -1,10 +1,14 @@
-import { MobileSecurityObject } from '@/schemas/mso/MobileSecurityObject';
+import {
+  createMobileSecurityObject,
+  MobileSecurityObject,
+} from '@/schemas/mso/MobileSecurityObject';
 import { buildValidityInfo } from './buildValidityInfo';
 import { buildValueDigests } from './buildValueDigests';
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { JwkPublicKey } from '@/jwk/types';
 import { jwkToCosePublicKey } from '@/cose/jwkToCosePublicKey';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
+import { createDeviceKeyInfo } from '@/schemas/mso/DeviceKeyInfo';
+import { toDigestAlgorithm } from '@/cose/toDigestAlgorithm';
 
 /**
  * Parameters for building a Mobile Security Object (MSO).
@@ -17,7 +21,7 @@ export type BuildMobileSecurityObjectParams = {
   /** The device's public key for authentication */
   deviceJwkPublicKey: JwkPublicKey;
   /** The digest algorithm to use for calculating value digests */
-  digestAlgorithm: DigestAlgorithm;
+  digestAlgorithm: string;
   /** The date and time when the MSO was signed */
   signed: Date;
   /** The date and time when the document becomes valid */
@@ -138,6 +142,7 @@ export const buildMobileSecurityObject = ({
   expectedUpdate,
 }: BuildMobileSecurityObjectParams): MobileSecurityObject => {
   const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
+  const deviceKeyInfo = createDeviceKeyInfo([['deviceKey', deviceKey]]);
   const valueDigests = buildValueDigests({ nameSpaces, digestAlgorithm });
   const validityInfo = buildValidityInfo({
     signed,
@@ -145,16 +150,13 @@ export const buildMobileSecurityObject = ({
     validUntil,
     expectedUpdate,
   });
-  const mso: MobileSecurityObject = {
-    version: '1.0',
-    docType,
-    digestAlgorithm,
-    valueDigests,
-    validityInfo,
-    deviceKeyInfo: {
-      deviceKey,
-    },
-  };
 
-  return mso;
+  return createMobileSecurityObject([
+    ['version', '1.0'],
+    ['digestAlgorithm', toDigestAlgorithm(digestAlgorithm)],
+    ['valueDigests', valueDigests],
+    ['validityInfo', validityInfo],
+    ['docType', docType],
+    ['deviceKeyInfo', deviceKeyInfo],
+  ]);
 };

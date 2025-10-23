@@ -86,41 +86,4 @@ describe('buildValueDigest auth0/mdl compatibility', () => {
       expect(Array.from(result.digest)).toEqual(Array.from(auth0Digest!));
     });
   });
-
-  it('should match auth0/mdl digest for specific element', () => {
-    const nameSpace = 'org.iso.18013.5.1';
-    const digestAlgorithm: DigestAlgorithm = 'SHA-256';
-
-    // Get auth0/mdl's valueDigests from MSO
-    const mso = parsedDocument.issuerSigned.issuerAuth.decodedPayload as MSO;
-    const auth0Digests = mso.valueDigests?.get(nameSpace);
-
-    // Find the IssuerSignedItem with birth_date
-    const issuerSignedItems =
-      parsedDocument.issuerSigned.nameSpaces?.[nameSpace];
-    const birthDateItem = issuerSignedItems?.find(
-      (item) => item.elementIdentifier === 'birth_date'
-    );
-    expect(birthDateItem).toBeDefined();
-    expect(birthDateItem!.digestID).toBeGreaterThanOrEqual(0);
-
-    // Use auth0/mdl's DataItem buffer directly and wrap it as Tag24
-    const tag = new Tag(birthDateItem!.dataItem.buffer, 24);
-
-    // Calculate digest using buildValueDigest
-    const result = buildValueDigest({
-      issuerSignedItemTag: tag,
-      digestAlgorithm,
-    });
-
-    // Get expected digest from auth0/mdl
-    const expectedDigest = auth0Digests?.get(result.digestID);
-    expect(expectedDigest).toBeDefined();
-
-    // Verify digestID matches
-    expect(result.digestID).toBe(birthDateItem!.digestID);
-
-    // Compare our digest with auth0/mdl's digest
-    expect(Array.from(result.digest)).toEqual(Array.from(expectedDigest!));
-  });
 });

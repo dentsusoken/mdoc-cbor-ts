@@ -1,5 +1,4 @@
 import { encodeCbor } from '@/cbor/codec';
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { IssuerAuth, issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { createTag24 } from '@/cbor/createTag24';
 import { buildMobileSecurityObject } from './buildMobileSecurityObject';
@@ -24,7 +23,7 @@ export type BuildIssuerAuthtParams = {
   /** The device's public key (JWK) for authentication */
   deviceJwkPublicKey: JwkPublicKey;
   /** The digest algorithm to use for calculating value digests */
-  digestAlgorithm: DigestAlgorithm;
+  digestAlgorithm: string;
   /** The date and time when the MSO was signed */
   signed: Date;
   /** The date and time when the document becomes valid */

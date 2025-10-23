@@ -3,6 +3,7 @@ import { deviceKeySchema } from './DeviceKey';
 import { keyAuthorizationsSchema } from './KeyAuthorizations';
 import { keyInfoSchema } from './KeyInfo';
 import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
+import { createStrictMap } from '@/strict-map';
 
 /**
  * Field entries for the DeviceKeyInfo map/object schema.
@@ -25,6 +26,28 @@ export const deviceKeyInfoEntries = [
   ['keyAuthorizations', keyAuthorizationsSchema.optional()],
   ['keyInfo', keyInfoSchema.optional()],
 ] as const;
+
+/**
+ * Utility for constructing a DeviceKeyInfo map with correct typing.
+ *
+ * @description
+ * Creates a DeviceKeyInfo as a strict Map with statically enforced keys and correct value schemas.
+ * - Fields allowed: "deviceKey" (required), "keyAuthorizations" (optional), "keyInfo" (optional).
+ * - Use to initialize DeviceKeyInfo maps in a type-safe manner.
+ *
+ * @see deviceKeyInfoEntries
+ * @see deviceKeyInfoSchema
+ *
+ * @example
+ * ```typescript
+ * const m = createDeviceKeyInfo([
+ *   ['deviceKey', validDeviceKey],
+ *   // ['keyAuthorizations', { ... }], // optional
+ *   // ['keyInfo', { ... }],           // optional
+ * ]);
+ * ```
+ */
+export const createDeviceKeyInfo = createStrictMap<typeof deviceKeyInfoEntries>;
 
 /**
  * Zod schema for the DeviceKeyInfo structure used in MSO (Mobile Security Object).

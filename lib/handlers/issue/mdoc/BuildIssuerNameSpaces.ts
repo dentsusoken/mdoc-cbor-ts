@@ -1,11 +1,9 @@
 import { Tag } from 'cbor-x';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import {
-  NameSpaceElements,
-  nameSpaceElementsSchema,
-} from '@/schemas/record/NameSpaceElements';
-import { NameSpace } from '@/schemas/common/NameSpace';
-import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
+  createIssuerSignedItem,
+  IssuerSignedItem,
+} from '@/schemas/mdoc/IssuerSignedItem';
 import { createTag24 } from '@/cbor/createTag24';
 import { RandomBytes } from '@/types';
 
@@ -36,12 +34,10 @@ import { RandomBytes } from '@/types';
  * ```
  */
 export const buildIssuerNameSpaces = (
-  nameSpaceElements: NameSpaceElements,
+  nameSpaceElements: Record<string, Record<string, unknown>>,
   randomBytes: RandomBytes
 ): IssuerNameSpaces => {
-  nameSpaceElements = nameSpaceElementsSchema.parse(nameSpaceElements);
-
-  const issuerNameSpaces: IssuerNameSpaces = new Map<NameSpace, Tag[]>();
+  const issuerNameSpaces: IssuerNameSpaces = new Map<string, Tag[]>();
 
   Object.entries(nameSpaceElements).forEach(([nameSpace, elements]) => {
     const issuerSignedItemTags: Tag[] = [];
@@ -50,12 +46,12 @@ export const buildIssuerNameSpaces = (
       const random = randomBytes(32);
       // Keys must be in lexicographic order for CBOR canonical form
       // Order: digestID, elementIdentifier, elementValue, random
-      const issuerSignedItem: IssuerSignedItem = {
-        digestID: issuerSignedItemTags.length,
-        elementIdentifier,
-        elementValue,
-        random,
-      };
+      const issuerSignedItem: IssuerSignedItem = createIssuerSignedItem([
+        ['digestID', issuerSignedItemTags.length],
+        ['random', random],
+        ['elementIdentifier', elementIdentifier],
+        ['elementValue', elementValue],
+      ]);
       const tag = createTag24(issuerSignedItem);
       issuerSignedItemTags.push(tag);
     });
