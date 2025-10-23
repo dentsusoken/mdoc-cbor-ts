@@ -1,5 +1,4 @@
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { ValueDigests } from '@/schemas/mso/ValueDigests';
 import { buildValueDigest } from './buildValueDigest';
 
@@ -10,7 +9,7 @@ type BuildValueDigestsParams = {
   /** The issuer namespaces containing issuer signed item tags */
   nameSpaces: IssuerNameSpaces;
   /** The digest algorithm to use for calculating digests */
-  digestAlgorithm: DigestAlgorithm;
+  digestAlgorithm: string;
 };
 
 /**
@@ -46,9 +45,17 @@ export const buildValueDigests = ({
   nameSpaces,
   digestAlgorithm,
 }: BuildValueDigestsParams): ValueDigests => {
+  if (nameSpaces.size === 0) {
+    throw new Error('No namespaces provided');
+  }
+
   const valueDigests: ValueDigests = new Map<string, Map<number, Uint8Array>>();
 
   for (const [nameSpace, issuerSignedItemTags] of nameSpaces) {
+    if (issuerSignedItemTags.length === 0) {
+      throw new Error(`No issuer signed items for namespace ${nameSpace}`);
+    }
+
     const digestMap = new Map<number, Uint8Array>();
 
     for (const tag of issuerSignedItemTags) {
