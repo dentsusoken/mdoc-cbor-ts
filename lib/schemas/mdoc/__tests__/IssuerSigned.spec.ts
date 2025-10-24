@@ -1,6 +1,6 @@
 //
 import { describe, expect, it } from 'vitest';
-import { issuerSignedSchema } from '../IssuerSigned';
+import { issuerSignedSchema, createIssuerSigned } from '../IssuerSigned';
 import { createTag24 } from '@/cbor/createTag24';
 import { containerInvalidTypeMessage } from '@/schemas/messages/containerInvalidTypeMessage';
 import { containerInvalidValueMessage } from '@/schemas/messages/containerInvalidValueMessage';
@@ -43,6 +43,43 @@ describe('IssuerSigned', () => {
       ]);
       const result = issuerSignedSchema.parse(validData);
       expect(result).toEqual(validData);
+    });
+  });
+
+  describe('createIssuerSigned', () => {
+    it('should construct a valid IssuerSigned map', () => {
+      const protectedHeader = new Uint8Array([]);
+      const unprotectedHeader = new Map<number, string>([[1, 'value']]);
+      const payload = new Uint8Array([]);
+      const signature = new Uint8Array([]);
+
+      const created = createIssuerSigned([
+        [
+          'nameSpaces',
+          new Map<string, Tag[]>([
+            [
+              'org.iso.18013.5.1',
+              [
+                createTag24(
+                  new Map<string, unknown>([
+                    ['digestID', 1],
+                    ['random', new Uint8Array([])],
+                    ['elementIdentifier', 'given_name'],
+                    ['elementValue', 'John'],
+                  ])
+                ),
+              ],
+            ],
+          ]),
+        ],
+        [
+          'issuerAuth',
+          createTag18([protectedHeader, unprotectedHeader, payload, signature]),
+        ],
+      ]);
+
+      const parsed = issuerSignedSchema.parse(created);
+      expect(parsed).toEqual(created);
     });
   });
 

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 import { issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { issuerNameSpacesSchema } from '@/schemas/mdoc/IssuerNameSpaces';
+import { createStrictMap } from '@/strict-map/createStrictMap';
 
 /**
  * Entries definition for the IssuerSigned schema in mdoc.
@@ -30,6 +31,43 @@ export const issuerSignedEntries = [
   ['nameSpaces', issuerNameSpacesSchema],
   ['issuerAuth', issuerAuthSchema],
 ] as const;
+
+/**
+ * Factory function for constructing an IssuerSigned Map in mdoc format.
+ * @description
+ * Provides a type-safe way to create an IssuerSigned structure as a strict Map,
+ * ensuring it contains exactly the required "nameSpaces" (validated by {@link issuerNameSpacesSchema})
+ * and "issuerAuth" (validated by {@link issuerAuthSchema}) entries.
+ *
+ * @example
+ * ```typescript
+ * import { createTag24 } from '@/cbor/createTag24';
+ *
+ * const issuerSigned = createIssuerSigned([
+ *   ['nameSpaces', new Map([
+ *     ['org.iso.18013.5.1', [
+ *       createTag24(new Map([
+ *         ['digestID', 1],
+ *         ['random', new Uint8Array([])],
+ *         ['elementIdentifier', 'given_name'],
+ *         ['elementValue', 'John'],
+ *       ])),
+ *     ]],
+ *   ])],
+ *   ['issuerAuth', new Map([
+ *     ['protected', new Uint8Array([])],
+ *     ['unprotected', new Map()],
+ *     ['payload', new Uint8Array([])],
+ *     ['signature', new Uint8Array([])],
+ *   ])],
+ * ]);
+ * ```
+ *
+ * @see {@link issuerSignedEntries}
+ * @see {@link issuerNameSpacesSchema}
+ * @see {@link issuerAuthSchema}
+ */
+export const createIssuerSigned = createStrictMap<typeof issuerSignedEntries>;
 
 /**
  * Zod schema for issuer-signed data in mdoc.

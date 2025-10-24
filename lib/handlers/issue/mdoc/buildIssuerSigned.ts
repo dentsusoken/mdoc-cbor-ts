@@ -1,8 +1,6 @@
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
 import { RandomBytes } from '@/types';
-import { NameSpaceElements } from '@/schemas/record/NameSpaceElements';
-import { IssuerSigned } from '@/schemas/mdoc/IssuerSigned';
+import { createIssuerSigned, IssuerSigned } from '@/schemas/mdoc/IssuerSigned';
 import { buildIssuerAuth } from '../mso/buildIssuerAuth';
 import { buildIssuerNameSpaces } from './buildIssuerNameSpaces';
 
@@ -18,13 +16,13 @@ export type BuildIssuerSignedParams = {
   /** The document type identifier (e.g., 'org.iso.18013.5.1.mDL') */
   docType: string;
   /** The issuer namespaces and their associated elements as a record structure */
-  nameSpaceElements: NameSpaceElements;
+  nameSpaceElements: Record<string, Record<string, unknown>>;
   /** A cryptographically secure random bytes generator function */
   randomBytes: RandomBytes;
   /** The device's public key for authentication */
   deviceJwkPublicKey: JwkPublicKey;
   /** The digest algorithm to use for calculating value digests */
-  digestAlgorithm: DigestAlgorithm;
+  digestAlgorithm: string;
   /** The date and time when the MSO was signed */
   signed: Date;
   /** The date and time when the document becomes valid */
@@ -140,5 +138,8 @@ export const buildIssuerSigned = ({
     issuerJwkPrivateKey,
   });
 
-  return { nameSpaces, issuerAuth };
+  return createIssuerSigned([
+    ['nameSpaces', nameSpaces],
+    ['issuerAuth', issuerAuth],
+  ]);
 };
