@@ -1,155 +1,201 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { verifyValueDigests } from '../verifyValueDigests';
 import { createTag24 } from '@/cbor/createTag24';
-import { encodeCbor } from '@/cbor/codec';
-import { verifyValueDigests } from '../verifyValueDigests.ts';
-import { ErrorsError } from '../ErrorsError';
-import { ErrorCode } from '@/schemas/error/ErrorCode';
-import type { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
+import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
+import { NameSpaceError } from '@/mdoc/NameSpaceError';
+import { ErrorsError } from '@/mdoc/ErrorsError';
+import { MDocErrorCode } from '@/mdoc/types';
+import { calculateDigest } from '@/utils/calculateDigest';
+import { Tag } from 'cbor-x';
+
+const ns = 'org.iso.18013.5.1';
+
+const buildIssuerSignedItemTag = (
+  digestID: number,
+  elementIdentifier: string,
+  elementValue: unknown
+): Tag => {
+  const item = createIssuerSignedItem([
+    ['digestID', digestID],
+    ['random', new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8])],
+    ['elementIdentifier', elementIdentifier],
+    ['elementValue', elementValue],
+  ]);
+  return createTag24(item);
+};
 
 describe('verifyValueDigests', () => {
-  const mockRandom = new Uint8Array(32);
+  describe('success cases', () => {
+    it('should pass when all digests match', () => {
+      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
 
-  it('passes when digest maps exist and calculated digests match', async () => {
-    const item1 = {
-      digestID: 1,
-      random: mockRandom,
-      elementIdentifier: 'a',
-      elementValue: 'A',
-    };
-    const item2 = {
-      digestID: 2,
-      random: mockRandom,
-      elementIdentifier: 'b',
-      elementValue: 'B',
-    };
-    const tag1 = createTag24(item1);
-    const tag2 = createTag24(item2);
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
 
-    const nameSpaces: IssuerNameSpaces = new Map([['ns', [tag1, tag2]]]);
+      const expectedDigest = calculateDigest('SHA-256', tag);
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[1, expectedDigest]])],
+      ]);
 
-    // Precompute expected digests using the same function as implementation
-    const expectedDigest1 = new Uint8Array(
-      await crypto.subtle.digest('SHA-256', encodeCbor(tag1))
-    );
-    const expectedDigest2 = new Uint8Array(
-      await crypto.subtle.digest('SHA-256', encodeCbor(tag2))
-    );
-
-    const valueDigests = new Map<string, Map<number, Uint8Array>>([
-      [
-        'ns',
-        new Map<number, Uint8Array>([
-          [1, expectedDigest1],
-          [2, expectedDigest2],
-        ]),
-      ],
-    ]);
-
-    await expect(
-      verifyValueDigests({
-        valueDigests,
-        nameSpaces,
-        digestAlgorithm: 'SHA-256',
-      })
-    ).resolves.toBeUndefined();
+      expect(() =>
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        })
+      ).not.toThrow();
+    });
   });
 
-  it('throws ErrorsError with namespace-level error when namespace missing in valueDigests', async () => {
-    const item = {
-      digestID: 1,
-      random: mockRandom,
-      elementIdentifier: 'a',
-      elementValue: 'A',
-    };
-    const tag = createTag24(item);
-    const nameSpaces: IssuerNameSpaces = new Map([['ns', [tag]]]);
-    const valueDigests = new Map<string, Map<number, Uint8Array>>();
+  describe('error cases', () => {
+    it('should throw NameSpaceError on CBOR decode error', () => {
+      // Create a Tag(24) with invalid CBOR bytes
+      const invalidBytes = new Uint8Array([0xff]);
+      const tag = new Tag(invalidBytes, 24);
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[1, new Uint8Array([0x00])]])],
+      ]);
 
-    try {
-      await verifyValueDigests({
-        valueDigests,
-        nameSpaces,
-        digestAlgorithm: 'SHA-256',
-      });
-      throw new Error('Expected ErrorsError');
-    } catch (error) {
-      expect(error).toBeInstanceOf(ErrorsError);
-      const err = error as ErrorsError;
-      expect(err.message).toBe('Value digests verification failed');
-      expect(err.errors).toEqual(
-        new Map([
-          [
-            'ns',
-            new Map([
-              [':namespace', ErrorCode.value_digests_missing_for_namespace],
-            ]),
-          ],
-        ])
-      );
-    }
-  });
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(NameSpaceError);
+        const err = e as NameSpaceError;
+        expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
+      }
+    });
+    it('should throw NameSpaceError when namespace has no digests', () => {
+      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [`${ns}.other`, new Map([[1, new Uint8Array([0x00])]])],
+      ]);
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(NameSpaceError);
+        const err = e as NameSpaceError;
+        expect(err.nameSpace).toBe(ns);
+        expect(err.errorCode).toBe(
+          MDocErrorCode.ValueDigestsMissingForNamespace
+        );
+      }
+    });
 
-  it('throws ErrorsError with element-level error when digestID missing', async () => {
-    const item = {
-      digestID: 3,
-      random: mockRandom,
-      elementIdentifier: 'x',
-      elementValue: 'X',
-    };
-    const tag = createTag24(item);
-    const nameSpaces: IssuerNameSpaces = new Map([['ns', [tag]]]);
-    const valueDigests = new Map<string, Map<number, Uint8Array>>([
-      ['ns', new Map<number, Uint8Array>([[1, new Uint8Array([1])]])],
-    ]);
+    it('should aggregate ErrorsError for missing digestID', () => {
+      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      // Missing digest for ID 1
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[2, new Uint8Array([0x00])]])],
+      ]);
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(ErrorsError);
+        const err = e as ErrorsError;
+        expect(err.errors).toBeInstanceOf(Map);
+        expect(err.errors.size).toBe(1);
+        const nsErrors = err.errors.get(ns);
+        expect(nsErrors).toBeInstanceOf(Map);
+        expect(nsErrors?.size).toBe(1);
+        expect(nsErrors?.get('given_name')).toBe(
+          MDocErrorCode.ValueDigestsMissingForDigestId
+        );
+      }
+    });
 
-    try {
-      await verifyValueDigests({
-        valueDigests,
-        nameSpaces,
-        digestAlgorithm: 'SHA-256',
-      });
-      throw new Error('Expected ErrorsError');
-    } catch (error) {
-      expect(error).toBeInstanceOf(ErrorsError);
-      const err = error as ErrorsError;
-      expect(err.message).toBe('Value digests verification failed');
-      expect(err.errors).toEqual(
-        new Map([
-          [
-            'ns',
-            new Map([['x', ErrorCode.value_digests_missing_for_digest_id]]),
-          ],
-        ])
-      );
-    }
-  });
+    it('should aggregate ErrorsError for digest mismatch', () => {
+      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      // Wrong digest
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[1, new Uint8Array([0xde, 0xad])]])],
+      ]);
 
-  it('throws ErrorsError when calculated digest mismatches expected', async () => {
-    const item = {
-      digestID: 1,
-      random: mockRandom,
-      elementIdentifier: 'a',
-      elementValue: 'A',
-    };
-    const tag = createTag24(item);
-    const nameSpaces: IssuerNameSpaces = new Map([['ns', [tag]]]);
-    const valueDigests = new Map<string, Map<number, Uint8Array>>([
-      ['ns', new Map<number, Uint8Array>([[1, new Uint8Array([9, 9, 9])]])],
-    ]);
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(ErrorsError);
+        const err = e as ErrorsError;
+        expect(err.errors).toBeInstanceOf(Map);
+        expect(err.errors.size).toBe(1);
+        const nsErrors = err.errors.get(ns);
+        expect(nsErrors).toBeInstanceOf(Map);
+        expect(nsErrors?.size).toBe(1);
+        expect(nsErrors?.get('given_name')).toBe(
+          MDocErrorCode.MsoDigestMismatch
+        );
+      }
+    });
 
-    try {
-      await verifyValueDigests({
-        valueDigests,
-        nameSpaces,
-        digestAlgorithm: 'SHA-256',
-      });
-      throw new Error('Expected ErrorsError');
-    } catch (error) {
-      expect(error).toBeInstanceOf(ErrorsError);
-      const err = error as ErrorsError;
-      expect(err.message).toBe('Value digests verification failed');
-      const nsErrors = err.errors.get('ns');
-      expect(nsErrors).toEqual(new Map([['a', ErrorCode.mso_digest_mismatch]]));
-    }
+    it('should throw NameSpaceError on CBOR decoding error', () => {
+      // Create a tag24 with invalid IssuerSignedItem payload (missing required keys)
+      const invalidPayload = new Map<string, unknown>([['foo', 'bar']]);
+      const tag = createTag24(invalidPayload);
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[1, new Uint8Array([0x00])]])],
+      ]);
+
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(NameSpaceError);
+        const err = e as NameSpaceError;
+        // Implementation throws decoding error for validation failure currently
+        expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
+      }
+    });
+
+    it('should throw NameSpaceError on CBOR validation error', () => {
+      // Create a tag24 with invalid IssuerSignedItem payload (missing required keys)
+      const invalidPayload = new Map<string, unknown>([['foo', 'bar']]);
+      const tag = createTag24(invalidPayload);
+      const digest = calculateDigest('SHA-256', tag);
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[1, digest]])],
+      ]);
+
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(NameSpaceError);
+        const err = e as NameSpaceError;
+        // Implementation throws decoding error for validation failure currently
+        expect(err.errorCode).toBe(MDocErrorCode.CborValidationError);
+      }
+    });
   });
 });

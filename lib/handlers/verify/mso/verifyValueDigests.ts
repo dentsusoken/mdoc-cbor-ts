@@ -1,15 +1,17 @@
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
-import { issuerSignedItemSchema } from '@/schemas/mdoc/IssuerSignedItem';
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
+import {
+  IssuerSignedItem,
+  issuerSignedItemSchema,
+} from '@/schemas/mdoc/IssuerSignedItem';
 import { calculateDigest } from '@/utils/calculateDigest';
 import { decodeCbor } from '@/cbor/codec';
 import { ValueDigests } from '@/schemas/mso/ValueDigests';
 import { Errors } from '@/schemas/mdoc/Errors';
 import { ErrorItems } from '@/schemas/mdoc/ErrorItems';
-import { NameSpace } from '@/schemas/common/NameSpace';
-import { ErrorCode } from '@/schemas/error/ErrorCode';
-import { ErrorsError } from './ErrorsError';
+import { ErrorsError } from '@/mdoc/ErrorsError';
 import { compareUint8Arrays } from 'u8a-utils';
+import { MDocErrorCode } from '@/mdoc/types';
+import { NameSpaceError } from '@/mdoc/NameSpaceError';
 
 /**
  * Parameters for verifying value digests for a Mobile Security Object (MSO).
@@ -20,95 +22,89 @@ type VerifyValueDigestsParams = {
   /** The issuer namespaces containing issuer signed item tags */
   nameSpaces: IssuerNameSpaces;
   /** The digest algorithm to use for calculating digests */
-  digestAlgorithm: DigestAlgorithm;
+  digestAlgorithm: string;
 };
 
 /**
- * Verifies value digests for a Mobile Security Object (MSO).
+ * Verifies the value digests of issuer-signed items within provided namespaces
+ * against expected digests in the Mobile Security Object (MSO).
  *
- * This function validates that the calculated digests of issuer signed items match
- * the expected digests stored in the MSO's value digests. It processes each namespace
- * and verifies that:
- * 1. The namespace exists in the value digests
- * 2. Each digest ID from issuer signed items has a corresponding digest in the MSO
- * 3. The calculated digest matches the expected digest from the MSO
+ * For each issuer namespace, checks that the corresponding valueDigests entry exists.
+ * Iterates through each issuer-signed tag, checks CBOR validity and type. Calculates the digest
+ * for each issuer-signed item and compares against the expected digest in valueDigests. Tracks
+ * per-element errors by element identifier within each namespace, and aggregates errors per
+ * namespace.
  *
- * @param params - The parameters for verifying value digests
- * @param params.valueDigests - The expected value digests from the MSO
- * @param params.nameSpaces - The issuer namespaces containing issuer signed item tags
- * @param params.digestAlgorithm - The digest algorithm to use for calculating digests
- * @throws {ErrorsError} When verification fails, containing detailed error information
+ * Throws specific NameSpaceError for missing digests, CBOR issues, or validation mismatches. At the end,
+ * if any per-namespace errors exist, throws a collective ErrorsError.
  *
- * @example
- * ```typescript
- * await verifyValueDigests({
- *   valueDigests: new Map([
- *     ['org.iso.18013.5.1', new Map([[1, expectedDigest1], [2, expectedDigest2]])],
- *   ]),
- *   nameSpaces: new Map([
- *     ['org.iso.18013.5.1', [tag1, tag2]],
- *   ]),
- *   digestAlgorithm: 'SHA-256'
- * });
- * ```
+ * @param {Object} params - Parameters for value digest verification.
+ * @param {ValueDigests} params.valueDigests - The expected value digests from the MSO.
+ * @param {IssuerNameSpaces} params.nameSpaces - The issuer namespaces with their signed item tags.
+ * @param {string} params.digestAlgorithm - The digest algorithm to use for digest calculation.
+ *
+ * @throws {NameSpaceError} If the value digests are missing for a namespace, or if CBOR validation/decoding fails.
+ * @throws {ErrorsError} If one or more digests mismatches or are missing for a digestID within a namespace.
  */
-export const verifyValueDigests = async ({
+export const verifyValueDigests = ({
   valueDigests,
   nameSpaces,
   digestAlgorithm,
-}: VerifyValueDigestsParams): Promise<void> => {
-  let hasErrors = false;
-  const errors: Errors = new Map<NameSpace, ErrorItems>();
+}: VerifyValueDigestsParams): void => {
+  const errors: Errors = new Map<string, ErrorItems>();
 
   for (const [nameSpace, issuerSignedItemTags] of nameSpaces) {
+    const errorItems: ErrorItems = new Map<string, number>();
     const digestMap = valueDigests.get(nameSpace);
 
     if (!digestMap) {
-      hasErrors = true;
-      errors.set(
+      throw new NameSpaceError(
         nameSpace,
-        new Map<string, ErrorCode>([
-          [':namespace', ErrorCode.value_digests_missing_for_namespace],
-        ])
+        MDocErrorCode.ValueDigestsMissingForNamespace
       );
-      continue;
     }
 
-    // Keep digestID/digest for upcoming element-level verification
     for (const tag of issuerSignedItemTags) {
-      const issuerSignedItem = issuerSignedItemSchema.parse(
-        decodeCbor(tag.value)
-      );
-      const digestID = issuerSignedItem.digestID;
-      const elementIdentifier = issuerSignedItem.elementIdentifier;
-      const calculatedDigest = await calculateDigest(digestAlgorithm, tag);
-      const expectedDigest = digestMap.get(digestID);
+      try {
+        const decoded = decodeCbor(tag.value);
+        const result = issuerSignedItemSchema.safeParse(decoded);
 
-      if (!expectedDigest) {
-        hasErrors = true;
-        errors.set(
-          nameSpace,
-          new Map<string, ErrorCode>([
-            [elementIdentifier, ErrorCode.value_digests_missing_for_digest_id],
-          ])
-        );
-        continue;
-      }
+        if (!result.success) {
+          throw new NameSpaceError(
+            nameSpace,
+            MDocErrorCode.CborValidationError
+          );
+        }
 
-      if (!compareUint8Arrays(expectedDigest, calculatedDigest)) {
-        hasErrors = true;
-        errors.set(
-          nameSpace,
-          new Map<string, ErrorCode>([
-            [elementIdentifier, ErrorCode.mso_digest_mismatch],
-          ])
-        );
-        continue;
+        const issuerSignedItem = result.data as IssuerSignedItem;
+        const digestID = issuerSignedItem.get('digestID')!;
+        const elementIdentifier = issuerSignedItem.get('elementIdentifier')!;
+        const calculatedDigest = calculateDigest(digestAlgorithm, tag);
+        const expectedDigest = digestMap.get(digestID);
+
+        if (!expectedDigest) {
+          errorItems.set(
+            elementIdentifier,
+            MDocErrorCode.ValueDigestsMissingForDigestId
+          );
+          continue;
+        }
+
+        if (!compareUint8Arrays(expectedDigest, calculatedDigest)) {
+          errorItems.set(elementIdentifier, MDocErrorCode.MsoDigestMismatch);
+          continue;
+        }
+      } catch (error) {
+        throw new NameSpaceError(nameSpace, MDocErrorCode.CborDecodingError);
       }
+    }
+
+    if (errorItems.size > 0) {
+      errors.set(nameSpace, errorItems);
     }
   }
 
-  if (hasErrors) {
+  if (errors.size > 0) {
     throw new ErrorsError('Value digests verification failed', errors);
   }
 };
