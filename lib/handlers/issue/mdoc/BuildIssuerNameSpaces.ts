@@ -8,19 +8,24 @@ import { createTag24 } from '@/cbor/createTag24';
 import { RandomBytes } from '@/types';
 
 /**
- * Builds IssuerNameSpaces from a NameSpaceElements.
+ * Builds an IssuerNameSpaces structure
+ * from Record<NameSapce, Record<DataElementIdentifier, DataElementValue>>.
  *
  * @description
- * Converts a validated {@link NameSpaceElements} into an {@link IssuerNameSpaces} structure by generating a CBOR Tag 24 wrapped issuer-signed item for each data element in each namespace. Each issuer-signed item includes a unique digest ID (incremented per element within a namespace), a cryptographically secure random value, the element identifier, and the element value. The function ensures the input is valid, generates random bytes for each item, and returns a Map of namespaces to arrays of Tag 24 issuer-signed items.
+ * Takes a record mapping each namespace string to an object of data elements (identifier-value pairs),
+ * and produces an {@link IssuerNameSpaces} structure (a Map of namespaces to arrays of CBOR Tag 24 issuer-signed items).
+ * For each element in each namespace, creates a CBOR Tag 24-wrapped IssuerSignedItem:
+ *   - Each IssuerSignedItem includes a unique digestID (its index in the namespace array), a secure random value (32 bytes),
+ *     the element identifier, and the element value.
+ * The function verifies that there is at least one element per namespace and at least one namespace,
+ * and throws if these invariants are not met.
  *
- * @param {NameSpaceElements} nameSpaceElements - The record mapping each namespace to its data elements to be signed.
- * @param {RandomBytes} randomBytes - A function that generates cryptographically secure random bytes of the specified length.
- * @returns {IssuerNameSpaces} A Map where each key is a namespace and each value is an array of CBOR Tag 24 issuer-signed items.
- * @throws {z.ZodError} If the input data does not conform to the NameSpaceElements schema.
- * @throws {Error} If a namespace contains no elements or if no namespaces are provided.
+ * @param {Record<string, Record<string, unknown>>} nameSpaceElements - Object mapping namespaces to data element identifier-value objects.
+ * @param {RandomBytes} randomBytes - Function generating cryptographically secure random bytes of given length.
+ * @returns {IssuerNameSpaces} A Map from namespace string to array of CBOR Tag 24 issuer-signed items.
+ * @throws {Error} If a namespace contains no elements or no namespaces are provided.
  *
  * @example
- * ```typescript
  * import { randomBytes } from '@noble/hashes/utils';
  *
  * const data = {
@@ -30,8 +35,7 @@ import { RandomBytes } from '@/types';
  *   }
  * };
  * const issuerNameSpaces = buildIssuerNameSpaces(data, randomBytes);
- * // issuerNameSpaces is a Map<NameSpace, Tag[]> with CBOR Tag 24 wrapped items
- * ```
+ * // issuerNameSpaces is a Map<string, Tag[]> with Tag 24 items per element
  */
 export const buildIssuerNameSpaces = (
   nameSpaceElements: Record<string, Record<string, unknown>>,
