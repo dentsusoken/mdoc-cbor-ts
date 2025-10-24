@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { documentSchema } from '../Document';
+import { createDocument, documentSchema } from '../Document';
 import { issuerSignedSchema } from '../IssuerSigned';
-import { errorsSchema } from '../Errors';
 import { deviceSignedSchema } from '../DeviceSigned';
 import { createTag17, type Tag17Content } from '@/cbor/createTag17';
 import { createTag18, type Tag18Content } from '@/cbor/createTag18';
@@ -319,6 +318,28 @@ describe('Document', () => {
       ]);
       const result = documentSchema.parse(input);
       expect(result).toEqual(expected);
+    });
+  });
+
+  describe('createDocument', () => {
+    it('should create a Map with required fields', () => {
+      const issuerSigned = createMinimalIssuerSigned();
+      const docType = 'org.iso.18013.5.1.mDL';
+      const doc = createDocument([
+        ['docType', docType],
+        ['issuerSigned', issuerSigned],
+      ]);
+
+      expect(doc).toBeInstanceOf(Map);
+      expect(doc.get('docType')).toBe(docType);
+      expect(doc.get('issuerSigned')).toEqual(issuerSigned);
+      expect(doc.size).toBe(2);
+      expect(doc).toEqual(
+        new Map<string, unknown>([
+          ['docType', docType],
+          ['issuerSigned', issuerSigned],
+        ])
+      );
     });
   });
 });

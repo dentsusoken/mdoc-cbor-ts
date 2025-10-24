@@ -3,6 +3,7 @@ import { deviceSignedSchema } from './DeviceSigned';
 import { errorsSchema } from './Errors';
 import { issuerSignedSchema } from './IssuerSigned';
 import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
+import { createStrictMap } from '@/strict-map';
 
 /**
  * Entries definition for the Document schema in mdoc.
@@ -37,6 +38,29 @@ export const documentEntries = [
   ['deviceSigned', deviceSignedSchema.optional()], // DeviceSigned, optional
   ['errors', errorsSchema.optional()], // Errors, optional
 ] as const;
+
+/**
+ * Factory function for constructing a Document Map in mdoc format.
+ * @description
+ * Provides a type-safe way to create a Document structure as a strict Map,
+ * ensuring it contains exactly the required "docType" and "issuerSigned" fields,
+ * and optional "deviceSigned" and "errors" fields, all validated by their respective schemas.
+ *
+ * @example
+ * ```typescript
+ * const document = createDocument([
+ *   ['docType', 'org.iso.18013.5.1.mDL'],
+ *   ['issuerSigned', issuerSignedValue],
+ *   // Optionally:
+ *   ['deviceSigned', deviceSignedValue],
+ *   ['errors', errorsValue],
+ * ]);
+ * ```
+ *
+ * @see {@link documentEntries}
+ * @see {@link createStrictMap}
+ */
+export const createDocument = createStrictMap<typeof documentEntries>;
 
 /**
  * Creates a schema for validating mdoc document structures
