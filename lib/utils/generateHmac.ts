@@ -1,4 +1,3 @@
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { hmac } from '@noble/hashes/hmac';
 import { getShaHash } from './getShaHash';
 
@@ -7,7 +6,7 @@ import { getShaHash } from './getShaHash';
  */
 type GenerateHmacParams = {
   /** The digest algorithm to use. */
-  digestAlgorithm: DigestAlgorithm;
+  digestAlgorithm: string;
   /** The secret key as a Uint8Array. */
   key: Uint8Array;
   /** The message to be authenticated as a Uint8Array. */

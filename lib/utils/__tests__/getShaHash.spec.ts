@@ -141,7 +141,6 @@ describe('getShaHash', () => {
 
   describe('error handling', () => {
     it('throws error for unsupported digest algorithm', () => {
-      // @ts-expect-error Testing invalid input
       expect(() => getShaHash('SHA-1')).toThrow(
         'Unsupported digest algorithm: SHA-1'
       );

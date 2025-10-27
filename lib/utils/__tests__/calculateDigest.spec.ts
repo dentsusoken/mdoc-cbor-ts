@@ -309,7 +309,6 @@ describe('calculateDigest', () => {
     it('throws error for unsupported digest algorithms', () => {
       const data = { test: 'data' };
 
-      // @ts-expect-error Testing invalid algorithm
       expect(() => calculateDigest('SHA-1', data)).toThrow(
         'Unsupported digest algorithm: SHA-1'
       );

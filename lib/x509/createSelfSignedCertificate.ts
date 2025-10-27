@@ -1,18 +1,17 @@
 import { KEYUTIL, KJUR } from 'jsrsasign';
-import type { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { JwkPublicKey, JwkPrivateKey } from '@/jwk/types';
 import { digestAlgorithmToSigalg } from '@/jsrsasign/digestAlgorithmToSigalg';
 import { toX509Time } from './toX509Time';
 
-type CreateSelfSignedCertificateParams = {
+interface CreateSelfSignedCertificateParams {
   subjectJwkPublicKey: JwkPublicKey;
   caJwkPrivateKey: JwkPrivateKey;
-  digestAlgorithm?: DigestAlgorithm;
+  digestAlgorithm?: string;
   subject: string;
   issuer?: string;
   validityDays?: number;
   serialHex: string;
-};
+}
 
 /**
  * Creates a self-signed X.509 certificate using EC keys in JWK format.

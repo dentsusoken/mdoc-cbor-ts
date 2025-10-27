@@ -445,7 +445,9 @@ describe('createSemiStrictMap', () => {
 
     // Type checks
     for (const key of map.keys()) {
-      expectTypeOf(key).toEqualTypeOf<Header>();
+      expectTypeOf(key).toEqualTypeOf<
+        Header.Algorithm | Header.KeyId | EnumNumberValues<typeof Header>
+      >();
     }
   });
 

@@ -1,65 +1,6 @@
 import { z } from 'zod';
-import { createBytesSchema } from '@/schemas/cbor/Bytes';
-import { fullDateSchema } from '@/index';
-import { createRequiredSchema } from '@/schemas/common/Required';
-
-/**
- * Schema for driving privilege codes
- * @description
- * Represents a code that indicates a specific driving privilege or restriction.
- * This schema validates the structure of driving privilege codes including the code itself
- * and optional sign and value.
- *
- * @example
- * ```typescript
- * const code = {
- *   code: "A",
- *   sign: ">",
- *   value: "18"
- * };
- * const result = codeSchema.parse(code);
- * ```
- */
-export const codeSchema = z.object({
-  code: z.string(),
-  sign: z.string().optional(),
-  value: z.string().optional(),
-});
-
-/**
- * Schema for driving privileges
- * @description
- * Represents a set of driving privileges for a specific vehicle category.
- * This schema validates the structure of driving privileges including vehicle category,
- * issue and expiry dates, and associated codes.
- *
- * @example
- * ```typescript
- * const privileges = {
- *   vehicle_category_code: "B",
- *   issue_date: new DateOnly(),
- *   expiry_date: new DateOnly(),
- *   codes: [{ code: "A" }]
- * };
- * const result = drivingPrivilegesSchema.parse(privileges);
- * ```
- */
-export const drivingPrivilegesSchema = z
-  .map(z.string(), z.unknown())
-  .transform((v) => {
-    return z
-      .object({
-        vehicle_category_code: z.string(),
-        issue_date: createRequiredSchema('issue_date')
-          .pipe(fullDateSchema)
-          .optional(),
-        expiry_date: createRequiredSchema('expiry_date')
-          .pipe(fullDateSchema)
-          .optional(),
-        codes: z.array(codeSchema).optional(),
-      })
-      .parse(Object.fromEntries(v));
-  });
+import { bytesSchema } from '@/schemas/cbor/Bytes';
+import { fullDateSchema } from '@/schemas/cbor/FullDate';
 
 /**
  * Schema for age verification flags
