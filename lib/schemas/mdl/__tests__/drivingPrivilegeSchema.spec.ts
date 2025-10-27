@@ -21,10 +21,7 @@ describe('drivingPrivilegeSchema', () => {
         vehicle_category_code: 'BE',
         issue_date: '2022-01-01',
         expiry_date: '2027-01-01',
-        codes: [
-          { code: '78' },
-          { code: '96', sign: '+', value: '96' },
-        ],
+        codes: [{ code: '78' }, { code: '96', sign: '+', value: '96' }],
       };
       const result = drivingPrivilegeSchema.safeParse(input);
       expect(result.success).toBe(true);
@@ -41,10 +38,17 @@ describe('drivingPrivilegeSchema', () => {
       const input = {
         vehicle_category_code: '',
       };
-      const result = drivingPrivilegeSchema.safeParse(input);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBeInstanceOf(z.ZodError);
+      try {
+        drivingPrivilegeSchema.parse(input);
+        throw new Error('Expected parse to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zerr = error as z.ZodError;
+        const issue = zerr.issues[0];
+        expect(issue.path).toEqual(['vehicle_category_code']);
+        expect(issue.message).toBe(
+          'String must contain at least 1 character(s)'
+        );
       }
     });
 
@@ -53,25 +57,32 @@ describe('drivingPrivilegeSchema', () => {
         vehicle_category_code: 'B',
         codes: [],
       };
-      const result = drivingPrivilegeSchema.safeParse(input);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBeInstanceOf(z.ZodError);
+      try {
+        drivingPrivilegeSchema.parse(input);
+        throw new Error('Expected parse to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zerr = error as z.ZodError;
+        const issue = zerr.issues[0];
+        expect(issue.path).toEqual(['codes']);
+        expect(issue.message).toBe('Array must contain at least 1 element(s)');
       }
     });
 
     it('should reject code object missing required code field', () => {
       const input = {
         vehicle_category_code: 'B',
-        codes: [
-          // @ts-expect-error testing runtime validation for missing required field
-          { sign: '+', value: '96' },
-        ],
+        codes: [{ sign: '+', value: '96' }],
       };
-      const result = drivingPrivilegeSchema.safeParse(input);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toBeInstanceOf(z.ZodError);
+      try {
+        drivingPrivilegeSchema.parse(input);
+        throw new Error('Expected parse to throw');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zerr = error as z.ZodError;
+        const issue = zerr.issues[0];
+        expect(issue.path).toEqual(['codes', 0, 'code']);
+        expect(issue.message).toBe('Required');
       }
     });
 
@@ -86,13 +97,10 @@ describe('drivingPrivilegeSchema', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zerr = error as z.ZodError;
-        const issues = zerr.issues.map((i) => i.message);
-        expect(
-          issues.some((m) => m === fullDateInvalidTypeMessage(123))
-        ).toBe(true);
+        const issue = zerr.issues[0];
+        expect(issue.path).toEqual(['issue_date']);
+        expect(issue.message).toBe(fullDateInvalidTypeMessage(123));
       }
     });
   });
 });
-
-
