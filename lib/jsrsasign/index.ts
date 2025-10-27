@@ -1,3 +1,3 @@
 export * from './digestAlgorithmToSigalg';
-export * from './initPRNG';
+export * from './initSECURERANDOMGEN';
 export * from './types';

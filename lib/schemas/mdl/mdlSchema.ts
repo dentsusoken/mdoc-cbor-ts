@@ -1,106 +1,348 @@
 import { z } from 'zod';
 import { bytesSchema } from '@/schemas/cbor/Bytes';
 import { fullDateSchema } from '@/schemas/cbor/FullDate';
+import { dateTimeSchema } from '@/schemas/cbor/DateTime';
 import { drivingPrivilegeSchema } from './drivingPrivilegeSchema';
+import { eyeColorSchema } from './eyeColorSchema';
+import { hairColorSchema } from './hairColorSchema';
+import { countryCodeSchema } from './countryCodeSchema';
 
 /**
- * Schema for Mobile Driving License (MDL)
- * @description
- * Represents a complete Mobile Driving License document according to ISO 18013-5.
- * This schema validates all required fields including personal information, document details,
- * driving privileges, and biometric data.
+ * Mobile Driving License (mDL) data element schema.
  *
- * @example
- * ```typescript
- * const mdl = {
- *   family_name: "Doe",
- *   given_name: "John",
- *   birth_date: new DateOnly(),
- *   issue_date: new DateOnly(),
- *   expiry_date: new DateOnly(),
- *   // ... other required fields ...
- * };
- * const result = mdlSchema.parse(mdl);
+ * Validates an mDL data object as defined by ISO 18013-5 using Zod sub-schemas
+ * for CBOR-compatible primitive and container types. String length bounds and
+ * basic format constraints are enforced where applicable. A refinement ensures
+ * the country code prefix of `issuing_jurisdiction` (ISO 3166-2) matches the
+ * `issuing_country` (ISO 3166-1 alpha-2).
+ *
+ * CDDL (informative) corresponding to this schema:
+ * ```cddl
+ * mdl = {
+ *   family_name: tstr,
+ *   given_name: tstr,
+ *   birth_date: full-date,
+ *   issue_date: full-date,
+ *   expiry_date: full-date,
+ *   issuing_country: country-code,
+ *   issuing_authority: tstr,
+ *   document_number: tstr,
+ *   portrait: bstr,
+ *   driving_privileges: [* driving_privilege],
+ *   un_distinguishing_sign: tstr,
+ *   ? administrative_number: tstr,
+ *   ? sex: uint,
+ *   ? height: uint,
+ *   ? weight: uint,
+ *   ? eye_colour: eye-colour,
+ *   ? hair_colour: hair-colour,
+ *   ? birth_place: tstr,
+ *   ? resident_address: tstr,
+ *   ? portrait_capture_date: date-time,
+ *   ? age_in_years: uint,
+ *   ? age_birth_year: uint,
+ *   ? age_over_00: bool,
+ *   ? age_over_01: bool,
+ *   ? age_over_02: bool,
+ *   ? age_over_03: bool,
+ *   ? age_over_04: bool,
+ *   ? age_over_05: bool,
+ *   ? age_over_06: bool,
+ *   ? age_over_07: bool,
+ *   ? age_over_08: bool,
+ *   ? age_over_09: bool,
+ *   ? age_over_10: bool,
+ *   ? age_over_11: bool,
+ *   ? age_over_12: bool,
+ *   ? age_over_13: bool,
+ *   ? age_over_14: bool,
+ *   ? age_over_15: bool,
+ *   ? age_over_16: bool,
+ *   ? age_over_17: bool,
+ *   ? age_over_18: bool,
+ *   ? age_over_19: bool,
+ *   ? age_over_20: bool,
+ *   ? age_over_21: bool,
+ *   ? age_over_22: bool,
+ *   ? age_over_23: bool,
+ *   ? age_over_24: bool,
+ *   ? age_over_25: bool,
+ *   ? age_over_26: bool,
+ *   ? age_over_27: bool,
+ *   ? age_over_28: bool,
+ *   ? age_over_29: bool,
+ *   ? age_over_30: bool,
+ *   ? age_over_31: bool,
+ *   ? age_over_32: bool,
+ *   ? age_over_33: bool,
+ *   ? age_over_34: bool,
+ *   ? age_over_35: bool,
+ *   ? age_over_36: bool,
+ *   ? age_over_37: bool,
+ *   ? age_over_38: bool,
+ *   ? age_over_39: bool,
+ *   ? age_over_40: bool,
+ *   ? age_over_41: bool,
+ *   ? age_over_42: bool,
+ *   ? age_over_43: bool,
+ *   ? age_over_44: bool,
+ *   ? age_over_45: bool,
+ *   ? age_over_46: bool,
+ *   ? age_over_47: bool,
+ *   ? age_over_48: bool,
+ *   ? age_over_49: bool,
+ *   ? age_over_50: bool,
+ *   ? age_over_51: bool,
+ *   ? age_over_52: bool,
+ *   ? age_over_53: bool,
+ *   ? age_over_54: bool,
+ *   ? age_over_55: bool,
+ *   ? age_over_56: bool,
+ *   ? age_over_57: bool,
+ *   ? age_over_58: bool,
+ *   ? age_over_59: bool,
+ *   ? age_over_60: bool,
+ *   ? age_over_61: bool,
+ *   ? age_over_62: bool,
+ *   ? age_over_63: bool,
+ *   ? age_over_64: bool,
+ *   ? age_over_65: bool,
+ *   ? age_over_66: bool,
+ *   ? age_over_67: bool,
+ *   ? age_over_68: bool,
+ *   ? age_over_69: bool,
+ *   ? age_over_70: bool,
+ *   ? age_over_71: bool,
+ *   ? age_over_72: bool,
+ *   ? age_over_73: bool,
+ *   ? age_over_74: bool,
+ *   ? age_over_75: bool,
+ *   ? age_over_76: bool,
+ *   ? age_over_77: bool,
+ *   ? age_over_78: bool,
+ *   ? age_over_79: bool,
+ *   ? age_over_80: bool,
+ *   ? age_over_81: bool,
+ *   ? age_over_82: bool,
+ *   ? age_over_83: bool,
+ *   ? age_over_84: bool,
+ *   ? age_over_85: bool,
+ *   ? age_over_86: bool,
+ *   ? age_over_87: bool,
+ *   ? age_over_88: bool,
+ *   ? age_over_89: bool,
+ *   ? age_over_90: bool,
+ *   ? age_over_91: bool,
+ *   ? age_over_92: bool,
+ *   ? age_over_93: bool,
+ *   ? age_over_94: bool,
+ *   ? age_over_95: bool,
+ *   ? age_over_96: bool,
+ *   ? age_over_97: bool,
+ *   ? age_over_98: bool,
+ *   ? age_over_99: bool,
+ *   ? issuing_jurisdiction: tstr,
+ *   ? nationality: country-code,
+ *   ? resident_city: tstr,
+ *   ? resident_state: tstr,
+ *   ? resident_postal_code: tstr,
+ *   ? resident_country: country-code,
+ *   ? biometrictemplate_finger: bstr,
+ *   ? biometrictemplate_iris: bstr,
+ *   ? biometrictemplate_face: bstr,
+ *   ? family_name_national_character: tstr,
+ *   ? given_name_national_character: tstr,
+ *   ? signature_usual_mark: bstr,
+ * }
+ *
+ * country-code = tstr ; ISO 3166-1 alpha-2 uppercase
+ * full-date    = tstr ; RFC 3339 full-date (YYYY-MM-DD)
+ * date-time    = tstr ; RFC 3339 date-time (UTC recommended)
+ * eye-colour   = 'black' / 'blue' / 'brown' / 'dichromatic' / 'grey' /
+ *                'green' / 'hazel' / 'maroon' / 'pink' / 'unknown'
+ * hair-colour  = 'bald' / 'black' / 'blond' / 'brown' / 'grey' / 'red' /
+ *                'auburn' / 'sandy' / 'white' / 'unknown'
+ * ; driving_privilege is defined by the drivingPrivilegeSchema
+ * ```
+ *
+ * Example:
+ * ```ts
+ * import { mdlSchema } from '@/schemas/mdl/mdlSchema';
+ * mdlSchema.parse({
+ *   family_name: 'DOE',
+ *   given_name: 'JANE',
+ *   birth_date: '1990-01-01',
+ *   issue_date: '2024-01-01',
+ *   expiry_date: '2030-01-01',
+ *   issuing_country: 'US',
+ *   issuing_authority: 'DMV',
+ *   document_number: '1234567',
+ *   portrait: new Uint8Array([1, 2, 3]),
+ *   driving_privileges: [],
+ *   un_distinguishing_sign: 'USA',
+ * });
  * ```
  */
 export const mdlSchema = z
   .object({
-    family_name: z.string().min(1),
-    given_name: z.string().min(1),
+    family_name: z.string().min(1).max(150),
+    given_name: z.string().min(1).max(150),
     birth_date: fullDateSchema,
     issue_date: fullDateSchema,
     expiry_date: fullDateSchema,
-    issuing_country: z.string().min(1),
-    issuing_authority: z.string(),
-    document_number: z.string().min(1),
+    issuing_country: countryCodeSchema,
+    issuing_authority: z.string().min(1).max(150),
+    document_number: z.string().min(1).max(150),
     portrait: bytesSchema,
     driving_privileges: z.array(drivingPrivilegeSchema),
     un_distinguishing_sign: z.string(),
-    administrative_number: z.string(),
-    sex: z.number().int().positive(),
-    height: z.number().int().positive(),
-    weight: z.number().int().positive(),
-    eye_colour: z.string(),
-    hair_colour: z.string(),
-    birth_place: z.string(),
-    resident_address: z.string(),
-    portrait_capture_date: fullDateSchema,
-    age_in_years: z.number().int().positive(),
-    age_birth_year: z.number().int().positive(),
-    issuing_jurisdiction: z.string(),
-    nationality: z.string(),
-    resident_city: z.string(),
-    resident_state: z.string(),
-    resident_postal_code: z.string(),
-    resident_country: z.string(),
-    biometrictemplate_face: bytesSchema,
-    family_name_national_character: z.string(),
-    given_name_national_character: z.string(),
-    signature_usual_mark: bytesSchema,
+    administrative_number: z.string().min(1).max(150).optional(),
+    sex: z.number().int().nonnegative().optional(),
+    height: z.number().int().nonnegative().optional(),
+    weight: z.number().int().nonnegative().optional(),
+    eye_colour: eyeColorSchema.optional(),
+    hair_colour: hairColorSchema.optional(),
+    birth_place: z.string().min(1).max(150).optional(),
+    resident_address: z.string().min(1).max(150).optional(),
+    portrait_capture_date: dateTimeSchema.optional(),
+    age_in_years: z.number().int().nonnegative().optional(),
+    age_birth_year: z.number().int().nonnegative().optional(),
+    age_over_00: z.boolean().optional(),
+    age_over_01: z.boolean().optional(),
+    age_over_02: z.boolean().optional(),
+    age_over_03: z.boolean().optional(),
+    age_over_04: z.boolean().optional(),
+    age_over_05: z.boolean().optional(),
+    age_over_06: z.boolean().optional(),
+    age_over_07: z.boolean().optional(),
+    age_over_08: z.boolean().optional(),
+    age_over_09: z.boolean().optional(),
+    age_over_10: z.boolean().optional(),
+    age_over_11: z.boolean().optional(),
+    age_over_12: z.boolean().optional(),
+    age_over_13: z.boolean().optional(),
+    age_over_14: z.boolean().optional(),
+    age_over_15: z.boolean().optional(),
+    age_over_16: z.boolean().optional(),
+    age_over_17: z.boolean().optional(),
+    age_over_18: z.boolean().optional(),
+    age_over_19: z.boolean().optional(),
+    age_over_20: z.boolean().optional(),
+    age_over_21: z.boolean().optional(),
+    age_over_22: z.boolean().optional(),
+    age_over_23: z.boolean().optional(),
+    age_over_24: z.boolean().optional(),
+    age_over_25: z.boolean().optional(),
+    age_over_26: z.boolean().optional(),
+    age_over_27: z.boolean().optional(),
+    age_over_28: z.boolean().optional(),
+    age_over_29: z.boolean().optional(),
+    age_over_30: z.boolean().optional(),
+    age_over_31: z.boolean().optional(),
+    age_over_32: z.boolean().optional(),
+    age_over_33: z.boolean().optional(),
+    age_over_34: z.boolean().optional(),
+    age_over_35: z.boolean().optional(),
+    age_over_36: z.boolean().optional(),
+    age_over_37: z.boolean().optional(),
+    age_over_38: z.boolean().optional(),
+    age_over_39: z.boolean().optional(),
+    age_over_40: z.boolean().optional(),
+    age_over_41: z.boolean().optional(),
+    age_over_42: z.boolean().optional(),
+    age_over_43: z.boolean().optional(),
+    age_over_44: z.boolean().optional(),
+    age_over_45: z.boolean().optional(),
+    age_over_46: z.boolean().optional(),
+    age_over_47: z.boolean().optional(),
+    age_over_48: z.boolean().optional(),
+    age_over_49: z.boolean().optional(),
+    age_over_50: z.boolean().optional(),
+    age_over_51: z.boolean().optional(),
+    age_over_52: z.boolean().optional(),
+    age_over_53: z.boolean().optional(),
+    age_over_54: z.boolean().optional(),
+    age_over_55: z.boolean().optional(),
+    age_over_56: z.boolean().optional(),
+    age_over_57: z.boolean().optional(),
+    age_over_58: z.boolean().optional(),
+    age_over_59: z.boolean().optional(),
+    age_over_60: z.boolean().optional(),
+    age_over_61: z.boolean().optional(),
+    age_over_62: z.boolean().optional(),
+    age_over_63: z.boolean().optional(),
+    age_over_64: z.boolean().optional(),
+    age_over_65: z.boolean().optional(),
+    age_over_66: z.boolean().optional(),
+    age_over_67: z.boolean().optional(),
+    age_over_68: z.boolean().optional(),
+    age_over_69: z.boolean().optional(),
+    age_over_70: z.boolean().optional(),
+    age_over_71: z.boolean().optional(),
+    age_over_72: z.boolean().optional(),
+    age_over_73: z.boolean().optional(),
+    age_over_74: z.boolean().optional(),
+    age_over_75: z.boolean().optional(),
+    age_over_76: z.boolean().optional(),
+    age_over_77: z.boolean().optional(),
+    age_over_78: z.boolean().optional(),
+    age_over_79: z.boolean().optional(),
+    age_over_80: z.boolean().optional(),
+    age_over_81: z.boolean().optional(),
+    age_over_82: z.boolean().optional(),
+    age_over_83: z.boolean().optional(),
+    age_over_84: z.boolean().optional(),
+    age_over_85: z.boolean().optional(),
+    age_over_86: z.boolean().optional(),
+    age_over_87: z.boolean().optional(),
+    age_over_88: z.boolean().optional(),
+    age_over_89: z.boolean().optional(),
+    age_over_90: z.boolean().optional(),
+    age_over_91: z.boolean().optional(),
+    age_over_92: z.boolean().optional(),
+    age_over_93: z.boolean().optional(),
+    age_over_94: z.boolean().optional(),
+    age_over_95: z.boolean().optional(),
+    age_over_96: z.boolean().optional(),
+    age_over_97: z.boolean().optional(),
+    age_over_98: z.boolean().optional(),
+    age_over_99: z.boolean().optional(),
+    issuing_jurisdiction: z
+      .string()
+      .regex(/^[A-Z]{2}-[A-Z0-9]{1,3}$/, 'Must be in ISO 3166-2 format')
+      .optional(),
+    nationality: countryCodeSchema.optional(),
+    resident_city: z.string().min(1).max(150).optional(),
+    resident_state: z.string().min(1).max(150).optional(),
+    resident_postal_code: z.string().min(1).max(150).optional(),
+    resident_country: countryCodeSchema.optional(),
+    biometrictemplate_finger: bytesSchema.optional(),
+    biometrictemplate_iris: bytesSchema.optional(),
+    biometrictemplate_face: bytesSchema.optional(),
+    family_name_national_character: z.string().min(1).optional(),
+    given_name_national_character: z.string().min(1).optional(),
+    signature_usual_mark: bytesSchema.optional(),
   })
-  .extend({ ...overAgeSchema.shape })
-  .strict();
+  .strict()
+  .refine(
+    (data) => {
+      if (!data.issuing_jurisdiction) {
+        return true;
+      }
+      const countryCode = data.issuing_jurisdiction.split('-')[0];
+      return countryCode === data.issuing_country;
+    },
+    {
+      message:
+        'Country code in issuing_jurisdiction must match issuing_country',
+      path: ['issuing_jurisdiction'],
+    }
+  );
 
 /**
- * Type definition for Mobile Driving License
- * @description
- * Represents a validated Mobile Driving License document structure
+ * Type representing a validated mDL data object.
  *
- * ```cddl
- * MDL = {
- *  "family_name": tstr,
- *  "given_name": tstr,
- *  "birth_date": time,
- *  "issue_date": time,
- *  "expiry_date": time,
- *  "issuing_country": tstr,
- *  "issuing_authority": tstr,
- *  "document_number": tstr,
- *  "portrait": bstr,
- *  "driving_privileges": [+ DrivingPrivileges],
- *  "un_distinguishing_sign": tstr,
- *  "administrative_number": tstr,
- *  "sex": uint,
- *  "height": uint,
- *  "weight": uint,
- *  "eye_colour": tstr,
- *  "hair_colour": tstr,
- *  "birth_place": tstr,
- *  "resident_address": tstr,
- *  "portrait_capture_date": date,
- *  "age_in_years": uint,
- *  "age_birth_year": uint,
- *  "issuing_jurisdiction": tstr,
- *  "nationality": tstr,
- *  "resident_city": tstr,
- *  "resident_state": tstr,
- *  "resident_postal_code": tstr,
- *  "resident_country": tstr,
- *  "biometrictemplate_xx": bstr,
- *  "family_name_national_character": tstr,
- *  "given_name_national_character": tstr,
- *  "signature_usual_mark": bstr,
- * }
- * ```
+ * This type is inferred from the `mdlSchema` and includes all mandatory and optional
+ * properties as described by the ISO 18013-5 Mobile Driving License specification.
  */
-export type Mdl = z.infer<typeof mdlSchema>;
+export type Mdl = z.output<typeof mdlSchema>;

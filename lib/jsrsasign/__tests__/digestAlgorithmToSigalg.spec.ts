@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { digestAlgorithmToSigalg } from '../digestAlgorithmToSigalg';
-import type { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import type { Sigalg } from '../types';
 
 describe('digestAlgorithmToSigalg', () => {
@@ -20,7 +19,7 @@ describe('digestAlgorithmToSigalg', () => {
   });
 
   it('should return the correct type for all supported algorithms', () => {
-    const algorithms: DigestAlgorithm[] = ['SHA-256', 'SHA-384', 'SHA-512'];
+    const algorithms: string[] = ['SHA-256', 'SHA-384', 'SHA-512'];
 
     algorithms.forEach((algorithm) => {
       const result = digestAlgorithmToSigalg(algorithm);
@@ -31,7 +30,7 @@ describe('digestAlgorithmToSigalg', () => {
 
   it('should throw error for unsupported digest algorithm', () => {
     // Type assertion to bypass TypeScript checking for this test
-    const unsupportedAlgorithm = 'SHA-1' as DigestAlgorithm;
+    const unsupportedAlgorithm = 'SHA-1';
 
     expect(() => {
       digestAlgorithmToSigalg(unsupportedAlgorithm);
@@ -39,7 +38,7 @@ describe('digestAlgorithmToSigalg', () => {
   });
 
   it('should throw error for empty string', () => {
-    const emptyString = '' as DigestAlgorithm;
+    const emptyString = '';
 
     expect(() => {
       digestAlgorithmToSigalg(emptyString);
@@ -47,7 +46,7 @@ describe('digestAlgorithmToSigalg', () => {
   });
 
   it('should throw error for null-like values', () => {
-    const nullValue = null as unknown as DigestAlgorithm;
+    const nullValue = null as unknown as string;
 
     expect(() => {
       digestAlgorithmToSigalg(nullValue);
@@ -55,7 +54,7 @@ describe('digestAlgorithmToSigalg', () => {
   });
 
   it('should throw error for undefined values', () => {
-    const undefinedValue = undefined as unknown as DigestAlgorithm;
+    const undefinedValue = undefined as unknown as string;
 
     expect(() => {
       digestAlgorithmToSigalg(undefinedValue);
@@ -63,11 +62,7 @@ describe('digestAlgorithmToSigalg', () => {
   });
 
   it('should handle all valid DigestAlgorithm values', () => {
-    const validAlgorithms: DigestAlgorithm[] = [
-      'SHA-256',
-      'SHA-384',
-      'SHA-512',
-    ];
+    const validAlgorithms = ['SHA-256', 'SHA-384', 'SHA-512'];
     const expectedResults: Sigalg[] = [
       'SHA256withECDSA',
       'SHA384withECDSA',
@@ -88,7 +83,7 @@ describe('digestAlgorithmToSigalg', () => {
     ];
 
     testCases.forEach(({ digest, expected }) => {
-      const result = digestAlgorithmToSigalg(digest as DigestAlgorithm);
+      const result = digestAlgorithmToSigalg(digest);
       expect(result).toBe(expected);
     });
   });

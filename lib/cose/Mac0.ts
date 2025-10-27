@@ -1,7 +1,6 @@
 import { MacBase } from './MacBase';
 import { VerifyOptions } from './types';
 import { encodeMAC0 } from './encodeMAC0';
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { generateHmac } from '@/utils/generateHmac';
 import { JwkOctKey } from '@/jwk/types';
 import { JWK_MAC_ALGORITHM_TO_DIGEST_ALGORITHM } from './constants';

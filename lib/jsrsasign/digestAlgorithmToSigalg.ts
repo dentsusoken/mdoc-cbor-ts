@@ -1,4 +1,3 @@
-import { DigestAlgorithm } from '@/schemas/mso/DigestAlgorithm';
 import { Sigalg } from './types';
 
 /**
@@ -18,9 +17,7 @@ import { Sigalg } from './types';
  * console.log(sigalg); // 'SHA256withECDSA'
  * ```
  */
-export const digestAlgorithmToSigalg = (
-  digestAlgorithm: DigestAlgorithm
-): Sigalg => {
+export const digestAlgorithmToSigalg = (digestAlgorithm: string): Sigalg => {
   switch (digestAlgorithm) {
     case 'SHA-256':
       return 'SHA256withECDSA';

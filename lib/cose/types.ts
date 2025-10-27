@@ -61,6 +61,10 @@ export enum Algorithm {
   ES384 = -35,
   /** ECDSA using P-521 curve and SHA-512 */
   ES512 = -36,
+  /** ECDH using X25519 curve and SHA-256 */
+  ECDH_ES_HKDF_256 = -25,
+  /** ECDH using X448 curve and SHA-512 */
+  ECDH_ES_HKDF_512 = -26,
 }
 
 /**
@@ -277,6 +281,10 @@ export enum Curve {
   P384 = 2,
   /** NIST P-521 curve (secp521r1) */
   P521 = 3,
+  /** X25519 for ECDH (Diffie-Hellman) */
+  X25519 = 4,
+  /** X448 for ECDH (Diffie-Hellman) */
+  X448 = 5,
   /** Ed25519 for EdDSA */
   Ed25519 = 6,
   /** Ed448 for EdDSA */

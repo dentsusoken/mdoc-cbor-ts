@@ -392,7 +392,6 @@ describe('Mac0', () => {
     });
 
     it('should throw error for invalid JWK MAC algorithm', () => {
-      const key = randomBytes(32);
       const jwkOctKey = {
         kty: 'oct',
         alg: 'INVALID',
@@ -409,7 +408,7 @@ describe('Mac0', () => {
         Mac0.create({
           protectedHeaders,
           payload,
-          jwkOctKey: jwkOctKey as any,
+          jwkOctKey,
         })
       ).toThrow('Invalid JWK MAC algorithm: INVALID');
     });

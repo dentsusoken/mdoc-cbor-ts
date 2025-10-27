@@ -4,7 +4,6 @@ import {
   decodeCbor,
   defaultOptions,
   AdvancedOptions,
-  encodeCborWithTag24,
 } from '../codec';
 import { Tag } from 'cbor-x';
 

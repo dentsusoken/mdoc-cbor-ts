@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { z } from 'zod';
 import { Tag } from 'cbor-x';
 import {
   embeddedCborSchema,

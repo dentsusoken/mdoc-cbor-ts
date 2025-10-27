@@ -5,6 +5,37 @@ export type {
 } from 'noble-curves-extended';
 
 /**
+ * JSON Web Key (JWK) Octet Sequence Key for symmetric cryptographic operations.
+ *
+ * Represents a JWK "oct" (octet sequence) key, typically used for symmetric algorithms such as HMAC.
+ * The value of 'k' is a base64url-encoded symmetric key.
+ *
+ * See RFC 7517, RFC 7518 sections 6.4 and 6.2.1.
+ *
+ * @example
+ * const jwk: JwkOctKey = {
+ *   kty: JwkKeyType.oct,
+ *   alg: JwkMacAlgorithm.HS256,
+ *   k: 'base64url-encoded-key',
+ *   kid: 'key-id-1',
+ *   key_ops: [JwkMacKeyOp.sign, JwkMacKeyOp.verify]
+ * };
+ *
+ * @property {string} kty - Key Type. Value MUST be "oct" for symmetric keys.
+ * @property {string} alg - Algorithm intended for use with the key (e.g., "HS256").
+ * @property {string} k - Symmetric key encoded in base64url.
+ * @property {string} [kid] - Optional key identifier.
+ * @property {JwkMacKeyOp[]} [key_ops] - Optional list of permitted key operations.
+ */
+export interface JwkOctKey {
+  kty: string;
+  alg: string;
+  k: string;
+  kid?: string;
+  key_ops?: JwkMacKeyOp[];
+}
+
+/**
  * Enumeration of supported JWK (JSON Web Key) curve names.
  *
  * @description
@@ -44,6 +75,10 @@ export enum JwkCurve {
   Ed25519 = 'Ed25519',
   /** Edwards-curve Ed448 (for use with OKP keys/EdDSA) */
   Ed448 = 'Ed448',
+  /** X25519 elliptic curve (for use with OKP keys/ECDH-ES) */
+  X25519 = 'X25519',
+  /** X448 elliptic curve (for use with OKP keys/ECDH-ES) */
+  X448 = 'X448',
 }
 
 /**
