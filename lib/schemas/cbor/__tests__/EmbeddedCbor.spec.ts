@@ -41,7 +41,6 @@ describe('embeddedCborSchema', () => {
         throw new Error('Expected error');
       } catch (error) {
         const expected = embeddedCborInvalidTagMessage(99);
-        console.log(expected);
         expect(error as Error).toBeInstanceOf(Error);
         expect((error as z.ZodError).issues[0].message).toBe(expected);
       }

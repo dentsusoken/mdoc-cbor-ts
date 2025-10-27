@@ -65,37 +65,36 @@ export const verifyValueDigests = ({
     }
 
     for (const tag of issuerSignedItemTags) {
+      let decoded;
       try {
-        const decoded = decodeCbor(tag.value);
-        const result = issuerSignedItemSchema.safeParse(decoded);
-
-        if (!result.success) {
-          throw new NameSpaceError(
-            nameSpace,
-            MDocErrorCode.CborValidationError
-          );
-        }
-
-        const issuerSignedItem = result.data as IssuerSignedItem;
-        const digestID = issuerSignedItem.get('digestID')!;
-        const elementIdentifier = issuerSignedItem.get('elementIdentifier')!;
-        const calculatedDigest = calculateDigest(digestAlgorithm, tag);
-        const expectedDigest = digestMap.get(digestID);
-
-        if (!expectedDigest) {
-          errorItems.set(
-            elementIdentifier,
-            MDocErrorCode.ValueDigestsMissingForDigestId
-          );
-          continue;
-        }
-
-        if (!compareUint8Arrays(expectedDigest, calculatedDigest)) {
-          errorItems.set(elementIdentifier, MDocErrorCode.MsoDigestMismatch);
-          continue;
-        }
+        decoded = decodeCbor(tag.value);
       } catch (error) {
         throw new NameSpaceError(nameSpace, MDocErrorCode.CborDecodingError);
+      }
+
+      const result = issuerSignedItemSchema.safeParse(decoded);
+
+      if (!result.success) {
+        throw new NameSpaceError(nameSpace, MDocErrorCode.CborValidationError);
+      }
+
+      const issuerSignedItem = result.data as IssuerSignedItem;
+      const digestID = issuerSignedItem.get('digestID')!;
+      const elementIdentifier = issuerSignedItem.get('elementIdentifier')!;
+      const calculatedDigest = calculateDigest(digestAlgorithm, tag);
+      const expectedDigest = digestMap.get(digestID);
+
+      if (!expectedDigest) {
+        errorItems.set(
+          elementIdentifier,
+          MDocErrorCode.ValueDigestsMissingForDigestId
+        );
+        continue;
+      }
+
+      if (!compareUint8Arrays(expectedDigest, calculatedDigest)) {
+        errorItems.set(elementIdentifier, MDocErrorCode.MsoDigestMismatch);
+        continue;
       }
     }
 

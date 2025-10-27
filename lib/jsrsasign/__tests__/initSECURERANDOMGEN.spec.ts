@@ -6,7 +6,7 @@ import {
   setSECURERANDOMGEN,
   SECURERANDOMGEN,
 } from '../initSECURERANDOMGEN';
-import { RandomBytes } from '../types';
+import { RandomBytes } from '@/types';
 
 describe('initSECURERANDOMGEN', () => {
   let originalSECURERANDOMGEN: SECURERANDOMGEN | undefined;

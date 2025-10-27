@@ -52,7 +52,6 @@ describe('Cbor Tag', () => {
     ]);
 
     const decoded = decodeCbor(raw) as Tag;
-    console.log(decoded);
 
     expect(decoded).toBeInstanceOf(Tag);
     // cbor-x represents Tag 24 value as the raw embedded CBOR bytes when decoding from raw bytes

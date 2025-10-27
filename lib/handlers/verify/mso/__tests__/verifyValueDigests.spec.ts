@@ -47,28 +47,6 @@ describe('verifyValueDigests', () => {
   });
 
   describe('error cases', () => {
-    it('should throw NameSpaceError on CBOR decode error', () => {
-      // Create a Tag(24) with invalid CBOR bytes
-      const invalidBytes = new Uint8Array([0xff]);
-      const tag = new Tag(invalidBytes, 24);
-      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
-      const valueDigests = new Map<string, Map<number, Uint8Array>>([
-        [ns, new Map([[1, new Uint8Array([0x00])]])],
-      ]);
-
-      try {
-        verifyValueDigests({
-          valueDigests,
-          nameSpaces,
-          digestAlgorithm: 'SHA-256',
-        });
-        throw new Error('Should have thrown');
-      } catch (e) {
-        expect(e).toBeInstanceOf(NameSpaceError);
-        const err = e as NameSpaceError;
-        expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
-      }
-    });
     it('should throw NameSpaceError when namespace has no digests', () => {
       const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
       const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
@@ -150,9 +128,7 @@ describe('verifyValueDigests', () => {
     });
 
     it('should throw NameSpaceError on CBOR decoding error', () => {
-      // Create a tag24 with invalid IssuerSignedItem payload (missing required keys)
-      const invalidPayload = new Map<string, unknown>([['foo', 'bar']]);
-      const tag = createTag24(invalidPayload);
+      const tag = new Tag('invalid', 24);
       const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
       const valueDigests = new Map<string, Map<number, Uint8Array>>([
         [ns, new Map([[1, new Uint8Array([0x00])]])],
@@ -168,15 +144,13 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(NameSpaceError);
         const err = e as NameSpaceError;
-        // Implementation throws decoding error for validation failure currently
         expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
       }
     });
 
     it('should throw NameSpaceError on CBOR validation error', () => {
-      // Create a tag24 with invalid IssuerSignedItem payload (missing required keys)
-      const invalidPayload = new Map<string, unknown>([['foo', 'bar']]);
-      const tag = createTag24(invalidPayload);
+      const invalidItem = new Map<string, unknown>([['foo', 'bar']]);
+      const tag = createTag24(invalidItem);
       const digest = calculateDigest('SHA-256', tag);
       const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
       const valueDigests = new Map<string, Map<number, Uint8Array>>([
@@ -193,7 +167,6 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(NameSpaceError);
         const err = e as NameSpaceError;
-        // Implementation throws decoding error for validation failure currently
         expect(err.errorCode).toBe(MDocErrorCode.CborValidationError);
       }
     });
