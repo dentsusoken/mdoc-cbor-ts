@@ -21,8 +21,7 @@ export enum ResponseStatus {
 export enum MDocErrorCode {
   // XXX are errors that can be used at any level.
   // 1XXX are element-level errors.
-  // 2XXX are nameSpace-level errors.
-  // 3XXX are docType-level errors.
+  // 2XXX are docType-level errors.
 
   /** Data that was requested was not returned. */
   DataNotReturned = 0,
