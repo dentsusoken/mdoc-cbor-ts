@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NameSpaceError } from '../NameSpaceError';
+import { ErrorCodeError } from '../ErrorCodeError';
 import { MDocErrorCode } from '../types';
 
 describe('NameSpaceError', () => {
@@ -7,7 +7,7 @@ describe('NameSpaceError', () => {
     const nameSpace = 'org.iso.18013.5.1';
     const errorCode = MDocErrorCode.ValueDigestsMissingForNamespace;
 
-    const err = new NameSpaceError(nameSpace, errorCode);
+    const err = new ErrorCodeError(nameSpace, errorCode);
 
     expect(err).toBeInstanceOf(Error);
     expect(err.name).toBe('NameSpaceError');
@@ -22,7 +22,7 @@ describe('NameSpaceError', () => {
     const nameSpace = 'example.namespace';
     const unknownCode = 1999; // not mapped in enum
 
-    const err = new NameSpaceError(nameSpace, unknownCode);
+    const err = new ErrorCodeError(nameSpace, unknownCode);
 
     expect(err.name).toBe('NameSpaceError');
     expect(err.nameSpace).toBe(nameSpace);

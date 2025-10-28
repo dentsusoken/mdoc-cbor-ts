@@ -11,7 +11,7 @@ import { ErrorItems } from '@/schemas/mdoc/ErrorItems';
 import { ErrorsError } from '@/mdoc/ErrorsError';
 import { compareUint8Arrays } from 'u8a-utils';
 import { MDocErrorCode } from '@/mdoc/types';
-import { NameSpaceError } from '@/mdoc/NameSpaceError';
+import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 
 /**
  * Parameters for verifying value digests for a Mobile Security Object (MSO).
@@ -43,7 +43,7 @@ type VerifyValueDigestsParams = {
  * @param {IssuerNameSpaces} params.nameSpaces - The issuer namespaces with their signed item tags.
  * @param {string} params.digestAlgorithm - The digest algorithm to use for digest calculation.
  *
- * @throws {NameSpaceError} If the value digests are missing for a namespace, or if CBOR validation/decoding fails.
+ * @throws {ErrorCodeError} If the value digests are missing for a namespace, or if CBOR validation/decoding fails.
  * @throws {ErrorsError} If one or more digests mismatches or are missing for a digestID within a namespace.
  */
 export const verifyValueDigests = ({
@@ -58,7 +58,7 @@ export const verifyValueDigests = ({
     const digestMap = valueDigests.get(nameSpace);
 
     if (!digestMap) {
-      throw new NameSpaceError(
+      throw new ErrorCodeError(
         nameSpace,
         MDocErrorCode.ValueDigestsMissingForNamespace
       );
@@ -69,13 +69,13 @@ export const verifyValueDigests = ({
       try {
         decoded = decodeCbor(tag.value);
       } catch (error) {
-        throw new NameSpaceError(nameSpace, MDocErrorCode.CborDecodingError);
+        throw new ErrorCodeError(nameSpace, MDocErrorCode.CborDecodingError);
       }
 
       const result = issuerSignedItemSchema.safeParse(decoded);
 
       if (!result.success) {
-        throw new NameSpaceError(nameSpace, MDocErrorCode.CborValidationError);
+        throw new ErrorCodeError(nameSpace, MDocErrorCode.CborValidationError);
       }
 
       const issuerSignedItem = result.data as IssuerSignedItem;

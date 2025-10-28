@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { verifyValueDigests } from '../verifyValueDigests';
 import { createTag24 } from '@/cbor/createTag24';
 import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
-import { NameSpaceError } from '@/mdoc/NameSpaceError';
+import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { ErrorsError } from '@/mdoc/ErrorsError';
 import { MDocErrorCode } from '@/mdoc/types';
 import { calculateDigest } from '@/utils/calculateDigest';
@@ -61,8 +61,8 @@ describe('verifyValueDigests', () => {
         });
         throw new Error('Should have thrown');
       } catch (e) {
-        expect(e).toBeInstanceOf(NameSpaceError);
-        const err = e as NameSpaceError;
+        expect(e).toBeInstanceOf(ErrorCodeError);
+        const err = e as ErrorCodeError;
         expect(err.nameSpace).toBe(ns);
         expect(err.errorCode).toBe(
           MDocErrorCode.ValueDigestsMissingForNamespace
@@ -142,8 +142,8 @@ describe('verifyValueDigests', () => {
         });
         throw new Error('Should have thrown');
       } catch (e) {
-        expect(e).toBeInstanceOf(NameSpaceError);
-        const err = e as NameSpaceError;
+        expect(e).toBeInstanceOf(ErrorCodeError);
+        const err = e as ErrorCodeError;
         expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
       }
     });
@@ -165,8 +165,8 @@ describe('verifyValueDigests', () => {
         });
         throw new Error('Should have thrown');
       } catch (e) {
-        expect(e).toBeInstanceOf(NameSpaceError);
-        const err = e as NameSpaceError;
+        expect(e).toBeInstanceOf(ErrorCodeError);
+        const err = e as ErrorCodeError;
         expect(err.errorCode).toBe(MDocErrorCode.CborValidationError);
       }
     });
