@@ -3,7 +3,7 @@ import { KJUR, X509, zulutodate } from 'jsrsasign';
 import { createSignatureCurve } from 'noble-curves-extended';
 import { randomBytes } from '@noble/hashes/utils';
 import { createSelfSignedCertificate } from '../createSelfSignedCertificate';
-import { verifyX5Chain } from '../verifyX509s';
+import { verifyX5Chain } from '../verifyX5Chain';
 import { pemToX509 } from '../pemToX509';
 
 /**

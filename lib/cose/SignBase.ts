@@ -4,7 +4,7 @@ import {
 } from 'noble-curves-extended';
 import { Header } from '@/cose/types';
 import { derBytesToX509 } from '@/x509/derBytesToX509';
-import { verifyX5Chain } from '@/x509/verifyX509s';
+import { verifyX5Chain, VerifyX5ChainOptions } from '@/x509/verifyX5Chain';
 import { KEYUTIL } from 'jsrsasign';
 import { CoseBase } from './CoseBase';
 
@@ -146,62 +146,46 @@ export class SignBase extends CoseBase {
   }
 
   /**
-   * Verifies the X.509 certificate chain and returns the leaf public key as a JWK.
+   * Verifies the X.509 certificate chain (x5chain) in the COSE headers and returns the leaf's JWK public key.
    *
    * @description
-   * Parses each certificate in the chain, verifies the chain integrity using
-   * {@link verifyX5Chain}, and extracts the public key from the leaf certificate.
+   * This method parses the DER-encoded certificates from the COSE x5chain header, validates the
+   * time validity and cryptographic signature of each certificate using {@link verifyX5Chain},
+   * and returns the public key from the leaf certificate (converted to a JWK).
    *
-   * This method should be used for Issuer Authentication. For Device Authentication,
-   * the certificate chain is not present and this method will throw an error.
+   * Throws if the chain is missing, a certificate fails to parse, or the chain is invalid.
    *
-   * @returns Leaf certificate public key in JWK format
-   * @throws {Error} If no X.509 certificate chain is present in headers
-   * @throws {Error} If the certificate chain is invalid or verification fails
-   * @throws {Error} If any certificate in the chain cannot be parsed
+   * @param options - Options for certificate chain verification (see {@link VerifyX5ChainOptions}).
+   * @returns {JwkPublicKey} The JWK public key from the leaf certificate.
+   *
+   * @throws {Error} If the X.509 chain is not found, a certificate fails to parse, or validation fails.
    *
    * @example
    * ```typescript
-   * // For Issuer Authentication
    * try {
-   *   const publicKey = signBase.verifyX5Chain();
-   *   console.log('Chain verified, public key:', publicKey);
-   * } catch (error) {
-   *   console.error('Chain verification failed:', error.message);
-   * }
-   * ```
-   *
-   * @example
-   * ```typescript
-   * // Check if certificate chain exists before verifying
-   * if (signBase.x5chain) {
-   *   const publicKey = signBase.verifyX5Chain();
-   * } else {
-   *   // Device Authentication - use deviceKey directly
-   *   console.log('No certificate chain');
+   *   const jwk = signBase.verifyX5Chain();
+   *   // Use jwk for further signature or payload verification
+   * } catch (e) {
+   *   console.error('X.509 chain validation failed', e);
    * }
    * ```
    */
-  verifyX5Chain(): JwkPublicKey {
+  verifyX5Chain(options: VerifyX5ChainOptions = {}): JwkPublicKey {
     const { x5chain } = this;
 
     if (!x5chain) {
       throw new Error('X.509 certificate chain not found');
     }
 
-    const x509s = x5chain.map((c) => {
+    const x509s = x5chain.map((c, index) => {
       try {
         return derBytesToX509(c);
       } catch (error) {
         console.error(error);
-        throw new Error('Failed to parse X.509 certificate');
+        throw new Error(`Failed to parse X.509 certificate[${index}]`);
       }
     });
-    try {
-      verifyX5Chain(x509s);
-    } catch (error) {
-      throw new Error('Invalid X.509 certificate chain');
-    }
+    verifyX5Chain(x509s, options);
 
     const publicKey = x509s[0].getPublicKey();
 

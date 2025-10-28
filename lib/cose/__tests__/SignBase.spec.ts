@@ -159,7 +159,7 @@ describe('SignBase', () => {
 
       const sb = new SignBase(encodeCbor(ph), uh, new Uint8Array());
       expect(() => sb.verifyX5Chain()).toThrowError(
-        'Invalid X.509 certificate chain'
+        'Certificate[0] signature is invalid'
       );
     });
   });
