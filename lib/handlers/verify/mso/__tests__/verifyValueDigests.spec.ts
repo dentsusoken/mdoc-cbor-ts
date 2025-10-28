@@ -63,9 +63,11 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.nameSpace).toBe(ns);
         expect(err.errorCode).toBe(
           MDocErrorCode.ValueDigestsMissingForNamespace
+        );
+        expect(err.message).toBe(
+          `Value digests missing for namespace: ${ns} - 2001 - ValueDigestsMissingForNamespace`
         );
       }
     });
@@ -94,6 +96,19 @@ describe('verifyValueDigests', () => {
         expect(nsErrors?.size).toBe(1);
         expect(nsErrors?.get('given_name')).toBe(
           MDocErrorCode.ValueDigestsMissingForDigestId
+        );
+        expect(err.message).toBe(
+          'Value digests verification failed: [\n' +
+            '  [\n' +
+            '    "org.iso.18013.5.1",\n' +
+            '    [\n' +
+            '      [\n' +
+            '        "given_name",\n' +
+            '        "ValueDigestsMissingForDigestId"\n' +
+            '      ]\n' +
+            '    ]\n' +
+            '  ]\n' +
+            ']'
         );
       }
     });
@@ -124,6 +139,19 @@ describe('verifyValueDigests', () => {
         expect(nsErrors?.get('given_name')).toBe(
           MDocErrorCode.MsoDigestMismatch
         );
+        expect(err.message).toBe(
+          'Value digests verification failed: [\n' +
+            '  [\n' +
+            '    "org.iso.18013.5.1",\n' +
+            '    [\n' +
+            '      [\n' +
+            '        "given_name",\n' +
+            '        "MsoDigestMismatch"\n' +
+            '      ]\n' +
+            '    ]\n' +
+            '  ]\n' +
+            ']'
+        );
       }
     });
 
@@ -148,6 +176,30 @@ describe('verifyValueDigests', () => {
       }
     });
 
+    it('should include index and original decode message in CBOR decoding ErrorCodeError', () => {
+      const tag = new Tag('invalid', 24);
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[1, new Uint8Array([0x00])]])],
+      ]);
+
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(ErrorCodeError);
+        const err = e as ErrorCodeError;
+        expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
+        expect(err.message).toBe(
+          'Failed to cbor-decode issuer-signed item[0]: Source must be a Uint8Array or Buffer but was a string - 1 - CborDecodingError'
+        );
+      }
+    });
+
     it('should throw NameSpaceError on CBOR validation error', () => {
       const invalidItem = new Map<string, unknown>([['foo', 'bar']]);
       const tag = createTag24(invalidItem);
@@ -168,6 +220,16 @@ describe('verifyValueDigests', () => {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
         expect(err.errorCode).toBe(MDocErrorCode.CborValidationError);
+        // Assert exact message including zod details
+        expect(err.message).toBe(
+          'Failed to validate issuer-signed item[0] structure: [\n' +
+            '  {\n' +
+            '    "code": "custom",\n' +
+            '    "message": "IssuerSignedItem: Missing required keys: digestID, random, elementIdentifier",\n' +
+            '    "path": []\n' +
+            '  }\n' +
+            '] - 2 - CborValidationError'
+        );
       }
     });
   });

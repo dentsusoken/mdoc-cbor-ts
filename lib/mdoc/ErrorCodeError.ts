@@ -1,14 +1,19 @@
 import { MDocErrorCode } from './types';
 
 /**
- * Error representing an mdoc DocumentError.
+ * Error representing a single mdoc error code failure.
  *
  * @description
- * Thrown when an mdoc flow reports a DocumentError in a DeviceResponse.
- * This class encapsulates the numeric error code and formats the message as
- * "<code> - <codeName>", where <codeName> is resolved from {@link MDocErrorCode}.
+ * This error is thrown to signal an operation-specific mdoc error.
+ * The error contains a numeric error code (from {@link MDocErrorCode}) and formats the message as:
+ *   "<message> - <errorCode> - <enumName>"
+ * where <message> is the provided message, <errorCode> is the numeric code, and <enumName> is the string name from the {@link MDocErrorCode} enum.
  *
- * ErrorCodeError is treated as the DocumentError of MDoc (DeviceResponse).
+ * @example
+ * ```typescript
+ * throw new ErrorCodeError('Failed to decode CBOR', MDocErrorCode.CborValidationError);
+ * // Error message: "Failed to decode CBOR - 2 - CborValidationError"
+ * ```
  */
 export class ErrorCodeError extends Error {
   /**
@@ -17,12 +22,13 @@ export class ErrorCodeError extends Error {
   readonly errorCode: number;
 
   /**
-   * Creates a new ErrorCodeError.
+   * Constructs a new ErrorCodeError.
    *
+   * @param message - Human-readable description of the error condition.
    * @param errorCode - Numeric error code defined by the mdoc specification.
    */
-  constructor(errorCode: number) {
-    super(`${errorCode} - ${MDocErrorCode[errorCode]}`);
+  constructor(message: string, errorCode: number) {
+    super(`${message} - ${errorCode} - ${MDocErrorCode[errorCode]}`);
 
     this.errorCode = errorCode;
     this.name = 'ErrorCodeError';
