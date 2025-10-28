@@ -197,9 +197,9 @@ export class SignBase extends CoseBase {
         throw new Error('Failed to parse X.509 certificate');
       }
     });
-    const verified = verifyX5Chain(x509s);
-
-    if (!verified.every((v) => v)) {
+    try {
+      verifyX5Chain(x509s);
+    } catch (error) {
       throw new Error('Invalid X.509 certificate chain');
     }
 
