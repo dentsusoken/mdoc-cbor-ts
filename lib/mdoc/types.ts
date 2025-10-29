@@ -31,7 +31,7 @@ export enum MDocErrorCode {
   CborValidationError = 2,
 
   // 1XXX are element-level errors.
-  /** Value digests are missing. */
+  /** Value digest is missing. */
   ValueDigestMissing = 1001,
   /** The Mobile Security Object digest does not match. */
   MsoDigestMismatch = 1002,
@@ -47,6 +47,22 @@ export enum MDocErrorCode {
   ValidFromMissing = 2004,
   /** ValidUntil is missing. */
   ValidUntilMissing = 2005,
+  /** NameSpaces are missing. */
+  NameSpacesMissing = 2006,
+  /** IssuerAuth is missing. */
+  IssuerAuthMissing = 2007,
+  /** IssuerAuth is invalid. */
+  IssuerAuthInvalid = 2008,
+  /** Failed to verify the X.509 certificate chain. */
+  X5ChainVerificationFailed = 2009,
+  /** Failed to verify the IssuerAuth signature. */
+  IssuerAuthSignatureVerificationFailed = 2010,
+  /** Failed to decode the IssuerAuth payload. */
+  IssuerAuthPayloadDecodingFailed = 2011,
+  /** MobileSecurityObject is invalid. */
+  MobileSecurityObjectInvalid = 2012,
+  /** Detached payload is required when payload is null. */
+  DetachedPayloadRequired = 2013,
 
   /** The document type does not match the expected type. */
   DocTypeMismatch = 12001,

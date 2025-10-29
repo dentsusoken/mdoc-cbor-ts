@@ -8,6 +8,25 @@ import { containerInvalidTypeMessage } from '../messages/containerInvalidTypeMes
 import { createTag18 } from '@/cbor/createTag18';
 
 /**
+ * Tuple type representing the contents of a COSE_Sign1 structure.
+ *
+ * @typedef {Sing1Tuple}
+ * @property {Uint8Array} 0 - Protected headers, as a CBOR-encoded byte string.
+ * @property {Map<number, unknown>} 1 - Unprotected headers, as a header map.
+ * @property {Uint8Array | null} 2 - The payload to be signed, or null if detached.
+ * @property {Uint8Array} 3 - The message signature.
+ *
+ * This tuple is used for validation and manipulation of COSE_Sign1 containers as defined
+ * in RFC 8152 (CBOR Object Signing and Encryption).
+ */
+export type Sing1Tuple = [
+  Uint8Array,
+  Map<number, unknown>,
+  Uint8Array | null,
+  Uint8Array,
+];
+
+/**
  * Creates a Zod schema for validating a COSE_Sign1 structure in any supported input format.
  *
  * ### Supported Input Forms:
