@@ -61,7 +61,7 @@ export const verifyValueDigests = ({
     if (!digestMap) {
       throw new ErrorCodeError(
         `Value digests missing for namespace: ${nameSpace}`,
-        MDocErrorCode.ValueDigestsMissingForNamespace
+        MDocErrorCode.ValueDigestsMissing
       );
     }
 
@@ -92,10 +92,7 @@ export const verifyValueDigests = ({
       const expectedDigest = digestMap.get(digestID);
 
       if (!expectedDigest) {
-        errorItems.set(
-          elementIdentifier,
-          MDocErrorCode.ValueDigestsMissingForDigestId
-        );
+        errorItems.set(elementIdentifier, MDocErrorCode.ValueDigestMissing);
         return;
       }
 

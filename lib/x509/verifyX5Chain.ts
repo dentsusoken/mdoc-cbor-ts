@@ -83,7 +83,7 @@ export const verifyNotAfter = ({
   }
   const notAfterDate = zulutodate(notAfter);
   if (now.getTime() > notAfterDate.getTime() + clockSkew * 1000) {
-    throw new Error(`Certificate[${index}] is expired`);
+    throw new Error(`Certificate[${index}] has expired`);
   }
 };
 

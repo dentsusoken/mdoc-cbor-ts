@@ -63,9 +63,7 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(
-          MDocErrorCode.ValueDigestsMissingForNamespace
-        );
+        expect(err.errorCode).toBe(MDocErrorCode.ValueDigestsMissing);
         expect(err.message).toBe(
           `Value digests missing for namespace: ${ns} - 2001 - ValueDigestsMissingForNamespace`
         );
@@ -95,7 +93,7 @@ describe('verifyValueDigests', () => {
         expect(nsErrors).toBeInstanceOf(Map);
         expect(nsErrors?.size).toBe(1);
         expect(nsErrors?.get('given_name')).toBe(
-          MDocErrorCode.ValueDigestsMissingForDigestId
+          MDocErrorCode.ValueDigestMissing
         );
         expect(err.message).toBe(
           'Value digests verification failed: [\n' +

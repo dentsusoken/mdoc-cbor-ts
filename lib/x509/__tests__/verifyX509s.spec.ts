@@ -190,7 +190,7 @@ describe('verifyX509s', () => {
       const after = new Date(naDate.getTime() + 5 * 60 * 1000);
 
       expect(() => verifyX5Chain([x509], { now: after })).toThrowError(
-        'Certificate[0] is expired'
+        'Certificate[0] has expired'
       );
     });
 

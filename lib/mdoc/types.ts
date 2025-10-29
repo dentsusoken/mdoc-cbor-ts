@@ -21,7 +21,7 @@ export enum ResponseStatus {
 export enum MDocErrorCode {
   // XXX are errors that can be used at any level.
   // 1XXX are element-level errors.
-  // 2XXX are docType-level errors.
+  // 2XXX are document-level errors.
 
   /** Data that was requested was not returned. */
   DataNotReturned = 0,
@@ -31,25 +31,33 @@ export enum MDocErrorCode {
   CborValidationError = 2,
 
   // 1XXX are element-level errors.
-  /** Value digests are missing for a digest ID. */
-  ValueDigestsMissingForDigestId = 1001,
+  /** Value digests are missing. */
+  ValueDigestMissing = 1001,
   /** The Mobile Security Object digest does not match. */
   MsoDigestMismatch = 1002,
 
-  // 2XXX are nameSpace-level errors.
-  /** Value digests are missing for a namespace. */
-  ValueDigestsMissingForNamespace = 2001,
+  // 2XXX are document-level errors.
+  /** Value digests are missing. */
+  ValueDigestsMissing = 2001,
+  /** Document is not valid yet */
+  DocumentNotValidYet = 2002,
+  /** Document has expired */
+  DocumentExpired = 2003,
+  /** ValidFrom is missing. */
+  ValidFromMissing = 2004,
+  /** ValidUntil is missing. */
+  ValidUntilMissing = 2005,
 
   /** The document type does not match the expected type. */
   DocTypeMismatch = 12001,
   /** A required claim is missing in the document. */
-  RequiredClaimMissing = 2002,
+  RequiredClaimMissing = 12002,
   /** A claim was provided but not requested. */
-  ClaimNotRequested = 2003,
+  ClaimNotRequested = 12003,
   /** A name space was provided but not requested. */
-  NamespaceNotRequested = 2004,
+  NamespaceNotRequested = 22004,
   /** The document's profile does not match the expected. */
-  ProfileMismatch = 2005,
+  ProfileMismatch = 22005,
   /** The session challenge is missing. */
   ChallengeMissing = 3001,
   /** The session challenge does not match. */
