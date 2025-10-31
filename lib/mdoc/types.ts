@@ -63,6 +63,8 @@ export enum MDocErrorCode {
   MobileSecurityObjectInvalid = 2012,
   /** Detached payload is required when payload is null. */
   DetachedPayloadRequired = 2013,
+  /** Invalid input descriptor field path. */
+  InvalidInputDescriptorFieldPath = 2014,
 
   /** The document type does not match the expected type. */
   DocTypeMismatch = 12001,
