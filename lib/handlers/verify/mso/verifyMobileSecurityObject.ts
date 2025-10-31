@@ -1,4 +1,3 @@
-import { decodeCbor } from '@/cbor/codec';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { MDocErrorCode } from '@/mdoc/types';
 import {
@@ -6,6 +5,7 @@ import {
   mobileSecurityObjectSchema,
 } from '@/schemas/mso/MobileSecurityObject';
 import { getErrorMessage } from '@/utils/getErrorMessage';
+import { decodeTag24 } from '@/cbor/decodeTag24';
 
 /**
  * Decodes and validates a Mobile Security Object (MSO) from a CBOR-encoded payload.
@@ -29,7 +29,7 @@ export const verifyMobileSecurityObject = (
 ): MobileSecurityObject => {
   let decodedPayload: unknown | undefined = undefined;
   try {
-    decodedPayload = decodeCbor(payload);
+    decodedPayload = decodeTag24(payload);
   } catch (error) {
     throw new ErrorCodeError(
       `Failed to decode the IssuerAuth payload: ${getErrorMessage(error)}`,

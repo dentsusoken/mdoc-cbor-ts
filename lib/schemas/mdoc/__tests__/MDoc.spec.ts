@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { deviceResponseSchema } from '../DeviceResponse';
+import { mdocSchema } from '../MDoc';
 import { documentSchema } from '../Document';
 import { documentErrorSchema } from '../DocumentError';
 import { issuerSignedSchema } from '../IssuerSigned';
@@ -8,7 +8,7 @@ import { deviceSignedSchema } from '../DeviceSigned';
 import { createTag17, type Tag17Content } from '@/cbor/createTag17';
 import { createTag18, type Tag18Content } from '@/cbor/createTag18';
 import { createTag24 } from '@/cbor/createTag24';
-import { ResponseStatus } from '@/mdoc/types';
+import { MDocStatus } from '@/mdoc/types';
 import { getTypeName } from '@/utils/getTypeName';
 import {
   containerInvalidTypeMessage,
@@ -82,16 +82,16 @@ const createMinimalDocumentError = (): Map<string, number> => {
   );
 };
 
-describe('DeviceResponse', (): void => {
+describe('MDoc', (): void => {
   describe('should accept valid DeviceResponse maps', (): void => {
     it('with documents only', (): void => {
       const doc = createMinimalDocument();
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documents', [doc]],
-        ['status', ResponseStatus.OK],
+        ['status', MDocStatus.OK],
       ]);
-      const result = deviceResponseSchema.parse(input);
+      const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
       expect(result).toEqual(input);
     });
@@ -101,9 +101,9 @@ describe('DeviceResponse', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documentErrors', [docError]],
-        ['status', ResponseStatus.CborValidationError],
+        ['status', MDocStatus.CborValidationError],
       ]);
-      const result = deviceResponseSchema.parse(input);
+      const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
       expect(result).toEqual(input);
     });
@@ -115,9 +115,9 @@ describe('DeviceResponse', (): void => {
         ['version', '1.0'],
         ['documents', [doc]],
         ['documentErrors', [docError]],
-        ['status', ResponseStatus.OK],
+        ['status', MDocStatus.OK],
       ]);
-      const result = deviceResponseSchema.parse(input);
+      const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
       expect(result).toEqual(input);
     });
@@ -125,9 +125,9 @@ describe('DeviceResponse', (): void => {
     it('with neither documents nor documentErrors', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
-        ['status', ResponseStatus.CborDecodingError],
+        ['status', MDocStatus.CborDecodingError],
       ]);
-      const result = deviceResponseSchema.parse(input);
+      const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
       expect(result).toEqual(input);
     });
@@ -136,7 +136,7 @@ describe('DeviceResponse', (): void => {
   describe('should throw error for invalid type inputs', (): void => {
     const expectedMessage = (v: unknown): string =>
       containerInvalidTypeMessage({
-        target: 'DeviceResponse',
+        target: 'MDoc',
         expected: 'Map',
         received: getTypeName(v),
       });
@@ -154,7 +154,7 @@ describe('DeviceResponse', (): void => {
     cases.forEach(({ name, input }) => {
       it(`should reject ${name}`, (): void => {
         try {
-          deviceResponseSchema.parse(input as never);
+          mdocSchema.parse(input as never);
           throw new Error('Should have thrown');
         } catch (error) {
           expect(error).toBeInstanceOf(z.ZodError);
@@ -168,13 +168,13 @@ describe('DeviceResponse', (): void => {
   describe('should enforce required keys and value constraints', (): void => {
     it('should report missing required keys on empty map', (): void => {
       try {
-        deviceResponseSchema.parse(new Map());
+        mdocSchema.parse(new Map());
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          strictMapMissingKeysMessage('DeviceResponse', ['version', 'status'])
+          strictMapMissingKeysMessage('MDoc', ['version', 'status'])
         );
       }
     });
@@ -183,17 +183,17 @@ describe('DeviceResponse', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documents', []],
-        ['status', ResponseStatus.OK],
+        ['status', MDocStatus.OK],
       ]);
       try {
-        deviceResponseSchema.parse(input);
+        mdocSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
           containerInvalidValueMessage({
-            target: 'DeviceResponse',
+            target: 'MDoc',
             path: ['documents'],
             originalMessage: containerEmptyMessage('documents'),
           })
@@ -205,17 +205,17 @@ describe('DeviceResponse', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documentErrors', []],
-        ['status', ResponseStatus.OK],
+        ['status', MDocStatus.OK],
       ]);
       try {
-        deviceResponseSchema.parse(input);
+        mdocSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
           containerInvalidValueMessage({
-            target: 'DeviceResponse',
+            target: 'MDoc',
             path: ['documentErrors'],
             originalMessage: containerEmptyMessage('documentErrors'),
           })
@@ -230,10 +230,10 @@ describe('DeviceResponse', (): void => {
       const input = new Map<string, unknown>([
         ['version', '2.0'],
         ['documents', [doc]],
-        ['status', ResponseStatus.OK],
+        ['status', MDocStatus.OK],
       ]);
       try {
-        deviceResponseSchema.parse(input);
+        mdocSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -252,10 +252,10 @@ describe('DeviceResponse', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documents', ['not-a-document']],
-        ['status', ResponseStatus.OK],
+        ['status', MDocStatus.OK],
       ]);
       try {
-        deviceResponseSchema.parse(input);
+        mdocSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -271,7 +271,7 @@ describe('DeviceResponse', (): void => {
           originalMessage: expectedInnerMost,
         });
         const expected = containerInvalidValueMessage({
-          target: 'DeviceResponse',
+          target: 'MDoc',
           path: ['documents', 0],
           originalMessage: expectedInner,
         });
@@ -283,10 +283,10 @@ describe('DeviceResponse', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documentErrors', ['not-a-document-error']],
-        ['status', ResponseStatus.OK],
+        ['status', MDocStatus.OK],
       ]);
       try {
-        deviceResponseSchema.parse(input);
+        mdocSchema.parse(input);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -302,7 +302,7 @@ describe('DeviceResponse', (): void => {
           originalMessage: expectedInnerMost,
         });
         const expected = containerInvalidValueMessage({
-          target: 'DeviceResponse',
+          target: 'MDoc',
           path: ['documentErrors', 0],
           originalMessage: expectedInner,
         });
@@ -318,18 +318,18 @@ describe('DeviceResponse', (): void => {
         ['status', 999],
       ]);
       try {
-        deviceResponseSchema.parse(input as never);
+        mdocSchema.parse(input as never);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         // Build expected message using z.nativeEnum(ResponseStatus) to avoid hardcoding
-        const enumResult = z.nativeEnum(ResponseStatus).safeParse(999);
+        const enumResult = z.nativeEnum(MDocStatus).safeParse(999);
         const enumMessage = enumResult.success
           ? 'SHOULD_NOT_PASS'
           : enumResult.error.issues[0].message;
         const expected = containerInvalidValueMessage({
-          target: 'DeviceResponse',
+          target: 'MDoc',
           path: ['status'],
           originalMessage: enumMessage,
         });

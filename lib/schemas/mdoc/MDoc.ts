@@ -3,12 +3,12 @@ import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 import { createArraySchema } from '../containers/Array';
 import { documentSchema } from './Document';
 import { documentErrorSchema } from './DocumentError';
-import { ResponseStatus } from '@/mdoc/types';
+import { MDocStatus } from '@/mdoc/types';
 
 /**
- * Entries definition for the DeviceResponse schema in mdoc.
+ * Entries definition for the MDoc schema.
  * @description
- * Specifies the fields and validation schemas for a DeviceResponse structure as used in the mdoc protocol.
+ * Specifies the fields and validation schemas for the MDoc (Mobile Document) response structure as used in the mdoc protocol.
  *
  * Structure:
  * - "version" (required): Validated as the literal string '1.0'.
@@ -16,11 +16,11 @@ import { ResponseStatus } from '@/mdoc/types';
  *   - If present, the array must be non-empty (nonempty: true).
  * - "documentErrors" (optional): An array of validated DocumentError structures, representing any document-specific errors.
  *   - If present, the array must be non-empty (nonempty: true).
- * - "status" (required): Validated as a member of the DeviceResponseStatus enum.
+ * - "status" (required): Validated as a member of the ResponseStatus enum.
  *
  * Note:
  * - Both "documents" and "documentErrors" are optional and may be provided independently or together.
- * - If present, the ".documents" and ".documentErrors" arrays must be non-empty due to `nonempty: true`.
+ * - If present, the "documents" and "documentErrors" arrays must be non-empty due to `nonempty: true`.
  *
  * @example
  * ```typescript
@@ -49,9 +49,9 @@ import { ResponseStatus } from '@/mdoc/types';
  *
  * @see {@link documentSchema}
  * @see {@link documentErrorSchema}
- * @see {@link ResponseStatus}
+ * @see {@link MDocStatus}
  */
-export const deviceResponseEntries = [
+export const mdocEntries = [
   ['version', z.literal('1.0')],
   [
     'documents',
@@ -69,14 +69,14 @@ export const deviceResponseEntries = [
       nonempty: true,
     }).optional(),
   ],
-  ['status', z.nativeEnum(ResponseStatus)],
+  ['status', z.nativeEnum(MDocStatus)],
 ] as const;
 
 /**
- * Zod schema for mdoc DeviceResponse structure.
+ * Zod schema for the MDoc structure.
  *
  * @description
- * This schema validates the core Mobile Document (mdoc) device response envelope, enforcing its expected shape:
+ * This schema validates the core Mobile Document (MDoc) response envelope, enforcing its expected shape:
  * - version: Must be the literal string '1.0'.
  * - documents (optional): An array of validated Document structures. If present, the array must be non-empty.
  * - documentErrors (optional): An array of validated DocumentError structures. If present, the array must be non-empty.
@@ -88,7 +88,7 @@ export const deviceResponseEntries = [
  *
  * @cddl
  * ```cddl
- * DeviceResponse = {
+ * MDoc = {
  *   version: Version,
  *   ? documents: [+ Document],
  *   ? documentErrors: [+ DocumentError],
@@ -96,10 +96,10 @@ export const deviceResponseEntries = [
  * }
  * ```
  *
- * @see {@link ResponseStatus}
+ * @see {@link MDocStatus}
  * @see {@link documentSchema}
  * @see {@link documentErrorSchema}
- * @see {@link deviceResponseEntries}
+ * @see {@link mdocEntries}
  *
  * @example <caption>With documents</caption>
  * ```typescript
@@ -108,7 +108,7 @@ export const deviceResponseEntries = [
  *   ['documents', [validDocument]],
  *   ['status', ResponseStatus.OK],
  * ]);
- * const parsed = deviceResponseSchema.parse(response);
+ * const parsed = mdocSchema.parse(response);
  * ```
  * @example <caption>With documentErrors</caption>
  * ```typescript
@@ -117,7 +117,7 @@ export const deviceResponseEntries = [
  *   ['documentErrors', [validDocumentError]],
  *   ['status', ResponseStatus.CborValidationError],
  * ]);
- * const parsed = deviceResponseSchema.parse(errorResponse);
+ * const parsed = mdocSchema.parse(errorResponse);
  * ```
  * @example <caption>With both documents and documentErrors</caption>
  * ```typescript
@@ -127,16 +127,16 @@ export const deviceResponseEntries = [
  *   ['documentErrors', [validDocumentError]],
  *   ['status', ResponseStatus.OK],
  * ]);
- * const parsed = deviceResponseSchema.parse(mixed);
+ * const parsed = mdocSchema.parse(mixed);
  * ```
  */
-export const deviceResponseSchema = createStrictMapSchema({
-  target: 'DeviceResponse',
-  entries: deviceResponseEntries,
+export const mdocSchema = createStrictMapSchema({
+  target: 'MDoc',
+  entries: mdocEntries,
 });
 
 /**
- * Type representing a DeviceResponse.
+ * Type representing an MDoc response structure.
  * Contains version, documents or documentErrors, and status information.
  */
-export type DeviceResponse = z.output<typeof deviceResponseSchema>;
+export type MDoc = z.output<typeof mdocSchema>;

@@ -1,13 +1,13 @@
 /**
- * Enumerates possible statuses for an mdoc response.
+ * Enumerates possible statuses for an mdoc.
  *
  * @enum {number}
- * @property {ResponseStatus.OK} OK - Operation completed successfully.
- * @property {ResponseStatus.GeneralError} GeneralError - A general or unspecified error occurred.
- * @property {ResponseStatus.CborDecodingError} CborDecodingError - Error occurred while decoding CBOR data.
- * @property {ResponseStatus.CborValidationError} CborValidationError - CBOR data failed schema or format validation.
+ * @property {MDocStatus.OK} OK - Operation completed successfully.
+ * @property {MDocStatus.GeneralError} GeneralError - A general or unspecified error occurred.
+ * @property {MDocStatus.CborDecodingError} CborDecodingError - Error occurred while decoding CBOR data.
+ * @property {MDocStatus.CborValidationError} CborValidationError - CBOR data failed schema or format validation.
  */
-export enum ResponseStatus {
+export enum MDocStatus {
   /** Operation completed successfully. */
   OK = 0,
   /** A general, unspecified error occurred. */

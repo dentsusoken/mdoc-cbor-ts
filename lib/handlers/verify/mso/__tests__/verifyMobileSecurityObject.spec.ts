@@ -48,8 +48,7 @@ describe('verifyMobileSecurityObject', () => {
       validUntil,
     });
 
-    // Encode raw MSO (not Tag(24)) as payload for verifyMobileSecurityObject
-    const payload = encodeCbor(mso);
+    const payload = encodeCbor(createTag24(mso));
 
     const parsed = verifyMobileSecurityObject(payload);
 
