@@ -4,6 +4,7 @@ export * from './handlers';
 export * from './jsrsasign';
 export * from './jwk';
 export * from './mdoc';
+export * from './pex';
 export * from './schemas';
 export * from './strict-map';
 export * from './types';
