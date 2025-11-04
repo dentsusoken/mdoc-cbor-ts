@@ -4,9 +4,9 @@
  */
 export interface PresentationDefinitionFieldFilter {
   /** The type of value to match, e.g. "string", "number", etc. */
-  type: string;
+  type?: string;
   /** A constant value required for the field (exact value match for filtering). */
-  const: unknown;
+  const?: unknown;
 }
 
 /**
