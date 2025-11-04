@@ -1,62 +1,62 @@
 import { z } from 'zod';
 import { deviceAuthSchema } from './DeviceAuth';
-import { embeddedCborSchema } from '@/schemas/cbor/EmbeddedCbor';
 import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
+import { deviceNameSpacesSchema } from './DeviceNameSpaces';
 
 /**
  * Entries definition for the DeviceSigned schema in mdoc.
  * @description
- * Specifies the required fields and their associated schemas for the device-signed
- * container as used in mdoc. This definition is provided to {@link createStrictMapSchema}
- * to enable validation and type inference for device-signed Map inputs.
+ * Specifies the required fields and their corresponding schemas for device-signed data.
+ * Used by {@link createStrictMapSchema} to validate and infer type information for DeviceSigned Map structures.
  *
  * Structure:
- * - "nameSpaces": Required. Validated by {@link embeddedCborSchema}, representing a CBOR-encoded
- *   DeviceNameSpaces structure (i.e., `DeviceNameSpacesBytes`).
- * - "deviceAuth": Required. Validated by {@link deviceAuthSchema}, representing the device
- *   authentication container (either signature or MAC or both).
+ * - "nameSpaces": Validated by {@link deviceNameSpacesSchema}, mapping namespace strings
+ *   to sets of device-signed item values.
+ * - "deviceAuth": Validated by {@link deviceAuthSchema}, representing the CBOR DeviceAuth signature container.
  *
  * ```cddl
  * DeviceSigned = {
- *   "nameSpaces": DeviceNameSpacesBytes,
+ *   "nameSpaces": DeviceNameSpaces,
  *   "deviceAuth": DeviceAuth
  * }
  * ```
  *
- * @see {@link embeddedCborSchema}
+ * @see {@link deviceNameSpacesSchema}
  * @see {@link deviceAuthSchema}
  */
 export const deviceSignedEntries = [
-  ['nameSpaces', embeddedCborSchema], // DeviceNameSpacesBytes
+  ['nameSpaces', deviceNameSpacesSchema],
   ['deviceAuth', deviceAuthSchema],
 ] as const;
 
 /**
- * Schema for device-signed data in mdoc
+ * Zod schema for device-signed data in mdoc.
  * @description
- * Validates the main container of device-signed data in mdoc, ensuring the presence of mandatory
- * "nameSpaces" (CBOR-encoded device-signed namespaces) and "deviceAuth" (authentication, either
- * device signature, device MAC, or both). Uses a strict Map schema to enforce both presence and type.
+ * Validates the device-signed section of a mobile document (mdoc),
+ * ensuring correct structure for namespaces and device authentication data.
  *
- * ```cddl
- * DeviceSigned = {
- *   "nameSpaces": DeviceNameSpacesBytes,
- *   "deviceAuth": DeviceAuth
- * }
- * ```
+ * The schema enforces:
+ * - The object is a `Map` with exactly two required entries:
+ *   - `"nameSpaces"`: A Map where each key is a non-empty string (namespace)
+ *     and each value is a non-empty set of device-signed items.
+ *   - `"deviceAuth"`: A Map describing the device authentication container.
  *
  * @example
  * ```typescript
- * const map = new Map<string, unknown>([
- *   ['nameSpaces', deviceNameSpacesBytesValue],
- *   ['deviceAuth', deviceAuthValue],
+ * const deviceSigned = new Map([
+ *   ['nameSpaces', new Map([
+ *     ['org.iso.18013.5.1', new Map([['claim', 42]])],
+ *   ])],
+ *   ['deviceAuth', new Map([
+ *     // DeviceAuth structure as required
+ *   ])],
  * ]);
- * const result = deviceSignedSchema.parse(map); // Returns Map<string, unknown>
+ * deviceSignedSchema.parse(deviceSigned); // Validates structure and types
  * ```
  *
- * @see {@link embeddedCborSchema}
+ * @see {@link deviceSignedEntries}
+ * @see {@link deviceNameSpacesSchema}
  * @see {@link deviceAuthSchema}
- * @see {@link DeviceSigned}
  */
 export const deviceSignedSchema = createStrictMapSchema({
   target: 'DeviceSigned',
@@ -64,11 +64,12 @@ export const deviceSignedSchema = createStrictMapSchema({
 });
 
 /**
- * Type definition for device-signed data
+ * Output type for device-signed data in mdoc.
  * @description
- * Represents a validated device-signed data structure
+ * Type inferred from the {@link deviceSignedSchema}.
  *
- * @see {@link DeviceNameSpacesBytes}
- * @see {@link DeviceAuth}
+ * Typically used for type checking and code completion when handling validated DeviceSigned data.
+ *
+ * @see {@link deviceSignedSchema}
  */
 export type DeviceSigned = z.output<typeof deviceSignedSchema>;

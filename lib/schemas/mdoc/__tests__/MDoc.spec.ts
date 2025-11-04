@@ -50,7 +50,7 @@ const createMinimalDeviceSigned = (): Map<string, unknown> => {
   ] as Tag17Content;
   return deviceSignedSchema.parse(
     new Map<string, unknown>([
-      ['nameSpaces', createTag24(new Map())],
+      ['nameSpaces', new Map()],
       [
         'deviceAuth',
         new Map<string, unknown>([
@@ -240,7 +240,7 @@ describe('MDoc', (): void => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
           containerInvalidValueMessage({
-            target: 'DeviceResponse',
+            target: 'MDoc',
             path: ['version'],
             originalMessage: 'Invalid literal value, expected "1.0"',
           })

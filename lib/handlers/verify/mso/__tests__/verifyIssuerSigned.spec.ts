@@ -71,7 +71,7 @@ describe('verifyIssuerSigned', () => {
         [Header.Algorithm, Algorithm.ES256],
       ]);
       const uh = new Map<number, unknown>([[Header.X5Chain, [der]]]);
-      const payload = encodeCbor(mso);
+      const payload = encodeCbor(createTag24(mso));
 
       const sign1 = Sign1.sign({
         protectedHeaders: encodeCbor(ph),

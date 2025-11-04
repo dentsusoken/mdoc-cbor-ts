@@ -65,7 +65,7 @@ describe('verifyValueDigests', () => {
         const err = e as ErrorCodeError;
         expect(err.errorCode).toBe(MDocErrorCode.ValueDigestsMissing);
         expect(err.message).toBe(
-          `Value digests missing for namespace: ${ns} - 2001 - ValueDigestsMissingForNamespace`
+          `Value digests missing for namespace: ${ns} - 2001 - ValueDigestsMissing`
         );
       }
     });
@@ -102,7 +102,7 @@ describe('verifyValueDigests', () => {
             '    [\n' +
             '      [\n' +
             '        "given_name",\n' +
-            '        "ValueDigestsMissingForDigestId"\n' +
+            '        "ValueDigestMissing"\n' +
             '      ]\n' +
             '    ]\n' +
             '  ]\n' +

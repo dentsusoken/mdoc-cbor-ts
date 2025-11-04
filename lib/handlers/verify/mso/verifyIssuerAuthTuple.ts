@@ -1,6 +1,6 @@
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { MDocErrorCode } from '@/mdoc/types';
-import { Sing1Tuple } from '@/schemas/cose/Sign1';
+import { Sign1Tuple } from '@/cose/Sign1';
 import { Sign1 } from '@/cose/Sign1';
 import { JwkPublicKey } from '@/jwk/types';
 import { getErrorMessage } from '@/utils/getErrorMessage';
@@ -33,7 +33,7 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  * `Detached payload is required when payload is null`.
  */
 export const verifyIssuerAuthTuple = (
-  [protectedHeaders, unprotectedHeaders, payload, signature]: Sing1Tuple,
+  [protectedHeaders, unprotectedHeaders, payload, signature]: Sign1Tuple,
   now: Date,
   clockSkew: number
 ): Uint8Array => {

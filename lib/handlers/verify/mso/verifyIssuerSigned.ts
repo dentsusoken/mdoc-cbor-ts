@@ -1,6 +1,6 @@
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { MDocErrorCode } from '@/mdoc/types';
-import { Sing1Tuple } from '@/schemas/cose/Sign1';
+import { Sign1Tuple } from '@/cose/Sign1';
 import { IssuerSigned } from '@/schemas/mdoc/IssuerSigned';
 import { MobileSecurityObject } from '@/schemas/mso/MobileSecurityObject';
 import { verifyValueDigests } from './verifyValueDigests';
@@ -77,7 +77,7 @@ export const verifyIssuerSigned = ({
   }
 
   const payload = verifyIssuerAuthTuple(
-    issuerAuth.value as Sing1Tuple,
+    issuerAuth.value as Sign1Tuple,
     now,
     clockSkew
   );

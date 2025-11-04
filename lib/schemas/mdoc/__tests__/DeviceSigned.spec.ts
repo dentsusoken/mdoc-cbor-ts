@@ -6,7 +6,7 @@ import {
   containerInvalidValueMessage,
 } from '@/schemas/messages';
 import { getTypeName } from '@/utils/getTypeName';
-import { createTag18, createTag24 } from '@/cbor';
+import { createTag18 } from '@/cbor';
 import { createTag17 } from '@/cbor/createTag17';
 
 describe('DeviceSigned', () => {
@@ -25,8 +25,11 @@ describe('DeviceSigned', () => {
     ]);
 
     it('should accept device signed data with deviceSignature', () => {
+      const nameSpaces = new Map<string, unknown>([
+        ['org.iso.18013.5.1', new Map([['given_name', 'Alice']])],
+      ]);
       const data = new Map<string, unknown>([
-        ['nameSpaces', createTag24(new Map())],
+        ['nameSpaces', nameSpaces],
         ['deviceAuth', new Map([['deviceSignature', sign1]])],
       ]);
 
@@ -35,9 +38,22 @@ describe('DeviceSigned', () => {
     });
 
     it('should accept device signed data with deviceMac', () => {
+      const nameSpaces = new Map<string, unknown>([
+        ['org.iso.18013.5.1', new Map([['family_name', 'Smith']])],
+      ]);
       const data = new Map<string, unknown>([
-        ['nameSpaces', createTag24(new Map())],
+        ['nameSpaces', nameSpaces],
         ['deviceAuth', new Map([['deviceMac', mac0]])],
+      ]);
+
+      const result = deviceSignedSchema.parse(data);
+      expect(result).toEqual(data);
+    });
+
+    it('should accept device signed data with empty nameSpaces', () => {
+      const data = new Map<string, unknown>([
+        ['nameSpaces', new Map()],
+        ['deviceAuth', new Map([['deviceSignature', sign1]])],
       ]);
 
       const result = deviceSignedSchema.parse(data);
@@ -131,7 +147,9 @@ describe('DeviceSigned', () => {
   });
 
   describe('should throw error for invalid map entries', () => {
-    const tag24 = createTag24(new Map());
+    const nameSpaces = new Map<string, unknown>([
+      ['org.iso.18013.5.1', new Map([['given_name', 'Alice']])],
+    ]);
     const sign1 = createTag18([
       new Uint8Array([]),
       new Map<number, string>([[1, 'value']]),
@@ -149,13 +167,13 @@ describe('DeviceSigned', () => {
         expectedMessage: containerInvalidValueMessage({
           target: 'DeviceSigned',
           path: ['nameSpaces'],
-          originalMessage: 'Input not instance of Tag',
+          originalMessage: 'Expected Map, received null',
         }),
       },
       {
         name: 'null deviceAuth',
         input: new Map<string, unknown>([
-          ['nameSpaces', tag24],
+          ['nameSpaces', nameSpaces],
           ['deviceAuth', null],
         ]),
         expectedMessage: containerInvalidValueMessage({
@@ -167,7 +185,7 @@ describe('DeviceSigned', () => {
       {
         name: 'null deviceSignature in deviceAuth',
         input: new Map<string, unknown>([
-          ['nameSpaces', tag24],
+          ['nameSpaces', nameSpaces],
           ['deviceAuth', new Map([['deviceSignature', null]])],
         ]),
         expectedMessage: containerInvalidValueMessage({
