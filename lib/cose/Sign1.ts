@@ -8,6 +8,24 @@ import {
 } from 'noble-curves-extended';
 
 /**
+ * Tuple type representing the contents of a COSE_Sign1 structure.
+ *
+ * @typedef {Sign1Tuple}
+ * @property {Uint8Array} 0 - Protected headers (CBOR-encoded bstr)
+ * @property {Map<number, unknown>} 1 - Unprotected headers (header map)
+ * @property {Uint8Array | null} 2 - Payload (embedded, or null if detached)
+ * @property {Uint8Array} 3 - Signature bytes (cryptographic signature)
+ *
+ * This tuple is used for encoding/decoding COSE_Sign1 containers per RFC 8152.
+ */
+export type Sign1Tuple = [
+  Uint8Array,
+  Map<number, unknown>,
+  Uint8Array | null,
+  Uint8Array,
+];
+
+/**
  * Parameters for creating and signing a COSE_Sign1 structure.
  *
  * @description
@@ -17,7 +35,7 @@ import {
  * Exactly one of `payload` or `detachedPayload` must be provided.
  * Optional `externalAad` is included in the Sig_structure.
  */
-type SignParams = {
+interface SignParams {
   /** CBOR-encoded protected headers bytes (bstr) */
   protectedHeaders: Uint8Array;
   /** Unprotected headers map (defaults to empty) */
@@ -30,7 +48,7 @@ type SignParams = {
   detachedPayload?: Uint8Array;
   /** JWK private key to sign with */
   jwkPrivateKey: JwkPrivateKey;
-};
+}
 
 /**
  * Decoded COSE_Sign1 structure.
