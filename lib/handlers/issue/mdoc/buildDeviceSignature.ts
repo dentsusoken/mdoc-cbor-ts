@@ -57,17 +57,19 @@ export const buildDeviceSignature = ({
   deviceJwkPrivateKey,
 }: BuildDeviceSignatureParams): DeviceSignature => {
   const { algorithm } = jwkToCoseCurveAlgorithm(deviceJwkPrivateKey);
-  const payload = encodeDeviceAuthentication({
+  const detachedPayload = encodeDeviceAuthentication({
     sessionTranscript: sessionTranscriptBytes,
     docType,
     nameSpaces,
   });
+  const payload = null;
   const sign1 = Sign1.sign({
     protectedHeaders: encodeCbor(
       new Map<number, unknown>([[Header.Algorithm, algorithm]])
     ),
     unprotectedHeaders: new Map<number, unknown>(),
     payload,
+    detachedPayload,
     jwkPrivateKey: deviceJwkPrivateKey,
   });
 

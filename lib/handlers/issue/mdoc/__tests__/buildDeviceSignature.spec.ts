@@ -40,12 +40,13 @@ describe('buildDeviceSignature', () => {
     const [protectedHeaders, unprotectedHeaders, payload, signature] =
       tag.value as Sign1Tuple;
 
-    const expectedPayload = encodeDeviceAuthentication({
+    expect(payload).toBeNull();
+
+    const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript: sessionTranscriptBytes,
       docType,
       nameSpaces,
     });
-    expect(Array.from(payload!)).toEqual(Array.from(expectedPayload));
 
     const headers = decodeCbor(protectedHeaders) as Map<number, unknown>;
     expect(headers.get(Header.Algorithm)).toBe(Algorithm.ES256);
@@ -56,7 +57,7 @@ describe('buildDeviceSignature', () => {
       payload,
       signature
     );
-    sign1.verify(jwkPublicKey);
+    sign1.verify(jwkPublicKey, { detachedPayload });
   });
 
   it('defaults to empty nameSpaces when not provided', () => {
@@ -77,14 +78,15 @@ describe('buildDeviceSignature', () => {
     expect(tag.tag).toBe(18);
     const [ph, uh, payload, sig] = tag.value as Sign1Tuple;
 
-    const expectedPayload = encodeDeviceAuthentication({
+    expect(payload).toBeNull();
+
+    const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript: sessionTranscriptBytes,
       docType,
       nameSpaces: {},
     });
-    expect(Array.from(payload!)).toEqual(Array.from(expectedPayload));
 
     const sign1 = new Sign1(ph, uh, payload, sig);
-    sign1.verify(jwkPublicKey);
+    sign1.verify(jwkPublicKey, { detachedPayload });
   });
 });
