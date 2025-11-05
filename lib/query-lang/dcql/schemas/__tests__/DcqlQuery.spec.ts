@@ -1,0 +1,210 @@
+import { describe, it, expect } from 'vitest';
+import { z } from 'zod';
+import { dcqlQuerySchema } from '../DcqlQuery';
+
+describe('dcqlQuerySchema', () => {
+  describe('should accept valid DCQL queries', () => {
+    it('accepts query with single credential', () => {
+      const result = dcqlQuerySchema.parse({
+        credentials: [
+          {
+            id: 'credential-1',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.1.mDL',
+            },
+          },
+        ],
+      });
+      expect(result.credentials).toHaveLength(1);
+      expect(result.credentials[0].id).toBe('credential-1');
+      expect(result.credentials[0].format).toBe('mso_mdoc');
+    });
+
+    it('accepts query with multiple credentials', () => {
+      const result = dcqlQuerySchema.parse({
+        credentials: [
+          {
+            id: 'credential-1',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.1.mDL',
+            },
+          },
+          {
+            id: 'credential-2',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.2.mDL',
+            },
+            claims: [
+              {
+                path: ['org.iso.18013.5.2', 'license_number'],
+              },
+            ],
+          },
+        ],
+      });
+      expect(result.credentials).toHaveLength(2);
+      expect(result.credentials[0].id).toBe('credential-1');
+      expect(result.credentials[1].id).toBe('credential-2');
+    });
+  });
+
+  describe('should reject invalid DCQL queries', () => {
+    it('rejects missing credentials', () => {
+      try {
+        dcqlQuerySchema.parse({});
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['credentials']);
+        expect(zodError.issues[0].message).toBe('Required');
+      }
+    });
+
+    it('rejects empty credentials array', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['credentials']);
+        expect(zodError.issues[0].message).toBe(
+          'Array must contain at least 1 element(s)'
+        );
+      }
+    });
+
+    it('rejects credentials that are not an array', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: 'not-an-array',
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['credentials']);
+        expect(zodError.issues[0].message).toBe(
+          'Expected array, received string'
+        );
+      }
+    });
+
+    it('rejects credentials array with invalid credential (missing format)', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'test',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['credentials', 0, 'format']);
+        expect(zodError.issues[0].message).toBe(
+          'Invalid literal value, expected "mso_mdoc"'
+        );
+      }
+    });
+
+    it('rejects credentials array with invalid credential (missing meta)', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'test',
+              format: 'mso_mdoc',
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['credentials', 0, 'meta']);
+        expect(zodError.issues[0].message).toBe('Required');
+      }
+    });
+
+    it('rejects credentials array with invalid credential (invalid meta)', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'test',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: '',
+              },
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual([
+          'credentials',
+          0,
+          'meta',
+          'doctype_value',
+        ]);
+        expect(zodError.issues[0].message).toBe(
+          'String must contain at least 1 character(s)'
+        );
+      }
+    });
+  });
+
+  describe('safeParse', () => {
+    it('returns success for valid queries', () => {
+      expect(
+        dcqlQuerySchema.safeParse({
+          credentials: [
+            {
+              id: 'test',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+        }).success
+      ).toBe(true);
+    });
+
+    it('returns error for invalid queries', () => {
+      expect(dcqlQuerySchema.safeParse({}).success).toBe(false);
+      expect(
+        dcqlQuerySchema.safeParse({
+          credentials: [],
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlQuerySchema.safeParse({
+          credentials: 'invalid',
+        }).success
+      ).toBe(false);
+    });
+
+    it('returns ZodError for invalid queries', () => {
+      const result = dcqlQuerySchema.safeParse({});
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error).toBeInstanceOf(z.ZodError);
+      }
+    });
+  });
+});

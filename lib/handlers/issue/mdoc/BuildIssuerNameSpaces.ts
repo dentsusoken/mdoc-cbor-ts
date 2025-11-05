@@ -8,57 +8,62 @@ import { createTag24 } from '@/cbor/createTag24';
 import { RandomBytes } from '@/types';
 
 /**
- * Builds an IssuerNameSpaces structure
- * from Record<NameSapce, Record<DataElementIdentifier, DataElementValue>>.
+ * Constructs the IssuerNameSpaces map structure for mdoc data, producing a
+ * Map from namespace string to a list of CBOR Tag 24-wrapped IssuerSignedItem objects.
  *
- * @description
- * Takes a record mapping each namespace string to an object of data elements (identifier-value pairs),
- * and produces an {@link IssuerNameSpaces} structure (a Map of namespaces to arrays of CBOR Tag 24 issuer-signed items).
- * For each element in each namespace, creates a CBOR Tag 24-wrapped IssuerSignedItem:
- *   - Each IssuerSignedItem includes a unique digestID (its index in the namespace array), a secure random value (32 bytes),
- *     the element identifier, and the element value.
- * The function verifies that there is at least one element per namespace and at least one namespace,
- * and throws if these invariants are not met.
+ * Each IssuerSignedItem encodes the details of a single mdoc data element, wrapped as a CBOR Tag 24.
  *
- * @param {Record<string, Record<string, unknown>>} nameSpaceElements - Object mapping namespaces to data element identifier-value objects.
- * @param {RandomBytes} randomBytes - Function generating cryptographically secure random bytes of given length.
- * @returns {IssuerNameSpaces} A Map from namespace string to array of CBOR Tag 24 issuer-signed items.
- * @throws {Error} If a namespace contains no elements or no namespaces are provided.
+ * @param nameSpaces - Map where each key is a namespace string (e.g., 'org.iso.18013.5.1'),
+ *   and each value is a Map of element identifiers to their corresponding element values.
+ * @param randomBytes - A function that returns a Uint8Array of cryptographically secure random bytes,
+ *   used to populate the 'random' field of each IssuerSignedItem.
+ *   Must accept a single argument, the number of bytes to generate (e.g., 32).
+ * @returns {IssuerNameSpaces} A Map<string, Tag[]> where each key is the namespace string,
+ *   and each value is an array of CBOR Tag 24 (Tag) objects—in canonical order—
+ *   each wrapping an IssuerSignedItem for each namespace element.
+ *
+ * @throws {Error} If any namespace contains no elements, or if nameSpaces is empty.
+ *
+ * @see IssuerSignedItem
+ * @see IssuerNameSpaces
+ * @see createIssuerSignedItem
+ * @see createTag24
  *
  * @example
- * import { randomBytes } from '@noble/hashes/utils';
- *
- * const data = {
- *   'org.iso.18013.5.1': {
- *     'given_name': 'John',
- *     'family_name': 'Doe'
- *   }
- * };
- * const issuerNameSpaces = buildIssuerNameSpaces(data, randomBytes);
- * // issuerNameSpaces is a Map<string, Tag[]> with Tag 24 items per element
+ * const issuerNameSpaces = buildIssuerNameSpaces(
+ *   new Map([
+ *     ["org.iso.18013.5.1", new Map([
+ *       ["given_name", "Alice"],
+ *       ["family_name", "Smith"]
+ *     ])]
+ *   ]),
+ *   (length) => crypto.getRandomValues(new Uint8Array(length))
+ * );
  */
 export const buildIssuerNameSpaces = (
-  nameSpaceElements: Record<string, Record<string, unknown>>,
+  nameSpaces: Map<string, Map<string, unknown>>,
   randomBytes: RandomBytes
 ): IssuerNameSpaces => {
   const issuerNameSpaces: IssuerNameSpaces = new Map<string, Tag[]>();
 
-  Object.entries(nameSpaceElements).forEach(([nameSpace, elements]) => {
+  Array.from(nameSpaces.entries()).forEach(([nameSpace, elements]) => {
     const issuerSignedItemTags: Tag[] = [];
 
-    Object.entries(elements).forEach(([elementIdentifier, elementValue]) => {
-      const random = randomBytes(32);
-      // Keys must be in lexicographic order for CBOR canonical form
-      // Order: digestID, elementIdentifier, elementValue, random
-      const issuerSignedItem: IssuerSignedItem = createIssuerSignedItem([
-        ['digestID', issuerSignedItemTags.length],
-        ['random', random],
-        ['elementIdentifier', elementIdentifier],
-        ['elementValue', elementValue],
-      ]);
-      const tag = createTag24(issuerSignedItem);
-      issuerSignedItemTags.push(tag);
-    });
+    Array.from(elements.entries()).forEach(
+      ([elementIdentifier, elementValue]) => {
+        const random = randomBytes(32);
+        // Keys must be in lexicographic order for CBOR canonical form
+        // Order: digestID, elementIdentifier, elementValue, random
+        const issuerSignedItem: IssuerSignedItem = createIssuerSignedItem([
+          ['digestID', issuerSignedItemTags.length],
+          ['random', random],
+          ['elementIdentifier', elementIdentifier],
+          ['elementValue', elementValue],
+        ]);
+        const tag = createTag24(issuerSignedItem);
+        issuerSignedItemTags.push(tag);
+      }
+    );
 
     if (issuerSignedItemTags.length === 0) {
       throw new Error(`No issuer signed items for namespace ${nameSpace}`);

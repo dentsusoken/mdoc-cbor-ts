@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { deviceMacSchema } from './DeviceMac';
 import { deviceSignatureSchema } from './DeviceSignature';
 import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
+import { createStrictMap } from '@/strict-map/createStrictMap';
 
 /**
  * Error message indicating that at least one device authentication method must be provided.
@@ -49,6 +50,26 @@ export const deviceAuthEntries = [
   ['deviceSignature', deviceSignatureSchema.optional()],
   ['deviceMac', deviceMacSchema.optional()],
 ] as const;
+
+/**
+ * Factory function for creating a DeviceAuth Map.
+ * @description
+ * Constructs a strict Map instance for DeviceAuth, accepting entries for
+ * "deviceSignature" and/or "deviceMac" as defined in {@link deviceAuthEntries}.
+ *
+ * The resulting Map will include only the keys provided in the input, conforming
+ * to the expected types for device authentication (device signature and/or MAC).
+ *
+ * @example
+ * ```typescript
+ * const deviceAuth = createDeviceAuth([
+ *   ['deviceSignature', sign1Instance],
+ * ]);
+ * ```
+ *
+ * @see {@link deviceAuthEntries}
+ */
+export const createDeviceAuth = createStrictMap<typeof deviceAuthEntries>;
 
 /**
  * Schema for device authentication as a strict `Map` in mdoc.

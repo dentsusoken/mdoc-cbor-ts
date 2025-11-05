@@ -3,6 +3,7 @@ import { buildIssuerNameSpaces } from '../buildIssuerNameSpaces';
 import { createTag24 } from '@/cbor/createTag24';
 import type { RandomBytes } from '@/types';
 import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
+import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 
 describe('buildIssuerNameSpaces', () => {
   const mockRandomBytes: RandomBytes = (byteLength = 32) => {
@@ -11,7 +12,7 @@ describe('buildIssuerNameSpaces', () => {
 
   describe('valid cases', () => {
     it('should build IssuerNameSpaces with Tag(24) items for each element', () => {
-      const input = {
+      const input = nameSpacesRecordToMap({
         'org.iso.18013.5.1': {
           given_name: 'John',
           family_name: 'Doe',
@@ -19,7 +20,7 @@ describe('buildIssuerNameSpaces', () => {
         'org.iso.18013.5.2': {
           document_number: '1234567890',
         },
-      };
+      });
 
       const result = buildIssuerNameSpaces(input, mockRandomBytes);
 
@@ -65,9 +66,9 @@ describe('buildIssuerNameSpaces', () => {
 
   describe('invalid cases', () => {
     it('should throw when an inner namespace has no elements', () => {
-      const input = {
+      const input = nameSpacesRecordToMap({
         'org.iso.18013.5.1': {},
-      };
+      });
 
       expect(() => buildIssuerNameSpaces(input, mockRandomBytes)).toThrowError(
         'No issuer signed items for namespace org.iso.18013.5.1'
@@ -75,7 +76,7 @@ describe('buildIssuerNameSpaces', () => {
     });
 
     it('should throw when there are no namespaces', () => {
-      const input = {};
+      const input = nameSpacesRecordToMap({});
       expect(() => buildIssuerNameSpaces(input, mockRandomBytes)).toThrowError(
         'No issuer name spaces'
       );

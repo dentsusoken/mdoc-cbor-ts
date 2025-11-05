@@ -1,20 +1,20 @@
 import { describe, it, expect } from 'vitest';
-import { buildDeviceSignature } from '../buildDeviceSignature';
+import { buildDeviceSigned } from '../buildDeviceSigned';
 import { createSignatureCurve } from 'noble-curves-extended';
 import { randomBytes } from '@noble/hashes/utils';
-import { encodeCbor, decodeCbor } from '@/cbor/codec';
+import { encodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
 import { Tag } from 'cbor-x';
-import { Header, Algorithm } from '@/cose/types';
 import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
 import { Sign1 } from '@/cose/Sign1';
 import { Sign1Tuple } from '@/cose/Sign1';
 import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
+import { deviceSignedSchema } from '@/schemas/mdoc/DeviceSigned';
 
 const p256 = createSignatureCurve('P-256', randomBytes);
 
-describe('buildDeviceSignature', () => {
-  it('produces Tag(18) COSE_Sign1 with expected payload and a valid signature', () => {
+describe('buildDeviceSigned', () => {
+  it('builds DeviceSigned with nameSpaces and deviceAuth', () => {
     const privateKey = p256.randomPrivateKey();
     const publicKey = p256.getPublicKey(privateKey);
     const jwkPrivateKey = p256.toJwkPrivateKey(privateKey);
@@ -25,21 +25,28 @@ describe('buildDeviceSignature', () => {
     const nameSpaces = nameSpacesRecordToMap({
       'org.iso.18013.5.1': {
         given_name: 'Alice',
+        age: 30,
       },
     });
 
-    const tag = buildDeviceSignature({
+    const deviceSigned = buildDeviceSigned({
       sessionTranscriptBytes,
       docType,
       nameSpaces,
       deviceJwkPrivateKey: jwkPrivateKey,
     });
 
-    expect(tag).toBeInstanceOf(Tag);
-    expect(tag.tag).toBe(18);
+    expect(deviceSigned).toBeInstanceOf(Map);
+    expect(deviceSigned.get('nameSpaces')).toBe(nameSpaces);
+    expect(deviceSigned.get('deviceAuth')).toBeInstanceOf(Map);
+
+    const deviceAuth = deviceSigned.get('deviceAuth') as Map<string, unknown>;
+    const deviceSignature = deviceAuth.get('deviceSignature') as Tag;
+    expect(deviceSignature).toBeInstanceOf(Tag);
+    expect(deviceSignature.tag).toBe(18);
 
     const [protectedHeaders, unprotectedHeaders, payload, signature] =
-      tag.value as Sign1Tuple;
+      deviceSignature.value as Sign1Tuple;
 
     expect(payload).toBeNull();
 
@@ -49,9 +56,6 @@ describe('buildDeviceSignature', () => {
       nameSpaces,
     });
 
-    const headers = decodeCbor(protectedHeaders) as Map<number, unknown>;
-    expect(headers.get(Header.Algorithm)).toBe(Algorithm.ES256);
-
     const sign1 = new Sign1(
       protectedHeaders,
       unprotectedHeaders,
@@ -59,6 +63,8 @@ describe('buildDeviceSignature', () => {
       signature
     );
     sign1.verify(jwkPublicKey, { detachedPayload });
+
+    deviceSignedSchema.parse(deviceSigned);
   });
 
   it('defaults to empty nameSpaces when not provided', () => {
@@ -70,14 +76,22 @@ describe('buildDeviceSignature', () => {
     const sessionTranscriptBytes = encodeCbor(createTag24(['any', 1]));
     const docType = 'org.iso.18013.5.1.mDL';
 
-    const tag = buildDeviceSignature({
+    const deviceSigned = buildDeviceSigned({
       sessionTranscriptBytes,
       docType,
       deviceJwkPrivateKey: jwkPrivateKey,
     });
 
-    expect(tag.tag).toBe(18);
-    const [ph, uh, payload, sig] = tag.value as Sign1Tuple;
+    expect(deviceSigned).toBeInstanceOf(Map);
+    const nameSpaces = deviceSigned.get('nameSpaces') as Map<string, unknown>;
+    expect(nameSpaces).toBeInstanceOf(Map);
+    expect(nameSpaces.size).toBe(0);
+
+    const deviceAuth = deviceSigned.get('deviceAuth') as Map<string, unknown>;
+    const deviceSignature = deviceAuth.get('deviceSignature') as Tag;
+    expect(deviceSignature).toBeInstanceOf(Tag);
+
+    const [ph, uh, payload, sig] = deviceSignature.value as Sign1Tuple;
 
     expect(payload).toBeNull();
 
@@ -89,5 +103,8 @@ describe('buildDeviceSignature', () => {
 
     const sign1 = new Sign1(ph, uh, payload, sig);
     sign1.verify(jwkPublicKey, { detachedPayload });
+
+    deviceSignedSchema.parse(deviceSigned);
   });
 });
+

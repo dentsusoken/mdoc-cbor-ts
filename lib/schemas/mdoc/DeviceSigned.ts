@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { deviceAuthSchema } from './DeviceAuth';
 import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 import { deviceNameSpacesSchema } from './DeviceNameSpaces';
+import { createStrictMap } from '@/strict-map/createStrictMap';
 
 /**
  * Entries definition for the DeviceSigned schema in mdoc.
@@ -28,6 +29,27 @@ export const deviceSignedEntries = [
   ['nameSpaces', deviceNameSpacesSchema],
   ['deviceAuth', deviceAuthSchema],
 ] as const;
+
+/**
+ * Factory function for constructing a DeviceSigned Map.
+ * @description
+ * Uses the entry definitions from {@link deviceSignedEntries} to enforce the required structure
+ * for a DeviceSigned value, suitable for mdoc.
+ *
+ * This provides a strongly-typed helper for building DeviceSigned maps:
+ * - "nameSpaces": A Map mapping namespace strings to device-signed data elements.
+ * - "deviceAuth": A DeviceAuth structure containing device signature/authentication.
+ *
+ * @example
+ * ```typescript
+ * const deviceSigned = createDeviceSigned([
+ *   ['nameSpaces', new Map([['org.iso.18013.5.1', new Map([['claim', 42]])]])],
+ *   ['deviceAuth', deviceAuthMap]
+ * ]);
+ * ```
+ * @see {@link deviceSignedEntries}
+ */
+export const createDeviceSigned = createStrictMap<typeof deviceSignedEntries>;
 
 /**
  * Zod schema for device-signed data in mdoc.

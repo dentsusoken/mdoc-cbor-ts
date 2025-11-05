@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { deviceSignedSchema } from '../DeviceSigned';
+import { createDeviceSigned, deviceSignedSchema } from '../DeviceSigned';
 import {
   containerInvalidTypeMessage,
   containerInvalidValueMessage,
@@ -208,6 +208,93 @@ describe('DeviceSigned', () => {
           expect(zodError.issues[0].message).toBe(expectedMessage);
         }
       });
+    });
+  });
+
+  describe('createDeviceSigned', () => {
+    it('creates DeviceSigned with nameSpaces and deviceAuth (deviceSignature)', () => {
+      const nameSpaces = new Map<string, Map<string, unknown>>([
+        ['org.iso.18013.5.1', new Map([['given_name', 'Alice']])],
+      ]);
+      const sign1Tuple: [
+        Uint8Array,
+        Map<number, string>,
+        Uint8Array,
+        Uint8Array,
+      ] = [
+        new Uint8Array([]),
+        new Map<number, string>([[1, 'value']]),
+        new Uint8Array([]),
+        new Uint8Array([]),
+      ];
+      const deviceSignature = createTag18(sign1Tuple);
+      const deviceAuth = new Map([['deviceSignature', deviceSignature]]);
+
+      const deviceSigned = createDeviceSigned([
+        ['nameSpaces', nameSpaces],
+        ['deviceAuth', deviceAuth],
+      ]);
+
+      expect(deviceSigned).toBeInstanceOf(Map);
+      expect(deviceSigned.get('nameSpaces')).toBe(nameSpaces);
+      expect(deviceSigned.get('deviceAuth')).toBe(deviceAuth);
+      deviceSignedSchema.parse(deviceSigned);
+    });
+
+    it('creates DeviceSigned with nameSpaces and deviceAuth (deviceMac)', () => {
+      const nameSpaces = new Map<string, Map<string, unknown>>([
+        ['org.iso.18013.5.1', new Map([['family_name', 'Smith']])],
+      ]);
+      const mac0Tuple: [
+        Uint8Array,
+        Map<number, string>,
+        Uint8Array,
+        Uint8Array,
+      ] = [
+        new Uint8Array([]),
+        new Map<number, string>([[1, 'value']]),
+        new Uint8Array([]),
+        new Uint8Array([]),
+      ];
+      const deviceMac = createTag17(mac0Tuple);
+      const deviceAuth = new Map([['deviceMac', deviceMac]]);
+
+      const deviceSigned = createDeviceSigned([
+        ['nameSpaces', nameSpaces],
+        ['deviceAuth', deviceAuth],
+      ]);
+
+      expect(deviceSigned).toBeInstanceOf(Map);
+      expect(deviceSigned.get('nameSpaces')).toBe(nameSpaces);
+      expect(deviceSigned.get('deviceAuth')).toBe(deviceAuth);
+      deviceSignedSchema.parse(deviceSigned);
+    });
+
+    it('creates DeviceSigned with empty nameSpaces and deviceAuth', () => {
+      const nameSpaces = new Map<string, Map<string, unknown>>();
+      const sign1Tuple: [
+        Uint8Array,
+        Map<number, string>,
+        Uint8Array,
+        Uint8Array,
+      ] = [
+        new Uint8Array([]),
+        new Map<number, string>([[1, 'value']]),
+        new Uint8Array([]),
+        new Uint8Array([]),
+      ];
+      const deviceSignature = createTag18(sign1Tuple);
+      const deviceAuth = new Map([['deviceSignature', deviceSignature]]);
+
+      const deviceSigned = createDeviceSigned([
+        ['nameSpaces', nameSpaces],
+        ['deviceAuth', deviceAuth],
+      ]);
+
+      expect(deviceSigned).toBeInstanceOf(Map);
+      expect(deviceSigned.get('nameSpaces')).toBe(nameSpaces);
+      expect(deviceSigned.get('deviceAuth')).toBe(deviceAuth);
+      deviceSignedSchema.parse(deviceSigned);
     });
   });
 });

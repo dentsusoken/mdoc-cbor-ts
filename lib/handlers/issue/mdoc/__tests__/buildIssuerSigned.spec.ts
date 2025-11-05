@@ -12,6 +12,7 @@ import {
 import { JwkPrivateKey } from '@/jwk/types';
 import { certificatePemToDerBytes } from '@/x509/certificatePemToDerBytes';
 import { issuerSignedSchema } from '@/schemas/mdoc/IssuerSigned';
+import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 
 describe('buildIssuerSigned', () => {
   it('should build IssuerSigned structure with nameSpaces and issuerAuth', () => {
@@ -32,7 +33,7 @@ describe('buildIssuerSigned', () => {
 
     const issuerSigned = buildIssuerSigned({
       docType: 'org.iso.18013.5.1.mDL',
-      nameSpaceElements,
+      nameSpaces: nameSpacesRecordToMap(nameSpaceElements),
       randomBytes,
       deviceJwkPublicKey: DEVICE_JWK,
       digestAlgorithm: 'SHA-256',
@@ -66,7 +67,7 @@ describe('buildIssuerSigned', () => {
 
     const issuerSigned = buildIssuerSigned({
       docType: 'org.iso.18013.5.1.mDL',
-      nameSpaceElements,
+      nameSpaces: nameSpacesRecordToMap(nameSpaceElements),
       randomBytes,
       deviceJwkPublicKey: DEVICE_JWK,
       digestAlgorithm: 'SHA-256',

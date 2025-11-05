@@ -16,17 +16,25 @@ interface BuildDeviceSignatureParams {
   /** Document type string (docType) as per ISO/IEC 18013-5. */
   docType: string;
   /**
-   * Device nameSpaces object: mapping from namespace string to element identifier/value mapping.
+   * Optional device nameSpaces mapping for DeviceAuthentication.
    *
-   * Example:
-   * {
-   *   "org.iso.18013.5.1": {
-   *     "given_name": "John",
-   *     "family_name": "Doe"
-   *   }
-   * }
+   * This maps each namespace string (e.g., "org.iso.18013.5.1") to a sub-Map
+   * where the keys are element identifiers (data elements) and the values are the associated data.
+   *
+   * For example, a typical structure:
+   * ```ts
+   * new Map([
+   *   [
+   *     "org.iso.18013.5.1",
+   *     new Map([
+   *       ["given_name", "John"],
+   *       ["family_name", "Doe"],
+   *     ])
+   *   ]
+   * ])
+   * ```
    */
-  nameSpaces?: Record<string, Record<string, unknown>>;
+  nameSpaces?: Map<string, Map<string, unknown>>;
   /** Device's private JWK to use for signing the DeviceAuthentication. */
   deviceJwkPrivateKey: JwkPrivateKey;
 }
@@ -53,7 +61,7 @@ interface BuildDeviceSignatureParams {
 export const buildDeviceSignature = ({
   sessionTranscriptBytes,
   docType,
-  nameSpaces = {},
+  nameSpaces = new Map(),
   deviceJwkPrivateKey,
 }: BuildDeviceSignatureParams): DeviceSignature => {
   const { algorithm } = jwkToCoseCurveAlgorithm(deviceJwkPrivateKey);

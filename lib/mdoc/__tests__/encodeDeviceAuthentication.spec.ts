@@ -4,9 +4,9 @@ import { encodeCbor, decodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
 import {
   decodeSessionTranscript,
-  toNameSpacesTag,
   encodeDeviceAuthentication,
 } from '../encodeDeviceAuthentication';
+import { nameSpacesRecordToMap } from '../nameSpacesRecordToMap';
 
 describe('encodeDeviceAuthentication', () => {
   describe('sessionTranscript: Uint8Array', () => {
@@ -15,12 +15,12 @@ describe('encodeDeviceAuthentication', () => {
       const sessionTranscriptBytes = encodeCbor(createTag24(sessionInner));
 
       const docType = 'org.iso.18013.5.1.mDL';
-      const nameSpaces = {
+      const nameSpaces = nameSpacesRecordToMap({
         'org.iso.18013.5.1': {
           given_name: 'Ava',
           age: 30,
         },
-      };
+      });
 
       const encoded = encodeDeviceAuthentication({
         sessionTranscript: sessionTranscriptBytes,
@@ -51,16 +51,7 @@ describe('encodeDeviceAuthentication', () => {
         string,
         Map<string, unknown>
       >;
-      const expectedNs = new Map<string, Map<string, unknown>>([
-        [
-          'org.iso.18013.5.1',
-          new Map<string, unknown>([
-            ['given_name', 'Ava'],
-            ['age', 30],
-          ]),
-        ],
-      ]);
-      expect(nsDecoded).toEqual(expectedNs);
+      expect(nsDecoded).toEqual(nameSpaces);
     });
   });
 
@@ -68,7 +59,7 @@ describe('encodeDeviceAuthentication', () => {
     it('embeds sessionTranscript as-is when already decoded', () => {
       const sessionInner = ['already', 'decoded'];
       const docType = 'org.iso.18013.5.1.mDL';
-      const nameSpaces = { ns: { a: 1 } };
+      const nameSpaces = nameSpacesRecordToMap({ ns: { a: 1 } });
 
       const encoded = encodeDeviceAuthentication({
         sessionTranscript: sessionInner,
@@ -102,33 +93,6 @@ describe('encodeDeviceAuthentication', () => {
     it('returns input as-is when not Uint8Array', () => {
       const value = 123;
       expect(decodeSessionTranscript(value)).toBe(123);
-    });
-  });
-
-  describe('toNameSpacesTag', () => {
-    it('wraps a Map-of-Maps in Tag 24', () => {
-      const nameSpaces = {
-        ns1: { a: 1, b: 'x' },
-      };
-      const tag = toNameSpacesTag(nameSpaces);
-      expect(tag).toBeInstanceOf(Tag);
-      expect(tag.tag).toBe(24);
-
-      const decoded = decodeCbor(tag.value as Uint8Array) as Map<
-        string,
-        Map<string, unknown>
-      >;
-      expect(decoded).toEqual(
-        new Map<string, Map<string, unknown>>([
-          [
-            'ns1',
-            new Map<string, unknown>([
-              ['a', 1],
-              ['b', 'x'],
-            ]),
-          ],
-        ])
-      );
     });
   });
 });

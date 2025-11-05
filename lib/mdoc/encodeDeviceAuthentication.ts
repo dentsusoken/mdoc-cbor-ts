@@ -1,39 +1,21 @@
 import { encodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
 import { decodeTag24 } from '@/cbor/decodeTag24';
-import { Tag } from 'cbor-x';
 import { isUint8Array } from 'u8a-utils';
 
 /**
- * Parameters for encoding a mdoc DeviceAuthentication structure.
+ * Parameters for encoding mdoc DeviceAuthentication.
  *
- * @property sessionTranscript
- *   The session transcript, provided either as a CBOR Tag 24-encoded Uint8Array (as per ISO/IEC 18013-5)
- *   or as a decoded session transcript structure. This represents the cryptographically bound
- *   session data exchanged between device and reader.
- *
- * @property docType
- *   The document type string (docType), e.g., 'org.iso.18013.5.1.mDL'.
- *
- * @property nameSpaces
- *   (Optional) An object mapping namespace strings to their device-signed attribute maps.
- *   Keys are namespace names; values are objects whose key/value entries represent
- *   attribute identifiers and their associated values under device control.
+ * @typedef {Object} DeviceAuthenticationParams
+ * @property {unknown} sessionTranscript - The session transcript, provided as a CBOR Tag 24 (Uint8Array) or as an already-decoded structure.
+ * @property {string} docType - The document type string (docType) as per ISO/IEC 18013-5.
+ * @property {Map<string, Map<string, unknown>>} [nameSpaces] - Optional mapping for device nameSpaces.
+ *   The outer key represents the namespace string; the inner Map holds data element identifiers and values.
  */
 interface DeviceAuthenticationParams {
-  /**
-   * The session transcript, as CBOR Tag 24 (Uint8Array) or already-decoded structure.
-   */
   sessionTranscript: unknown;
-  /**
-   * The document type (docType) string.
-   */
   docType: string;
-  /**
-   * The device nameSpaces mapping (optional).
-   * Outer key: namespace string; inner keys: attribute identifiers and values.
-   */
-  nameSpaces?: Record<string, Record<string, unknown>>;
+  nameSpaces?: Map<string, Map<string, unknown>>;
 }
 
 /**
@@ -52,26 +34,6 @@ export const decodeSessionTranscript = (
   return isUint8Array(sessionTranscript)
     ? decodeTag24(sessionTranscript)
     : sessionTranscript;
-};
-
-/**
- * Converts a device nameSpaces mapping to a CBOR Tag 24-wrapped Map-of-Maps.
- *
- * @param nameSpaces - An object mapping namespace strings to device element attribute maps.
- *   The outer object key is the namespace; each value is an object whose key/value entries
- *   are DataElementIdentifier/DataElementValue pairs.
- * @returns A Tag 24 instance wrapping a Map<string, Map<string, unknown>> suitable for embedding in DeviceAuthentication.
- */
-export const toNameSpacesTag = (
-  nameSpaces: Record<string, Record<string, unknown>>
-): Tag => {
-  const nameSpacesAsMap = new Map(
-    Object.entries(nameSpaces).map(([ns, items]) => [
-      ns,
-      new Map(Object.entries(items)),
-    ])
-  );
-  return createTag24(nameSpacesAsMap);
 };
 
 /**
@@ -100,14 +62,14 @@ export const toNameSpacesTag = (
 export const encodeDeviceAuthentication = ({
   sessionTranscript,
   docType,
-  nameSpaces = {},
+  nameSpaces = new Map(),
 }: DeviceAuthenticationParams): Uint8Array => {
   return encodeCbor(
     createTag24([
       'DeviceAuthentication',
       decodeSessionTranscript(sessionTranscript),
       docType,
-      toNameSpacesTag(nameSpaces),
+      createTag24(nameSpaces),
     ])
   );
 };

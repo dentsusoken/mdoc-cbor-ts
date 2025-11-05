@@ -2,6 +2,7 @@ import { Tag } from 'cbor-x';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
+  createDeviceAuth,
   deviceAuthSchema,
   DEVICE_AUTH_AT_LEAST_ONE_MESSAGE,
 } from '../DeviceAuth';
@@ -243,6 +244,91 @@ describe('DeviceAuth', () => {
           expect(zodError.issues[0].message).toBe(expectedMessage);
         }
       });
+    });
+  });
+
+  describe('createDeviceAuth', () => {
+    it('creates DeviceAuth with deviceSignature only', () => {
+      const sign1Tuple: [
+        Uint8Array,
+        Map<number, string>,
+        Uint8Array,
+        Uint8Array,
+      ] = [
+        new Uint8Array([]),
+        new Map<number, string>([[1, 'value']]),
+        new Uint8Array([]),
+        new Uint8Array([]),
+      ];
+      const deviceSignature = createTag18(sign1Tuple);
+
+      const deviceAuth = createDeviceAuth([
+        ['deviceSignature', deviceSignature],
+      ]);
+
+      expect(deviceAuth).toBeInstanceOf(Map);
+      expect(deviceAuth.get('deviceSignature')).toBe(deviceSignature);
+      expect(deviceAuth.get('deviceMac')).toBeUndefined();
+      deviceAuthSchema.parse(deviceAuth);
+    });
+
+    it('creates DeviceAuth with deviceMac only', () => {
+      const mac0Tuple: [
+        Uint8Array,
+        Map<number, string>,
+        Uint8Array,
+        Uint8Array,
+      ] = [
+        new Uint8Array([]),
+        new Map<number, string>([[1, 'value']]),
+        new Uint8Array([]),
+        new Uint8Array([]),
+      ];
+      const deviceMac = new Tag(mac0Tuple, 17);
+
+      const deviceAuth = createDeviceAuth([['deviceMac', deviceMac]]);
+
+      expect(deviceAuth).toBeInstanceOf(Map);
+      expect(deviceAuth.get('deviceMac')).toBe(deviceMac);
+      expect(deviceAuth.get('deviceSignature')).toBeUndefined();
+      deviceAuthSchema.parse(deviceAuth);
+    });
+
+    it('creates DeviceAuth with both deviceSignature and deviceMac', () => {
+      const sign1Tuple: [
+        Uint8Array,
+        Map<number, string>,
+        Uint8Array,
+        Uint8Array,
+      ] = [
+        new Uint8Array([]),
+        new Map<number, string>([[1, 'value']]),
+        new Uint8Array([]),
+        new Uint8Array([]),
+      ];
+      const mac0Tuple: [
+        Uint8Array,
+        Map<number, string>,
+        Uint8Array,
+        Uint8Array,
+      ] = [
+        new Uint8Array([]),
+        new Map<number, string>([[1, 'value']]),
+        new Uint8Array([]),
+        new Uint8Array([]),
+      ];
+      const deviceSignature = createTag18(sign1Tuple);
+      const deviceMac = new Tag(mac0Tuple, 17);
+
+      const deviceAuth = createDeviceAuth([
+        ['deviceSignature', deviceSignature],
+        ['deviceMac', deviceMac],
+      ]);
+
+      expect(deviceAuth).toBeInstanceOf(Map);
+      expect(deviceAuth.get('deviceSignature')).toBe(deviceSignature);
+      expect(deviceAuth.get('deviceMac')).toBe(deviceMac);
+      deviceAuthSchema.parse(deviceAuth);
     });
   });
 });
