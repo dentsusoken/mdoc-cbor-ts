@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { inputDescriptorFormatSchema } from '../InputDescriptorFormat';
+import { pexFormatSchema } from '../PExFormat';
 
-describe('inputDescriptorFormatSchema', () => {
+describe('pexFormatSchema', () => {
   describe('should accept valid format definitions', () => {
     it('accepts format with single algorithm', () => {
-      const result = inputDescriptorFormatSchema.parse({
+      const result = pexFormatSchema.parse({
         mso_mdoc: {
           alg: ['ES256'],
         },
@@ -18,7 +18,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('accepts format with multiple algorithms', () => {
-      const result = inputDescriptorFormatSchema.parse({
+      const result = pexFormatSchema.parse({
         mso_mdoc: {
           alg: ['ES256', 'ES384', 'ES512'],
         },
@@ -31,7 +31,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('accepts format with ES256 only', () => {
-      const result = inputDescriptorFormatSchema.parse({
+      const result = pexFormatSchema.parse({
         mso_mdoc: {
           alg: ['ES256'],
         },
@@ -40,7 +40,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('accepts format with ES384 only', () => {
-      const result = inputDescriptorFormatSchema.parse({
+      const result = pexFormatSchema.parse({
         mso_mdoc: {
           alg: ['ES384'],
         },
@@ -49,7 +49,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('accepts format with ES512 only', () => {
-      const result = inputDescriptorFormatSchema.parse({
+      const result = pexFormatSchema.parse({
         mso_mdoc: {
           alg: ['ES512'],
         },
@@ -58,19 +58,37 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('accepts format with mixed algorithms', () => {
-      const result = inputDescriptorFormatSchema.parse({
+      const result = pexFormatSchema.parse({
         mso_mdoc: {
           alg: ['ES256', 'ES384'],
         },
       });
       expect(result.mso_mdoc.alg).toEqual(['ES256', 'ES384']);
     });
+
+    it('accepts format with EdDSA algorithm', () => {
+      const result = pexFormatSchema.parse({
+        mso_mdoc: {
+          alg: ['EdDSA'],
+        },
+      });
+      expect(result.mso_mdoc.alg).toEqual(['EdDSA']);
+    });
+
+    it('accepts format with any string algorithm (does not validate algorithm values)', () => {
+      const result = pexFormatSchema.parse({
+        mso_mdoc: {
+          alg: ['INVALID_ALG', 'ES256'],
+        },
+      });
+      expect(result.mso_mdoc.alg).toEqual(['INVALID_ALG', 'ES256']);
+    });
   });
 
   describe('should reject invalid format definitions', () => {
     it('rejects missing mso_mdoc', () => {
       try {
-        inputDescriptorFormatSchema.parse({});
+        pexFormatSchema.parse({});
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -82,7 +100,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc that is not an object (string)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: 'not-an-object',
         });
         throw new Error('Should have thrown');
@@ -98,7 +116,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc that is not an object (number)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: 123,
         });
         throw new Error('Should have thrown');
@@ -114,7 +132,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc that is not an object (null)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: null,
         });
         throw new Error('Should have thrown');
@@ -130,7 +148,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc that is not an object (boolean)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: true,
         });
         throw new Error('Should have thrown');
@@ -146,7 +164,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc that is not an object (array)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: [],
         });
         throw new Error('Should have thrown');
@@ -162,7 +180,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc with missing alg', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {},
         });
         throw new Error('Should have thrown');
@@ -176,7 +194,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg that is not an array (string)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: 'ES256',
           },
@@ -194,7 +212,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg that is not an array (number)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: 123,
           },
@@ -212,7 +230,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg that is not an array (null)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: null,
           },
@@ -230,7 +248,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg that is not an array (boolean)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: true,
           },
@@ -248,7 +266,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg that is not an array (object)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: { algorithm: 'ES256' },
           },
@@ -266,7 +284,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects empty mso_mdoc.alg array', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: [],
           },
@@ -284,7 +302,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg array with non-string element (number)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: [123],
           },
@@ -302,7 +320,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg array with non-string element (null)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: [null],
           },
@@ -320,7 +338,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg array with non-string element (boolean)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: [true],
           },
@@ -338,7 +356,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg array with non-string element (object)', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: [{ name: 'ES256' }],
           },
@@ -356,7 +374,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects mso_mdoc.alg array with mixed types', () => {
       try {
-        inputDescriptorFormatSchema.parse({
+        pexFormatSchema.parse({
           mso_mdoc: {
             alg: ['ES256', 123],
           },
@@ -374,7 +392,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects input that is not an object (string)', () => {
       try {
-        inputDescriptorFormatSchema.parse('not-an-object');
+        pexFormatSchema.parse('not-an-object');
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -388,7 +406,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects input that is not an object (array)', () => {
       try {
-        inputDescriptorFormatSchema.parse([]);
+        pexFormatSchema.parse([]);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -402,7 +420,7 @@ describe('inputDescriptorFormatSchema', () => {
 
     it('rejects input that is not an object (null)', () => {
       try {
-        inputDescriptorFormatSchema.parse(null);
+        pexFormatSchema.parse(null);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
@@ -417,7 +435,7 @@ describe('inputDescriptorFormatSchema', () => {
 
   describe('safeParse', () => {
     it('returns success for valid format', () => {
-      const result = inputDescriptorFormatSchema.safeParse({
+      const result = pexFormatSchema.safeParse({
         mso_mdoc: {
           alg: ['ES256', 'ES384'],
         },
@@ -433,7 +451,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('returns error for invalid format', () => {
-      const result = inputDescriptorFormatSchema.safeParse({
+      const result = pexFormatSchema.safeParse({
         mso_mdoc: {
           alg: [],
         },
@@ -448,7 +466,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('returns error for missing mso_mdoc', () => {
-      const result = inputDescriptorFormatSchema.safeParse({});
+      const result = pexFormatSchema.safeParse({});
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].path).toEqual(['mso_mdoc']);
@@ -457,7 +475,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('returns error for non-object mso_mdoc', () => {
-      const result = inputDescriptorFormatSchema.safeParse({
+      const result = pexFormatSchema.safeParse({
         mso_mdoc: 'not-an-object',
       });
       expect(result.success).toBe(false);
@@ -470,7 +488,7 @@ describe('inputDescriptorFormatSchema', () => {
     });
 
     it('returns error for missing alg', () => {
-      const result = inputDescriptorFormatSchema.safeParse({
+      const result = pexFormatSchema.safeParse({
         mso_mdoc: {},
       });
       expect(result.success).toBe(false);
