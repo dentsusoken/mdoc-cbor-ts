@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { pexFormatSchema } from '../PExFormat';
+import { pexFormatSchema } from '../PexFormat';
 
 describe('pexFormatSchema', () => {
   describe('should accept valid format definitions', () => {
