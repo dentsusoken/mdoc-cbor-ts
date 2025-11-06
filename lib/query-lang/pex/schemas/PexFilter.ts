@@ -39,8 +39,3 @@ export const pexFilterSchema: z.ZodTypeAny = z
     enum: z.array(z.unknown()).optional(),
   })
   .strict();
-
-/**
- * Type representing a filter for a PresentationDefinition field, as inferred from {@link pexFilterSchema}.
- */
-export type PExFilter = z.output<typeof pexFilterSchema>;

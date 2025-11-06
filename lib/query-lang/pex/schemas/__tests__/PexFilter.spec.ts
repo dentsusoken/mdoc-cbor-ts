@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { pexFilterSchema } from '../PExFilter';
+import { pexFilterSchema } from '../PexFilter';
 
-describe('PExFilterSchema', () => {
+describe('pexFilterSchema', () => {
   describe('should accept valid filters', () => {
     it('accepts empty object', () => {
       const result = pexFilterSchema.parse({});
