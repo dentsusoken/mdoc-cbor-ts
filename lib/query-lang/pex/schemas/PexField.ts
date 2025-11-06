@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { pexFilterSchema } from './PExFilter';
+import { pexFilterSchema } from './PexFilter';
 
 /**
- * Zod schema for a Presentation Exchange (PEx) field definition.
+ * Zod schema for a Presentation Exchange field definition.
  *
  * This schema defines a field (claim requirement) to be referenced in input descriptors.
  *
@@ -35,8 +35,3 @@ export const pexFieldSchema = z
     filter: pexFilterSchema.optional(),
   })
   .strict();
-
-/**
- * Type representing a Presentation Exchange field, as inferred from {@link pexFieldSchema}.
- */
-export type PExField = z.output<typeof pexFieldSchema>;
