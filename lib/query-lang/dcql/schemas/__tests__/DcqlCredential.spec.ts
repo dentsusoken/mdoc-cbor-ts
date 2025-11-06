@@ -84,21 +84,23 @@ describe('dcqlCredentialSchema', () => {
         meta: {
           doctype_value: 'org.iso.18013.5.1.mDL',
         },
-        claim_sets: [
-          ['org.iso.18013.5.1.mDL.given_name'],
-          [
-            'org.iso.18013.5.1.mDL.family_name',
-            'org.iso.18013.5.1.mDL.birth_date',
-          ],
+        claims: [
+          {
+            id: 'claim-1',
+            path: ['org.iso.18013.5.1', 'given_name'],
+          },
+          {
+            id: 'claim-2',
+            path: ['org.iso.18013.5.1', 'family_name'],
+          },
+          {
+            id: 'claim-3',
+            path: ['org.iso.18013.5.1', 'birth_date'],
+          },
         ],
+        claim_sets: [['claim-1'], ['claim-2', 'claim-3']],
       });
-      expect(result.claim_sets).toEqual([
-        ['org.iso.18013.5.1.mDL.given_name'],
-        [
-          'org.iso.18013.5.1.mDL.family_name',
-          'org.iso.18013.5.1.mDL.birth_date',
-        ],
-      ]);
+      expect(result.claim_sets).toEqual([['claim-1'], ['claim-2', 'claim-3']]);
     });
 
     it('accepts credential with both claims and claim_sets', () => {
@@ -110,17 +112,17 @@ describe('dcqlCredentialSchema', () => {
         },
         claims: [
           {
+            id: 'claim-1',
             path: ['org.iso.18013.5.1', 'given_name'],
           },
+          {
+            id: 'claim-2',
+            path: ['org.iso.18013.5.1', 'family_name'],
+          },
         ],
-        claim_sets: [
-          [
-            'org.iso.18013.5.1.mDL.given_name',
-            'org.iso.18013.5.1.mDL.family_name',
-          ],
-        ],
+        claim_sets: [['claim-1', 'claim-2']],
       });
-      expect(result.claims).toHaveLength(1);
+      expect(result.claims).toHaveLength(2);
       expect(result.claim_sets).toHaveLength(1);
     });
 
@@ -476,6 +478,94 @@ describe('dcqlCredentialSchema', () => {
         );
       }
     });
+
+    it('rejects claim_sets with non-existent claim ID', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [
+            {
+              id: 'claim-1',
+              path: ['org.iso.18013.5.1', 'given_name'],
+            },
+          ],
+          claim_sets: [['claim-1', 'non-existent-claim']],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 1]);
+        expect(zodError.issues[0].message).toBe(
+          'Claim ID "non-existent-claim" referenced in claim_sets[0][1] does not exist in claims array'
+        );
+      }
+    });
+
+    it('rejects claim_sets with multiple non-existent claim IDs', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [
+            {
+              id: 'claim-1',
+              path: ['org.iso.18013.5.1', 'given_name'],
+            },
+          ],
+          claim_sets: [
+            ['non-existent-1'],
+            ['non-existent-2', 'non-existent-3'],
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues.length).toBeGreaterThanOrEqual(2);
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 0]);
+        expect(zodError.issues[0].message).toBe(
+          'Claim ID "non-existent-1" referenced in claim_sets[0][0] does not exist in claims array'
+        );
+        expect(zodError.issues[1].path).toEqual(['claim_sets', 1, 0]);
+        expect(zodError.issues[1].message).toBe(
+          'Claim ID "non-existent-2" referenced in claim_sets[1][0] does not exist in claims array'
+        );
+      }
+    });
+
+    it('rejects claim_sets when claims array has no id fields', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [
+            {
+              path: ['org.iso.18013.5.1', 'given_name'],
+            },
+          ],
+          claim_sets: [['claim-1']],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 0]);
+        expect(zodError.issues[0].message).toBe(
+          'Claim ID "claim-1" referenced in claim_sets[0][0] does not exist in claims array'
+        );
+      }
+    });
   });
 
   describe('safeParse', () => {
@@ -528,13 +618,17 @@ describe('dcqlCredentialSchema', () => {
         meta: {
           doctype_value: 'org.iso.18013.5.1.mDL',
         },
-        claim_sets: [['org.iso.18013.5.1.mDL.given_name']],
+        claims: [
+          {
+            id: 'claim-1',
+            path: ['org.iso.18013.5.1', 'given_name'],
+          },
+        ],
+        claim_sets: [['claim-1']],
       });
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.claim_sets).toEqual([
-          ['org.iso.18013.5.1.mDL.given_name'],
-        ]);
+        expect(result.data.claim_sets).toEqual([['claim-1']]);
       }
     });
 
@@ -581,6 +675,22 @@ describe('dcqlCredentialSchema', () => {
             doctype_value: 'org.iso.18013.5.1.mDL',
           },
           claim_sets: [[]],
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlCredentialSchema.safeParse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [
+            {
+              id: 'claim-1',
+              path: ['org.iso.18013.5.1', 'given_name'],
+            },
+          ],
+          claim_sets: [['non-existent-claim']],
         }).success
       ).toBe(false);
     });
