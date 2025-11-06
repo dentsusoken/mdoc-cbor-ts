@@ -76,6 +76,64 @@ describe('dcqlCredentialSchema', () => {
       });
       expect(result.claims).toBeUndefined();
     });
+
+    it('accepts credential with claim_sets', () => {
+      const result = dcqlCredentialSchema.parse({
+        id: 'credential-5',
+        format: 'mso_mdoc',
+        meta: {
+          doctype_value: 'org.iso.18013.5.1.mDL',
+        },
+        claim_sets: [
+          ['org.iso.18013.5.1.mDL.given_name'],
+          [
+            'org.iso.18013.5.1.mDL.family_name',
+            'org.iso.18013.5.1.mDL.birth_date',
+          ],
+        ],
+      });
+      expect(result.claim_sets).toEqual([
+        ['org.iso.18013.5.1.mDL.given_name'],
+        [
+          'org.iso.18013.5.1.mDL.family_name',
+          'org.iso.18013.5.1.mDL.birth_date',
+        ],
+      ]);
+    });
+
+    it('accepts credential with both claims and claim_sets', () => {
+      const result = dcqlCredentialSchema.parse({
+        id: 'credential-6',
+        format: 'mso_mdoc',
+        meta: {
+          doctype_value: 'org.iso.18013.5.1.mDL',
+        },
+        claims: [
+          {
+            path: ['org.iso.18013.5.1', 'given_name'],
+          },
+        ],
+        claim_sets: [
+          [
+            'org.iso.18013.5.1.mDL.given_name',
+            'org.iso.18013.5.1.mDL.family_name',
+          ],
+        ],
+      });
+      expect(result.claims).toHaveLength(1);
+      expect(result.claim_sets).toHaveLength(1);
+    });
+
+    it('accepts undefined claim_sets', () => {
+      const result = dcqlCredentialSchema.parse({
+        id: 'credential-7',
+        format: 'mso_mdoc',
+        meta: {
+          doctype_value: 'org.iso.18013.5.1.mDL',
+        },
+      });
+      expect(result.claim_sets).toBeUndefined();
+    });
   });
 
   describe('should reject invalid DCQL credentials', () => {
@@ -313,6 +371,111 @@ describe('dcqlCredentialSchema', () => {
         );
       }
     });
+
+    it('rejects claim_sets that are not an array', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: 'not-an-array',
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets']);
+        expect(zodError.issues[0].message).toBe(
+          'Expected array, received string'
+        );
+      }
+    });
+
+    it('rejects empty claim_sets array', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets']);
+        expect(zodError.issues[0].message).toBe(
+          'Array must contain at least 1 element(s)'
+        );
+      }
+    });
+
+    it('rejects claim_sets array with non-array element', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: ['not-an-array'],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0]);
+        expect(zodError.issues[0].message).toBe(
+          'Expected array, received string'
+        );
+      }
+    });
+
+    it('rejects claim_sets array with empty string element', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [['']],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 0]);
+        expect(zodError.issues[0].message).toBe(
+          'String must contain at least 1 character(s)'
+        );
+      }
+    });
+
+    it('rejects claim_sets array with empty inner array', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [[]],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0]);
+        expect(zodError.issues[0].message).toBe(
+          'Array must contain at least 1 element(s)'
+        );
+      }
+    });
   });
 
   describe('safeParse', () => {
@@ -354,6 +517,70 @@ describe('dcqlCredentialSchema', () => {
             doctype_value: 'org.iso.18013.5.1.mDL',
           },
           claims: [],
+        }).success
+      ).toBe(false);
+    });
+
+    it('returns success for valid credentials with claim_sets', () => {
+      const result = dcqlCredentialSchema.safeParse({
+        id: 'test',
+        format: 'mso_mdoc',
+        meta: {
+          doctype_value: 'org.iso.18013.5.1.mDL',
+        },
+        claim_sets: [['org.iso.18013.5.1.mDL.given_name']],
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.claim_sets).toEqual([
+          ['org.iso.18013.5.1.mDL.given_name'],
+        ]);
+      }
+    });
+
+    it('returns success for valid credentials without claim_sets', () => {
+      const result = dcqlCredentialSchema.safeParse({
+        id: 'test',
+        format: 'mso_mdoc',
+        meta: {
+          doctype_value: 'org.iso.18013.5.1.mDL',
+        },
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.claim_sets).toBeUndefined();
+      }
+    });
+
+    it('returns error for invalid claim_sets', () => {
+      expect(
+        dcqlCredentialSchema.safeParse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [],
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlCredentialSchema.safeParse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [['']],
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlCredentialSchema.safeParse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [[]],
         }).success
       ).toBe(false);
     });
