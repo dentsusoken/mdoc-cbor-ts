@@ -7,6 +7,7 @@ import { createSignatureCurve } from 'noble-curves-extended';
 import type { RandomBytes } from 'noble-curves-extended';
 import { createTag0 } from '@/cbor/createTag0';
 import { calculateDigest } from '@/utils/calculateDigest';
+import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 
 const p256 = createSignatureCurve('P-256', randomBytes);
 
@@ -25,21 +26,18 @@ describe('buildMobileSecurityObjectaaaaa', () => {
 
   it('should create a mobile security object with all required fields', () => {
     const docType = 'org.iso.18013.5.1.mDL';
-    const nameSpacesElements = {
+    const nameSpacesMap = nameSpacesRecordToMap({
       'org.iso.18013.5.1': {
         given_name: 'JOHN',
       },
-    };
+    });
     const privateKey = p256.randomPrivateKey();
     const publicKey = p256.getPublicKey(privateKey);
     const deviceJwkPublicKey = p256.toJwkPublicKey(publicKey);
     const digestAlgorithm = 'SHA-256';
     const deviceKey = jwkToCosePublicKey(deviceJwkPublicKey);
 
-    const nameSpaces = buildIssuerNameSpaces(
-      nameSpacesElements,
-      mockRandomBytes
-    );
+    const nameSpaces = buildIssuerNameSpaces(nameSpacesMap, mockRandomBytes);
 
     const mso = buildMobileSecurityObject({
       docType,

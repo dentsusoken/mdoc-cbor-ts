@@ -14,16 +14,17 @@ import {
 } from '@/__tests__/config';
 import { JwkPrivateKey } from '@/jwk/types';
 import { certificatePemToDerBytes } from '@/x509/certificatePemToDerBytes';
+import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 
 describe('buildIssuerAuth', () => {
   it('should build IssuerAuth (COSE_Sign1) for given inputs', () => {
-    const nameSpaceElements = {
+    const nameSpacesMap = nameSpacesRecordToMap({
       'org.iso.18013.5.1': {
         given_name: 'JOHN',
         family_name: 'DOE',
         birth_date: createTag1004(new Date('1990-01-01')),
       },
-    };
+    });
 
     const signed = new Date('2024-01-01T00:00:00Z');
     const validFrom = new Date('2024-01-01T00:00:00Z');
@@ -33,7 +34,7 @@ describe('buildIssuerAuth', () => {
     // Prepare certificate chain from PEM
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
 
-    const nameSpaces = buildIssuerNameSpaces(nameSpaceElements, randomBytes);
+    const nameSpaces = buildIssuerNameSpaces(nameSpacesMap, randomBytes);
 
     const issuerAuth = buildIssuerAuth({
       docType: 'org.iso.18013.5.1.mDL',
@@ -69,20 +70,20 @@ describe('buildIssuerAuth', () => {
   });
 
   it('should preserve structure after CBOR encode/decode and schema validation', () => {
-    const nameSpaceElements = {
+    const nameSpacesMap = nameSpacesRecordToMap({
       'org.iso.18013.5.1': {
         given_name: 'ALICE',
         family_name: 'SMITH',
         birth_date: createTag1004(new Date('1985-05-15')),
       },
-    };
+    });
 
     const signed = new Date('2024-01-01T00:00:00Z');
     const validFrom = new Date('2024-01-01T00:00:00Z');
     const validUntil = new Date('2024-01-02T00:00:00Z');
 
     const x5chain = certificatePemToDerBytes(ISSUER_CERTIFICATE);
-    const nameSpaces = buildIssuerNameSpaces(nameSpaceElements, randomBytes);
+    const nameSpaces = buildIssuerNameSpaces(nameSpacesMap, randomBytes);
 
     const issuerAuth = buildIssuerAuth({
       docType: 'org.iso.18013.5.1.mDL',

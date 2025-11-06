@@ -8,7 +8,7 @@ import {
   ISSUER_CERTIFICATE,
   ISSUER_PRIVATE_KEY_JWK,
 } from '@/__tests__/config';
-import { mdocSchema } from '@/schemas/mdoc/MDoc';
+import { mdocSchema } from '@/schemas/mdoc/Mdoc';
 
 describe('verifyIssuerAuth auth0/mdl compatibility', () => {
   it('should verify auth0/mdl IssuerAuth with our implementation', async () => {

@@ -4,6 +4,7 @@ import { encodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
 import { encodeDeviceAuthentication } from '../encodeDeviceAuthentication';
 import { calculateDeviceAutenticationBytes } from '@auth0/mdl/lib/mdoc/utils';
+import { nameSpacesRecordToMap } from '../nameSpacesRecordToMap';
 
 describe('encodeDeviceAuthentication', () => {
   describe('compatibility with auth0/mdl calculateDeviceAutenticationBytes', () => {
@@ -28,13 +29,9 @@ describe('encodeDeviceAuthentication', () => {
       const ours = encodeDeviceAuthentication({
         sessionTranscript: sessionTranscriptBytes,
         docType,
-        nameSpaces,
+        nameSpaces: nameSpacesRecordToMap(nameSpaces),
       });
       expect(Array.from(ours)).toEqual(Array.from(auth0));
-      // const outer = decodeCbor(ours) as Tag;
-      // const actualInner = outer.value as Uint8Array;
-
-      // expect(Array.from(actualInner)).toEqual(Array.from(auth0));
     });
 
     it('produces identical inner bytes for sessionTranscript as decoded value', () => {
@@ -51,7 +48,7 @@ describe('encodeDeviceAuthentication', () => {
       const ours = encodeDeviceAuthentication({
         sessionTranscript: sessionInner,
         docType,
-        nameSpaces,
+        nameSpaces: nameSpacesRecordToMap(nameSpaces),
       });
 
       expect(Array.from(ours)).toEqual(Array.from(auth0));

@@ -15,6 +15,7 @@ import {
 } from '@/__tests__/config';
 import { calculateOid4vpSessionTranscriptBytes } from '@/mdoc/calculateOid4vpSessionTranscriptBytes';
 import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
+import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 
 const { ...publicKeyJWK } = DEVICE_JWK as jose.JWK;
 
@@ -95,9 +96,9 @@ describe('issuing a device response', () => {
     const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript: sessionTranscriptBytes,
       docType: 'org.iso.18013.5.1.mDL',
-      nameSpaces: {
+      nameSpaces: nameSpacesRecordToMap({
         'com.foobar-device': { test: 1234 },
-      },
+      }),
     });
 
     beforeAll(async () => {
