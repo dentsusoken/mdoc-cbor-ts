@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { mdocSchema } from '../MDoc';
+import { mdocSchema } from '../Mdoc';
 import { documentSchema } from '../Document';
 import { documentErrorSchema } from '../DocumentError';
 import { issuerSignedSchema } from '../IssuerSigned';
@@ -136,7 +136,7 @@ describe('MDoc', (): void => {
   describe('should throw error for invalid type inputs', (): void => {
     const expectedMessage = (v: unknown): string =>
       containerInvalidTypeMessage({
-        target: 'MDoc',
+        target: 'Mdoc',
         expected: 'Map',
         received: getTypeName(v),
       });
@@ -174,7 +174,7 @@ describe('MDoc', (): void => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
-          strictMapMissingKeysMessage('MDoc', ['version', 'status'])
+          strictMapMissingKeysMessage('Mdoc', ['version', 'status'])
         );
       }
     });
@@ -193,7 +193,7 @@ describe('MDoc', (): void => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
           containerInvalidValueMessage({
-            target: 'MDoc',
+            target: 'Mdoc',
             path: ['documents'],
             originalMessage: containerEmptyMessage('documents'),
           })
@@ -215,7 +215,7 @@ describe('MDoc', (): void => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
           containerInvalidValueMessage({
-            target: 'MDoc',
+            target: 'Mdoc',
             path: ['documentErrors'],
             originalMessage: containerEmptyMessage('documentErrors'),
           })
@@ -240,7 +240,7 @@ describe('MDoc', (): void => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].message).toBe(
           containerInvalidValueMessage({
-            target: 'MDoc',
+            target: 'Mdoc',
             path: ['version'],
             originalMessage: 'Invalid literal value, expected "1.0"',
           })
@@ -271,7 +271,7 @@ describe('MDoc', (): void => {
           originalMessage: expectedInnerMost,
         });
         const expected = containerInvalidValueMessage({
-          target: 'MDoc',
+          target: 'Mdoc',
           path: ['documents', 0],
           originalMessage: expectedInner,
         });
@@ -302,7 +302,7 @@ describe('MDoc', (): void => {
           originalMessage: expectedInnerMost,
         });
         const expected = containerInvalidValueMessage({
-          target: 'MDoc',
+          target: 'Mdoc',
           path: ['documentErrors', 0],
           originalMessage: expectedInner,
         });
@@ -329,7 +329,7 @@ describe('MDoc', (): void => {
           ? 'SHOULD_NOT_PASS'
           : enumResult.error.issues[0].message;
         const expected = containerInvalidValueMessage({
-          target: 'MDoc',
+          target: 'Mdoc',
           path: ['status'],
           originalMessage: enumMessage,
         });

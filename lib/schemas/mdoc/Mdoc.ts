@@ -6,7 +6,7 @@ import { documentErrorSchema } from './DocumentError';
 import { MdocStatus } from '@/mdoc/types';
 
 /**
- * Entries definition for the MDoc schema.
+ * Entries definition for the mdoc schema.
  * @description
  * Specifies the fields and validation schemas for the MDoc (Mobile Document) response structure as used in the mdoc protocol.
  *
@@ -73,10 +73,10 @@ export const mdocEntries = [
 ] as const;
 
 /**
- * Zod schema for the MDoc structure.
+ * Zod schema for the mdoc structure.
  *
  * @description
- * This schema validates the core Mobile Document (MDoc) response envelope, enforcing its expected shape:
+ * This schema validates the core Mobile Document response envelope, enforcing its expected shape:
  * - version: Must be the literal string '1.0'.
  * - documents (optional): An array of validated Document structures. If present, the array must be non-empty.
  * - documentErrors (optional): An array of validated DocumentError structures. If present, the array must be non-empty.
@@ -131,12 +131,12 @@ export const mdocEntries = [
  * ```
  */
 export const mdocSchema = createStrictMapSchema({
-  target: 'MDoc',
+  target: 'Mdoc',
   entries: mdocEntries,
 });
 
 /**
- * Type representing an MDoc response structure.
+ * Type representing an mdoc response structure.
  * Contains version, documents or documentErrors, and status information.
  */
-export type MDoc = z.output<typeof mdocSchema>;
+export type Mdoc = z.output<typeof mdocSchema>;
