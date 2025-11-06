@@ -5,7 +5,7 @@ import { Tag } from 'cbor-x';
 /**
  * Enriched view of a standard IssuerSignedItem (non age_over_*).
  */
-interface EnrichedIssuerSignedItem {
+export interface EnrichedIssuerSignedItem {
   elementIdentifier: string;
   elementValue: unknown;
   tag: Tag;
@@ -14,7 +14,7 @@ interface EnrichedIssuerSignedItem {
 /**
  * Enriched view for age_over_* entries where the value is true/false.
  */
-interface EnrichedAgeOverIssuerSignedItem {
+export interface EnrichedAgeOverIssuerSignedItem {
   nn: number;
   tag: Tag;
 }
@@ -40,17 +40,26 @@ interface EnrichIssuerSignedItemsResult {
 }
 
 /**
- * Helper comparator for sorting an array of EnrichedAgeOverIssuerSignedItem objects
- * in ascending order according to their nn property.
- *
- * @param a - The first EnrichedAgeOverIssuerSignedItem to compare.
- * @param b - The second EnrichedAgeOverIssuerSignedItem to compare.
- * @returns A negative number if a.nn < b.nn, positive if a.nn > b.nn, or 0 if equal.
+ * Sorts EnrichedAgeOverIssuerSignedItem objects in ascending order by their NN value.
+ * @param a - First EnrichedAgeOverIssuerSignedItem
+ * @param b - Second EnrichedAgeOverIssuerSignedItem
+ * @returns Negative if a.nn < b.nn, positive if a.nn > b.nn, zero if equal
  */
-const nnSort = (
+const nnAscendingSort = (
   a: EnrichedAgeOverIssuerSignedItem,
   b: EnrichedAgeOverIssuerSignedItem
 ): number => a.nn - b.nn;
+
+/**
+ * Sorts EnrichedAgeOverIssuerSignedItem objects in descending order by their NN value.
+ * @param a - First EnrichedAgeOverIssuerSignedItem
+ * @param b - Second EnrichedAgeOverIssuerSignedItem
+ * @returns Negative if a.nn > b.nn, positive if a.nn < b.nn, zero if equal
+ */
+const nnDescendingSort = (
+  a: EnrichedAgeOverIssuerSignedItem,
+  b: EnrichedAgeOverIssuerSignedItem
+): number => b.nn - a.nn;
 
 /**
  * Enrich IssuerSignedItem Tag(24) values by separating normal items and age_over_* flags.
@@ -85,7 +94,7 @@ export const enrichIssuerSignedItems = (
 
   return {
     normalItems,
-    ageOverTrueItems: ageOverTrueItems.sort(nnSort),
-    ageOverFalseItems: ageOverFalseItems.sort(nnSort),
+    ageOverTrueItems: ageOverTrueItems.sort(nnAscendingSort),
+    ageOverFalseItems: ageOverFalseItems.sort(nnDescendingSort),
   };
 };

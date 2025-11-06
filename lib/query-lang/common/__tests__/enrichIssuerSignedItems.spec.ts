@@ -22,7 +22,7 @@ const makeItemTag = (
   );
 
 describe('enrichIssuerSignedItems', () => {
-  it('groups normal items and age_over flags, preserving order and tag identity', () => {
+  it('groups normal items (preserving order) and age_over flags (sorted by NN: true ascending, false descending)', () => {
     const tag1 = makeItemTag(1, 'given_name', 'Alice');
     const tag2 = makeItemTag(2, 'age_over_18', true);
     const tag3 = makeItemTag(3, 'age_over_21', false);
@@ -49,9 +49,10 @@ describe('enrichIssuerSignedItems', () => {
       { nn: 18, tag: tag2 },
     ]);
 
+    // ageOverFalseItems should be sorted in descending order (23, 21)
     expect(result.ageOverFalseItems).toEqual([
-      { nn: 21, tag: tag3 },
       { nn: 23, tag: tag5 },
+      { nn: 21, tag: tag3 },
     ]);
   });
 
