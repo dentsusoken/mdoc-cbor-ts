@@ -62,20 +62,24 @@ describe('dcqlQuerySchema', () => {
           },
         ],
         credential_sets: [
-          [
-            'org.iso.18013.5.1.mDL.given_name',
-            'org.iso.18013.5.1.mDL.family_name',
-          ],
-          ['org.iso.18013.5.1.mDL.birth_date'],
+          {
+            options: [['credential-1', 'credential-2']],
+          },
+          {
+            options: [['credential-3']],
+          },
         ],
       });
       expect(result.credentials).toHaveLength(1);
       expect(result.credential_sets).toEqual([
-        [
-          'org.iso.18013.5.1.mDL.given_name',
-          'org.iso.18013.5.1.mDL.family_name',
-        ],
-        ['org.iso.18013.5.1.mDL.birth_date'],
+        {
+          options: [['credential-1', 'credential-2']],
+          required: true,
+        },
+        {
+          options: [['credential-3']],
+          required: true,
+        },
       ]);
     });
 
@@ -90,11 +94,40 @@ describe('dcqlQuerySchema', () => {
             },
           },
         ],
-        credential_sets: [['org.iso.18013.5.1.mDL.given_name']],
+        credential_sets: [
+          {
+            options: [['credential-1']],
+          },
+        ],
       });
       expect(result.credential_sets).toEqual([
-        ['org.iso.18013.5.1.mDL.given_name'],
+        {
+          options: [['credential-1']],
+          required: true,
+        },
       ]);
+    });
+
+    it('accepts query with credential_sets with required false', () => {
+      const result = dcqlQuerySchema.parse({
+        credentials: [
+          {
+            id: 'credential-1',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.1.mDL',
+            },
+          },
+        ],
+        credential_sets: [
+          {
+            options: [['credential-1']],
+            required: false,
+          },
+        ],
+      });
+      expect(result.credential_sets).toBeDefined();
+      expect(result.credential_sets![0].required).toBe(false);
     });
 
     it('accepts query without credential_sets (optional field)', () => {
@@ -280,7 +313,7 @@ describe('dcqlQuerySchema', () => {
       }
     });
 
-    it('rejects invalid credential_sets (non-array element)', () => {
+    it('rejects invalid credential_sets (non-object element)', () => {
       try {
         dcqlQuerySchema.parse({
           credentials: [
@@ -292,7 +325,7 @@ describe('dcqlQuerySchema', () => {
               },
             },
           ],
-          credential_sets: ['not-an-array'],
+          credential_sets: ['not-an-object'],
         });
         throw new Error('Should have thrown');
       } catch (error) {
@@ -300,12 +333,12 @@ describe('dcqlQuerySchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual(['credential_sets', 0]);
         expect(zodError.issues[0].message).toBe(
-          'Expected array, received string'
+          'Expected object, received string'
         );
       }
     });
 
-    it('rejects invalid credential_sets (empty string element)', () => {
+    it('rejects invalid credential_sets (missing options)', () => {
       try {
         dcqlQuerySchema.parse({
           credentials: [
@@ -317,20 +350,22 @@ describe('dcqlQuerySchema', () => {
               },
             },
           ],
-          credential_sets: [['']],
+          credential_sets: [{}],
         });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual(['credential_sets', 0, 0]);
-        expect(zodError.issues[0].message).toBe(
-          'String must contain at least 1 character(s)'
-        );
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'options',
+        ]);
+        expect(zodError.issues[0].message).toBe('Required');
       }
     });
 
-    it('rejects invalid credential_sets (empty inner array)', () => {
+    it('rejects invalid credential_sets (empty options array)', () => {
       try {
         dcqlQuerySchema.parse({
           credentials: [
@@ -342,20 +377,28 @@ describe('dcqlQuerySchema', () => {
               },
             },
           ],
-          credential_sets: [[]],
+          credential_sets: [
+            {
+              options: [],
+            },
+          ],
         });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual(['credential_sets', 0]);
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'options',
+        ]);
         expect(zodError.issues[0].message).toBe(
           'Array must contain at least 1 element(s)'
         );
       }
     });
 
-    it('rejects invalid credential_sets (non-string element)', () => {
+    it('rejects invalid credential_sets (empty string element in options)', () => {
       try {
         dcqlQuerySchema.parse({
           credentials: [
@@ -367,15 +410,128 @@ describe('dcqlQuerySchema', () => {
               },
             },
           ],
-          credential_sets: [[123]],
+          credential_sets: [
+            {
+              options: [['']],
+            },
+          ],
         });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual(['credential_sets', 0, 0]);
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'options',
+          0,
+          0,
+        ]);
+        expect(zodError.issues[0].message).toBe(
+          'String must contain at least 1 character(s)'
+        );
+      }
+    });
+
+    it('rejects invalid credential_sets (empty inner array in options)', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'credential-1',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+          credential_sets: [
+            {
+              options: [[]],
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'options',
+          0,
+        ]);
+        expect(zodError.issues[0].message).toBe(
+          'Array must contain at least 1 element(s)'
+        );
+      }
+    });
+
+    it('rejects invalid credential_sets (non-string element in options)', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'credential-1',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+          credential_sets: [
+            {
+              options: [[123]],
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'options',
+          0,
+          0,
+        ]);
         expect(zodError.issues[0].message).toBe(
           'Expected string, received number'
+        );
+      }
+    });
+
+    it('rejects invalid credential_sets (required is not boolean)', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'credential-1',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+          credential_sets: [
+            {
+              options: [['credential-1']],
+              required: 'true',
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'required',
+        ]);
+        expect(zodError.issues[0].message).toBe(
+          'Expected boolean, received string'
         );
       }
     });
@@ -410,21 +566,25 @@ describe('dcqlQuerySchema', () => {
           },
         ],
         credential_sets: [
-          [
-            'org.iso.18013.5.1.mDL.given_name',
-            'org.iso.18013.5.1.mDL.family_name',
-          ],
-          ['org.iso.18013.5.1.mDL.birth_date'],
+          {
+            options: [['credential-1', 'credential-2']],
+          },
+          {
+            options: [['credential-3']],
+          },
         ],
       });
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.credential_sets).toEqual([
-          [
-            'org.iso.18013.5.1.mDL.given_name',
-            'org.iso.18013.5.1.mDL.family_name',
-          ],
-          ['org.iso.18013.5.1.mDL.birth_date'],
+          {
+            options: [['credential-1', 'credential-2']],
+            required: true,
+          },
+          {
+            options: [['credential-3']],
+            required: true,
+          },
         ]);
       }
     });
@@ -487,7 +647,11 @@ describe('dcqlQuerySchema', () => {
               },
             },
           ],
-          credential_sets: [['']],
+          credential_sets: [
+            {
+              options: [['']],
+            },
+          ],
         }).success
       ).toBe(false);
       expect(
@@ -501,7 +665,11 @@ describe('dcqlQuerySchema', () => {
               },
             },
           ],
-          credential_sets: [[]],
+          credential_sets: [
+            {
+              options: [[]],
+            },
+          ],
         }).success
       ).toBe(false);
       expect(
@@ -515,7 +683,29 @@ describe('dcqlQuerySchema', () => {
               },
             },
           ],
-          credential_sets: [[123]],
+          credential_sets: [
+            {
+              options: [[123]],
+            },
+          ],
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlQuerySchema.safeParse({
+          credentials: [
+            {
+              id: 'test',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+          credential_sets: [
+            {
+              options: [],
+            },
+          ],
         }).success
       ).toBe(false);
     });

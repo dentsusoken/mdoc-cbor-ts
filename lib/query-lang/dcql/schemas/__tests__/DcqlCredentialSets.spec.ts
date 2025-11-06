@@ -2,58 +2,90 @@ import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
 import { dcqlCredentialSetSchema } from '../DcqlCredentialSet';
 
-describe('dcqlCredentialSetsSchema', () => {
+describe('dcqlCredentialSetSchema', () => {
   describe('should accept valid credential sets', () => {
-    it('accepts single credential set with one index', () => {
-      const result = dcqlCredentialSetSchema.parse([[0]]);
-      expect(result).toEqual([[0]]);
+    it('accepts credential set with single option containing one credential ID', () => {
+      const result = dcqlCredentialSetSchema.parse({
+        options: [['credential-1']],
+      });
+      expect(result).toEqual({
+        options: [['credential-1']],
+        required: true,
+      });
     });
 
-    it('accepts single credential set with multiple indices', () => {
-      const result = dcqlCredentialSetSchema.parse([[0, 1, 2]]);
-      expect(result).toEqual([[0, 1, 2]]);
+    it('accepts credential set with single option containing multiple credential IDs', () => {
+      const result = dcqlCredentialSetSchema.parse({
+        options: [['credential-1', 'credential-2', 'credential-3']],
+      });
+      expect(result).toEqual({
+        options: [['credential-1', 'credential-2', 'credential-3']],
+        required: true,
+      });
     });
 
-    it('accepts multiple credential sets', () => {
-      const result = dcqlCredentialSetSchema.parse([[0, 1], [2]]);
-      expect(result).toEqual([[0, 1], [2]]);
+    it('accepts credential set with multiple options', () => {
+      const result = dcqlCredentialSetSchema.parse({
+        options: [['credential-1', 'credential-2'], ['credential-3']],
+      });
+      expect(result).toEqual({
+        options: [['credential-1', 'credential-2'], ['credential-3']],
+        required: true,
+      });
     });
 
-    it('accepts multiple credential sets with various sizes', () => {
-      const result = dcqlCredentialSetSchema.parse([[0], [1, 2, 3], [4, 5]]);
-      expect(result).toEqual([[0], [1, 2, 3], [4, 5]]);
+    it('accepts credential set with multiple options of various sizes', () => {
+      const result = dcqlCredentialSetSchema.parse({
+        options: [
+          ['credential-1'],
+          ['credential-2', 'credential-3', 'credential-4'],
+          ['credential-5', 'credential-6'],
+        ],
+      });
+      expect(result.options).toHaveLength(3);
+      expect(result.options[0]).toEqual(['credential-1']);
+      expect(result.options[2]).toEqual(['credential-5', 'credential-6']);
     });
 
-    it('accepts credential sets with zero', () => {
-      const result = dcqlCredentialSetSchema.parse([[0, 1, 0]]);
-      expect(result).toEqual([[0, 1, 0]]);
+    it('accepts credential set with required set to false', () => {
+      const result = dcqlCredentialSetSchema.parse({
+        options: [['credential-1']],
+        required: false,
+      });
+      expect(result.required).toBe(false);
     });
 
-    it('accepts credential sets with large numbers', () => {
-      const result = dcqlCredentialSetSchema.parse([[100, 200], [300]]);
-      expect(result).toEqual([[100, 200], [300]]);
-    });
-
-    it('accepts empty credential set arrays (empty inner arrays are allowed)', () => {
-      const result = dcqlCredentialSetSchema.parse([[]]);
-      expect(result).toEqual([[]]);
-    });
-
-    it('accepts credential sets with empty and non-empty arrays', () => {
-      const result = dcqlCredentialSetSchema.parse([[], [0, 1]]);
-      expect(result).toEqual([[], [0, 1]]);
+    it('defaults required to true when omitted', () => {
+      const result = dcqlCredentialSetSchema.parse({
+        options: [['credential-1']],
+      });
+      expect(result.required).toBe(true);
     });
   });
 
   describe('should reject invalid credential sets', () => {
-    it('rejects empty array', () => {
+    it('rejects missing options', () => {
       try {
-        dcqlCredentialSetSchema.parse([]);
+        dcqlCredentialSetSchema.parse({});
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([]);
+        expect(zodError.issues[0].path).toEqual(['options']);
+        expect(zodError.issues[0].message).toBe('Required');
+      }
+    });
+
+    it('rejects empty options array', () => {
+      try {
+        dcqlCredentialSetSchema.parse({
+          options: [],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['options']);
         expect(zodError.issues[0].message).toBe(
           'Array must contain at least 1 element(s)'
         );
@@ -62,14 +94,14 @@ describe('dcqlCredentialSetsSchema', () => {
 
     it('rejects non-array input (string)', () => {
       try {
-        dcqlCredentialSetSchema.parse('not-an-array');
+        dcqlCredentialSetSchema.parse('not-an-object');
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual([]);
         expect(zodError.issues[0].message).toBe(
-          'Expected array, received string'
+          'Expected object, received string'
         );
       }
     });
@@ -83,7 +115,7 @@ describe('dcqlCredentialSetsSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual([]);
         expect(zodError.issues[0].message).toBe(
-          'Expected array, received number'
+          'Expected object, received number'
         );
       }
     });
@@ -97,7 +129,7 @@ describe('dcqlCredentialSetsSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual([]);
         expect(zodError.issues[0].message).toBe(
-          'Expected array, received null'
+          'Expected object, received null'
         );
       }
     });
@@ -111,175 +143,202 @@ describe('dcqlCredentialSetsSchema', () => {
         const zodError = error as z.ZodError;
         expect(zodError.issues[0].path).toEqual([]);
         expect(zodError.issues[0].message).toBe(
-          'Expected array, received boolean'
+          'Expected object, received boolean'
         );
       }
     });
 
-    it('rejects non-array input (object)', () => {
+    it('rejects options that are not an array', () => {
       try {
-        dcqlCredentialSetSchema.parse({});
+        dcqlCredentialSetSchema.parse({
+          options: 'not-an-array',
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([]);
-        expect(zodError.issues[0].message).toBe(
-          'Expected array, received object'
-        );
-      }
-    });
-
-    it('rejects array with non-array element (string)', () => {
-      try {
-        dcqlCredentialSetSchema.parse(['not-an-array']);
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-        const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0]);
+        expect(zodError.issues[0].path).toEqual(['options']);
         expect(zodError.issues[0].message).toBe(
           'Expected array, received string'
         );
       }
     });
 
-    it('rejects array with non-array element (number)', () => {
+    it('rejects options array with non-array element (string)', () => {
       try {
-        dcqlCredentialSetSchema.parse([123]);
+        dcqlCredentialSetSchema.parse({
+          options: ['not-an-array'],
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0]);
+        expect(zodError.issues[0].path).toEqual(['options', 0]);
+        expect(zodError.issues[0].message).toBe(
+          'Expected array, received string'
+        );
+      }
+    });
+
+    it('rejects options array with non-array element (number)', () => {
+      try {
+        dcqlCredentialSetSchema.parse({
+          options: [123],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['options', 0]);
         expect(zodError.issues[0].message).toBe(
           'Expected array, received number'
         );
       }
     });
 
-    it('rejects array with non-array element (null)', () => {
+    it('rejects options array with empty inner array', () => {
       try {
-        dcqlCredentialSetSchema.parse([null]);
+        dcqlCredentialSetSchema.parse({
+          options: [[]],
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0]);
+        expect(zodError.issues[0].path).toEqual(['options', 0]);
         expect(zodError.issues[0].message).toBe(
-          'Expected array, received null'
+          'Array must contain at least 1 element(s)'
         );
       }
     });
 
-    it('rejects array with non-array element (object)', () => {
+    it('rejects options array with empty string element', () => {
       try {
-        dcqlCredentialSetSchema.parse([{}]);
+        dcqlCredentialSetSchema.parse({
+          options: [['']],
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0]);
+        expect(zodError.issues[0].path).toEqual(['options', 0, 0]);
         expect(zodError.issues[0].message).toBe(
-          'Expected array, received object'
+          'String must contain at least 1 character(s)'
         );
       }
     });
 
-    it('rejects credential set with non-number element (string)', () => {
+    it('rejects options array with non-string element (number)', () => {
       try {
-        dcqlCredentialSetSchema.parse([['not-a-number']]);
+        dcqlCredentialSetSchema.parse({
+          options: [[123]],
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0, 0]);
+        expect(zodError.issues[0].path).toEqual(['options', 0, 0]);
         expect(zodError.issues[0].message).toBe(
-          'Expected number, received string'
+          'Expected string, received number'
         );
       }
     });
 
-    it('rejects credential set with non-number element (null)', () => {
+    it('rejects options array with non-string element (null)', () => {
       try {
-        dcqlCredentialSetSchema.parse([[null]]);
+        dcqlCredentialSetSchema.parse({
+          options: [[null]],
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0, 0]);
+        expect(zodError.issues[0].path).toEqual(['options', 0, 0]);
         expect(zodError.issues[0].message).toBe(
-          'Expected number, received null'
+          'Expected string, received null'
         );
       }
     });
 
-    it('rejects credential set with non-number element (boolean)', () => {
+    it('rejects options array with non-string element (boolean)', () => {
       try {
-        dcqlCredentialSetSchema.parse([[true]]);
+        dcqlCredentialSetSchema.parse({
+          options: [[true]],
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0, 0]);
+        expect(zodError.issues[0].path).toEqual(['options', 0, 0]);
         expect(zodError.issues[0].message).toBe(
-          'Expected number, received boolean'
+          'Expected string, received boolean'
         );
       }
     });
 
-    it('rejects credential set with non-integer number (float)', () => {
+    it('rejects options array with mixed valid and invalid elements', () => {
       try {
-        dcqlCredentialSetSchema.parse([[1.5]]);
+        dcqlCredentialSetSchema.parse({
+          options: [['credential-1', '']],
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0, 0]);
+        expect(zodError.issues[0].path).toEqual(['options', 0, 1]);
         expect(zodError.issues[0].message).toBe(
-          'Expected integer, received float'
+          'String must contain at least 1 character(s)'
         );
       }
     });
 
-    it('rejects credential set with negative number', () => {
+    it('rejects required that is not a boolean (string)', () => {
       try {
-        dcqlCredentialSetSchema.parse([[-1]]);
+        dcqlCredentialSetSchema.parse({
+          options: [['credential-1']],
+          required: 'true',
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0, 0]);
+        expect(zodError.issues[0].path).toEqual(['required']);
         expect(zodError.issues[0].message).toBe(
-          'Number must be greater than or equal to 0'
+          'Expected boolean, received string'
         );
       }
     });
 
-    it('rejects credential set with mixed valid and invalid elements', () => {
+    it('rejects required that is not a boolean (number)', () => {
       try {
-        dcqlCredentialSetSchema.parse([[0, -1, 2]]);
+        dcqlCredentialSetSchema.parse({
+          options: [['credential-1']],
+          required: 1,
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([0, 1]);
+        expect(zodError.issues[0].path).toEqual(['required']);
         expect(zodError.issues[0].message).toBe(
-          'Number must be greater than or equal to 0'
+          'Expected boolean, received number'
         );
       }
     });
 
-    it('rejects multiple credential sets with one invalid', () => {
+    it('rejects required that is not a boolean (null)', () => {
       try {
-        dcqlCredentialSetSchema.parse([[0, 1], [-1]]);
+        dcqlCredentialSetSchema.parse({
+          options: [['credential-1']],
+          required: null,
+        });
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues[0].path).toEqual([1, 0]);
+        expect(zodError.issues[0].path).toEqual(['required']);
         expect(zodError.issues[0].message).toBe(
-          'Number must be greater than or equal to 0'
+          'Expected boolean, received null'
         );
       }
     });
@@ -287,72 +346,110 @@ describe('dcqlCredentialSetsSchema', () => {
 
   describe('safeParse', () => {
     it('returns success for valid credential sets', () => {
-      const result = dcqlCredentialSetSchema.safeParse([[0, 1], [2]]);
+      const result = dcqlCredentialSetSchema.safeParse({
+        options: [['credential-1', 'credential-2'], ['credential-3']],
+      });
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual([[0, 1], [2]]);
+        expect(result.data).toEqual({
+          options: [['credential-1', 'credential-2'], ['credential-3']],
+          required: true,
+        });
       }
     });
 
     it('returns success for single credential set', () => {
-      const result = dcqlCredentialSetSchema.safeParse([[0, 1, 2]]);
+      const result = dcqlCredentialSetSchema.safeParse({
+        options: [['credential-1', 'credential-2', 'credential-3']],
+      });
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual([[0, 1, 2]]);
+        expect(result.data.options).toEqual([
+          ['credential-1', 'credential-2', 'credential-3'],
+        ]);
+        expect(result.data.required).toBe(true);
       }
     });
 
-    it('returns error for empty array', () => {
-      const result = dcqlCredentialSetSchema.safeParse([]);
+    it('returns success for credential set with required false', () => {
+      const result = dcqlCredentialSetSchema.safeParse({
+        options: [['credential-1']],
+        required: false,
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.required).toBe(false);
+      }
+    });
+
+    it('returns error for empty options array', () => {
+      const result = dcqlCredentialSetSchema.safeParse({
+        options: [],
+      });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual([]);
+        expect(result.error.issues[0].path).toEqual(['options']);
         expect(result.error.issues[0].message).toBe(
           'Array must contain at least 1 element(s)'
         );
       }
     });
 
-    it('returns error for invalid element type', () => {
-      const result = dcqlCredentialSetSchema.safeParse(['not-an-array']);
+    it('returns error for missing options', () => {
+      const result = dcqlCredentialSetSchema.safeParse({});
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual([0]);
+        expect(result.error.issues[0].path).toEqual(['options']);
+        expect(result.error.issues[0].message).toBe('Required');
+      }
+    });
+
+    it('returns error for empty string element', () => {
+      const result = dcqlCredentialSetSchema.safeParse({
+        options: [['']],
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].path).toEqual(['options', 0, 0]);
         expect(result.error.issues[0].message).toBe(
-          'Expected array, received string'
+          'String must contain at least 1 character(s)'
         );
       }
     });
 
-    it('returns error for negative number', () => {
-      const result = dcqlCredentialSetSchema.safeParse([[-1]]);
+    it('returns error for non-string element', () => {
+      const result = dcqlCredentialSetSchema.safeParse({
+        options: [[123]],
+      });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual([0, 0]);
+        expect(result.error.issues[0].path).toEqual(['options', 0, 0]);
         expect(result.error.issues[0].message).toBe(
-          'Number must be greater than or equal to 0'
+          'Expected string, received number'
         );
       }
     });
 
-    it('returns error for non-integer number', () => {
-      const result = dcqlCredentialSetSchema.safeParse([[1.5]]);
+    it('returns error for empty inner array', () => {
+      const result = dcqlCredentialSetSchema.safeParse({
+        options: [[]],
+      });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].path).toEqual([0, 0]);
+        expect(result.error.issues[0].path).toEqual(['options', 0]);
         expect(result.error.issues[0].message).toBe(
-          'Expected integer, received float'
+          'Array must contain at least 1 element(s)'
         );
       }
     });
 
-    it('returns error for non-array input', () => {
-      const result = dcqlCredentialSetSchema.safeParse('not-an-array');
+    it('returns error for non-object input', () => {
+      const result = dcqlCredentialSetSchema.safeParse('not-an-object');
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].path).toEqual([]);
         expect(result.error.issues[0].message).toBe(
-          'Expected array, received string'
+          'Expected object, received string'
         );
       }
     });
