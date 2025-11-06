@@ -60,6 +60,20 @@ describe('dcqlQuerySchema', () => {
               doctype_value: 'org.iso.18013.5.1.mDL',
             },
           },
+          {
+            id: 'credential-2',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.1.mDL',
+            },
+          },
+          {
+            id: 'credential-3',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.1.mDL',
+            },
+          },
         ],
         credential_sets: [
           {
@@ -70,7 +84,7 @@ describe('dcqlQuerySchema', () => {
           },
         ],
       });
-      expect(result.credentials).toHaveLength(1);
+      expect(result.credentials).toHaveLength(3);
       expect(result.credential_sets).toEqual([
         {
           options: [['credential-1', 'credential-2']],
@@ -535,6 +549,90 @@ describe('dcqlQuerySchema', () => {
         );
       }
     });
+
+    it('rejects credential_sets with non-existent credential ID', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'credential-1',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+          credential_sets: [
+            {
+              options: [['credential-1', 'non-existent-credential']],
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'options',
+          0,
+          1,
+        ]);
+        expect(zodError.issues[0].message).toBe(
+          'Credential ID "non-existent-credential" referenced in credential_sets[0].options[0][1] does not exist in credentials array'
+        );
+      }
+    });
+
+    it('rejects credential_sets with multiple non-existent credential IDs', () => {
+      try {
+        dcqlQuerySchema.parse({
+          credentials: [
+            {
+              id: 'credential-1',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+          credential_sets: [
+            {
+              options: [['non-existent-1']],
+            },
+            {
+              options: [['non-existent-2', 'non-existent-3']],
+            },
+          ],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues.length).toBeGreaterThanOrEqual(2);
+        expect(zodError.issues[0].path).toEqual([
+          'credential_sets',
+          0,
+          'options',
+          0,
+          0,
+        ]);
+        expect(zodError.issues[0].message).toBe(
+          'Credential ID "non-existent-1" referenced in credential_sets[0].options[0][0] does not exist in credentials array'
+        );
+        expect(zodError.issues[1].path).toEqual([
+          'credential_sets',
+          1,
+          'options',
+          0,
+          0,
+        ]);
+        expect(zodError.issues[1].message).toBe(
+          'Credential ID "non-existent-2" referenced in credential_sets[1].options[0][0] does not exist in credentials array'
+        );
+      }
+    });
   });
 
   describe('safeParse', () => {
@@ -558,7 +656,21 @@ describe('dcqlQuerySchema', () => {
       const result = dcqlQuerySchema.safeParse({
         credentials: [
           {
-            id: 'test',
+            id: 'credential-1',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.1.mDL',
+            },
+          },
+          {
+            id: 'credential-2',
+            format: 'mso_mdoc',
+            meta: {
+              doctype_value: 'org.iso.18013.5.1.mDL',
+            },
+          },
+          {
+            id: 'credential-3',
             format: 'mso_mdoc',
             meta: {
               doctype_value: 'org.iso.18013.5.1.mDL',
@@ -704,6 +816,24 @@ describe('dcqlQuerySchema', () => {
           credential_sets: [
             {
               options: [],
+            },
+          ],
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlQuerySchema.safeParse({
+          credentials: [
+            {
+              id: 'credential-1',
+              format: 'mso_mdoc',
+              meta: {
+                doctype_value: 'org.iso.18013.5.1.mDL',
+              },
+            },
+          ],
+          credential_sets: [
+            {
+              options: [['non-existent-credential']],
             },
           ],
         }).success
