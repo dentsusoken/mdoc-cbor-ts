@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { pexFieldSchema } from './PExField';
+import { pexFieldSchema } from './PexField';
 
 /**
  * Zod schema for constraints within a Presentation Exchange Input Descriptor.

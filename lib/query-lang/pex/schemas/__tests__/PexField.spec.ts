@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { z } from 'zod';
-import { pexFieldSchema } from '../PExField';
+import { pexFieldSchema } from '../PexField';
 
 describe('pexFieldSchema', () => {
   describe('should accept valid fields', () => {
