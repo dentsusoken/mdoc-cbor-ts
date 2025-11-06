@@ -72,6 +72,40 @@ describe('dcqlClaimSchema', () => {
       });
       expect(result.intent_to_retain).toBe(false);
     });
+
+    it('accepts claim with id', () => {
+      const result = dcqlClaimSchema.parse({
+        id: 'claim-1',
+        path: ['org.iso.18013.5.1', 'given_name'],
+      });
+      expect(result).toEqual({
+        id: 'claim-1',
+        path: ['org.iso.18013.5.1', 'given_name'],
+        intent_to_retain: false,
+      });
+    });
+
+    it('accepts claim with id and all other fields', () => {
+      const result = dcqlClaimSchema.parse({
+        id: 'claim-2',
+        path: ['org.iso.18013.5.1', 'status'],
+        values: ['active', 'pending'],
+        intent_to_retain: true,
+      });
+      expect(result).toEqual({
+        id: 'claim-2',
+        path: ['org.iso.18013.5.1', 'status'],
+        values: ['active', 'pending'],
+        intent_to_retain: true,
+      });
+    });
+
+    it('accepts undefined id (optional field)', () => {
+      const result = dcqlClaimSchema.parse({
+        path: ['org.iso.18013.5.1', 'field'],
+      });
+      expect(result.id).toBeUndefined();
+    });
   });
 
   describe('should reject invalid DCQL claims', () => {
@@ -298,6 +332,91 @@ describe('dcqlClaimSchema', () => {
         );
       }
     });
+
+    it('rejects id that is an empty string', () => {
+      try {
+        dcqlClaimSchema.parse({
+          id: '',
+          path: ['org.iso.18013.5.1', 'field'],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['id']);
+        expect(zodError.issues[0].message).toBe(
+          'String must contain at least 1 character(s)'
+        );
+      }
+    });
+
+    it('rejects id that is not a string (number)', () => {
+      try {
+        dcqlClaimSchema.parse({
+          id: 123,
+          path: ['org.iso.18013.5.1', 'field'],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['id']);
+        expect(zodError.issues[0].message).toBe(
+          'Expected string, received number'
+        );
+      }
+    });
+
+    it('rejects id that is not a string (boolean)', () => {
+      try {
+        dcqlClaimSchema.parse({
+          id: true,
+          path: ['org.iso.18013.5.1', 'field'],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['id']);
+        expect(zodError.issues[0].message).toBe(
+          'Expected string, received boolean'
+        );
+      }
+    });
+
+    it('rejects id that is not a string (null)', () => {
+      try {
+        dcqlClaimSchema.parse({
+          id: null,
+          path: ['org.iso.18013.5.1', 'field'],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['id']);
+        expect(zodError.issues[0].message).toBe(
+          'Expected string, received null'
+        );
+      }
+    });
+
+    it('rejects id that is not a string (object)', () => {
+      try {
+        dcqlClaimSchema.parse({
+          id: {},
+          path: ['org.iso.18013.5.1', 'field'],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['id']);
+        expect(zodError.issues[0].message).toBe(
+          'Expected string, received object'
+        );
+      }
+    });
   });
 
   describe('safeParse', () => {
@@ -314,6 +433,43 @@ describe('dcqlClaimSchema', () => {
       expect(dcqlClaimSchema.safeParse({ path: 'invalid' }).success).toBe(
         false
       );
+    });
+
+    it('returns success for valid claims with id', () => {
+      const result = dcqlClaimSchema.safeParse({
+        id: 'claim-1',
+        path: ['org.iso.18013.5.1', 'field'],
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.id).toBe('claim-1');
+        expect(result.data.path).toEqual(['org.iso.18013.5.1', 'field']);
+      }
+    });
+
+    it('returns success for valid claims without id', () => {
+      const result = dcqlClaimSchema.safeParse({
+        path: ['org.iso.18013.5.1', 'field'],
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.id).toBeUndefined();
+      }
+    });
+
+    it('returns error for invalid id', () => {
+      expect(
+        dcqlClaimSchema.safeParse({
+          id: '',
+          path: ['org.iso.18013.5.1', 'field'],
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlClaimSchema.safeParse({
+          id: 123,
+          path: ['org.iso.18013.5.1', 'field'],
+        }).success
+      ).toBe(false);
     });
 
     it('returns ZodError for invalid claims', () => {
