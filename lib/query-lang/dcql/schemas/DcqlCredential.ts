@@ -22,19 +22,21 @@ export const dcqlCredentialSchema = z.object({
   meta: dcqlMetaSchema,
 
   /**
-   * Optional array of claim constraints.
+   * Optional, but if present must be a non-empty array of claim constraints.
    * If omitted, all claims from the credential may be returned.
    *
-   * **Handling optional fields from Presentation Exchange:**
-   * When converting from PEx to DCQL, include ALL claims (both required and optional)
-   * in this array. The Wallet will naturally return only claims that exist in the
-   * credential. The Verifier should then validate based on the original PEx `optional`
-   * flags to determine if missing claims are acceptable.
+   * When converting from Presentation Exchange (PEx) to DCQL, include ALL claims
+   * (both required and optional) in this array. The Wallet will only return claims
+   * actually present in the credential, and the Verifier should apply the
+   * original PEx `optional` flags to validate acceptability of missing claims.
    *
-   * This approach avoids the `claim_sets` combinatorial explosion problem while
+   * Note: `.min(1)` is enforced so if `claims` is present, it must be a non-empty array.
+   * This helps avoid edge cases and aligns with expected query logic.
+   *
+   * This approach avoids the combinatorial explosion of `claim_sets` while
    * maintaining flexibility for optional fields.
    */
-  claims: z.array(dcqlClaimSchema).optional(),
+  claims: z.array(dcqlClaimSchema).min(1).optional(),
 
   /**
    * Indicates whether multiple credentials may be returned.

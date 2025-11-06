@@ -66,18 +66,6 @@ describe('dcqlCredentialSchema', () => {
       expect(result.multiple).toBe(false);
     });
 
-    it('accepts empty claims array', () => {
-      const result = dcqlCredentialSchema.parse({
-        id: 'credential-4',
-        format: 'mso_mdoc',
-        meta: {
-          doctype_value: 'org.iso.18013.5.1.mDL',
-        },
-        claims: [],
-      });
-      expect(result.claims).toEqual([]);
-    });
-
     it('accepts undefined claims', () => {
       const result = dcqlCredentialSchema.parse({
         id: 'credential-4',
@@ -259,6 +247,27 @@ describe('dcqlCredentialSchema', () => {
       }
     });
 
+    it('rejects empty claims array', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claims']);
+        expect(zodError.issues[0].message).toBe(
+          'Array must contain at least 1 element(s)'
+        );
+      }
+    });
+
     it('rejects multiple that is not a boolean', () => {
       try {
         dcqlCredentialSchema.parse({
@@ -335,6 +344,16 @@ describe('dcqlCredentialSchema', () => {
           meta: {
             doctype_value: 'org.iso.18013.5.1.mDL',
           },
+        }).success
+      ).toBe(false);
+      expect(
+        dcqlCredentialSchema.safeParse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [],
         }).success
       ).toBe(false);
     });
