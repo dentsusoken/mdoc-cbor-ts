@@ -4,7 +4,7 @@ import { createTag24 } from '@/cbor/createTag24';
 import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { ErrorsError } from '@/mdoc/ErrorsError';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import { calculateDigest } from '@/utils/calculateDigest';
 import { Tag } from 'cbor-x';
 
@@ -63,7 +63,7 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.ValueDigestsMissing);
+        expect(err.errorCode).toBe(MdocErrorCode.ValueDigestsMissing);
         expect(err.message).toBe(
           `Value digests missing for namespace: ${ns} - 2001 - ValueDigestsMissing`
         );
@@ -93,7 +93,7 @@ describe('verifyValueDigests', () => {
         expect(nsErrors).toBeInstanceOf(Map);
         expect(nsErrors?.size).toBe(1);
         expect(nsErrors?.get('given_name')).toBe(
-          MDocErrorCode.ValueDigestMissing
+          MdocErrorCode.ValueDigestMissing
         );
         expect(err.message).toBe(
           'Value digests verification failed: [\n' +
@@ -135,7 +135,7 @@ describe('verifyValueDigests', () => {
         expect(nsErrors).toBeInstanceOf(Map);
         expect(nsErrors?.size).toBe(1);
         expect(nsErrors?.get('given_name')).toBe(
-          MDocErrorCode.MsoDigestMismatch
+          MdocErrorCode.MsoDigestMismatch
         );
         expect(err.message).toBe(
           'Value digests verification failed: [\n' +
@@ -170,7 +170,7 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
+        expect(err.errorCode).toBe(MdocErrorCode.CborDecodingError);
       }
     });
 
@@ -191,7 +191,7 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.CborDecodingError);
+        expect(err.errorCode).toBe(MdocErrorCode.CborDecodingError);
         expect(err.message).toBe(
           'Failed to cbor-decode issuer-signed item[0]: Source must be a Uint8Array or Buffer but was a string - 1 - CborDecodingError'
         );
@@ -217,7 +217,7 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.CborValidationError);
+        expect(err.errorCode).toBe(MdocErrorCode.CborValidationError);
         // Assert exact message including zod details
         expect(err.message).toBe(
           'Failed to validate issuer-signed item[0] structure: [\n' +

@@ -7,7 +7,7 @@
  * @property {MDocStatus.CborDecodingError} CborDecodingError - Error occurred while decoding CBOR data.
  * @property {MDocStatus.CborValidationError} CborValidationError - CBOR data failed schema or format validation.
  */
-export enum MDocStatus {
+export enum MdocStatus {
   /** Operation completed successfully. */
   OK = 0,
   /** A general, unspecified error occurred. */
@@ -18,11 +18,65 @@ export enum MDocStatus {
   CborValidationError = 12,
 }
 
-export enum MDocErrorCode {
-  // XXX are errors that can be used at any level.
-  // 1XXX are element-level errors.
-  // 2XXX are document-level errors.
-
+/**
+ * Enumerates error codes for mdoc operations, categorized by context.
+ *
+ * Codes are grouped as follows:
+ * - 0–99: General errors (can occur at any level).
+ * - 1000–1999: Element-level errors (e.g., value digests, MSO).
+ * - 2000–2999: Document-level errors (e.g., document validity, namespaces).
+ * - Other groups (3000+): Session, device, format, or protocol-specific errors.
+ *
+ * @enum {number}
+ *
+ * @property {MdocErrorCode.DataNotReturned} DataNotReturned - Data that was requested was not returned.
+ * @property {MdocErrorCode.CborDecodingError} CborDecodingError - Failure decoding CBOR data.
+ * @property {MdocErrorCode.CborValidationError} CborValidationError - Failure validating CBOR against schema or specification.
+ *
+ * Element-level errors (1000–1999):
+ * @property {MdocErrorCode.ValueDigestMissing} ValueDigestMissing - Value digest is missing.
+ * @property {MdocErrorCode.MsoDigestMismatch} MsoDigestMismatch - The Mobile Security Object digest does not match.
+ *
+ * Document-level errors (2000–2999):
+ * @property {MdocErrorCode.ValueDigestsMissing} ValueDigestsMissing - Value digests are missing.
+ * @property {MdocErrorCode.DocumentNotValidYet} DocumentNotValidYet - Document is not valid yet.
+ * @property {MdocErrorCode.DocumentExpired} DocumentExpired - Document has expired.
+ * @property {MdocErrorCode.ValidFromMissing} ValidFromMissing - ValidFrom is missing.
+ * @property {MdocErrorCode.ValidUntilMissing} ValidUntilMissing - ValidUntil is missing.
+ * @property {MdocErrorCode.NameSpacesMissing} NameSpacesMissing - NameSpaces are missing.
+ * @property {MdocErrorCode.IssuerAuthMissing} IssuerAuthMissing - IssuerAuth is missing.
+ * @property {MdocErrorCode.IssuerAuthInvalid} IssuerAuthInvalid - IssuerAuth is invalid.
+ * @property {MdocErrorCode.X5ChainVerificationFailed} X5ChainVerificationFailed - Failed to verify the X.509 certificate chain.
+ * @property {MdocErrorCode.IssuerAuthSignatureVerificationFailed} IssuerAuthSignatureVerificationFailed - Failed to verify the IssuerAuth signature.
+ * @property {MdocErrorCode.IssuerAuthPayloadDecodingFailed} IssuerAuthPayloadDecodingFailed - Failed to decode the IssuerAuth payload.
+ * @property {MdocErrorCode.MobileSecurityObjectInvalid} MobileSecurityObjectInvalid - MobileSecurityObject is invalid.
+ * @property {MdocErrorCode.DetachedPayloadRequired} DetachedPayloadRequired - Detached payload is required when payload is null.
+ * @property {MdocErrorCode.InvalidInputDescriptorFieldPath} InvalidInputDescriptorFieldPath - Invalid input descriptor field path.
+ *
+ * Additional document/claim errors:
+ * @property {MdocErrorCode.DocTypeMismatch} DocTypeMismatch - The document type does not match the expected type.
+ * @property {MdocErrorCode.RequiredClaimMissing} RequiredClaimMissing - A required claim is missing in the document.
+ * @property {MdocErrorCode.ClaimNotRequested} ClaimNotRequested - A claim was provided but not requested.
+ * @property {MdocErrorCode.NamespaceNotRequested} NamespaceNotRequested - A name space was provided but not requested.
+ * @property {MdocErrorCode.ProfileMismatch} ProfileMismatch - The document's profile does not match the expected.
+ *
+ * Session-level errors (3000–3999):
+ * @property {MdocErrorCode.ChallengeMissing} ChallengeMissing - The session challenge is missing.
+ * @property {MdocErrorCode.ChallengeMismatch} ChallengeMismatch - The session challenge does not match.
+ * @property {MdocErrorCode.SessionExpired} SessionExpired - The session has expired.
+ * @property {MdocErrorCode.OriginVerificationFailed} OriginVerificationFailed - Could not verify the origin of the session.
+ *
+ * Device-level/protocol errors (4000+):
+ * @property {MdocErrorCode.DeviceSignatureInvalid} DeviceSignatureInvalid - The device signature is invalid.
+ * @property {MdocErrorCode.DeviceKeyUnavailable} DeviceKeyUnavailable - The device key is unavailable.
+ * @property {MdocErrorCode.DeviceBindingFailed} DeviceBindingFailed - Device binding has failed.
+ * @property {MdocErrorCode.MalformedIssuerSigned} MalformedIssuerSigned - IssuerSigned structure is malformed.
+ * @property {MdocErrorCode.MalformedDeviceSigned} MalformedDeviceSigned - DeviceSigned structure is malformed.
+ * @property {MdocErrorCode.InvalidClaimFormat} InvalidClaimFormat - A claim is formatted incorrectly.
+ * @property {MdocErrorCode.UnsupportedNamespace} UnsupportedNamespace - A namespace is not supported.
+ * @property {MdocErrorCode.UnsupportedAlgorithm} UnsupportedAlgorithm - A cryptographic algorithm is not supported.
+ */
+export enum MdocErrorCode {
   /** Data that was requested was not returned. */
   DataNotReturned = 0,
   /** Failure decoding CBOR data. */

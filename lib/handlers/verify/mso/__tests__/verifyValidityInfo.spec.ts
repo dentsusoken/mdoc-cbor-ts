@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { verifyValidityInfo } from '../verifyValidityInfo';
 import { createTag0 } from '@/cbor/createTag0';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { ValidityInfo } from '@/schemas/mso/ValidityInfo';
 
@@ -59,7 +59,7 @@ describe('verifyValidityInfo', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.ValidFromMissing);
+        expect(err.errorCode).toBe(MdocErrorCode.ValidFromMissing);
         expect(err.message).toBe(
           'ValidFrom is missing - 2004 - ValidFromMissing'
         );
@@ -80,7 +80,7 @@ describe('verifyValidityInfo', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.ValidUntilMissing);
+        expect(err.errorCode).toBe(MdocErrorCode.ValidUntilMissing);
         expect(err.message).toBe(
           'ValidUntil is missing - 2005 - ValidUntilMissing'
         );
@@ -99,7 +99,7 @@ describe('verifyValidityInfo', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.DocumentNotValidYet);
+        expect(err.errorCode).toBe(MdocErrorCode.DocumentNotValidYet);
         expect(err.message).toBe(
           'Document is not valid yet - 2002 - DocumentNotValidYet'
         );
@@ -118,7 +118,7 @@ describe('verifyValidityInfo', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MDocErrorCode.DocumentExpired);
+        expect(err.errorCode).toBe(MdocErrorCode.DocumentExpired);
         expect(err.message).toBe(
           'Document has expired - 2003 - DocumentExpired'
         );

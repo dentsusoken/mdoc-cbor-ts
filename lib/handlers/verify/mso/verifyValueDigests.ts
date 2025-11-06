@@ -10,7 +10,7 @@ import { Errors } from '@/schemas/mdoc/Errors';
 import { ErrorItems } from '@/schemas/mdoc/ErrorItems';
 import { ErrorsError } from '@/mdoc/ErrorsError';
 import { compareUint8Arrays } from 'u8a-utils';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { getErrorMessage } from '@/utils/getErrorMessage';
 
@@ -61,7 +61,7 @@ export const verifyValueDigests = ({
     if (!digestMap) {
       throw new ErrorCodeError(
         `Value digests missing for namespace: ${nameSpace}`,
-        MDocErrorCode.ValueDigestsMissing
+        MdocErrorCode.ValueDigestsMissing
       );
     }
 
@@ -72,7 +72,7 @@ export const verifyValueDigests = ({
       } catch (error) {
         throw new ErrorCodeError(
           `Failed to cbor-decode issuer-signed item[${index}]: ${getErrorMessage(error)}`,
-          MDocErrorCode.CborDecodingError
+          MdocErrorCode.CborDecodingError
         );
       }
 
@@ -81,7 +81,7 @@ export const verifyValueDigests = ({
       if (!result.success) {
         throw new ErrorCodeError(
           `Failed to validate issuer-signed item[${index}] structure: ${result.error.message}`,
-          MDocErrorCode.CborValidationError
+          MdocErrorCode.CborValidationError
         );
       }
 
@@ -92,12 +92,12 @@ export const verifyValueDigests = ({
       const expectedDigest = digestMap.get(digestID);
 
       if (!expectedDigest) {
-        errorItems.set(elementIdentifier, MDocErrorCode.ValueDigestMissing);
+        errorItems.set(elementIdentifier, MdocErrorCode.ValueDigestMissing);
         return;
       }
 
       if (!compareUint8Arrays(expectedDigest, calculatedDigest)) {
-        errorItems.set(elementIdentifier, MDocErrorCode.MsoDigestMismatch);
+        errorItems.set(elementIdentifier, MdocErrorCode.MsoDigestMismatch);
         return;
       }
     });
@@ -113,7 +113,7 @@ export const verifyValueDigests = ({
         ns,
         Array.from(errorItems.entries()).map(([key, value]) => [
           key,
-          MDocErrorCode[value],
+          MdocErrorCode[value],
         ]),
       ]
     );

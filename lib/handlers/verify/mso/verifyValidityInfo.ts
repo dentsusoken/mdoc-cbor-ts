@@ -1,5 +1,5 @@
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import { ValidityInfo } from '@/schemas/mso/ValidityInfo';
 
 /**
@@ -22,10 +22,10 @@ interface VerifyValidityInfoParams {
  *
  * Checks that the current time (`now`) is no earlier than `validFrom` minus clockSkew,
  * and no later than `validUntil` plus clockSkew. Throws specific ErrorCodeError codes on failure:
- * - {@link MDocErrorCode.ValidFromMissing} if validFrom is not present.
- * - {@link MDocErrorCode.ValidUntilMissing} if validUntil is not present.
- * - {@link MDocErrorCode.DocumentNotValidYet} if document is not yet valid.
- * - {@link MDocErrorCode.DocumentExpired} if document validity has expired.
+ * - {@link MdocErrorCode.ValidFromMissing} if validFrom is not present.
+ * - {@link MdocErrorCode.ValidUntilMissing} if validUntil is not present.
+ * - {@link MdocErrorCode.DocumentNotValidYet} if document is not yet valid.
+ * - {@link MdocErrorCode.DocumentExpired} if document validity has expired.
  *
  * @param {Object} params - Parameters for verification.
  * @param {ValidityInfo} params.validityInfo - The ValidityInfo object from the MSO.
@@ -43,7 +43,7 @@ export const verifyValidityInfo = ({
   if (!validFrom) {
     throw new ErrorCodeError(
       'ValidFrom is missing',
-      MDocErrorCode.ValidFromMissing
+      MdocErrorCode.ValidFromMissing
     );
   }
 
@@ -51,21 +51,21 @@ export const verifyValidityInfo = ({
   if (!validUntil) {
     throw new ErrorCodeError(
       'ValidUntil is missing',
-      MDocErrorCode.ValidUntilMissing
+      MdocErrorCode.ValidUntilMissing
     );
   }
 
   if (now.getTime() < new Date(validFrom.value).getTime() - clockSkew * 1000) {
     throw new ErrorCodeError(
       'Document is not valid yet',
-      MDocErrorCode.DocumentNotValidYet
+      MdocErrorCode.DocumentNotValidYet
     );
   }
 
   if (now.getTime() > new Date(validUntil.value).getTime() + clockSkew * 1000) {
     throw new ErrorCodeError(
       'Document has expired',
-      MDocErrorCode.DocumentExpired
+      MdocErrorCode.DocumentExpired
     );
   }
 };

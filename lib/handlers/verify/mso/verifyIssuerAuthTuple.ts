@@ -1,5 +1,5 @@
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import { Sign1Tuple } from '@/cose/Sign1';
 import { Sign1 } from '@/cose/Sign1';
 import { JwkPublicKey } from '@/jwk/types';
@@ -13,7 +13,7 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  * 1) Verifies the X.509 certificate chain (x5chain) from COSE headers and extracts the issuer public key.
  * 2) Verifies the COSE_Sign1 signature using the extracted public key.
  *
- * On failure, throws {@link ErrorCodeError} with the appropriate {@link MDocErrorCode} and a descriptive message.
+ * On failure, throws {@link ErrorCodeError} with the appropriate {@link MdocErrorCode} and a descriptive message.
  *
  * @param tuple - The COSE_Sign1 tuple `[protectedHeaders, unprotectedHeaders, payload, signature]`.
  * @param now - The current time used for certificate validity checks when verifying the x5chain.
@@ -21,15 +21,15 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
  * @returns The COSE payload as `Uint8Array` when verification succeeds.
  *
  * @throws {ErrorCodeError} If x5chain verification fails
- * with code {@link MDocErrorCode.X5ChainVerificationFailed} and message
+ * with code {@link MdocErrorCode.X5ChainVerificationFailed} and message
  * `Failed to verify the X.509 certificate chain: <reason>`.
  *
  * @throws {ErrorCodeError} If the IssuerAuth signature verification fails
- * with code {@link MDocErrorCode.IssuerAuthSignatureVerificationFailed} and message
+ * with code {@link MdocErrorCode.IssuerAuthSignatureVerificationFailed} and message
  * `Failed to verify the IssuerAuth signature: <reason>`.
  *
  * @throws {ErrorCodeError} If the COSE payload is null (detached payload required)
- * with code {@link MDocErrorCode.DetachedPayloadRequired} and message
+ * with code {@link MdocErrorCode.DetachedPayloadRequired} and message
  * `Detached payload is required when payload is null`.
  */
 export const verifyIssuerAuthTuple = (
@@ -40,7 +40,7 @@ export const verifyIssuerAuthTuple = (
   if (payload === null) {
     throw new ErrorCodeError(
       'Detached payload is required when payload is null',
-      MDocErrorCode.DetachedPayloadRequired
+      MdocErrorCode.DetachedPayloadRequired
     );
   }
 
@@ -57,7 +57,7 @@ export const verifyIssuerAuthTuple = (
   } catch (error) {
     throw new ErrorCodeError(
       `Failed to verify the X.509 certificate chain: ${getErrorMessage(error)}`,
-      MDocErrorCode.X5ChainVerificationFailed
+      MdocErrorCode.X5ChainVerificationFailed
     );
   }
 
@@ -66,7 +66,7 @@ export const verifyIssuerAuthTuple = (
   } catch (error) {
     throw new ErrorCodeError(
       `Failed to verify the IssuerAuth signature: ${getErrorMessage(error)}`,
-      MDocErrorCode.IssuerAuthSignatureVerificationFailed
+      MdocErrorCode.IssuerAuthSignatureVerificationFailed
     );
   }
 

@@ -1,5 +1,5 @@
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 
 /**
  * The result of parsing the path components from a mdoc input descriptor field path.
@@ -20,7 +20,7 @@ interface ParsedPathComponentsResult {
  * path syntax, which is typically of the form:
  *   "$['org.iso.18013.5.1']['given_name']"
  * It extracts both the namespace and elementIdentifier substrings.
- * If parsing fails, it will throw an {@link ErrorCodeError} with {@link MDocErrorCode.InvalidInputDescriptorFieldPath}.
+ * If parsing fails, it will throw an {@link ErrorCodeError} with {@link MdocErrorCode.InvalidInputDescriptorFieldPath}.
  *
  * @param path - The input field path string to parse.
  * @returns An object containing the parsed `nameSpace` and `elementIdentifier`.
@@ -43,14 +43,14 @@ export const parsePathComponents = (
   if (!nameSpace) {
     throw new ErrorCodeError(
       `Failed to parse nameSpace from path "${path}"`,
-      MDocErrorCode.InvalidInputDescriptorFieldPath
+      MdocErrorCode.InvalidInputDescriptorFieldPath
     );
   }
 
   if (!elementIdentifier) {
     throw new ErrorCodeError(
       `Failed to parse elementIdentifier from path "${path}"`,
-      MDocErrorCode.InvalidInputDescriptorFieldPath
+      MdocErrorCode.InvalidInputDescriptorFieldPath
     );
   }
 

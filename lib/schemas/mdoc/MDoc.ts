@@ -3,7 +3,7 @@ import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
 import { createArraySchema } from '../containers/Array';
 import { documentSchema } from './Document';
 import { documentErrorSchema } from './DocumentError';
-import { MDocStatus } from '@/mdoc/types';
+import { MdocStatus } from '@/mdoc/types';
 
 /**
  * Entries definition for the MDoc schema.
@@ -49,7 +49,7 @@ import { MDocStatus } from '@/mdoc/types';
  *
  * @see {@link documentSchema}
  * @see {@link documentErrorSchema}
- * @see {@link MDocStatus}
+ * @see {@link MdocStatus}
  */
 export const mdocEntries = [
   ['version', z.literal('1.0')],
@@ -69,7 +69,7 @@ export const mdocEntries = [
       nonempty: true,
     }).optional(),
   ],
-  ['status', z.nativeEnum(MDocStatus)],
+  ['status', z.nativeEnum(MdocStatus)],
 ] as const;
 
 /**
@@ -96,7 +96,7 @@ export const mdocEntries = [
  * }
  * ```
  *
- * @see {@link MDocStatus}
+ * @see {@link MdocStatus}
  * @see {@link documentSchema}
  * @see {@link documentErrorSchema}
  * @see {@link mdocEntries}

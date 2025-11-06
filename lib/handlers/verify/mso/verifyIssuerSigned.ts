@@ -1,5 +1,5 @@
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import { Sign1Tuple } from '@/cose/Sign1';
 import { IssuerSigned } from '@/schemas/mdoc/IssuerSigned';
 import { MobileSecurityObject } from '@/schemas/mso/MobileSecurityObject';
@@ -43,7 +43,7 @@ interface VerifyIssuerSignedResult {
  *   4. Verifies the value digests using {@link verifyValueDigests}.
  *   5. Validates the validityInfo within the MSO via {@link verifyValidityInfo}.
  *
- * Throws detailed {@link ErrorCodeError}s with appropriate {@link MDocErrorCode}
+ * Throws detailed {@link ErrorCodeError}s with appropriate {@link MdocErrorCode}
  * if any step fails.
  *
  * @param params - The parameters for verification.
@@ -64,7 +64,7 @@ export const verifyIssuerSigned = ({
   if (!nameSpaces) {
     throw new ErrorCodeError(
       'NameSpaces are missing',
-      MDocErrorCode.NameSpacesMissing
+      MdocErrorCode.NameSpacesMissing
     );
   }
 
@@ -72,7 +72,7 @@ export const verifyIssuerSigned = ({
   if (!issuerAuth) {
     throw new ErrorCodeError(
       'IssuerAuth is missing',
-      MDocErrorCode.IssuerAuthMissing
+      MdocErrorCode.IssuerAuthMissing
     );
   }
 

@@ -7,7 +7,7 @@ import { createSelfSignedCertificate } from '@/x509/createSelfSignedCertificate'
 import { certificateToDerBytes } from '@/x509/certificateToDerBytes';
 import { createSignatureCurve } from 'noble-curves-extended';
 import { randomBytes } from '@noble/hashes/utils';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 
 const p256 = createSignatureCurve('P-256', randomBytes);
 
@@ -82,8 +82,8 @@ describe('verifyIssuerAuthTuple', () => {
         verifyIssuerAuthTuple(tuple, now, clockSkew);
         throw new Error('Should have thrown');
       } catch (e) {
-        const code = MDocErrorCode.X5ChainVerificationFailed;
-        const name = MDocErrorCode[code];
+        const code = MdocErrorCode.X5ChainVerificationFailed;
+        const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
           `Failed to verify the X.509 certificate chain: X.509 certificate chain not found - ${code} - ${name}`
         );
@@ -102,8 +102,8 @@ describe('verifyIssuerAuthTuple', () => {
         verifyIssuerAuthTuple(tuple, now, clockSkew);
         throw new Error('Should have thrown');
       } catch (e) {
-        const code = MDocErrorCode.IssuerAuthSignatureVerificationFailed;
-        const name = MDocErrorCode[code];
+        const code = MdocErrorCode.IssuerAuthSignatureVerificationFailed;
+        const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
           `Failed to verify the IssuerAuth signature: Failed to verify COSE_Sign1 signature - ${code} - ${name}`
         );
@@ -123,8 +123,8 @@ describe('verifyIssuerAuthTuple', () => {
         verifyIssuerAuthTuple(tuple, now, clockSkew);
         throw new Error('Should have thrown');
       } catch (e) {
-        const code = MDocErrorCode.DetachedPayloadRequired;
-        const name = MDocErrorCode[code];
+        const code = MdocErrorCode.DetachedPayloadRequired;
+        const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
           `Detached payload is required when payload is null - ${code} - ${name}`
         );

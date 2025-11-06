@@ -8,7 +8,7 @@ import { deviceSignedSchema } from '../DeviceSigned';
 import { createTag17, type Tag17Content } from '@/cbor/createTag17';
 import { createTag18, type Tag18Content } from '@/cbor/createTag18';
 import { createTag24 } from '@/cbor/createTag24';
-import { MDocStatus } from '@/mdoc/types';
+import { MdocStatus } from '@/mdoc/types';
 import { getTypeName } from '@/utils/getTypeName';
 import {
   containerInvalidTypeMessage,
@@ -89,7 +89,7 @@ describe('MDoc', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documents', [doc]],
-        ['status', MDocStatus.OK],
+        ['status', MdocStatus.OK],
       ]);
       const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
@@ -101,7 +101,7 @@ describe('MDoc', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documentErrors', [docError]],
-        ['status', MDocStatus.CborValidationError],
+        ['status', MdocStatus.CborValidationError],
       ]);
       const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
@@ -115,7 +115,7 @@ describe('MDoc', (): void => {
         ['version', '1.0'],
         ['documents', [doc]],
         ['documentErrors', [docError]],
-        ['status', MDocStatus.OK],
+        ['status', MdocStatus.OK],
       ]);
       const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
@@ -125,7 +125,7 @@ describe('MDoc', (): void => {
     it('with neither documents nor documentErrors', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
-        ['status', MDocStatus.CborDecodingError],
+        ['status', MdocStatus.CborDecodingError],
       ]);
       const result = mdocSchema.parse(input);
       expect(result).toBeInstanceOf(Map);
@@ -183,7 +183,7 @@ describe('MDoc', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documents', []],
-        ['status', MDocStatus.OK],
+        ['status', MdocStatus.OK],
       ]);
       try {
         mdocSchema.parse(input);
@@ -205,7 +205,7 @@ describe('MDoc', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documentErrors', []],
-        ['status', MDocStatus.OK],
+        ['status', MdocStatus.OK],
       ]);
       try {
         mdocSchema.parse(input);
@@ -230,7 +230,7 @@ describe('MDoc', (): void => {
       const input = new Map<string, unknown>([
         ['version', '2.0'],
         ['documents', [doc]],
-        ['status', MDocStatus.OK],
+        ['status', MdocStatus.OK],
       ]);
       try {
         mdocSchema.parse(input);
@@ -252,7 +252,7 @@ describe('MDoc', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documents', ['not-a-document']],
-        ['status', MDocStatus.OK],
+        ['status', MdocStatus.OK],
       ]);
       try {
         mdocSchema.parse(input);
@@ -283,7 +283,7 @@ describe('MDoc', (): void => {
       const input = new Map<string, unknown>([
         ['version', '1.0'],
         ['documentErrors', ['not-a-document-error']],
-        ['status', MDocStatus.OK],
+        ['status', MdocStatus.OK],
       ]);
       try {
         mdocSchema.parse(input);
@@ -324,7 +324,7 @@ describe('MDoc', (): void => {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
         // Build expected message using z.nativeEnum(ResponseStatus) to avoid hardcoding
-        const enumResult = z.nativeEnum(MDocStatus).safeParse(999);
+        const enumResult = z.nativeEnum(MdocStatus).safeParse(999);
         const enumMessage = enumResult.success
           ? 'SHOULD_NOT_PASS'
           : enumResult.error.issues[0].message;

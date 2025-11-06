@@ -9,7 +9,7 @@ import { createTag18 } from '@/cbor/createTag18';
 import { Sign1 } from '@/cose/Sign1';
 import { createSelfSignedCertificate } from '@/x509/createSelfSignedCertificate';
 import { certificateToDerBytes } from '@/x509/certificateToDerBytes';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import { IssuerSigned, createIssuerSigned } from '@/schemas/mdoc/IssuerSigned';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
@@ -101,8 +101,8 @@ describe('verifyIssuerSigned', () => {
         verifyIssuerSigned({ issuerSigned, now, clockSkew });
         throw new Error('Should have thrown');
       } catch (e) {
-        const code = MDocErrorCode.NameSpacesMissing;
-        const name = MDocErrorCode[code];
+        const code = MdocErrorCode.NameSpacesMissing;
+        const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
           `NameSpaces are missing - ${code} - ${name}`
         );
@@ -119,8 +119,8 @@ describe('verifyIssuerSigned', () => {
         verifyIssuerSigned({ issuerSigned, now, clockSkew });
         throw new Error('Should have thrown');
       } catch (e) {
-        const code = MDocErrorCode.IssuerAuthMissing;
-        const name = MDocErrorCode[code];
+        const code = MdocErrorCode.IssuerAuthMissing;
+        const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
           `IssuerAuth is missing - ${code} - ${name}`
         );

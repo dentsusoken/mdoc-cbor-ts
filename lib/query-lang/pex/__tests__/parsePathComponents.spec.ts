@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parsePathComponents } from '../parsePathComponents';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 
 describe('parsePathComponents', () => {
   describe('success cases', () => {
@@ -42,10 +42,10 @@ describe('parsePathComponents', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        const code = MDocErrorCode.InvalidInputDescriptorFieldPath;
+        const code = MdocErrorCode.InvalidInputDescriptorFieldPath;
         const expectedMessage =
           `Failed to parse nameSpace from path "${path}"` +
-          ` - ${code} - ${MDocErrorCode[code]}`;
+          ` - ${code} - ${MdocErrorCode[code]}`;
         expect(err.message).toBe(expectedMessage);
         expect(err).toHaveProperty('errorCode', code);
       }
@@ -58,10 +58,10 @@ describe('parsePathComponents', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        const code = MDocErrorCode.InvalidInputDescriptorFieldPath;
+        const code = MdocErrorCode.InvalidInputDescriptorFieldPath;
         const expectedMessage =
           `Failed to parse elementIdentifier from path "${path}"` +
-          ` - ${code} - ${MDocErrorCode[code]}`;
+          ` - ${code} - ${MdocErrorCode[code]}`;
         expect(err.message).toBe(expectedMessage);
         expect(err).toHaveProperty('errorCode', code);
       }

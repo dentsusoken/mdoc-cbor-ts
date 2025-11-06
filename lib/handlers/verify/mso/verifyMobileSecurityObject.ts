@@ -1,5 +1,5 @@
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MDocErrorCode } from '@/mdoc/types';
+import { MdocErrorCode } from '@/mdoc/types';
 import {
   MobileSecurityObject,
   mobileSecurityObjectSchema,
@@ -14,15 +14,15 @@ import { decodeTag24 } from '@/cbor/decodeTag24';
  * This function takes a CBOR-encoded Uint8Array payload, decodes it,
  * and validates it against the MobileSecurityObject schema. It throws detailed errors
  * on either CBOR decoding failure or schema validation failure, each tagged with
- * an appropriate {@link MDocErrorCode}.
+ * an appropriate {@link MdocErrorCode}.
  *
  * @param payload - The CBOR-encoded MSO as a Uint8Array.
  * @returns The validated {@link MobileSecurityObject} instance.
  *
  * @throws {ErrorCodeError} If decoding the payload fails,
- *         with code {@link MDocErrorCode.IssuerAuthPayloadDecodingFailed} and an explanatory message.
+ *         with code {@link MdocErrorCode.IssuerAuthPayloadDecodingFailed} and an explanatory message.
  * @throws {ErrorCodeError} If the MSO fails schema validation,
- *         with code {@link MDocErrorCode.MobileSecurityObjectInvalid} and an explanatory message.
+ *         with code {@link MdocErrorCode.MobileSecurityObjectInvalid} and an explanatory message.
  */
 export const verifyMobileSecurityObject = (
   payload: Uint8Array
@@ -33,7 +33,7 @@ export const verifyMobileSecurityObject = (
   } catch (error) {
     throw new ErrorCodeError(
       `Failed to decode the IssuerAuth payload: ${getErrorMessage(error)}`,
-      MDocErrorCode.IssuerAuthPayloadDecodingFailed
+      MdocErrorCode.IssuerAuthPayloadDecodingFailed
     );
   }
 
@@ -41,7 +41,7 @@ export const verifyMobileSecurityObject = (
   if (!msoResult.success) {
     throw new ErrorCodeError(
       `MobileSecurityObject is invalid: ${msoResult.error.message}`,
-      MDocErrorCode.MobileSecurityObjectInvalid
+      MdocErrorCode.MobileSecurityObjectInvalid
     );
   }
 

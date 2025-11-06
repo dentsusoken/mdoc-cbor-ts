@@ -1,13 +1,13 @@
-import { MDocErrorCode } from './types';
+import { MdocErrorCode } from './types';
 
 /**
  * Error representing a single mdoc error code failure.
  *
  * @description
  * This error is thrown to signal an operation-specific mdoc error.
- * The error contains a numeric error code (from {@link MDocErrorCode}) and formats the message as:
+ * The error contains a numeric error code (from {@link MdocErrorCode}) and formats the message as:
  *   "<message> - <errorCode> - <enumName>"
- * where <message> is the provided message, <errorCode> is the numeric code, and <enumName> is the string name from the {@link MDocErrorCode} enum.
+ * where <message> is the provided message, <errorCode> is the numeric code, and <enumName> is the string name from the {@link MdocErrorCode} enum.
  *
  * @example
  * ```typescript
@@ -28,7 +28,7 @@ export class ErrorCodeError extends Error {
    * @param errorCode - Numeric error code defined by the mdoc specification.
    */
   constructor(message: string, errorCode: number) {
-    super(`${message} - ${errorCode} - ${MDocErrorCode[errorCode]}`);
+    super(`${message} - ${errorCode} - ${MdocErrorCode[errorCode]}`);
 
     this.errorCode = errorCode;
     this.name = 'ErrorCodeError';
