@@ -1,13 +1,13 @@
 import { dcqlCredentialSchema } from './DcqlCredential';
 import { z } from 'zod';
-import { dcqlCredentialSetsSchema } from './DcqlCredentialSets';
+import { dcqlCredentialSetSchema } from './DcqlCredentialSet';
 
 /**
  * Complete DCQL query structure for mdoc.
  */
 export const dcqlQuerySchema = z.object({
   credentials: z.array(dcqlCredentialSchema).min(1),
-  credential_sets: dcqlCredentialSetsSchema.optional(),
+  credential_sets: z.array(dcqlCredentialSetSchema).min(1).optional(),
 });
 
 /**
