@@ -2,6 +2,7 @@ import { decodeTag24 } from '@/cbor/decodeTag24';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { getTypeName } from '@/utils/getTypeName';
 import { Tag } from 'cbor-x';
+import { extractAgeOverNn } from './extractAgeOverNn';
 
 /**
  * Enriched view of a standard IssuerSignedItem (non age_over_*).
@@ -88,23 +89,7 @@ export const enrichIssuerSignedItems = (
       return;
     }
 
-    const ageOverMatch = elementIdentifier.match(/^age_over_(\d\d)$/);
-
-    if (!ageOverMatch) {
-      throw new Error(
-        `Invalid age_over format: ${elementIdentifier}. ` +
-          `Expected format: age_over_NN where NN is a two-digit number`
-      );
-    }
-
-    const nn = parseInt(ageOverMatch[1], 10);
-
-    if (nn > 99) {
-      throw new Error(
-        `Invalid age threshold in ${elementIdentifier}: ${nn}. ` +
-          `Expected value between 00 and 99`
-      );
-    }
+    const nn = extractAgeOverNn(elementIdentifier);
 
     if (typeof elementValue !== 'boolean') {
       throw new Error(
