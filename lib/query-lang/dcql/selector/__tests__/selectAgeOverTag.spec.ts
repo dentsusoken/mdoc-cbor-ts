@@ -5,7 +5,7 @@ import { EnrichedAgeOverIssuerSignedItem } from '@/query-lang/common/enrichIssue
 
 describe('selectAgeOverTag', () => {
   describe('should select from ageOverTrueItems when matching item exists', () => {
-    it('selects the first matching true item when nn >= requestedOverAge', () => {
+    it('selects the first matching true item when nn >= requestedNn', () => {
       const tag1 = new Tag('value1', 24);
       const tag2 = new Tag('value2', 24);
       const tag3 = new Tag('value3', 24);
@@ -17,7 +17,7 @@ describe('selectAgeOverTag', () => {
       const ageOverFalseItems: EnrichedAgeOverIssuerSignedItem[] = [];
 
       const result = selectAgeOverTag({
-        requestedOverAge: 20,
+        requestedNn: 20,
         ageOverTrueItems,
         ageOverFalseItems,
       });
@@ -25,7 +25,7 @@ describe('selectAgeOverTag', () => {
       expect(result).toBe(tag2);
     });
 
-    it('selects the first matching true item when nn === requestedOverAge', () => {
+    it('selects the first matching true item when nn === requestedNn', () => {
       const tag1 = new Tag('value1', 24);
       const tag2 = new Tag('value2', 24);
       const ageOverTrueItems: EnrichedAgeOverIssuerSignedItem[] = [
@@ -35,7 +35,7 @@ describe('selectAgeOverTag', () => {
       const ageOverFalseItems: EnrichedAgeOverIssuerSignedItem[] = [];
 
       const result = selectAgeOverTag({
-        requestedOverAge: 20,
+        requestedNn: 20,
         ageOverTrueItems,
         ageOverFalseItems,
       });
@@ -45,7 +45,7 @@ describe('selectAgeOverTag', () => {
   });
 
   describe('should select from ageOverFalseItems when no matching true item exists', () => {
-    it('selects the first matching false item when nn <= requestedOverAge', () => {
+    it('selects the first matching false item when nn <= requestedNn', () => {
       const tag1 = new Tag('value1', 24);
       const tag2 = new Tag('value2', 24);
       const tag3 = new Tag('value3', 24);
@@ -59,7 +59,7 @@ describe('selectAgeOverTag', () => {
       ];
 
       const result = selectAgeOverTag({
-        requestedOverAge: 25,
+        requestedNn: 25,
         ageOverTrueItems,
         ageOverFalseItems,
       });
@@ -67,7 +67,7 @@ describe('selectAgeOverTag', () => {
       expect(result).toBe(tag3);
     });
 
-    it('selects the first matching false item when nn === requestedOverAge', () => {
+    it('selects the first matching false item when nn === requestedNn', () => {
       const tag1 = new Tag('value1', 24);
       const tag2 = new Tag('value2', 24);
       const ageOverTrueItems: EnrichedAgeOverIssuerSignedItem[] = [
@@ -79,7 +79,7 @@ describe('selectAgeOverTag', () => {
       ];
 
       const result = selectAgeOverTag({
-        requestedOverAge: 20,
+        requestedNn: 20,
         ageOverTrueItems,
         ageOverFalseItems,
       });
@@ -97,7 +97,7 @@ describe('selectAgeOverTag', () => {
       ];
 
       const result = selectAgeOverTag({
-        requestedOverAge: 15,
+        requestedNn: 15,
         ageOverTrueItems,
         ageOverFalseItems,
       });
@@ -110,7 +110,7 @@ describe('selectAgeOverTag', () => {
       const ageOverFalseItems: EnrichedAgeOverIssuerSignedItem[] = [];
 
       const result = selectAgeOverTag({
-        requestedOverAge: 20,
+        requestedNn: 20,
         ageOverTrueItems,
         ageOverFalseItems,
       });

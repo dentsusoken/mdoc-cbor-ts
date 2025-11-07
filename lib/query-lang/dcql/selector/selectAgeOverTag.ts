@@ -8,7 +8,7 @@ interface SelectAgeOverTagParams {
   /**
    * The requested age threshold to match against.
    */
-  requestedOverAge: number;
+  requestedNn: number;
   /**
    * Array of age_over_* items where the value is true.
    * Must be sorted in ascending order by nn value.
@@ -25,11 +25,11 @@ interface SelectAgeOverTagParams {
  * Selects the appropriate age_over_* Tag based on the requested age threshold.
  *
  * This function implements a two-step selection strategy:
- * 1. First, searches for an age_over_* item with value `true` where `nn >= requestedOverAge`.
+ * 1. First, searches for an age_over_* item with value `true` where `nn >= requestedNn`.
  *    Since `ageOverTrueItems` is sorted in ascending order by `nn`, the first matching item
  *    will be the smallest age threshold that satisfies the requirement.
  * 2. If no matching true item is found, searches for an age_over_* item with value `false`
- *    where `nn <= requestedOverAge`. Since `ageOverFalseItems` is sorted in descending order
+ *    where `nn <= requestedNn`. Since `ageOverFalseItems` is sorted in descending order
  *    by `nn`, the first matching item will be the largest age threshold that satisfies the requirement.
  *
  * @param params - Selection parameters including the requested age and sorted item arrays.
@@ -39,7 +39,7 @@ interface SelectAgeOverTagParams {
  * ```typescript
  * // Example 1: Selecting from ageOverTrueItems
  * const tag1 = selectAgeOverTag({
- *   requestedOverAge: 20,
+ *   requestedNn: 20,
  *   ageOverTrueItems: [{ nn: 18, tag: tag1 }, { nn: 21, tag: tag2 }], // sorted ascending
  *   ageOverFalseItems: [{ nn: 23, tag: tag3 }, { nn: 22, tag: tag4 }], // sorted descending
  * });
@@ -50,7 +50,7 @@ interface SelectAgeOverTagParams {
  * ```typescript
  * // Example 2: Selecting from ageOverFalseItems when no matching true item exists
  * const tag2 = selectAgeOverTag({
- *   requestedOverAge: 25,
+ *   requestedNn: 25,
  *   ageOverTrueItems: [{ nn: 18, tag: tag1 }, { nn: 21, tag: tag2 }], // sorted ascending
  *   ageOverFalseItems: [{ nn: 24, tag: tag3 }, { nn: 22, tag: tag4 }], // sorted descending
  * });
@@ -58,17 +58,17 @@ interface SelectAgeOverTagParams {
  * ```
  */
 export const selectAgeOverTag = ({
-  requestedOverAge,
+  requestedNn,
   ageOverTrueItems,
   ageOverFalseItems,
 }: SelectAgeOverTagParams): Tag | undefined => {
   const ageOverTrueItem = ageOverTrueItems.find(
-    (item) => item.nn >= requestedOverAge
+    (item) => item.nn >= requestedNn
   );
 
   if (ageOverTrueItem) {
     return ageOverTrueItem.tag;
   }
 
-  return ageOverFalseItems.find((item) => item.nn <= requestedOverAge)?.tag;
+  return ageOverFalseItems.find((item) => item.nn <= requestedNn)?.tag;
 };
