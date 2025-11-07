@@ -1,5 +1,6 @@
 import { decodeTag24 } from '@/cbor/decodeTag24';
 import { IssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
+import { getTypeName } from '@/utils/getTypeName';
 import { Tag } from 'cbor-x';
 
 /**
@@ -78,12 +79,39 @@ export const enrichIssuerSignedItems = (
     const elementIdentifier = issuerSignedItem.get('elementIdentifier')!;
     const elementValue = issuerSignedItem.get('elementValue');
 
+    if (!elementIdentifier) {
+      throw new Error('IssuerSignedItem missing elementIdentifier');
+    }
+
     if (!elementIdentifier.startsWith('age_over_')) {
       normalItems.push({ elementIdentifier, elementValue, tag });
       return;
     }
 
-    const nn = parseInt(elementIdentifier.replace('age_over_', ''), 10);
+    const ageOverMatch = elementIdentifier.match(/^age_over_(\d\d)$/);
+
+    if (!ageOverMatch) {
+      throw new Error(
+        `Invalid age_over format: ${elementIdentifier}. ` +
+          `Expected format: age_over_NN where NN is a two-digit number`
+      );
+    }
+
+    const nn = parseInt(ageOverMatch[1], 10);
+
+    if (nn > 99) {
+      throw new Error(
+        `Invalid age threshold in ${elementIdentifier}: ${nn}. ` +
+          `Expected value between 00 and 99`
+      );
+    }
+
+    if (typeof elementValue !== 'boolean') {
+      throw new Error(
+        `Invalid elementValue type for ${elementIdentifier}. ` +
+          `Expected boolean, got ${getTypeName(elementValue)}`
+      );
+    }
 
     if (elementValue === true) {
       ageOverTrueItems.push({ nn, tag });
