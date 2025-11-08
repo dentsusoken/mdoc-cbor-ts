@@ -1,14 +1,22 @@
 import { EnrichedAgeOverIssuerSignedItem } from '@/query-lang/common/enrichIssuerSignedItems';
 import { Tag } from 'cbor-x';
+import { selectAgeOverTagWithoutValues } from './selectAgeOverTagWithoutValues';
+import { selectAgeOverTagWithValues } from './selectAgeOverTagWithValues';
 
 /**
  * Parameters for {@link selectAgeOverTag}.
  */
 interface SelectAgeOverTagParams {
   /**
-   * The requested age threshold to match against.
+   * The requested age threshold (NN) to match against.
    */
   requestedNn: number;
+  /**
+   * Optional array containing exactly one boolean value indicating whether to select
+   * from `ageOverTrueItems` (true) or `ageOverFalseItems` (false).
+   * If undefined, uses a two-step selection strategy to find the best matching item.
+   */
+  requestedValues: unknown[] | undefined;
   /**
    * Array of age_over_* items where the value is true.
    * Must be sorted in ascending order by nn value.
@@ -24,22 +32,25 @@ interface SelectAgeOverTagParams {
 /**
  * Selects the appropriate age_over_* Tag based on the requested age threshold.
  *
- * This function implements a two-step selection strategy:
- * 1. First, searches for an age_over_* item with value `true` where `nn >= requestedNn`.
- *    Since `ageOverTrueItems` is sorted in ascending order by `nn`, the first matching item
- *    will be the smallest age threshold that satisfies the requirement.
- * 2. If no matching true item is found, searches for an age_over_* item with value `false`
- *    where `nn <= requestedNn`. Since `ageOverFalseItems` is sorted in descending order
- *    by `nn`, the first matching item will be the largest age threshold that satisfies the requirement.
+ * This function delegates to either {@link selectAgeOverTagWithValues} or
+ * {@link selectAgeOverTagWithoutValues} depending on whether `requestedValues` is provided.
  *
- * @param params - Selection parameters including the requested age and sorted item arrays.
+ * - If `requestedValues` is provided: searches for an exact match where `nn === requestedNn`
+ *   in the appropriate array (`ageOverTrueItems` or `ageOverFalseItems`) based on the boolean value.
+ * - If `requestedValues` is undefined: uses a two-step selection strategy to find the best matching item
+ *   (first from `ageOverTrueItems` where `nn >= requestedNn`, then from `ageOverFalseItems` where `nn <= requestedNn`).
+ *
+ * @param params - Selection parameters including the requested age threshold, optional boolean value, and sorted item arrays.
  * @returns The Tag for the selected age_over_* item, or `undefined` if no match is found.
+ * @throws {Error} If `requestedValues` is provided but is not an array of length 1.
+ * @throws {Error} If `requestedValues` is provided but `requestedValues[0]` is not a boolean.
  *
  * @example
  * ```typescript
- * // Example 1: Selecting from ageOverTrueItems
+ * // Example 1: Without requestedValues (uses two-step selection strategy)
  * const tag1 = selectAgeOverTag({
  *   requestedNn: 20,
+ *   requestedValues: undefined,
  *   ageOverTrueItems: [{ nn: 18, tag: tag1 }, { nn: 21, tag: tag2 }], // sorted ascending
  *   ageOverFalseItems: [{ nn: 23, tag: tag3 }, { nn: 22, tag: tag4 }], // sorted descending
  * });
@@ -48,27 +59,34 @@ interface SelectAgeOverTagParams {
  *
  * @example
  * ```typescript
- * // Example 2: Selecting from ageOverFalseItems when no matching true item exists
+ * // Example 2: With requestedValues (exact match)
  * const tag2 = selectAgeOverTag({
- *   requestedNn: 25,
- *   ageOverTrueItems: [{ nn: 18, tag: tag1 }, { nn: 21, tag: tag2 }], // sorted ascending
- *   ageOverFalseItems: [{ nn: 24, tag: tag3 }, { nn: 22, tag: tag4 }], // sorted descending
+ *   requestedNn: 18,
+ *   requestedValues: [true],
+ *   ageOverTrueItems: [{ nn: 18, tag: tag1 }, { nn: 21, tag: tag2 }],
+ *   ageOverFalseItems: [{ nn: 24, tag: tag3 }],
  * });
- * // Returns tag3 (age_over_24 with value false, as 24 <= 25 and no true item >= 25 exists)
+ * // Returns tag1 (age_over_18 with value true, as nn === 18)
  * ```
  */
 export const selectAgeOverTag = ({
   requestedNn,
+  requestedValues,
   ageOverTrueItems,
   ageOverFalseItems,
 }: SelectAgeOverTagParams): Tag | undefined => {
-  const ageOverTrueItem = ageOverTrueItems.find(
-    (item) => item.nn >= requestedNn
-  );
-
-  if (ageOverTrueItem) {
-    return ageOverTrueItem.tag;
+  if (requestedValues) {
+    return selectAgeOverTagWithValues({
+      requestedNn,
+      requestedValues,
+      ageOverTrueItems,
+      ageOverFalseItems,
+    });
   }
 
-  return ageOverFalseItems.find((item) => item.nn <= requestedNn)?.tag;
+  return selectAgeOverTagWithoutValues({
+    requestedNn,
+    ageOverTrueItems,
+    ageOverFalseItems,
+  });
 };
