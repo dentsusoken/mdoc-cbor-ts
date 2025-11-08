@@ -1,2 +1,2 @@
 export * from './schemas';
-export * from './selector';
+export * from './selectors';

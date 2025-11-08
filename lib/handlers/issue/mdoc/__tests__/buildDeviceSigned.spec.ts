@@ -107,4 +107,3 @@ describe('buildDeviceSigned', () => {
     deviceSignedSchema.parse(deviceSigned);
   });
 });
-
