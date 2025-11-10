@@ -43,6 +43,16 @@ export const dcqlCredentialSchema = z
     multiple: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
+    if (!data.claims && data.claim_sets) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'claim_sets MUST NOT be present if claims is absent.',
+        path: ['claim_sets'],
+      });
+
+      return z.NEVER;
+    }
+
     if (!data.claim_sets || !data.claims) {
       return;
     }
@@ -54,11 +64,12 @@ export const dcqlCredentialSchema = z
         .map((claim) => claim.id!)
     );
 
-    // Validate each claim set
+    let hasError = false;
     data.claim_sets.forEach((claimSet, setIndex) => {
       // Validate each claim ID in the claim set
       claimSet.forEach((claimId, idIndex) => {
         if (!claimIds.has(claimId)) {
+          hasError = true;
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: `Claim ID "${claimId}" referenced in claim_sets[${setIndex}][${idIndex}] does not exist in claims array`,
@@ -67,6 +78,10 @@ export const dcqlCredentialSchema = z
         }
       });
     });
+
+    if (hasError) {
+      return z.NEVER;
+    }
   });
 
 /**

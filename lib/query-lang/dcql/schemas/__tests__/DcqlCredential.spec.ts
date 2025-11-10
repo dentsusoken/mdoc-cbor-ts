@@ -479,6 +479,27 @@ describe('dcqlCredentialSchema', () => {
       }
     });
 
+    it('rejects claim_sets when claims is absent', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [['claim-1']],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues[0].path).toEqual(['claim_sets']);
+        expect(zodError.issues[0].message).toBe(
+          'claim_sets MUST NOT be present if claims is absent.'
+        );
+      }
+    });
+
     it('rejects claim_sets with non-existent claim ID', () => {
       try {
         dcqlCredentialSchema.parse({
@@ -529,7 +550,7 @@ describe('dcqlCredentialSchema', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(z.ZodError);
         const zodError = error as z.ZodError;
-        expect(zodError.issues.length).toBeGreaterThanOrEqual(2);
+        expect(zodError.issues.length).toBeGreaterThanOrEqual(3);
         expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 0]);
         expect(zodError.issues[0].message).toBe(
           'Claim ID "non-existent-1" referenced in claim_sets[0][0] does not exist in claims array'
@@ -537,6 +558,46 @@ describe('dcqlCredentialSchema', () => {
         expect(zodError.issues[1].path).toEqual(['claim_sets', 1, 0]);
         expect(zodError.issues[1].message).toBe(
           'Claim ID "non-existent-2" referenced in claim_sets[1][0] does not exist in claims array'
+        );
+        expect(zodError.issues[2].path).toEqual(['claim_sets', 1, 1]);
+        expect(zodError.issues[2].message).toBe(
+          'Claim ID "non-existent-3" referenced in claim_sets[1][1] does not exist in claims array'
+        );
+      }
+    });
+
+    it('rejects claim_sets with multiple non-existent claim IDs in same claim set', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [
+            {
+              id: 'claim-1',
+              path: ['org.iso.18013.5.1', 'given_name'],
+            },
+          ],
+          claim_sets: [['non-existent-1', 'non-existent-2', 'non-existent-3']],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        expect(zodError.issues.length).toBe(3);
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 0]);
+        expect(zodError.issues[0].message).toBe(
+          'Claim ID "non-existent-1" referenced in claim_sets[0][0] does not exist in claims array'
+        );
+        expect(zodError.issues[1].path).toEqual(['claim_sets', 0, 1]);
+        expect(zodError.issues[1].message).toBe(
+          'Claim ID "non-existent-2" referenced in claim_sets[0][1] does not exist in claims array'
+        );
+        expect(zodError.issues[2].path).toEqual(['claim_sets', 0, 2]);
+        expect(zodError.issues[2].message).toBe(
+          'Claim ID "non-existent-3" referenced in claim_sets[0][2] does not exist in claims array'
         );
       }
     });
@@ -563,6 +624,109 @@ describe('dcqlCredentialSchema', () => {
         expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 0]);
         expect(zodError.issues[0].message).toBe(
           'Claim ID "claim-1" referenced in claim_sets[0][0] does not exist in claims array'
+        );
+      }
+    });
+
+    it('rejects with multiple issues when claims is absent and claim_sets has invalid structure', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [['']],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        // Should have exactly 2 issues: one for empty string and one for claims absent
+        expect(zodError.issues.length).toBe(2);
+        // Check empty string error at claim_sets[0][0]
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0, 0]);
+        expect(zodError.issues[0].message).toBe(
+          'String must contain at least 1 character(s)'
+        );
+        // Check claims absent error at claim_sets
+        expect(zodError.issues[1].path).toEqual(['claim_sets']);
+        expect(zodError.issues[1].message).toBe(
+          'claim_sets MUST NOT be present if claims is absent.'
+        );
+      }
+    });
+
+    it('rejects with multiple issues when claims is absent and claim_sets has empty inner array', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claim_sets: [[]],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        // Should have exactly 2 issues: one for empty array and one for claims absent
+        expect(zodError.issues.length).toBe(2);
+        // Check empty array error at claim_sets[0]
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 0]);
+        expect(zodError.issues[0].message).toBe(
+          'Array must contain at least 1 element(s)'
+        );
+        // Check claims absent error at claim_sets
+        expect(zodError.issues[1].path).toEqual(['claim_sets']);
+        expect(zodError.issues[1].message).toBe(
+          'claim_sets MUST NOT be present if claims is absent.'
+        );
+      }
+    });
+
+    it('rejects with multiple issues when claim_sets has both non-existent IDs and invalid structure', () => {
+      try {
+        dcqlCredentialSchema.parse({
+          id: 'test',
+          format: 'mso_mdoc',
+          meta: {
+            doctype_value: 'org.iso.18013.5.1.mDL',
+          },
+          claims: [
+            {
+              id: 'claim-1',
+              path: ['org.iso.18013.5.1', 'given_name'],
+            },
+          ],
+          claim_sets: [['non-existent-1', 'non-existent-2'], ['']],
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(z.ZodError);
+        const zodError = error as z.ZodError;
+        // Should have exactly 4 issues: empty string validation error, two for non-existent IDs, and one for empty string in superRefine
+        expect(zodError.issues.length).toBe(4);
+        // Check empty string validation error at claim_sets[1][0]
+        expect(zodError.issues[0].path).toEqual(['claim_sets', 1, 0]);
+        expect(zodError.issues[0].message).toBe(
+          'String must contain at least 1 character(s)'
+        );
+        // Check non-existent ID issue 1 at claim_sets[0][0]
+        expect(zodError.issues[1].path).toEqual(['claim_sets', 0, 0]);
+        expect(zodError.issues[1].message).toBe(
+          'Claim ID "non-existent-1" referenced in claim_sets[0][0] does not exist in claims array'
+        );
+        // Check non-existent ID issue 2 at claim_sets[0][1]
+        expect(zodError.issues[2].path).toEqual(['claim_sets', 0, 1]);
+        expect(zodError.issues[2].message).toBe(
+          'Claim ID "non-existent-2" referenced in claim_sets[0][1] does not exist in claims array'
+        );
+        // Check empty string in superRefine at claim_sets[1][0]
+        expect(zodError.issues[3].path).toEqual(['claim_sets', 1, 0]);
+        expect(zodError.issues[3].message).toBe(
+          'Claim ID "" referenced in claim_sets[1][0] does not exist in claims array'
         );
       }
     });
