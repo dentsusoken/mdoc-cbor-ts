@@ -4,7 +4,7 @@ import { EnrichIssuerSignedItemsResult } from '@/query-lang/common/enrichIssuerS
 import { DcqlClaimSet } from '../schemas/DcqlClaimSet';
 import { toClaimMap } from '../utils/toClaimMap';
 import { extractClaims } from '../utils/extractClaims';
-import { selectIssuerNameSpaces } from './selectIssuerNameSpaces';
+import { selectIssuerNameSpacesWithoutClaimSets } from './selectIssuerNameSpacesWithoutClaimSets';
 
 /**
  * Selects issuer-signed name spaces based on DCQL claim sets.
@@ -17,7 +17,7 @@ import { selectIssuerNameSpaces } from './selectIssuerNameSpaces';
  * 1. Extracts the claim objects corresponding to the claim IDs in the claim set
  *    using {@link extractClaims}
  * 2. Attempts to select issuer-signed name spaces for those claims using
- *    {@link selectIssuerNameSpaces}
+ *    {@link selectIssuerNameSpacesWithoutClaimSets}
  * 3. If successful, returns the result immediately
  * 4. If unsuccessful, continues to the next claim set
  *
@@ -100,7 +100,7 @@ export const selectIssuerNameSpacesWithClaimSets = (
 
   for (const claimSet of claimSets) {
     const innerClaims = extractClaims(claimMap, claimSet);
-    const nameSpaces = selectIssuerNameSpaces(
+    const nameSpaces = selectIssuerNameSpacesWithoutClaimSets(
       enrichedIssuerNameSpaces,
       innerClaims
     );

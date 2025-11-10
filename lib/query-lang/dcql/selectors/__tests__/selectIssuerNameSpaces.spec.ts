@@ -1,73 +1,90 @@
 import { describe, it, expect } from 'vitest';
 import { Tag } from 'cbor-x';
+import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
+import { createTag24 } from '@/cbor/createTag24';
 import { selectIssuerNameSpaces } from '../selectIssuerNameSpaces';
-import { EnrichIssuerSignedItemsResult } from '@/query-lang/common/enrichIssuerSignedItems';
-import { DcqlClaim } from '../../schemas';
+import { DcqlClaim } from '../../schemas/DcqlClaim';
+import { DcqlClaimSet } from '../../schemas/DcqlClaimSet';
+import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
+import { MdocErrorCode } from '@/mdoc/types';
+
+/**
+ * Helper to build a Tag(24) containing an IssuerSignedItem map.
+ */
+const makeItemTag = (
+  digestID: number,
+  elementIdentifier: string,
+  elementValue: unknown
+): Tag =>
+  createTag24(
+    createIssuerSignedItem([
+      ['digestID', digestID],
+      ['random', new Uint8Array([digestID])],
+      ['elementIdentifier', elementIdentifier],
+      ['elementValue', elementValue],
+    ])
+  );
 
 describe('selectIssuerNameSpaces', () => {
-  describe('should return selected tags for normal items', () => {
-    it('returns tags for single claim in single namespace', () => {
-      const tag1 = new Tag('value1', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: tag1,
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'given_name'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-      ];
+  describe('should return empty map when claims is undefined', () => {
+    it('returns empty map when both claims and claimSets are undefined', () => {
+      const nameSpaces = new Map([['org.iso.18013.5.1', []]]);
 
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims: undefined,
+        claimSets: undefined,
+      });
 
       expect(result).not.toBeUndefined();
-      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1]);
+      expect(result!.size).toBe(0);
     });
 
-    it('returns tags for multiple claims in same namespace', () => {
-      const tag1 = new Tag('value1', 24);
-      const tag2 = new Tag('value2', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: tag1,
-              },
-              {
-                elementIdentifier: 'family_name',
-                elementValue: 'Doe',
-                tag: tag2,
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
+    it('returns empty map when claims is undefined even if nameSpaces has data', () => {
+      const nameSpaces = new Map([
+        ['org.iso.18013.5.1', [makeItemTag(1, 'given_name', 'John')]],
       ]);
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims: undefined,
+        claimSets: undefined,
+      });
+
+      expect(result).not.toBeUndefined();
+      expect(result!.size).toBe(0);
+    });
+  });
+
+  describe('should throw ErrorCodeError when claimSets is provided without claims', () => {
+    it('throws ErrorCodeError when claimSets is provided but claims is undefined', () => {
+      const nameSpaces = new Map([['org.iso.18013.5.1', []]]);
+      const claimSets: DcqlClaimSet[] = [['claim1']];
+
+      try {
+        selectIssuerNameSpaces({
+          nameSpaces,
+          claims: undefined,
+          claimSets,
+        });
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        const errorCodeError = error as ErrorCodeError;
+        expect(errorCodeError.errorCode).toBe(
+          MdocErrorCode.ClaimSetsPresentWhenClaimsAbsent
+        );
+        expect(errorCodeError.message).toBe(
+          'Claim sets are present when claims are absent. - 2017 - ClaimSetsPresentWhenClaimsAbsent'
+        );
+      }
+    });
+  });
+
+  describe('should process claims without claim sets', () => {
+    it('returns selected tags when claims are satisfied', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const tag2 = makeItemTag(2, 'family_name', 'Doe');
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1, tag2]]]);
       const claims: DcqlClaim[] = [
         {
           path: ['org.iso.18013.5.1', 'given_name'],
@@ -81,47 +98,286 @@ describe('selectIssuerNameSpaces', () => {
         },
       ];
 
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets: undefined,
+      });
 
       expect(result).not.toBeUndefined();
       expect(result!.get('org.iso.18013.5.1')).toEqual([tag1, tag2]);
     });
 
-    it('returns tags for claims in different namespaces', () => {
-      const tag1 = new Tag('value1', 24);
-      const tag2 = new Tag('value2', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: tag1,
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-        [
-          'org.iso.18013.5.2',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'document_number',
-                elementValue: '123456',
-                tag: tag2,
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
+    it('returns undefined when claims cannot be satisfied', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1]]]);
+      const claims: DcqlClaim[] = [
+        {
+          path: ['org.iso.18013.5.1', 'non_existent'],
+          values: undefined,
+          intent_to_retain: false,
+        },
+      ];
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets: undefined,
+      });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('returns undefined when namespace does not exist', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1]]]);
+      const claims: DcqlClaim[] = [
+        {
+          path: ['org.iso.18013.5.2', 'given_name'],
+          values: undefined,
+          intent_to_retain: false,
+        },
+      ];
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets: undefined,
+      });
+
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('should process claims with claim sets', () => {
+    it('returns selected tags when first claim set succeeds', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const tag2 = makeItemTag(2, 'family_name', 'Doe');
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1, tag2]]]);
+      const claims: DcqlClaim[] = [
+        {
+          id: 'claim1',
+          path: ['org.iso.18013.5.1', 'given_name'],
+          intent_to_retain: false,
+        },
+        {
+          id: 'claim2',
+          path: ['org.iso.18013.5.1', 'family_name'],
+          intent_to_retain: false,
+        },
+      ];
+      const claimSets: DcqlClaimSet[] = [['claim1', 'claim2']];
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets,
+      });
+
+      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1, tag2]);
+    });
+
+    it('returns selected tags when second claim set succeeds after first fails', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1]]]);
+      const claims: DcqlClaim[] = [
+        {
+          id: 'claim1',
+          path: ['org.iso.18013.5.1', 'non_existent'],
+          intent_to_retain: false,
+        },
+        {
+          id: 'claim2',
+          path: ['org.iso.18013.5.1', 'given_name'],
+          intent_to_retain: false,
+        },
+      ];
+      const claimSets: DcqlClaimSet[] = [
+        ['claim1'], // First claim set fails
+        ['claim2'], // Second claim set succeeds
+      ];
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets,
+      });
+
+      expect(result).not.toBeUndefined();
+      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1]);
+    });
+
+    it('returns undefined when all claim sets fail', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1]]]);
+      const claims: DcqlClaim[] = [
+        {
+          id: 'claim1',
+          path: ['org.iso.18013.5.1', 'non_existent1'],
+          intent_to_retain: false,
+        },
+        {
+          id: 'claim2',
+          path: ['org.iso.18013.5.1', 'non_existent2'],
+          intent_to_retain: false,
+        },
+      ];
+      const claimSets: DcqlClaimSet[] = [['claim1'], ['claim2']];
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets,
+      });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('throws ErrorCodeError when claim ID in claim set is not found', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1]]]);
+      const claims: DcqlClaim[] = [
+        {
+          id: 'claim1',
+          path: ['org.iso.18013.5.1', 'given_name'],
+          intent_to_retain: false,
+        },
+      ];
+      const claimSets: DcqlClaimSet[] = [['non_existent']];
+
+      try {
+        selectIssuerNameSpaces({
+          nameSpaces,
+          claims,
+          claimSets,
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        const errorCodeError = error as ErrorCodeError;
+        expect(errorCodeError.errorCode).toBe(
+          MdocErrorCode.IssuerNameSpacesSelectionFailed
+        );
+        expect(errorCodeError.message).toBe(
+          'Failed to select issuer name spaces: Claim with id non_existent not found - 2018 - IssuerNameSpacesSelectionFailed'
+        );
+      }
+    });
+  });
+
+  describe('should handle errors', () => {
+    it('re-throws ErrorCodeError without wrapping', () => {
+      // Test that ErrorCodeError from claimSets without claims is thrown correctly
+      const nameSpaces = new Map([['org.iso.18013.5.1', []]]);
+      const claimSets: DcqlClaimSet[] = [['claim1']];
+
+      try {
+        selectIssuerNameSpaces({
+          nameSpaces,
+          claims: undefined,
+          claimSets,
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        const errorCodeError = error as ErrorCodeError;
+        expect(errorCodeError.errorCode).toBe(
+          MdocErrorCode.ClaimSetsPresentWhenClaimsAbsent
+        );
+        expect(errorCodeError.message).toBe(
+          'Claim sets are present when claims are absent. - 2017 - ClaimSetsPresentWhenClaimsAbsent'
+        );
+      }
+    });
+
+    it('wraps non-ErrorCodeError in ErrorCodeError with IssuerNameSpacesSelectionFailed', () => {
+      // Test that when a regular Error occurs (like from extractClaims), it gets wrapped
+      const nameSpaces = new Map([
+        ['org.iso.18013.5.1', [makeItemTag(1, 'given_name', 'John')]],
+      ]);
+      const claims: DcqlClaim[] = [
+        {
+          id: 'claim1',
+          path: ['org.iso.18013.5.1', 'given_name'],
+          intent_to_retain: false,
+        },
+      ];
+      const claimSets: DcqlClaimSet[] = [['non_existent']];
+
+      try {
+        selectIssuerNameSpaces({
+          nameSpaces,
+          claims,
+          claimSets,
+        });
+        throw new Error('Should have thrown');
+      } catch (error) {
+        // The error from extractClaims should be wrapped in ErrorCodeError
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        const errorCodeError = error as ErrorCodeError;
+        expect(errorCodeError.errorCode).toBe(
+          MdocErrorCode.IssuerNameSpacesSelectionFailed
+        );
+        expect(errorCodeError.message).toBe(
+          'Failed to select issuer name spaces: Claim with id non_existent not found - 2018 - IssuerNameSpacesSelectionFailed'
+        );
+      }
+    });
+  });
+
+  describe('should handle edge cases', () => {
+    it('handles empty nameSpaces', () => {
+      const nameSpaces = new Map();
+      const claims: DcqlClaim[] = [
+        {
+          path: ['org.iso.18013.5.1', 'given_name'],
+          values: undefined,
+          intent_to_retain: false,
+        },
+      ];
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets: undefined,
+      });
+
+      expect(result).toBeUndefined();
+    });
+
+    it('handles claims with age_over_* items', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const tag2 = makeItemTag(2, 'age_over_18', true);
+      const nameSpaces = new Map([['org.iso.18013.5.1', [tag1, tag2]]]);
+      const claims: DcqlClaim[] = [
+        {
+          path: ['org.iso.18013.5.1', 'given_name'],
+          values: undefined,
+          intent_to_retain: false,
+        },
+        {
+          path: ['org.iso.18013.5.1', 'age_over_18'],
+          values: undefined,
+          intent_to_retain: false,
+        },
+      ];
+
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets: undefined,
+      });
+
+      expect(result).not.toBeUndefined();
+      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1, tag2]);
+    });
+
+    it('handles multiple namespaces', () => {
+      const tag1 = makeItemTag(1, 'given_name', 'John');
+      const tag2 = makeItemTag(2, 'document_number', '123456');
+      const nameSpaces = new Map([
+        ['org.iso.18013.5.1', [tag1]],
+        ['org.iso.18013.5.2', [tag2]],
       ]);
       const claims: DcqlClaim[] = [
         {
@@ -136,364 +392,15 @@ describe('selectIssuerNameSpaces', () => {
         },
       ];
 
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets: undefined,
+      });
 
       expect(result).not.toBeUndefined();
       expect(result!.get('org.iso.18013.5.1')).toEqual([tag1]);
       expect(result!.get('org.iso.18013.5.2')).toEqual([tag2]);
-    });
-
-    it('returns tag when elementValue matches requestedValues', () => {
-      const tag1 = new Tag('value1', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: tag1,
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'given_name'],
-          values: ['John', 'Jane'],
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).not.toBeUndefined();
-      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1]);
-    });
-  });
-
-  describe('should return selected tags for age_over_* items', () => {
-    it('returns tag from ageOverTrueItems when requestedValues is undefined', () => {
-      const tag1 = new Tag('value1', 24);
-      const tag2 = new Tag('value2', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [],
-            ageOverTrueItems: [
-              { nn: 18, tag: tag1 },
-              { nn: 21, tag: tag2 },
-            ],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'age_over_20'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).not.toBeUndefined();
-      expect(result!.get('org.iso.18013.5.1')).toEqual([tag2]);
-    });
-
-    it('returns tag from ageOverTrueItems when requestedValues is [true]', () => {
-      const tag1 = new Tag('value1', 24);
-      const tag2 = new Tag('value2', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [],
-            ageOverTrueItems: [
-              { nn: 18, tag: tag1 },
-              { nn: 21, tag: tag2 },
-            ],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'age_over_18'],
-          values: [true],
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).not.toBeUndefined();
-      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1]);
-    });
-
-    it('returns tag from ageOverFalseItems when requestedValues is [false]', () => {
-      const tag1 = new Tag('value1', 24);
-      const tag2 = new Tag('value2', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [
-              { nn: 24, tag: tag1 },
-              { nn: 22, tag: tag2 },
-            ],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'age_over_24'],
-          values: [false],
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).not.toBeUndefined();
-      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1]);
-    });
-  });
-
-  describe('should return undefined when namespace does not exist', () => {
-    it('returns undefined when claim references non-existent namespace', () => {
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: new Tag('value1', 24),
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.2', 'given_name'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('should return undefined when element identifier does not match', () => {
-    it('returns undefined when requestedIdentifier does not exist', () => {
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: new Tag('value1', 24),
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'family_name'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).toBeUndefined();
-    });
-
-    it('returns undefined when elementValue is not in requestedValues', () => {
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: new Tag('value1', 24),
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'given_name'],
-          values: ['Jane', 'Bob'],
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe('should handle edge cases', () => {
-    it('returns empty map when claims array is empty', () => {
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: new Tag('value1', 24),
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).not.toBeUndefined();
-      expect(result!.size).toBe(0);
-    });
-
-    it('handles multiple claims with mixed normal and age_over_* items', () => {
-      const tag1 = new Tag('value1', 24);
-      const tag2 = new Tag('value2', 24);
-      const tag3 = new Tag('value3', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: tag1,
-              },
-            ],
-            ageOverTrueItems: [
-              { nn: 18, tag: tag2 },
-              { nn: 21, tag: tag3 },
-            ],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'given_name'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-        {
-          path: ['org.iso.18013.5.1', 'age_over_20'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).not.toBeUndefined();
-      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1, tag3]);
-    });
-
-    it('returns undefined when first claim fails but second would succeed', () => {
-      const tag1 = new Tag('value1', 24);
-      const enrichedIssuerNameSpaces = new Map<
-        string,
-        EnrichIssuerSignedItemsResult
-      >([
-        [
-          'org.iso.18013.5.1',
-          {
-            normalItems: [
-              {
-                elementIdentifier: 'given_name',
-                elementValue: 'John',
-                tag: tag1,
-              },
-            ],
-            ageOverTrueItems: [],
-            ageOverFalseItems: [],
-          },
-        ],
-      ]);
-      const claims: DcqlClaim[] = [
-        {
-          path: ['org.iso.18013.5.1', 'non_existent'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-        {
-          path: ['org.iso.18013.5.1', 'given_name'],
-          values: undefined,
-          intent_to_retain: false,
-        },
-      ];
-
-      const result = selectIssuerNameSpaces(enrichedIssuerNameSpaces, claims);
-
-      expect(result).toBeUndefined();
     });
   });
 });
