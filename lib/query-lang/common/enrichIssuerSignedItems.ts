@@ -26,7 +26,7 @@ export interface EnrichedAgeOverIssuerSignedItem {
  * Separates normal IssuerSignedItems from "age_over_*" items (which are further
  * split and enriched according to their boolean value and "NN" numeric suffix).
  */
-interface EnrichIssuerSignedItemsResult {
+export interface EnrichIssuerSignedItemsResult {
   /**
    * All IssuerSignedItem entries whose elementIdentifier does NOT start with "age_over_".
    */
