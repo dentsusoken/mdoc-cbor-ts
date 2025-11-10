@@ -18,7 +18,7 @@ interface VerifyIssuerSignedParams {
   /** The current date and time */
   now: Date;
   /** Acceptable clock skew in seconds */
-  clockSkew: number;
+  clockSkew?: number;
 }
 
 /**
@@ -64,7 +64,7 @@ export const verifyIssuerSigned = ({
   if (!nameSpaces) {
     throw new ErrorCodeError(
       'NameSpaces are missing',
-      MdocErrorCode.NameSpacesMissing
+      MdocErrorCode.IssuerNameSpacesMissing
     );
   }
 

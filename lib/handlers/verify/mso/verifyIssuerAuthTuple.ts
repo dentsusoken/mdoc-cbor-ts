@@ -35,7 +35,7 @@ import { getErrorMessage } from '@/utils/getErrorMessage';
 export const verifyIssuerAuthTuple = (
   [protectedHeaders, unprotectedHeaders, payload, signature]: Sign1Tuple,
   now: Date,
-  clockSkew: number
+  clockSkew?: number
 ): Uint8Array => {
   if (payload === null) {
     throw new ErrorCodeError(
