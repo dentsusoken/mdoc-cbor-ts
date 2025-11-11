@@ -101,8 +101,8 @@ export enum MdocErrorCode {
   ValidFromMissing = 2004,
   /** ValidUntil is missing. */
   ValidUntilMissing = 2005,
-  /** NameSpaces are missing. */
-  NameSpacesMissing = 2006,
+  /** Issuer name spaces are missing. */
+  IssuerNameSpacesMissing = 2006,
   /** IssuerAuth is missing. */
   IssuerAuthMissing = 2007,
   /** IssuerAuth is invalid. */
@@ -119,6 +119,14 @@ export enum MdocErrorCode {
   DetachedPayloadRequired = 2013,
   /** Invalid input descriptor field path. */
   InvalidInputDescriptorFieldPath = 2014,
+  /** The document type is missing. */
+  DocTypeMissing = 2015,
+  /** The issuer-signed structure is missing. */
+  IssuerSignedMissing = 2016,
+  /** Claim sets are present when claims are absent. */
+  ClaimSetsPresentWhenClaimsAbsent = 2017,
+  /** Failed to select issuer name spaces. */
+  IssuerNameSpacesSelectionFailed = 2018,
 
   /** The document type does not match the expected type. */
   DocTypeMismatch = 12001,
