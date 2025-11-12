@@ -5,17 +5,16 @@ import { randomBytes } from '@noble/hashes/utils';
 import { createTag24 } from '@/cbor/createTag24';
 import { Tag } from 'cbor-x';
 import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
-import { Sign1 } from '@/cose/Sign1';
+import { Sign1 } from '@auth0/cose';
 import { Sign1Tuple } from '@/cose/Sign1';
 import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
-import { deviceSignedSchema } from '@/schemas/mdoc/DeviceSigned';
-import { decodeTag24 } from '@/cbor/decodeTag24';
 import { SessionTranscript } from '@/mdoc/types';
+import * as jose from 'jose';
 
 const p256 = createSignatureCurve('P-256', randomBytes);
 
-describe('buildDeviceSigned', () => {
-  it('builds DeviceSigned with nameSpaces and deviceAuth', () => {
+describe('buildDeviceSigned auth0 compatibility', () => {
+  it('signature should be verifiable by auth0 sign1', async () => {
     const privateKey = p256.randomPrivateKey();
     const publicKey = p256.getPublicKey(privateKey);
     const jwkPrivateKey = p256.toJwkPrivateKey(privateKey);
@@ -24,10 +23,7 @@ describe('buildDeviceSigned', () => {
     const sessionTranscript = [null, null, 1] as SessionTranscript;
     const docType = 'org.iso.18013.5.1.mDL';
     const deviceNameSpaces = nameSpacesRecordToMap({
-      'org.iso.18013.5.1': {
-        given_name: 'Alice',
-        age: 30,
-      },
+      'com.foobar-device': { test: 1234 },
     });
     const deviceNameSpacesBytes = createTag24(deviceNameSpaces);
 
@@ -39,22 +35,11 @@ describe('buildDeviceSigned', () => {
     });
 
     expect(deviceSigned).toBeInstanceOf(Map);
-    const nameSpacesTag24 = deviceSigned.get('nameSpaces');
-    expect(nameSpacesTag24).toBeInstanceOf(Tag);
-    expect(nameSpacesTag24).toHaveProperty('tag', 24);
-    const decodedNameSpaces = decodeTag24<Map<string, Map<string, unknown>>>(
-      nameSpacesTag24 as Tag
-    );
-    expect(decodedNameSpaces).toEqual(deviceNameSpaces);
-    expect(deviceSigned.get('deviceAuth')).toBeInstanceOf(Map);
-
-    const deviceAuth = deviceSigned.get('deviceAuth') as Map<string, unknown>;
-    const deviceSignature = deviceAuth.get('deviceSignature') as Tag;
+    const deviceAuth = deviceSigned.get('deviceAuth')!;
+    const deviceSignature = deviceAuth.get('deviceSignature')!;
     expect(deviceSignature).toBeInstanceOf(Tag);
-    expect(deviceSignature.tag).toBe(18);
 
-    const [protectedHeaders, unprotectedHeaders, payload, signature] =
-      deviceSignature.value as Sign1Tuple;
+    const [ph, uh, payload, sig] = deviceSignature.value as Sign1Tuple;
 
     expect(payload).toBeNull();
 
@@ -64,14 +49,8 @@ describe('buildDeviceSigned', () => {
       deviceNameSpacesBytes,
     });
 
-    const sign1 = new Sign1(
-      protectedHeaders,
-      unprotectedHeaders,
-      payload,
-      signature
-    );
-    sign1.verify(jwkPublicKey, { detachedPayload });
-
-    deviceSignedSchema.parse(deviceSigned);
+    const sign1 = new Sign1(ph, uh, payload!, sig);
+    const pubkey = await jose.importJWK(jwkPublicKey, 'ES256');
+    sign1.verify(pubkey, { detachedPayload });
   });
 });
