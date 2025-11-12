@@ -23,7 +23,7 @@ interface DeviceAuthenticationParams {
    * The device nameSpaces encoded as CBOR Tag 24 (DeviceNameSpacesBytes).
    * This represents the device-signed namespaces wrapped in Tag 24.
    */
-  deviceNameSpacesBytes: Tag;
+  nameSpacesBytes: Tag;
 }
 
 /**
@@ -50,7 +50,7 @@ interface DeviceAuthenticationParams {
  * @param params - Object with the following properties:
  * @param params.sessionTranscript The session transcript, as a tuple ([Uint8Array|null, Uint8Array|null, unknown]).
  * @param params.docType The mdoc document type string.
- * @param params.deviceNameSpacesBytes The device nameSpaces, encoded as CBOR Tag 24 (contains a Map mapping NameSpaces to DeviceSignedItems).
+ * @param params.nameSpacesBytes The device nameSpaces, encoded as CBOR Tag 24 (contains a Map mapping NameSpaces to DeviceSignedItems).
  * @returns Uint8Array representing the Tag 24-wrapped DeviceAuthentication structure.
  *
  * @see {@link createTag24}
@@ -61,25 +61,25 @@ interface DeviceAuthenticationParams {
  * ```typescript
  * const sessionTranscript: [Uint8Array | null, Uint8Array | null, unknown] = [null, null, {}];
  * const docType = "org.iso.18013.5.1.mDL";
- * const deviceNameSpacesBytes = createTag24(new Map([["org.iso.18013.5.1", new Map([["claim", 42]])]]));
+ * const nameSpacesBytes = createTag24(new Map([["org.iso.18013.5.1", new Map([["claim", 42]])]]));
  * const encoded = encodeDeviceAuthentication({
  *   sessionTranscript,
  *   docType,
- *   deviceNameSpacesBytes,
+ *   nameSpacesBytes,
  * });
  * ```
  */
 export const encodeDeviceAuthentication = ({
   sessionTranscript,
   docType,
-  deviceNameSpacesBytes,
+  nameSpacesBytes,
 }: DeviceAuthenticationParams): Uint8Array => {
   return encodeCbor(
     createTag24([
       'DeviceAuthentication',
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
     ])
   );
 };

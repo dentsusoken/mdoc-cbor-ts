@@ -18,12 +18,12 @@ describe('encodeDeviceAuthentication', () => {
           age: 30,
         },
       });
-      const deviceNameSpacesBytes = createTag24(nameSpaces);
+      const nameSpacesBytes = createTag24(nameSpaces);
 
       const encoded = encodeDeviceAuthentication({
         sessionTranscript,
         docType,
-        deviceNameSpacesBytes,
+        nameSpacesBytes,
       });
 
       const outer = decodeCbor(encoded) as Tag;
@@ -57,12 +57,12 @@ describe('encodeDeviceAuthentication', () => {
         [null, null, 'handover'];
       const docType = 'org.iso.18013.5.1.mDL';
       const nameSpaces = nameSpacesRecordToMap({ ns: { a: 1 } });
-      const deviceNameSpacesBytes = createTag24(nameSpaces);
+      const nameSpacesBytes = createTag24(nameSpaces);
 
       const encoded = encodeDeviceAuthentication({
         sessionTranscript,
         docType,
-        deviceNameSpacesBytes,
+        nameSpacesBytes,
       });
 
       const outer = decodeCbor(encoded) as Tag;
