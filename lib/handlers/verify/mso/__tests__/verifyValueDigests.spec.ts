@@ -3,7 +3,6 @@ import { verifyValueDigests } from '../verifyValueDigests';
 import { createTag24 } from '@/cbor/createTag24';
 import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { ErrorsError } from '@/mdoc/ErrorsError';
 import { MdocErrorCode } from '@/mdoc/types';
 import { calculateDigest } from '@/utils/calculateDigest';
 import { Tag } from 'cbor-x';
@@ -47,7 +46,7 @@ describe('verifyValueDigests', () => {
   });
 
   describe('error cases', () => {
-    it('should throw NameSpaceError when namespace has no digests', () => {
+    it('should throw ErrorCodeError with ValueDigestsMissing when namespace has no digests', () => {
       const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
       const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
       const valueDigests = new Map<string, Map<number, Uint8Array>>([
@@ -70,90 +69,7 @@ describe('verifyValueDigests', () => {
       }
     });
 
-    it('should aggregate ErrorsError for missing digestID', () => {
-      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
-      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
-      // Missing digest for ID 1
-      const valueDigests = new Map<string, Map<number, Uint8Array>>([
-        [ns, new Map([[2, new Uint8Array([0x00])]])],
-      ]);
-      try {
-        verifyValueDigests({
-          valueDigests,
-          nameSpaces,
-          digestAlgorithm: 'SHA-256',
-        });
-        throw new Error('Should have thrown');
-      } catch (e) {
-        expect(e).toBeInstanceOf(ErrorsError);
-        const err = e as ErrorsError;
-        expect(err.errors).toBeInstanceOf(Map);
-        expect(err.errors.size).toBe(1);
-        const nsErrors = err.errors.get(ns);
-        expect(nsErrors).toBeInstanceOf(Map);
-        expect(nsErrors?.size).toBe(1);
-        expect(nsErrors?.get('given_name')).toBe(
-          MdocErrorCode.ValueDigestMissing
-        );
-        expect(err.message).toBe(
-          'Value digests verification failed: [\n' +
-            '  [\n' +
-            '    "org.iso.18013.5.1",\n' +
-            '    [\n' +
-            '      [\n' +
-            '        "given_name",\n' +
-            '        "ValueDigestMissing"\n' +
-            '      ]\n' +
-            '    ]\n' +
-            '  ]\n' +
-            ']'
-        );
-      }
-    });
-
-    it('should aggregate ErrorsError for digest mismatch', () => {
-      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
-      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
-      // Wrong digest
-      const valueDigests = new Map<string, Map<number, Uint8Array>>([
-        [ns, new Map([[1, new Uint8Array([0xde, 0xad])]])],
-      ]);
-
-      try {
-        verifyValueDigests({
-          valueDigests,
-          nameSpaces,
-          digestAlgorithm: 'SHA-256',
-        });
-        throw new Error('Should have thrown');
-      } catch (e) {
-        expect(e).toBeInstanceOf(ErrorsError);
-        const err = e as ErrorsError;
-        expect(err.errors).toBeInstanceOf(Map);
-        expect(err.errors.size).toBe(1);
-        const nsErrors = err.errors.get(ns);
-        expect(nsErrors).toBeInstanceOf(Map);
-        expect(nsErrors?.size).toBe(1);
-        expect(nsErrors?.get('given_name')).toBe(
-          MdocErrorCode.MsoDigestMismatch
-        );
-        expect(err.message).toBe(
-          'Value digests verification failed: [\n' +
-            '  [\n' +
-            '    "org.iso.18013.5.1",\n' +
-            '    [\n' +
-            '      [\n' +
-            '        "given_name",\n' +
-            '        "MsoDigestMismatch"\n' +
-            '      ]\n' +
-            '    ]\n' +
-            '  ]\n' +
-            ']'
-        );
-      }
-    });
-
-    it('should throw NameSpaceError on CBOR decoding error', () => {
+    it('should throw ErrorCodeError with IssuerSignedItemCborDecodingError on CBOR decoding error', () => {
       const tag = new Tag('invalid', 24);
       const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
       const valueDigests = new Map<string, Map<number, Uint8Array>>([
@@ -170,35 +86,16 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MdocErrorCode.CborDecodingError);
-      }
-    });
-
-    it('should include index and original decode message in CBOR decoding ErrorCodeError', () => {
-      const tag = new Tag('invalid', 24);
-      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
-      const valueDigests = new Map<string, Map<number, Uint8Array>>([
-        [ns, new Map([[1, new Uint8Array([0x00])]])],
-      ]);
-
-      try {
-        verifyValueDigests({
-          valueDigests,
-          nameSpaces,
-          digestAlgorithm: 'SHA-256',
-        });
-        throw new Error('Should have thrown');
-      } catch (e) {
-        expect(e).toBeInstanceOf(ErrorCodeError);
-        const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MdocErrorCode.CborDecodingError);
+        expect(err.errorCode).toBe(
+          MdocErrorCode.IssuerSignedItemCborDecodingError
+        );
         expect(err.message).toBe(
-          'Failed to cbor-decode issuer-signed item[0]: Source must be a Uint8Array or Buffer but was a string - 1 - CborDecodingError'
+          `Failed to cbor-decode issuer-signed item[0]: Source must be a Uint8Array or Buffer but was a string - ${MdocErrorCode.IssuerSignedItemCborDecodingError} - IssuerSignedItemCborDecodingError`
         );
       }
     });
 
-    it('should throw NameSpaceError on CBOR validation error', () => {
+    it('should throw ErrorCodeError with IssuerSignedItemCborValidationError on CBOR validation error', () => {
       const invalidItem = new Map<string, unknown>([['foo', 'bar']]);
       const tag = createTag24(invalidItem);
       const digest = calculateDigest('SHA-256', tag);
@@ -217,16 +114,60 @@ describe('verifyValueDigests', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(ErrorCodeError);
         const err = e as ErrorCodeError;
-        expect(err.errorCode).toBe(MdocErrorCode.CborValidationError);
-        // Assert exact message including zod details
+        expect(err.errorCode).toBe(
+          MdocErrorCode.IssuerSignedItemCborValidationError
+        );
         expect(err.message).toBe(
-          'Failed to validate issuer-signed item[0] structure: [\n' +
-            '  {\n' +
-            '    "code": "custom",\n' +
-            '    "message": "IssuerSignedItem: Missing required keys: digestID, random, elementIdentifier",\n' +
-            '    "path": []\n' +
-            '  }\n' +
-            '] - 2 - CborValidationError'
+          `Failed to validate issuer-signed item[0] structure: [\n  {\n    "code": "custom",\n    "message": "IssuerSignedItem: Missing required keys: digestID, random, elementIdentifier",\n    "path": []\n  }\n] - ${MdocErrorCode.IssuerSignedItemCborValidationError} - IssuerSignedItemCborValidationError`
+        );
+      }
+    });
+
+    it('should throw ErrorCodeError with ValueDigestMissing when digest is missing for digestID', () => {
+      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      // Missing digest for ID 1
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[2, new Uint8Array([0x00])]])],
+      ]);
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(ErrorCodeError);
+        const err = e as ErrorCodeError;
+        expect(err.errorCode).toBe(MdocErrorCode.ValueDigestMissing);
+        expect(err.message).toBe(
+          `Value digest missing for elementIdentifier: given_name - ${MdocErrorCode.ValueDigestMissing} - ValueDigestMissing`
+        );
+      }
+    });
+
+    it('should throw ErrorCodeError with ValueDigestMismatch when digest does not match', () => {
+      const tag = buildIssuerSignedItemTag(1, 'given_name', 'Alice');
+      const nameSpaces = new Map<string, Tag[]>([[ns, [tag]]]);
+      // Wrong digest
+      const valueDigests = new Map<string, Map<number, Uint8Array>>([
+        [ns, new Map([[1, new Uint8Array([0xde, 0xad])]])],
+      ]);
+
+      try {
+        verifyValueDigests({
+          valueDigests,
+          nameSpaces,
+          digestAlgorithm: 'SHA-256',
+        });
+        throw new Error('Should have thrown');
+      } catch (e) {
+        expect(e).toBeInstanceOf(ErrorCodeError);
+        const err = e as ErrorCodeError;
+        expect(err.errorCode).toBe(MdocErrorCode.ValueDigestMismatch);
+        expect(err.message).toBe(
+          `Value digest mismatch for elementIdentifier: given_name - ${MdocErrorCode.ValueDigestMismatch} - ValueDigestMismatch`
         );
       }
     });
