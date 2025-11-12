@@ -16,6 +16,9 @@ import {
 import { calculateOid4vpSessionTranscriptBytes } from '@/mdoc/calculateOid4vpSessionTranscriptBytes';
 import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
 import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
+import { decodeTag24 } from '@/cbor/decodeTag24';
+import { SessionTranscript } from '@/mdoc/types';
+import { createTag24 } from '@/cbor/createTag24';
 
 const { ...publicKeyJWK } = DEVICE_JWK as jose.JWK;
 
@@ -93,12 +96,17 @@ describe('issuing a device response', () => {
       responseUri,
       verifierNonce: verifierGeneratedNonce,
     });
+    const sessionTranscript = decodeTag24<SessionTranscript>(
+      sessionTranscriptBytes
+    );
+    const deviceNameSpaces = nameSpacesRecordToMap({
+      'com.foobar-device': { test: 1234 },
+    });
+    const deviceNameSpacesBytes = createTag24(deviceNameSpaces);
     const detachedPayload = encodeDeviceAuthentication({
-      sessionTranscript: sessionTranscriptBytes,
+      sessionTranscript,
       docType: 'org.iso.18013.5.1.mDL',
-      nameSpaces: nameSpacesRecordToMap({
-        'com.foobar-device': { test: 1234 },
-      }),
+      deviceNameSpacesBytes,
     });
 
     beforeAll(async () => {
