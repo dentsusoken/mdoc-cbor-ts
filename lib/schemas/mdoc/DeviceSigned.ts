@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { deviceAuthSchema } from './DeviceAuth';
 import { createStrictMapSchema } from '@/schemas/containers/StrictMap';
-import { deviceNameSpacesSchema } from './DeviceNameSpaces';
 import { createStrictMap } from '@/strict-map/createStrictMap';
+import { embeddedCborSchema } from '@/schemas/cbor/EmbeddedCbor';
 
 /**
  * Entries definition for the DeviceSigned schema in mdoc.
@@ -17,16 +17,16 @@ import { createStrictMap } from '@/strict-map/createStrictMap';
  *
  * ```cddl
  * DeviceSigned = {
- *   "nameSpaces": DeviceNameSpaces,
+ *   "nameSpaces": DeviceNameSpacesBytes,
  *   "deviceAuth": DeviceAuth
  * }
  * ```
  *
- * @see {@link deviceNameSpacesSchema}
+ * @see {@link embeddedCborSchema}
  * @see {@link deviceAuthSchema}
  */
 export const deviceSignedEntries = [
-  ['nameSpaces', deviceNameSpacesSchema],
+  ['nameSpaces', embeddedCborSchema],
   ['deviceAuth', deviceAuthSchema],
 ] as const;
 
