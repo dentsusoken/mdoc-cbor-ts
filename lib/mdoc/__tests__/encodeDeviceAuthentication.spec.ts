@@ -21,11 +21,12 @@ describe('encodeDeviceAuthentication', () => {
           age: 30,
         },
       });
+      const deviceNameSpacesBytes = createTag24(nameSpaces);
 
       const encoded = encodeDeviceAuthentication({
         sessionTranscript: sessionTranscriptBytes,
         docType,
-        nameSpaces,
+        deviceNameSpacesBytes,
       });
 
       const outer = decodeCbor(encoded) as Tag;
@@ -57,14 +58,19 @@ describe('encodeDeviceAuthentication', () => {
 
   describe('sessionTranscript: decoded value', () => {
     it('embeds sessionTranscript as-is when already decoded', () => {
-      const sessionInner = ['already', 'decoded'];
+      const sessionInner: [unknown, unknown, unknown] = [
+        'already',
+        'decoded',
+        null,
+      ];
       const docType = 'org.iso.18013.5.1.mDL';
       const nameSpaces = nameSpacesRecordToMap({ ns: { a: 1 } });
+      const deviceNameSpacesBytes = createTag24(nameSpaces);
 
       const encoded = encodeDeviceAuthentication({
         sessionTranscript: sessionInner,
         docType,
-        nameSpaces,
+        deviceNameSpacesBytes,
       });
 
       const outer = decodeCbor(encoded) as Tag;
@@ -91,8 +97,8 @@ describe('encodeDeviceAuthentication', () => {
     });
 
     it('returns input as-is when not Uint8Array', () => {
-      const value = 123;
-      expect(decodeSessionTranscript(value)).toBe(123);
+      const value: [unknown, unknown, unknown] = ['a', 'b', 'c'];
+      expect(decodeSessionTranscript(value)).toEqual(value);
     });
   });
 });
