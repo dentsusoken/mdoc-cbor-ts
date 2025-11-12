@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { encodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
+import { decodeTag24 } from '@/cbor/decodeTag24';
 import { encodeDeviceAuthentication } from '../encodeDeviceAuthentication';
 import { calculateDeviceAutenticationBytes } from '@auth0/mdl/lib/mdoc/utils';
 import { nameSpacesRecordToMap } from '../nameSpacesRecordToMap';
@@ -26,10 +27,17 @@ describe('encodeDeviceAuthentication', () => {
         nameSpaces
       );
 
+      // Decode sessionTranscriptBytes to tuple format
+      const decodedSessionTranscript = decodeTag24(sessionTranscriptBytes) as [
+        Uint8Array | null,
+        Uint8Array | null,
+        unknown,
+      ];
+
       const nameSpacesMap = nameSpacesRecordToMap(nameSpaces);
       const deviceNameSpacesBytes = createTag24(nameSpacesMap);
       const ours = encodeDeviceAuthentication({
-        sessionTranscript: sessionTranscriptBytes,
+        sessionTranscript: decodedSessionTranscript,
         docType,
         deviceNameSpacesBytes,
       });
@@ -37,10 +45,10 @@ describe('encodeDeviceAuthentication', () => {
     });
 
     it('produces identical inner bytes for sessionTranscript as decoded value', () => {
-      const sessionInner: [unknown, unknown, unknown] = [
-        'already',
-        'decoded',
+      const sessionInner: [Uint8Array | null, Uint8Array | null, unknown] = [
         null,
+        null,
+        'handover',
       ];
       const docType = 'org.iso.18013.5.1.mDL';
       const nameSpaces = { ns: { a: 1 } };

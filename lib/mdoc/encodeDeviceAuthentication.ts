@@ -1,7 +1,5 @@
 import { encodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
-import { decodeTag24 } from '@/cbor/decodeTag24';
-import { isUint8Array } from 'u8a-utils';
 import { Tag } from 'cbor-x';
 
 /**
@@ -9,10 +7,16 @@ import { Tag } from 'cbor-x';
  */
 interface DeviceAuthenticationParams {
   /**
-   * The session transcript, provided as a CBOR Tag 24 (Uint8Array) or as an already-decoded structure.
-   * If provided as Uint8Array, it will be decoded using {@link decodeSessionTranscript}.
+   * The session transcript for DeviceAuthentication.
+   *
+   * @description
+   * A decoded session transcript tuple (structure): [DeviceEngagementBytes|null, EReaderKeyBytes|null, Handover].
+   *
+   * Each tuple entry:
+   *   [DeviceEngagementBytes: Uint8Array|null, EReaderKeyBytes: Uint8Array|null, Handover: unknown]
+   * where entries may be null if absent, per mdoc session transcript specification.
    */
-  sessionTranscript: Uint8Array | [unknown, unknown, unknown];
+  sessionTranscript: [Uint8Array | null, Uint8Array | null, unknown];
   /** The document type string (docType) as per ISO/IEC 18013-5. */
   docType: string;
   /**
@@ -23,31 +27,11 @@ interface DeviceAuthenticationParams {
 }
 
 /**
- * Decodes the session transcript for mdoc device authentication.
+ * Encodes a mdoc DeviceAuthentication structure as CBOR Tag 24 (Tag 24-wrapped array).
  *
  * @description
- * If the input is a Uint8Array, it is assumed to be a CBOR Tag 24-encoded session transcript
- * and will be decoded using {@link decodeTag24}. Otherwise, the input is returned as-is.
- *
- * @param sessionTranscript - The session transcript provided as a CBOR Tag 24-encoded Uint8Array,
- *   or as a previously-decoded value.
- * @returns The decoded session transcript object or structure.
- *
- * @see {@link decodeTag24}
- */
-export const decodeSessionTranscript = (
-  sessionTranscript: Uint8Array | [unknown, unknown, unknown]
-): [unknown, unknown, unknown] => {
-  return isUint8Array(sessionTranscript)
-    ? decodeTag24(sessionTranscript)
-    : sessionTranscript;
-};
-
-/**
- * Encodes a mdoc DeviceAuthentication structure as CBOR Tag 24.
- *
- * @description
- * The encoding follows the ISO/IEC 18013-5 specification:
+ * Serializes the mdoc DeviceAuthentication array according to ISO/IEC 18013-5, section 9.1.4.
+ * The encoded structure is:
  *
  * ```cddl
  * DeviceAuthentication = [
@@ -58,19 +42,32 @@ export const decodeSessionTranscript = (
  * ]
  * ```
  *
- * - sessionTranscript: CBOR Tag 24-wrapped transcript data (or decoded structure)
- * - docType: Document type string
- * - deviceNameSpacesBytes: Tag 24-wrapped Map mapping namespaces to element identifier/value maps
+ * - "DeviceAuthentication": Constant string identifier.
+ * - SessionTranscript: Tuple structure [DeviceEngagementBytes|null, EReaderKeyBytes|null, Handover].
+ * - DocType: Document type string (e.g., "org.iso.18013.5.1.mDL").
+ * - DeviceNameSpacesBytes: DeviceNameSpaces, encoded and wrapped as CBOR Tag 24 (see {@link createTag24}).
  *
- * @param params - The structure containing sessionTranscript, docType, and deviceNameSpacesBytes.
- * @param params.sessionTranscript - The session transcript, provided as a CBOR Tag 24 (Uint8Array) or as an already-decoded structure.
- * @param params.docType - The document type string (docType) as per ISO/IEC 18013-5.
- * @param params.deviceNameSpacesBytes - The device nameSpaces encoded as CBOR Tag 24 (DeviceNameSpacesBytes).
- * @returns The CBOR-encoded DeviceAuthentication structure as Tag 24 (Uint8Array).
+ * @param params - Object with the following properties:
+ * @param params.sessionTranscript The session transcript, as a tuple ([Uint8Array|null, Uint8Array|null, unknown]).
+ * @param params.docType The mdoc document type string.
+ * @param params.deviceNameSpacesBytes The device nameSpaces, encoded as CBOR Tag 24 (contains a Map mapping NameSpaces to DeviceSignedItems).
+ * @returns Uint8Array representing the Tag 24-wrapped DeviceAuthentication structure.
  *
  * @see {@link createTag24}
- * @see {@link decodeSessionTranscript}
+ * @see {@link decodeTag24} - Use this to decode a Tag 24-encoded session transcript if needed
  * @see https://www.iso.org/standard/69084.html (ISO/IEC 18013-5)
+ *
+ * @example
+ * ```typescript
+ * const sessionTranscript: [Uint8Array | null, Uint8Array | null, unknown] = [null, null, {}];
+ * const docType = "org.iso.18013.5.1.mDL";
+ * const deviceNameSpacesBytes = createTag24(new Map([["org.iso.18013.5.1", new Map([["claim", 42]])]]));
+ * const encoded = encodeDeviceAuthentication({
+ *   sessionTranscript,
+ *   docType,
+ *   deviceNameSpacesBytes,
+ * });
+ * ```
  */
 export const encodeDeviceAuthentication = ({
   sessionTranscript,
@@ -80,7 +77,7 @@ export const encodeDeviceAuthentication = ({
   return encodeCbor(
     createTag24([
       'DeviceAuthentication',
-      decodeSessionTranscript(sessionTranscript),
+      sessionTranscript,
       docType,
       deviceNameSpacesBytes,
     ])

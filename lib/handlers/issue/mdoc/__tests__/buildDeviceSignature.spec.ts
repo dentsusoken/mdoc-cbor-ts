@@ -4,6 +4,7 @@ import { createSignatureCurve } from 'noble-curves-extended';
 import { randomBytes } from '@noble/hashes/utils';
 import { encodeCbor, decodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
+import { decodeTag24 } from '@/cbor/decodeTag24';
 import { Tag } from 'cbor-x';
 import { Header, Algorithm } from '@/cose/types';
 import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
@@ -43,10 +44,17 @@ describe('buildDeviceSignature', () => {
 
     expect(payload).toBeNull();
 
+    // Decode sessionTranscriptBytes to tuple format
+    const sessionTranscript = decodeTag24(sessionTranscriptBytes) as [
+      Uint8Array | null,
+      Uint8Array | null,
+      unknown,
+    ];
+    const deviceNameSpacesBytes = createTag24(nameSpaces);
     const detachedPayload = encodeDeviceAuthentication({
-      sessionTranscript: sessionTranscriptBytes,
+      sessionTranscript,
       docType,
-      nameSpaces,
+      deviceNameSpacesBytes,
     });
 
     const headers = decodeCbor(protectedHeaders) as Map<number, unknown>;
@@ -81,10 +89,17 @@ describe('buildDeviceSignature', () => {
 
     expect(payload).toBeNull();
 
+    // Decode sessionTranscriptBytes to tuple format
+    const sessionTranscript = decodeTag24(sessionTranscriptBytes) as [
+      Uint8Array | null,
+      Uint8Array | null,
+      unknown,
+    ];
+    const deviceNameSpacesBytes = createTag24(new Map());
     const detachedPayload = encodeDeviceAuthentication({
-      sessionTranscript: sessionTranscriptBytes,
+      sessionTranscript,
       docType,
-      nameSpaces: new Map(),
+      deviceNameSpacesBytes,
     });
 
     const sign1 = new Sign1(ph, uh, payload, sig);

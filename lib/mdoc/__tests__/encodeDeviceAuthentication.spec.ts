@@ -1,18 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { Tag } from 'cbor-x';
-import { encodeCbor, decodeCbor } from '@/cbor/codec';
+import { decodeCbor } from '@/cbor/codec';
 import { createTag24 } from '@/cbor/createTag24';
-import {
-  decodeSessionTranscript,
-  encodeDeviceAuthentication,
-} from '../encodeDeviceAuthentication';
+import { encodeDeviceAuthentication } from '../encodeDeviceAuthentication';
 import { nameSpacesRecordToMap } from '../nameSpacesRecordToMap';
 
 describe('encodeDeviceAuthentication', () => {
-  describe('sessionTranscript: Uint8Array', () => {
-    it('embeds decoded sessionTranscript (from Tag24 bytes) in the array', () => {
-      const sessionInner = new Map<string, unknown>([['k', 'v']]);
-      const sessionTranscriptBytes = encodeCbor(createTag24(sessionInner));
+  describe('sessionTranscript as tuple', () => {
+    it('embeds sessionTranscript tuple in the array', () => {
+      const sessionTranscript: [Uint8Array | null, Uint8Array | null, unknown] =
+        [null, null, new Map<string, unknown>([['k', 'v']])];
 
       const docType = 'org.iso.18013.5.1.mDL';
       const nameSpaces = nameSpacesRecordToMap({
@@ -24,7 +21,7 @@ describe('encodeDeviceAuthentication', () => {
       const deviceNameSpacesBytes = createTag24(nameSpaces);
 
       const encoded = encodeDeviceAuthentication({
-        sessionTranscript: sessionTranscriptBytes,
+        sessionTranscript,
         docType,
         deviceNameSpacesBytes,
       });
@@ -35,13 +32,13 @@ describe('encodeDeviceAuthentication', () => {
 
       const inner = decodeCbor(outer.value as Uint8Array) as [
         string,
-        unknown,
+        [Uint8Array | null, Uint8Array | null, unknown],
         string,
         Tag,
       ];
 
       expect(inner[0]).toBe('DeviceAuthentication');
-      expect(inner[1]).toEqual(sessionInner);
+      expect(inner[1]).toEqual(sessionTranscript);
       expect(inner[2]).toBe(docType);
 
       const nsTag = inner[3];
@@ -54,21 +51,16 @@ describe('encodeDeviceAuthentication', () => {
       >;
       expect(nsDecoded).toEqual(nameSpaces);
     });
-  });
 
-  describe('sessionTranscript: decoded value', () => {
-    it('embeds sessionTranscript as-is when already decoded', () => {
-      const sessionInner: [unknown, unknown, unknown] = [
-        'already',
-        'decoded',
-        null,
-      ];
+    it('embeds sessionTranscript with null values', () => {
+      const sessionTranscript: [Uint8Array | null, Uint8Array | null, unknown] =
+        [null, null, 'handover'];
       const docType = 'org.iso.18013.5.1.mDL';
       const nameSpaces = nameSpacesRecordToMap({ ns: { a: 1 } });
       const deviceNameSpacesBytes = createTag24(nameSpaces);
 
       const encoded = encodeDeviceAuthentication({
-        sessionTranscript: sessionInner,
+        sessionTranscript,
         docType,
         deviceNameSpacesBytes,
       });
@@ -76,29 +68,15 @@ describe('encodeDeviceAuthentication', () => {
       const outer = decodeCbor(encoded) as Tag;
       const inner = decodeCbor(outer.value as Uint8Array) as [
         string,
-        unknown,
+        [Uint8Array | null, Uint8Array | null, unknown],
         string,
         Tag,
       ];
 
       expect(inner[0]).toBe('DeviceAuthentication');
-      expect(inner[1]).toEqual(sessionInner);
+      expect(inner[1]).toEqual(sessionTranscript);
       expect(inner[2]).toBe(docType);
       expect(inner[3]).toBeInstanceOf(Tag);
-    });
-  });
-  describe('decodeSessionTranscript', () => {
-    it('returns decoded value when input is Tag24 as Uint8Array', () => {
-      const innerValue = { x: 1 };
-      const bytes = encodeCbor(createTag24(innerValue));
-      const decoded = decodeSessionTranscript(bytes);
-      // cbor-x decodes objects to Map
-      expect(decoded).toEqual(new Map([['x', 1]]));
-    });
-
-    it('returns input as-is when not Uint8Array', () => {
-      const value: [unknown, unknown, unknown] = ['a', 'b', 'c'];
-      expect(decodeSessionTranscript(value)).toEqual(value);
     });
   });
 });

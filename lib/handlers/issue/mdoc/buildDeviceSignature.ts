@@ -1,5 +1,7 @@
 import { encodeCbor } from '@/cbor/codec';
 import { createTag18 } from '@/cbor/createTag18';
+import { createTag24 } from '@/cbor/createTag24';
+import { decodeTag24 } from '@/cbor/decodeTag24';
 import { jwkToCoseCurveAlgorithm } from '@/cose/jwkToCoseCurveAlgorithm';
 import { Sign1 } from '@/cose/Sign1';
 import { Header } from '@/cose/types';
@@ -65,10 +67,15 @@ export const buildDeviceSignature = ({
   deviceJwkPrivateKey,
 }: BuildDeviceSignatureParams): DeviceSignature => {
   const { algorithm } = jwkToCoseCurveAlgorithm(deviceJwkPrivateKey);
+  // Decode sessionTranscriptBytes to tuple format
+  const sessionTranscript = decodeTag24(
+    sessionTranscriptBytes
+  ) as [Uint8Array | null, Uint8Array | null, unknown];
+  const deviceNameSpacesBytes = createTag24(nameSpaces);
   const detachedPayload = encodeDeviceAuthentication({
-    sessionTranscript: sessionTranscriptBytes,
+    sessionTranscript,
     docType,
-    nameSpaces,
+    deviceNameSpacesBytes,
   });
   const payload = null;
   const sign1 = Sign1.sign({
