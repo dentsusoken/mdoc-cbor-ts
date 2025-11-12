@@ -101,7 +101,7 @@ describe('verifyIssuerSigned', () => {
         verifyIssuerSigned({ issuerSigned, now, clockSkew });
         throw new Error('Should have thrown');
       } catch (e) {
-        const code = MdocErrorCode.NameSpacesMissing;
+        const code = MdocErrorCode.IssuerNameSpacesMissing;
         const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
           `NameSpaces are missing - ${code} - ${name}`
