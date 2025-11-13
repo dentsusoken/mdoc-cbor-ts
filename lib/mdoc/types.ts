@@ -76,6 +76,8 @@ export enum MdocErrorCode {
   ValueDigestMissing = 2021,
   /** Value digest does not match the expected digest. */
   ValueDigestMismatch = 2022,
+  /** Signed is missing. */
+  SignedMissing = 2023,
 }
 
 /**
