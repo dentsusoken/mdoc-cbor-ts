@@ -8,6 +8,7 @@ import { verifyValidityInfo } from './verifyValidityInfo';
 import { verifyIssuerAuthTuple } from './verifyIssuerAuthTuple';
 import { verifyMobileSecurityObject } from './verifyMobileSecurityObject';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
+import { toIssuerSignedObject } from '@/handlers/to-object';
 
 /**
  * Parameters for verifying an IssuerSigned structure.
@@ -60,21 +61,7 @@ export const verifyIssuerSigned = ({
   now,
   clockSkew,
 }: VerifyIssuerSignedParams): VerifyIssuerSignedResult => {
-  const nameSpaces = issuerSigned.get('nameSpaces');
-  if (!nameSpaces) {
-    throw new ErrorCodeError(
-      'NameSpaces are missing',
-      MdocErrorCode.IssuerNameSpacesMissing
-    );
-  }
-
-  const issuerAuth = issuerSigned.get('issuerAuth');
-  if (!issuerAuth) {
-    throw new ErrorCodeError(
-      'IssuerAuth is missing',
-      MdocErrorCode.IssuerAuthMissing
-    );
-  }
+  const { nameSpaces, issuerAuth } = toIssuerSignedObject(issuerSigned);
 
   const payload = verifyIssuerAuthTuple(
     issuerAuth.value as Sign1Tuple,

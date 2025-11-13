@@ -104,7 +104,7 @@ describe('verifyIssuerSigned', () => {
         const code = MdocErrorCode.IssuerNameSpacesMissing;
         const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
-          `NameSpaces are missing - ${code} - ${name}`
+          `The issuer name spaces are missing. - ${code} - ${name}`
         );
       }
     });
@@ -122,7 +122,7 @@ describe('verifyIssuerSigned', () => {
         const code = MdocErrorCode.IssuerAuthMissing;
         const name = MdocErrorCode[code];
         expect((e as Error).message).toBe(
-          `IssuerAuth is missing - ${code} - ${name}`
+          `The issuer authentication is missing. - ${code} - ${name}`
         );
       }
     });
