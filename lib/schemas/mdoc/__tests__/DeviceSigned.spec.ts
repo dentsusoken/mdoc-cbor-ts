@@ -8,6 +8,7 @@ import {
 import { getTypeName } from '@/utils/getTypeName';
 import { createTag18 } from '@/cbor';
 import { createTag17 } from '@/cbor/createTag17';
+import { createTag24 } from '@/cbor/createTag24';
 
 describe('DeviceSigned', () => {
   describe('valid device signed data', () => {
@@ -28,8 +29,9 @@ describe('DeviceSigned', () => {
       const nameSpaces = new Map<string, unknown>([
         ['org.iso.18013.5.1', new Map([['given_name', 'Alice']])],
       ]);
+      const nameSpacesTag24 = createTag24(nameSpaces);
       const data = new Map<string, unknown>([
-        ['nameSpaces', nameSpaces],
+        ['nameSpaces', nameSpacesTag24],
         ['deviceAuth', new Map([['deviceSignature', sign1]])],
       ]);
 
@@ -41,8 +43,9 @@ describe('DeviceSigned', () => {
       const nameSpaces = new Map<string, unknown>([
         ['org.iso.18013.5.1', new Map([['family_name', 'Smith']])],
       ]);
+      const nameSpacesTag24 = createTag24(nameSpaces);
       const data = new Map<string, unknown>([
-        ['nameSpaces', nameSpaces],
+        ['nameSpaces', nameSpacesTag24],
         ['deviceAuth', new Map([['deviceMac', mac0]])],
       ]);
 
@@ -51,8 +54,10 @@ describe('DeviceSigned', () => {
     });
 
     it('should accept device signed data with empty nameSpaces', () => {
+      const emptyNameSpaces = new Map();
+      const nameSpacesTag24 = createTag24(emptyNameSpaces);
       const data = new Map<string, unknown>([
-        ['nameSpaces', new Map()],
+        ['nameSpaces', nameSpacesTag24],
         ['deviceAuth', new Map([['deviceSignature', sign1]])],
       ]);
 
@@ -150,6 +155,7 @@ describe('DeviceSigned', () => {
     const nameSpaces = new Map<string, unknown>([
       ['org.iso.18013.5.1', new Map([['given_name', 'Alice']])],
     ]);
+    const nameSpacesTag24 = createTag24(nameSpaces);
     const sign1 = createTag18([
       new Uint8Array([]),
       new Map<number, string>([[1, 'value']]),
@@ -167,13 +173,13 @@ describe('DeviceSigned', () => {
         expectedMessage: containerInvalidValueMessage({
           target: 'DeviceSigned',
           path: ['nameSpaces'],
-          originalMessage: 'Expected Map, received null',
+          originalMessage: 'Input not instance of Tag',
         }),
       },
       {
         name: 'null deviceAuth',
         input: new Map<string, unknown>([
-          ['nameSpaces', nameSpaces],
+          ['nameSpaces', nameSpacesTag24],
           ['deviceAuth', null],
         ]),
         expectedMessage: containerInvalidValueMessage({
@@ -185,7 +191,7 @@ describe('DeviceSigned', () => {
       {
         name: 'null deviceSignature in deviceAuth',
         input: new Map<string, unknown>([
-          ['nameSpaces', nameSpaces],
+          ['nameSpaces', nameSpacesTag24],
           ['deviceAuth', new Map([['deviceSignature', null]])],
         ]),
         expectedMessage: containerInvalidValueMessage({
@@ -216,6 +222,7 @@ describe('DeviceSigned', () => {
       const nameSpaces = new Map<string, Map<string, unknown>>([
         ['org.iso.18013.5.1', new Map([['given_name', 'Alice']])],
       ]);
+      const nameSpacesTag24 = createTag24(nameSpaces);
       const sign1Tuple: [
         Uint8Array,
         Map<number, string>,
@@ -231,12 +238,12 @@ describe('DeviceSigned', () => {
       const deviceAuth = new Map([['deviceSignature', deviceSignature]]);
 
       const deviceSigned = createDeviceSigned([
-        ['nameSpaces', nameSpaces],
+        ['nameSpaces', nameSpacesTag24],
         ['deviceAuth', deviceAuth],
       ]);
 
       expect(deviceSigned).toBeInstanceOf(Map);
-      expect(deviceSigned.get('nameSpaces')).toBe(nameSpaces);
+      expect(deviceSigned.get('nameSpaces')).toBe(nameSpacesTag24);
       expect(deviceSigned.get('deviceAuth')).toBe(deviceAuth);
       deviceSignedSchema.parse(deviceSigned);
     });
@@ -245,6 +252,7 @@ describe('DeviceSigned', () => {
       const nameSpaces = new Map<string, Map<string, unknown>>([
         ['org.iso.18013.5.1', new Map([['family_name', 'Smith']])],
       ]);
+      const nameSpacesTag24 = createTag24(nameSpaces);
       const mac0Tuple: [
         Uint8Array,
         Map<number, string>,
@@ -260,18 +268,19 @@ describe('DeviceSigned', () => {
       const deviceAuth = new Map([['deviceMac', deviceMac]]);
 
       const deviceSigned = createDeviceSigned([
-        ['nameSpaces', nameSpaces],
+        ['nameSpaces', nameSpacesTag24],
         ['deviceAuth', deviceAuth],
       ]);
 
       expect(deviceSigned).toBeInstanceOf(Map);
-      expect(deviceSigned.get('nameSpaces')).toBe(nameSpaces);
+      expect(deviceSigned.get('nameSpaces')).toBe(nameSpacesTag24);
       expect(deviceSigned.get('deviceAuth')).toBe(deviceAuth);
       deviceSignedSchema.parse(deviceSigned);
     });
 
     it('creates DeviceSigned with empty nameSpaces and deviceAuth', () => {
       const nameSpaces = new Map<string, Map<string, unknown>>();
+      const nameSpacesTag24 = createTag24(nameSpaces);
       const sign1Tuple: [
         Uint8Array,
         Map<number, string>,
@@ -287,12 +296,12 @@ describe('DeviceSigned', () => {
       const deviceAuth = new Map([['deviceSignature', deviceSignature]]);
 
       const deviceSigned = createDeviceSigned([
-        ['nameSpaces', nameSpaces],
+        ['nameSpaces', nameSpacesTag24],
         ['deviceAuth', deviceAuth],
       ]);
 
       expect(deviceSigned).toBeInstanceOf(Map);
-      expect(deviceSigned.get('nameSpaces')).toBe(nameSpaces);
+      expect(deviceSigned.get('nameSpaces')).toBe(nameSpacesTag24);
       expect(deviceSigned.get('deviceAuth')).toBe(deviceAuth);
       deviceSignedSchema.parse(deviceSigned);
     });

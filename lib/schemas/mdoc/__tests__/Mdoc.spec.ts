@@ -50,7 +50,7 @@ const createMinimalDeviceSigned = (): Map<string, unknown> => {
   ] as Tag17Content;
   return deviceSignedSchema.parse(
     new Map<string, unknown>([
-      ['nameSpaces', new Map()],
+      ['nameSpaces', createTag24(new Map())],
       [
         'deviceAuth',
         new Map<string, unknown>([
@@ -82,8 +82,8 @@ const createMinimalDocumentError = (): Map<string, number> => {
   );
 };
 
-describe('MDoc', (): void => {
-  describe('should accept valid DeviceResponse maps', (): void => {
+describe('Mdoc', (): void => {
+  describe('should accept valid Mdoc maps', (): void => {
     it('with documents only', (): void => {
       const doc = createMinimalDocument();
       const input = new Map<string, unknown>([

@@ -46,7 +46,7 @@ const createMinimalDeviceSigned = (): Map<string, unknown> => {
   ] as Tag17Content;
   return deviceSignedSchema.parse(
     new Map<string, unknown>([
-      ['nameSpaces', new Map()],
+      ['nameSpaces', createTag24(new Map())],
       [
         'deviceAuth',
         new Map<string, unknown>([
