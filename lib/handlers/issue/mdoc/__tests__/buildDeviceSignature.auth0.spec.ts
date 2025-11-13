@@ -85,28 +85,28 @@ describe('issuing a device response', () => {
   });
 
   describe('using OID4VP handover', () => {
-    const verifierGeneratedNonce = 'abcdefg';
-    const mdocGeneratedNonce = '123456';
+    const verifierNonce = 'abcdefg';
+    const mdocNonce = '123456';
     const clientId = 'Cq1anPb8vZU5j5C0d7hcsbuJLBpIawUJIDQRi2Ebwb4';
     const responseUri =
       'http://localhost:4000/api/presentation_request/dc8999df-d6ea-4c84-9985-37a8b81a82ec/callback';
     const sessionTranscriptBytes = calculateOid4vpSessionTranscriptBytes({
-      mdocNonce: mdocGeneratedNonce,
+      mdocNonce,
       clientId,
       responseUri,
-      verifierNonce: verifierGeneratedNonce,
+      verifierNonce,
     });
     const sessionTranscript = decodeTag24<SessionTranscript>(
       sessionTranscriptBytes
     );
-    const deviceNameSpaces = nameSpacesRecordToMap({
+    const nameSpaces = nameSpacesRecordToMap({
       'com.foobar-device': { test: 1234 },
     });
-    const deviceNameSpacesBytes = createTag24(deviceNameSpaces);
+    const nameSpacesBytes = createTag24(nameSpaces);
     const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript,
       docType: 'org.iso.18013.5.1.mDL',
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
     });
 
     beforeAll(async () => {
@@ -115,10 +115,10 @@ describe('issuing a device response', () => {
       const deviceResponseMDoc = await DeviceResponse.from(mdoc)
         .usingPresentationDefinition(PRESENTATION_DEFINITION_1)
         .usingSessionTranscriptForOID4VP(
-          mdocGeneratedNonce,
+          mdocNonce,
           clientId,
           responseUri,
-          verifierGeneratedNonce
+          verifierNonce
         )
         .authenticateWithSignature(devicePrivateKey, 'ES256')
         .addDeviceNameSpace('com.foobar-device', { test: 1234 })

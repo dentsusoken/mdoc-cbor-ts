@@ -31,7 +31,7 @@ interface BuildDeviceSignatureParams {
    *
    * @see {@link createTag24}
    */
-  deviceNameSpacesBytes: Tag;
+  nameSpacesBytes: Tag;
   /** The device's private JWK for signing the DeviceAuthentication. */
   deviceJwkPrivateKey: JwkPrivateKey;
 }
@@ -52,7 +52,7 @@ interface BuildDeviceSignatureParams {
  * @param params - The parameters for constructing the device signature.
  * @param params.sessionTranscript The session transcript tuple structure for DeviceAuthentication.
  * @param params.docType The mdoc document type string.
- * @param params.deviceNameSpacesBytes The device nameSpaces, encoded as CBOR Tag 24.
+ * @param params.nameSpacesBytes The device nameSpaces, encoded as CBOR Tag 24.
  * @param params.deviceJwkPrivateKey The device's private JWK (EC, P-256, etc) for signing.
  * @returns The device signature as a tagged COSE_Sign1 structure (DeviceSignature).
  *
@@ -66,11 +66,11 @@ interface BuildDeviceSignatureParams {
  * ```typescript
  * const sessionTranscript: SessionTranscript = [null, null, handoverData];
  * const docType = "org.iso.18013.5.1.mDL";
- * const deviceNameSpacesBytes = createTag24(new Map([["org.iso.18013.5.1", new Map([["claim", 42]])]]));
+ * const nameSpacesBytes = createTag24(new Map([["org.iso.18013.5.1", new Map([["claim", 42]])]]));
  * const deviceSignature = buildDeviceSignature({
  *   sessionTranscript,
  *   docType,
- *   deviceNameSpacesBytes,
+ *   nameSpacesBytes,
  *   deviceJwkPrivateKey,
  * });
  * ```
@@ -78,14 +78,14 @@ interface BuildDeviceSignatureParams {
 export const buildDeviceSignature = ({
   sessionTranscript,
   docType,
-  deviceNameSpacesBytes,
+  nameSpacesBytes,
   deviceJwkPrivateKey,
 }: BuildDeviceSignatureParams): DeviceSignature => {
   const { algorithm } = jwkToCoseCurveAlgorithm(deviceJwkPrivateKey);
   const detachedPayload = encodeDeviceAuthentication({
     sessionTranscript,
     docType,
-    deviceNameSpacesBytes,
+    nameSpacesBytes,
   });
   const payload = null;
   const sign1 = Sign1.sign({

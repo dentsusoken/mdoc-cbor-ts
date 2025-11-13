@@ -7,8 +7,7 @@ import { createTag24 } from '@/cbor/createTag24';
 import { Tag } from 'cbor-x';
 import { Header, Algorithm } from '@/cose/types';
 import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
-import { Sign1 } from '@/cose/Sign1';
-import { Sign1Tuple } from '@/cose/Sign1';
+import { Sign1, Sign1Tuple } from '@/cose/Sign1';
 import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 import { SessionTranscript } from '@/mdoc/types';
 
@@ -28,12 +27,12 @@ describe('buildDeviceSignature', () => {
         given_name: 'Alice',
       },
     });
-    const deviceNameSpacesBytes = createTag24(nameSpaces);
+    const nameSpacesBytes = createTag24(nameSpaces);
 
     const tag = buildDeviceSignature({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
       deviceJwkPrivateKey: jwkPrivateKey,
     });
 
@@ -48,7 +47,7 @@ describe('buildDeviceSignature', () => {
     const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
     });
 
     const headers = decodeCbor(protectedHeaders) as Map<number, unknown>;
@@ -71,12 +70,12 @@ describe('buildDeviceSignature', () => {
 
     const sessionTranscript: SessionTranscript = [null, null, ['any', 1]];
     const docType = 'org.iso.18013.5.1.mDL';
-    const deviceNameSpacesBytes = createTag24(new Map());
+    const nameSpacesBytes = createTag24(new Map());
 
     const tag = buildDeviceSignature({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
       deviceJwkPrivateKey: jwkPrivateKey,
     });
 
@@ -88,7 +87,7 @@ describe('buildDeviceSignature', () => {
     const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
     });
 
     const sign1 = new Sign1(ph, uh, payload, sig);
