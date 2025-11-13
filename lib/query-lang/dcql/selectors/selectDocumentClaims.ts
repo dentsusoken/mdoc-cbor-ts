@@ -4,6 +4,7 @@ import { createIssuerSigned } from '@/schemas/mdoc/IssuerSigned';
 import { MdocErrorCode } from '@/mdoc/types';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { selectIssuerNameSpaces } from './selectIssuerNameSpaces';
+import { toIssuerSignedDocumentObject } from '@/handlers/to-object';
 
 /**
  * Selects and filters a Document based on DCQL credential claims.
@@ -110,40 +111,13 @@ export const selectDocumentClaims = (
   document: Document,
   credential: DcqlCredential
 ): Document | undefined => {
-  const docType = document.get('docType');
-  if (!docType) {
-    throw new ErrorCodeError(
-      'The document type is missing.',
-      MdocErrorCode.DocTypeMissing
-    );
-  }
+  const {
+    docType,
+    issuerSigned: { nameSpaces, issuerAuth },
+  } = toIssuerSignedDocumentObject(document);
 
   if (docType !== credential.meta.doctype_value) {
     return undefined;
-  }
-
-  const issuerSigned = document.get('issuerSigned');
-  if (!issuerSigned) {
-    throw new ErrorCodeError(
-      'The issuer-signed structure is missing.',
-      MdocErrorCode.IssuerSignedMissing
-    );
-  }
-
-  const issuerAuth = issuerSigned.get('issuerAuth');
-  if (!issuerAuth) {
-    throw new ErrorCodeError(
-      'The issuer authentication is missing.',
-      MdocErrorCode.IssuerAuthMissing
-    );
-  }
-
-  const nameSpaces = issuerSigned.get('nameSpaces');
-  if (!nameSpaces) {
-    throw new ErrorCodeError(
-      'The name spaces are missing.',
-      MdocErrorCode.IssuerNameSpacesMissing
-    );
   }
 
   const selectedNameSpaces = selectIssuerNameSpaces({
