@@ -23,18 +23,18 @@ describe('buildDeviceSigned', () => {
 
     const sessionTranscript = [null, null, 1] as SessionTranscript;
     const docType = 'org.iso.18013.5.1.mDL';
-    const deviceNameSpaces = nameSpacesRecordToMap({
+    const nameSpaces = nameSpacesRecordToMap({
       'org.iso.18013.5.1': {
         given_name: 'Alice',
         age: 30,
       },
     });
-    const deviceNameSpacesBytes = createTag24(deviceNameSpaces);
+    const nameSpacesBytes = createTag24(nameSpaces);
 
     const deviceSigned = buildDeviceSigned({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
       deviceJwkPrivateKey: jwkPrivateKey,
     });
 
@@ -45,11 +45,11 @@ describe('buildDeviceSigned', () => {
     const decodedNameSpaces = decodeTag24<Map<string, Map<string, unknown>>>(
       nameSpacesTag24 as Tag
     );
-    expect(decodedNameSpaces).toEqual(deviceNameSpaces);
+    expect(decodedNameSpaces).toEqual(nameSpaces);
     expect(deviceSigned.get('deviceAuth')).toBeInstanceOf(Map);
 
-    const deviceAuth = deviceSigned.get('deviceAuth') as Map<string, unknown>;
-    const deviceSignature = deviceAuth.get('deviceSignature') as Tag;
+    const deviceAuth = deviceSigned.get('deviceAuth')!;
+    const deviceSignature = deviceAuth.get('deviceSignature')!;
     expect(deviceSignature).toBeInstanceOf(Tag);
     expect(deviceSignature.tag).toBe(18);
 
@@ -61,7 +61,7 @@ describe('buildDeviceSigned', () => {
     const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
     });
 
     const sign1 = new Sign1(

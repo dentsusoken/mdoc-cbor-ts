@@ -22,15 +22,15 @@ describe('buildDeviceSigned auth0 compatibility', () => {
 
     const sessionTranscript = [null, null, 1] as SessionTranscript;
     const docType = 'org.iso.18013.5.1.mDL';
-    const deviceNameSpaces = nameSpacesRecordToMap({
+    const nameSpaces = nameSpacesRecordToMap({
       'com.foobar-device': { test: 1234 },
     });
-    const deviceNameSpacesBytes = createTag24(deviceNameSpaces);
+    const nameSpacesBytes = createTag24(nameSpaces);
 
     const deviceSigned = buildDeviceSigned({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes,
       deviceJwkPrivateKey: jwkPrivateKey,
     });
 
@@ -46,7 +46,7 @@ describe('buildDeviceSigned auth0 compatibility', () => {
     const detachedPayload = encodeDeviceAuthentication({
       sessionTranscript,
       docType,
-      deviceNameSpacesBytes,
+      nameSpacesBytes: nameSpacesBytes,
     });
 
     const sign1 = new Sign1(ph, uh, payload!, sig);

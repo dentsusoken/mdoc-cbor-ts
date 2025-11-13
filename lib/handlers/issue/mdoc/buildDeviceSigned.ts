@@ -28,7 +28,7 @@ interface BuildDeviceSignedParams {
    *
    * @see {@link createTag24}
    */
-  deviceNameSpacesBytes: Tag;
+  nameSpacesBytes: Tag;
   /** The device's private JWK for signing the DeviceAuthentication. */
   deviceJwkPrivateKey: JwkPrivateKey;
 }
@@ -48,7 +48,7 @@ interface BuildDeviceSignedParams {
  * @param params - The parameters for constructing the DeviceSigned structure.
  * @param params.sessionTranscript The session transcript tuple structure for DeviceAuthentication.
  * @param params.docType The mdoc document type string.
- * @param params.deviceNameSpacesBytes The device nameSpaces, encoded as CBOR Tag 24.
+ * @param params.nameSpacesBytes The device nameSpaces, encoded as CBOR Tag 24.
  * @param params.deviceJwkPrivateKey The device's private JWK (EC, P-256, etc) for signing.
  * @returns The complete DeviceSigned structure containing nameSpaces and deviceAuth.
  *
@@ -62,11 +62,11 @@ interface BuildDeviceSignedParams {
  * ```typescript
  * const sessionTranscript: SessionTranscript = [null, null, handoverData];
  * const docType = "org.iso.18013.5.1.mDL";
- * const deviceNameSpacesBytes = createTag24(new Map([["org.iso.18013.5.1", new Map([["claim", 42]])]]));
+ * const nameSpacesBytes = createTag24(new Map([["org.iso.18013.5.1", new Map([["claim", 42]])]]));
  * const deviceSigned = buildDeviceSigned({
  *   sessionTranscript,
  *   docType,
- *   deviceNameSpacesBytes,
+ *   nameSpacesBytes,
  *   deviceJwkPrivateKey,
  * });
  * ```
@@ -74,19 +74,19 @@ interface BuildDeviceSignedParams {
 export const buildDeviceSigned = ({
   sessionTranscript,
   docType,
-  deviceNameSpacesBytes,
+  nameSpacesBytes,
   deviceJwkPrivateKey,
 }: BuildDeviceSignedParams): DeviceSigned => {
   const deviceSignature = buildDeviceSignature({
     sessionTranscript,
     docType,
-    deviceNameSpacesBytes,
+    nameSpacesBytes,
     deviceJwkPrivateKey,
   });
   const deviceAuth = createDeviceAuth([['deviceSignature', deviceSignature]]);
 
   return createDeviceSigned([
-    ['nameSpaces', deviceNameSpacesBytes],
+    ['nameSpaces', nameSpacesBytes],
     ['deviceAuth', deviceAuth],
   ]);
 };
