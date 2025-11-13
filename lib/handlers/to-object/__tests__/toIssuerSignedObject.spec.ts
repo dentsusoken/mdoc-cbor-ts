@@ -128,7 +128,7 @@ describe('toIssuerSignedObject', () => {
       const err = e as ErrorCodeError;
       expect(err.errorCode).toBe(MdocErrorCode.IssuerNameSpacesMissing);
       expect(err.message).toBe(
-        `The name spaces are missing. - ${MdocErrorCode.IssuerNameSpacesMissing} - IssuerNameSpacesMissing`
+        `The issuer name spaces are missing. - ${MdocErrorCode.IssuerNameSpacesMissing} - IssuerNameSpacesMissing`
       );
     }
   });

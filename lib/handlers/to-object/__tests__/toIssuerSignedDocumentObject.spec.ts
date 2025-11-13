@@ -50,8 +50,9 @@ describe('toIssuerSignedDocumentObject', () => {
     const result = toIssuerSignedDocumentObject(document);
 
     expect(result.docType).toBe(docType);
-    expect(result.issuerSigned.nameSpaces).toBe(nameSpaces);
-    expect(result.issuerSigned.issuerAuth).toBe(issuerAuth);
+    expect(result.issuerSigned).toBeInstanceOf(Map);
+    expect(result.issuerSigned.get('nameSpaces')).toBe(nameSpaces);
+    expect(result.issuerSigned.get('issuerAuth')).toBe(issuerAuth);
   });
 
   it('should throw ErrorCodeError when docType is missing', () => {

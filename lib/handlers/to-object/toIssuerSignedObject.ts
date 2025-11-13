@@ -71,7 +71,7 @@ export const toIssuerSignedObject = (
   const nameSpaces = issuerSigned.get('nameSpaces');
   if (!nameSpaces) {
     throw new ErrorCodeError(
-      'The name spaces are missing.',
+      'The issuer name spaces are missing.',
       MdocErrorCode.IssuerNameSpacesMissing
     );
   }
