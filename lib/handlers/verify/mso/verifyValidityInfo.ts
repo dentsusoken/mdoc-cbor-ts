@@ -1,3 +1,4 @@
+import { toValidityInfoObject } from '@/handlers/to-object';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { MdocErrorCode } from '@/mdoc/types';
 import { ValidityInfo } from '@/schemas/mso/ValidityInfo';
@@ -7,8 +8,6 @@ import { ValidityInfo } from '@/schemas/mso/ValidityInfo';
  * @property validityInfo - The ValidityInfo object from the MSO.
  * @property now - The current time for validation (optional; defaults to current system time).
  * @property clockSkew - Acceptable clock skew in seconds (optional).
- * @description
- * clockSkewは秒単位です
  */
 interface VerifyValidityInfoParams {
   validityInfo: ValidityInfo;
@@ -39,30 +38,16 @@ export const verifyValidityInfo = ({
   now = new Date(),
   clockSkew = 60,
 }: VerifyValidityInfoParams): void => {
-  const validFrom = validityInfo.get('validFrom');
-  if (!validFrom) {
-    throw new ErrorCodeError(
-      'ValidFrom is missing',
-      MdocErrorCode.ValidFromMissing
-    );
-  }
+  const { validFrom, validUntil } = toValidityInfoObject(validityInfo);
 
-  const validUntil = validityInfo.get('validUntil');
-  if (!validUntil) {
-    throw new ErrorCodeError(
-      'ValidUntil is missing',
-      MdocErrorCode.ValidUntilMissing
-    );
-  }
-
-  if (now.getTime() < new Date(validFrom.value).getTime() - clockSkew * 1000) {
+  if (now.getTime() < validFrom.getTime() - clockSkew * 1000) {
     throw new ErrorCodeError(
       'Document is not valid yet',
       MdocErrorCode.DocumentNotValidYet
     );
   }
 
-  if (now.getTime() > new Date(validUntil.value).getTime() + clockSkew * 1000) {
+  if (now.getTime() > validUntil.getTime() + clockSkew * 1000) {
     throw new ErrorCodeError(
       'Document has expired',
       MdocErrorCode.DocumentExpired
