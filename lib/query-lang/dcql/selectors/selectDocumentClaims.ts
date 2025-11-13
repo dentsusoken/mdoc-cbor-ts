@@ -1,10 +1,11 @@
 import { createDocument, Document } from '@/schemas/mdoc/Document';
 import { DcqlCredential } from '../schemas/DcqlCredential';
 import { createIssuerSigned } from '@/schemas/mdoc/IssuerSigned';
-import { MdocErrorCode } from '@/mdoc/types';
-import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
+import {
+  toIssuerSignedDocumentObject,
+  toIssuerSignedObject,
+} from '@/handlers/to-object';
 import { selectIssuerNameSpaces } from './selectIssuerNameSpaces';
-import { toIssuerSignedDocumentObject } from '@/handlers/to-object';
 
 /**
  * Selects and filters a Document based on DCQL credential claims.
@@ -111,14 +112,13 @@ export const selectDocumentClaims = (
   document: Document,
   credential: DcqlCredential
 ): Document | undefined => {
-  const {
-    docType,
-    issuerSigned: { nameSpaces, issuerAuth },
-  } = toIssuerSignedDocumentObject(document);
+  const { docType, issuerSigned } = toIssuerSignedDocumentObject(document);
 
   if (docType !== credential.meta.doctype_value) {
     return undefined;
   }
+
+  const { nameSpaces, issuerAuth } = toIssuerSignedObject(issuerSigned);
 
   const selectedNameSpaces = selectIssuerNameSpaces({
     nameSpaces,
