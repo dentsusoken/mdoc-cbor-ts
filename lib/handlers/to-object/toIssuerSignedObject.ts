@@ -5,12 +5,24 @@ import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { MdocErrorCode } from '@/mdoc/types';
 
 /**
- * Result object containing extracted issuer-signed nameSpaces and issuerAuth.
+ * Plain object representation for extracted issuer-signed data.
+ *
+ * @description
+ * This object type contains the essential extracted values from an `IssuerSigned` structure:
+ * - `nameSpaces`: The issuer-signed namespaces (typically a Map from namespace strings to Tag[] arrays).
+ * - `issuerAuth`: The issuer authentication signature structure.
+ *
+ * @property nameSpaces - The issuer-signed nameSpaces extracted from the IssuerSigned structure.
+ * @property issuerAuth - The issuer authentication signature (COSE_Sign1 or similar) extracted from the IssuerSigned structure.
+ *
+ * @see IssuerSigned
+ * @see IssuerNameSpaces
+ * @see IssuerAuth
  */
-interface ToIssuerSignedObjectResult {
-  /** The issuer-signed nameSpaces extracted from IssuerSigned. */
+export interface IssuerSignedObject {
+  /** The issuer-signed nameSpaces extracted from the IssuerSigned map. */
   nameSpaces: IssuerNameSpaces;
-  /** The issuer authentication extracted from IssuerSigned. */
+  /** The issuer authentication (signature) extracted from the IssuerSigned map. */
   issuerAuth: IssuerAuth;
 }
 
@@ -47,7 +59,7 @@ interface ToIssuerSignedObjectResult {
  */
 export const toIssuerSignedObject = (
   issuerSigned: IssuerSigned
-): ToIssuerSignedObjectResult => {
+): IssuerSignedObject => {
   const issuerAuth = issuerSigned.get('issuerAuth');
   if (!issuerAuth) {
     throw new ErrorCodeError(
