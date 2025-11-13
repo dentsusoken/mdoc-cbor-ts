@@ -1,5 +1,3 @@
-import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MdocErrorCode } from '@/mdoc/types';
 import { Sign1Tuple } from '@/cose/Sign1';
 import { IssuerSigned } from '@/schemas/mdoc/IssuerSigned';
 import { MobileSecurityObject } from '@/schemas/mso/MobileSecurityObject';
