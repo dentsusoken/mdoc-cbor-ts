@@ -19,6 +19,7 @@ import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 import { decodeTag24 } from '@/cbor/decodeTag24';
 import { SessionTranscript } from '@/mdoc/types';
 import { createTag24 } from '@/cbor/createTag24';
+import { Sign1 } from '@/cose/Sign1';
 
 const { ...publicKeyJWK } = DEVICE_JWK as jose.JWK;
 
@@ -151,6 +152,23 @@ describe('issuing a device response', () => {
       const publicKey = await jose.importJWK(DEVICE_JWK, 'ES256');
       // @ts-expect-error - verify method is not typed
       deviceSignature.verify(publicKey, { detachedPayload });
+    });
+
+    it('should verify auth0-generated signature using Sign1 class', async () => {
+      const deviceSignature =
+        parsedDocument.deviceSigned.deviceAuth.deviceSignature!;
+      expect(deviceSignature).toBeDefined();
+      const [protectedHeaders, unprotectedHeaders, payload, signature] =
+        deviceSignature.getContentForEncoding();
+
+      const sign1 = new Sign1(
+        protectedHeaders as Uint8Array,
+        unprotectedHeaders as Map<number, unknown>,
+        payload as Uint8Array | null,
+        signature as Uint8Array
+      );
+
+      sign1.verify(DEVICE_JWK, { detachedPayload });
     });
   });
 });
