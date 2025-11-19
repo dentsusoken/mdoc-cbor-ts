@@ -16,7 +16,8 @@ import { selectDocumentsClaimsByCredential } from './selectDocumentsClaimsByCred
  * 2. For each credential, calls {@link selectDocumentsClaimsByCredential} to find matching documents.
  * 3. If matching documents are found (returns an array), adds them to the result Map
  *    with the credential ID as the key.
- * 4. If no matching documents are found for a credential (returns `undefined`), throws an error.
+ * 4. If no matching documents are found for a credential (returns `undefined`), returns `undefined`
+ *    immediately, indicating that not all credentials could be matched.
  *
  * The function returns a Map where:
  * - Keys are credential IDs (strings).
@@ -28,11 +29,9 @@ import { selectDocumentsClaimsByCredential } from './selectDocumentsClaimsByCred
  *   specifies a document type and claim requirements. The credential's `meta.doctype_value`
  *   must match a document's docType for selection to proceed.
  *
- * @returns {Map<string, Document[]>} A Map from credential ID to an array of matching Documents.
- *   Only credentials that have matching documents are included in the result.
- *
- * @throws {Error} If a credential does not match any documents.
- *   Error message: `"{credentialId} did not match any documents"`.
+ * @returns {Map<string, Document[]> | undefined} A Map from credential ID to an array of matching
+ *   Documents if all credentials match, or `undefined` if any credential does not match any documents.
+ *   The Map contains entries for all credentials in the input array when successful.
  * @throws {ErrorCodeError} If any document's docType is missing.
  *   Error code: {@link MdocErrorCode.DocTypeMissing}
  *   (thrown by {@link selectDocumentsClaimsByCredential})
@@ -87,11 +86,43 @@ import { selectDocumentsClaimsByCredential } from './selectDocumentsClaimsByCred
  * //   ['cred-2', [document2]]
  * // ])
  * ```
+ *
+ * @example
+ * ```typescript
+ * // Example: Returns undefined when a credential does not match
+ * const documents = [
+ *   createDocument([['docType', 'org.iso.18013.5.1.mDL'], ['issuerSigned', issuerSigned1]]),
+ * ];
+ *
+ * const credentials: DcqlCredential[] = [
+ *   {
+ *     id: 'cred-1',
+ *     format: 'mso_mdoc',
+ *     meta: { doctype_value: 'org.iso.18013.5.1.mDL' },
+ *     claims: [
+ *       { path: ['org.iso.18013.5.1', 'given_name'], intent_to_retain: false },
+ *     ],
+ *     multiple: false,
+ *   },
+ *   {
+ *     id: 'cred-2',
+ *     format: 'mso_mdoc',
+ *     meta: { doctype_value: 'org.iso.18013.5.2.mDL' },
+ *     claims: [
+ *       { path: ['org.iso.18013.5.2', 'license_number'], intent_to_retain: false },
+ *     ],
+ *     multiple: false,
+ *   },
+ * ];
+ *
+ * const result = selectDocumentsClaimsByCredentials(documents, credentials);
+ * // Returns: undefined (cred-2 does not match any documents)
+ * ```
  */
 export const selectDocumentsClaimsByCredentials = (
   documents: Document[],
   credentials: DcqlCredential[]
-): Map<string, Document[]> => {
+): Map<string, Document[]> | undefined => {
   const result: Map<string, Document[]> = new Map();
 
   for (const credential of credentials) {
@@ -103,9 +134,7 @@ export const selectDocumentsClaimsByCredentials = (
     if (selectedDocument) {
       result.set(credential.id, selectedDocument);
     } else {
-      throw new Error(
-        `The credential ${credential.id} did not match any documents`
-      );
+      return undefined;
     }
   }
 

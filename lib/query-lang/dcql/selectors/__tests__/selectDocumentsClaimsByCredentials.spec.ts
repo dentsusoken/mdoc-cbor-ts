@@ -109,13 +109,14 @@ describe('selectDocumentsClaimsByCredentials', () => {
         credentials
       );
 
-      expect(result.size).toBe(2);
-      expect(result.get('cred-1')).toEqual([document1]);
-      expect(result.get('cred-2')).toEqual([document2]);
+      expect(result).not.toBeUndefined();
+      expect(result!.size).toBe(2);
+      expect(result!.get('cred-1')).toEqual([document1]);
+      expect(result!.get('cred-2')).toEqual([document2]);
       expect(selectSpy).toHaveBeenCalledTimes(2);
     });
 
-    it('returns Map with single credential when only one matches', () => {
+    it('returns undefined when second credential does not match', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
       const issuerAuth1 = makeIssuerAuth();
       const issuerSigned1 = createIssuerSigned([
@@ -168,10 +169,12 @@ describe('selectDocumentsClaimsByCredentials', () => {
           return undefined;
         });
 
-      expect(() => {
-        selectDocumentsClaimsByCredentials([document1], credentials);
-      }).toThrow('cred-2 did not match any documents');
+      const result = selectDocumentsClaimsByCredentials(
+        [document1],
+        credentials
+      );
 
+      expect(result).toBeUndefined();
       expect(selectSpy).toHaveBeenCalledTimes(2);
     });
 
@@ -226,14 +229,15 @@ describe('selectDocumentsClaimsByCredentials', () => {
         credentials
       );
 
-      expect(result.size).toBe(1);
-      expect(result.get('cred-1')).toEqual([document1, document2]);
+      expect(result).not.toBeUndefined();
+      expect(result!.size).toBe(1);
+      expect(result!.get('cred-1')).toEqual([document1, document2]);
       expect(selectSpy).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('should throw error when credential does not match', () => {
-    it('throws error when first credential does not match', () => {
+  describe('should return undefined when credential does not match', () => {
+    it('returns undefined when first credential does not match', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
       const issuerAuth1 = makeIssuerAuth();
       const issuerSigned1 = createIssuerSigned([
@@ -269,14 +273,16 @@ describe('selectDocumentsClaimsByCredentials', () => {
         return undefined;
       });
 
-      expect(() => {
-        selectDocumentsClaimsByCredentials([document1], credentials);
-      }).toThrow('cred-1 did not match any documents');
+      const result = selectDocumentsClaimsByCredentials(
+        [document1],
+        credentials
+      );
 
+      expect(result).toBeUndefined();
       expect(selectSpy).toHaveBeenCalledTimes(1);
     });
 
-    it('throws error when second credential does not match', () => {
+    it('returns undefined when second credential does not match', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
       const issuerAuth1 = makeIssuerAuth();
       const issuerSigned1 = createIssuerSigned([
@@ -329,10 +335,12 @@ describe('selectDocumentsClaimsByCredentials', () => {
           return undefined;
         });
 
-      expect(() => {
-        selectDocumentsClaimsByCredentials([document1], credentials);
-      }).toThrow('cred-2 did not match any documents');
+      const result = selectDocumentsClaimsByCredentials(
+        [document1],
+        credentials
+      );
 
+      expect(result).toBeUndefined();
       expect(selectSpy).toHaveBeenCalledTimes(2);
     });
   });
@@ -357,7 +365,8 @@ describe('selectDocumentsClaimsByCredentials', () => {
         credentials
       );
 
-      expect(result.size).toBe(0);
+      expect(result).not.toBeUndefined();
+      expect(result!.size).toBe(0);
     });
 
     it('handles credentials with undefined claims', () => {
@@ -394,8 +403,9 @@ describe('selectDocumentsClaimsByCredentials', () => {
         credentials
       );
 
-      expect(result.size).toBe(1);
-      expect(result.get('cred-1')).toEqual([document1]);
+      expect(result).not.toBeUndefined();
+      expect(result!.size).toBe(1);
+      expect(result!.get('cred-1')).toEqual([document1]);
     });
   });
 
@@ -424,19 +434,8 @@ describe('selectDocumentsClaimsByCredentials', () => {
         },
       ];
 
-      const selectSpy = vi.spyOn(
-        selectDocumentsClaimsByCredentialModule,
-        'selectDocumentsClaimsByCredential'
-      );
-      selectSpy.mockImplementationOnce(() => {
-        // This will throw ErrorCodeError from selectDocumentsClaimsByCredential
-        // but the current implementation will catch it and throw a different error
-        // Actually, the error will be thrown before we can test it
-        throw new Error('Should not reach here');
-      });
-
       // The error will be thrown by selectDocumentsClaimsByCredential
-      // before the current implementation's throw statement
+      // when it processes the document without docType
       expect(() => {
         selectDocumentsClaimsByCredentials([document1], credentials);
       }).toThrow();
