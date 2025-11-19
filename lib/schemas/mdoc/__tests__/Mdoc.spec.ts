@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { mdocSchema } from '../Mdoc';
+import { createMdoc, mdocSchema } from '../Mdoc';
 import { documentSchema } from '../Document';
 import { documentErrorSchema } from '../DocumentError';
 import { issuerSignedSchema } from '../IssuerSigned';
@@ -335,6 +335,151 @@ describe('Mdoc', (): void => {
         });
         expect(zodError.issues[0].message).toBe(expected);
       }
+    });
+  });
+
+  describe('createMdoc', (): void => {
+    it('should create a Map with documents only', (): void => {
+      const doc = createMinimalDocument();
+      const mdoc = createMdoc([
+        ['version', '1.0'],
+        ['documents', [doc]],
+        ['status', MdocStatus.OK],
+      ]);
+
+      expect(mdoc).toBeInstanceOf(Map);
+      expect(mdoc.get('version')).toBe('1.0');
+      expect(mdoc.get('documents')).toEqual([doc]);
+      expect(mdoc.get('status')).toBe(MdocStatus.OK);
+      expect(mdoc.size).toBe(3);
+
+      // Should be valid against mdocSchema
+      const validated = mdocSchema.parse(mdoc);
+      expect(validated).toEqual(mdoc);
+    });
+
+    it('should create a Map with documentErrors only', (): void => {
+      const docError = createMinimalDocumentError();
+      const mdoc = createMdoc([
+        ['version', '1.0'],
+        ['documentErrors', [docError]],
+        ['status', MdocStatus.CborValidationError],
+      ]);
+
+      expect(mdoc).toBeInstanceOf(Map);
+      expect(mdoc.get('version')).toBe('1.0');
+      expect(mdoc.get('documentErrors')).toEqual([docError]);
+      expect(mdoc.get('status')).toBe(MdocStatus.CborValidationError);
+      expect(mdoc.size).toBe(3);
+
+      // Should be valid against mdocSchema
+      const validated = mdocSchema.parse(mdoc);
+      expect(validated).toEqual(mdoc);
+    });
+
+    it('should create a Map with both documents and documentErrors', (): void => {
+      const doc = createMinimalDocument();
+      const docError = createMinimalDocumentError();
+      const mdoc = createMdoc([
+        ['version', '1.0'],
+        ['documents', [doc]],
+        ['documentErrors', [docError]],
+        ['status', MdocStatus.OK],
+      ]);
+
+      expect(mdoc).toBeInstanceOf(Map);
+      expect(mdoc.get('version')).toBe('1.0');
+      expect(mdoc.get('documents')).toEqual([doc]);
+      expect(mdoc.get('documentErrors')).toEqual([docError]);
+      expect(mdoc.get('status')).toBe(MdocStatus.OK);
+      expect(mdoc.size).toBe(4);
+
+      // Should be valid against mdocSchema
+      const validated = mdocSchema.parse(mdoc);
+      expect(validated).toEqual(mdoc);
+    });
+
+    it('should create a Map with neither documents nor documentErrors', (): void => {
+      const mdoc = createMdoc([
+        ['version', '1.0'],
+        ['status', MdocStatus.CborDecodingError],
+      ]);
+
+      expect(mdoc).toBeInstanceOf(Map);
+      expect(mdoc.get('version')).toBe('1.0');
+      expect(mdoc.get('status')).toBe(MdocStatus.CborDecodingError);
+      expect(mdoc.has('documents')).toBe(false);
+      expect(mdoc.has('documentErrors')).toBe(false);
+      expect(mdoc.size).toBe(2);
+
+      // Should be valid against mdocSchema
+      const validated = mdocSchema.parse(mdoc);
+      expect(validated).toEqual(mdoc);
+    });
+
+    it('should create a Map with multiple documents', (): void => {
+      const doc1 = createMinimalDocument();
+      const doc2 = createMinimalDocument();
+      const mdoc = createMdoc([
+        ['version', '1.0'],
+        ['documents', [doc1, doc2]],
+        ['status', MdocStatus.OK],
+      ]);
+
+      expect(mdoc).toBeInstanceOf(Map);
+      expect(mdoc.get('version')).toBe('1.0');
+      expect(mdoc.get('documents')).toEqual([doc1, doc2]);
+      expect(mdoc.get('status')).toBe(MdocStatus.OK);
+      expect(mdoc.size).toBe(3);
+
+      // Should be valid against mdocSchema
+      const validated = mdocSchema.parse(mdoc);
+      expect(validated).toEqual(mdoc);
+    });
+
+    it('should create a Map with multiple documentErrors', (): void => {
+      const docError1 = createMinimalDocumentError();
+      const docError2 = documentErrorSchema.parse(
+        new Map<string, number>([['org.iso.18013.5.2.mDL', 1]])
+      );
+      const mdoc = createMdoc([
+        ['version', '1.0'],
+        ['documentErrors', [docError1, docError2]],
+        ['status', MdocStatus.GeneralError],
+      ]);
+
+      expect(mdoc).toBeInstanceOf(Map);
+      expect(mdoc.get('version')).toBe('1.0');
+      expect(mdoc.get('documentErrors')).toEqual([docError1, docError2]);
+      expect(mdoc.get('status')).toBe(MdocStatus.GeneralError);
+      expect(mdoc.size).toBe(3);
+
+      // Should be valid against mdocSchema
+      const validated = mdocSchema.parse(mdoc);
+      expect(validated).toEqual(mdoc);
+    });
+
+    it('should create a Map with different status values', (): void => {
+      const testCases = [
+        MdocStatus.OK,
+        MdocStatus.GeneralError,
+        MdocStatus.CborDecodingError,
+        MdocStatus.CborValidationError,
+      ];
+
+      testCases.forEach((status) => {
+        const mdoc = createMdoc([
+          ['version', '1.0'],
+          ['status', status],
+        ]);
+
+        expect(mdoc.get('status')).toBe(status);
+        expect(mdoc.get('version')).toBe('1.0');
+
+        // Should be valid against mdocSchema
+        const validated = mdocSchema.parse(mdoc);
+        expect(validated.get('status')).toBe(status);
+      });
     });
   });
 });

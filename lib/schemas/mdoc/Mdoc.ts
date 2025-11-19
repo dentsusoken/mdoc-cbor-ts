@@ -4,6 +4,7 @@ import { createArraySchema } from '../containers/Array';
 import { documentSchema } from './Document';
 import { documentErrorSchema } from './DocumentError';
 import { MdocStatus } from '@/mdoc/types';
+import { createStrictMap } from '@/strict-map/createStrictMap';
 
 /**
  * Entries definition for the mdoc schema.
@@ -71,6 +72,46 @@ export const mdocEntries = [
   ],
   ['status', z.nativeEnum(MdocStatus)],
 ] as const;
+
+/**
+ * Factory function for constructing an mdoc-compliant response Map.
+ *
+ * @description
+ * `createMdoc` builds a strict key-to-value Map structure that represents a mobile document (mdoc) response envelope,
+ * enforcing the required version, optional non-empty documents and documentErrors arrays, and a required status.
+ * The resulting structure strictly matches the expected mdoc CDDL.
+ *
+ * @see {@link mdocEntries} - The descriptor array for allowed keys, value types, and requirements.
+ *
+ * @example <caption>With documents</caption>
+ * ```typescript
+ * const mdoc = createMdoc([
+ *   ['version', '1.0'],
+ *   ['documents', [validDocument]],
+ *   ['status', MdocStatus.OK],
+ * ]);
+ * ```
+ *
+ * @example <caption>With documentErrors</caption>
+ * ```typescript
+ * const errorMdoc = createMdoc([
+ *   ['version', '1.0'],
+ *   ['documentErrors', [validDocumentError]],
+ *   ['status', MdocStatus.CborValidationError],
+ * ]);
+ * ```
+ *
+ * @example <caption>With both documents and documentErrors</caption>
+ * ```typescript
+ * const mixedMdoc = createMdoc([
+ *   ['version', '1.0'],
+ *   ['documents', [validDocument]],
+ *   ['documentErrors', [validDocumentError]],
+ *   ['status', MdocStatus.OK],
+ * ]);
+ * ```
+ */
+export const createMdoc = createStrictMap<typeof mdocEntries>;
 
 /**
  * Zod schema for the mdoc structure.
