@@ -129,7 +129,7 @@ describe('selectDocumentClaimsByCredential', () => {
     });
   });
 
-  describe('should return undefined when document type does not match', () => {
+  describe('should return undefined when document does not match', () => {
     it('returns undefined when docType does not match credential doctype_value', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
       const issuerAuth = makeIssuerAuth();
@@ -161,7 +161,7 @@ describe('selectDocumentClaimsByCredential', () => {
     });
   });
 
-  describe('should return undefined when name space selection fails', () => {
+  describe('should return undefined when required claims are not found', () => {
     it('returns undefined when claims cannot be satisfied', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
       const issuerAuth = makeIssuerAuth();
