@@ -4,6 +4,7 @@ export * from './selectAgeOverTagWithValues';
 export * from './selectDocumentClaimsByCredential';
 export * from './selectDocumentsClaimsByCredential';
 export * from './selectDocumentsClaimsByCredentials';
+export * from './selectDocumentsClaimsByCredentialSet';
 export * from './selectIssuerNameSpaces';
 export * from './selectIssuerNameSpacesWithClaimSets';
 export * from './selectIssuerNameSpacesWithoutClaimSets';
