@@ -78,6 +78,16 @@ export enum MdocErrorCode {
   ValueDigestMismatch = 2022,
   /** Signed is missing. */
   SignedMissing = 2023,
+  /** Version is missing. */
+  VersionMissing = 2024,
+  /** Digest algorithm is missing. */
+  DigestAlgorithmMissing = 2025,
+  /** Device key info is missing. */
+  DeviceKeyInfoMissing = 2026,
+  /** Validity info is missing. */
+  ValidityInfoMissing = 2027,
+  /** Failed to verify Issuer-Signed */
+  IssuerSignedVerificationFailed = 2028,
 }
 
 /**
