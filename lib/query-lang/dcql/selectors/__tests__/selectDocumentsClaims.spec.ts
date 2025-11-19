@@ -3,7 +3,7 @@ import { Tag } from 'cbor-x';
 import { createIssuerSignedItem } from '@/schemas/mdoc/IssuerSignedItem';
 import { createTag24 } from '@/cbor/createTag24';
 import { createTag18, type Tag18Content } from '@/cbor/createTag18';
-import { selectDocumentsClaims } from '../selectDocumentsClaims';
+import { selectDocumentsClaimsByCredential } from '../selectDocumentsClaimsByCredential';
 import { createDocument } from '@/schemas/mdoc/Document';
 import { createIssuerSigned } from '@/schemas/mdoc/IssuerSigned';
 import { DcqlCredential } from '../../schemas/DcqlCredential';
@@ -40,7 +40,7 @@ const makeIssuerAuth = (): Tag => {
   return createTag18(issuerAuthTuple);
 };
 
-describe('selectDocumentsClaims', () => {
+describe('selectDocumentsClaimsByCredential', () => {
   describe('should return single document when multiple is false', () => {
     it('returns first matching document and stops processing', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
@@ -77,7 +77,10 @@ describe('selectDocumentsClaims', () => {
         ],
       };
 
-      const result = selectDocumentsClaims([document1, document2], credential);
+      const result = selectDocumentsClaimsByCredential(
+        [document1, document2],
+        credential
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].get('docType')).toBe('org.iso.18013.5.1.mDL');
@@ -111,7 +114,7 @@ describe('selectDocumentsClaims', () => {
         ],
       };
 
-      const result = selectDocumentsClaims([document], credential);
+      const result = selectDocumentsClaimsByCredential([document], credential);
 
       expect(result).toHaveLength(0);
     });
@@ -151,7 +154,10 @@ describe('selectDocumentsClaims', () => {
         ],
       };
 
-      const result = selectDocumentsClaims([document1, document2], credential);
+      const result = selectDocumentsClaimsByCredential(
+        [document1, document2],
+        credential
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].get('docType')).toBe('org.iso.18013.5.1.mDL');
@@ -197,7 +203,10 @@ describe('selectDocumentsClaims', () => {
         ],
       };
 
-      const result = selectDocumentsClaims([document1, document2], credential);
+      const result = selectDocumentsClaimsByCredential(
+        [document1, document2],
+        credential
+      );
 
       expect(result).toHaveLength(2);
       expect(result[0].get('docType')).toBe('org.iso.18013.5.1.mDL');
@@ -249,7 +258,7 @@ describe('selectDocumentsClaims', () => {
         ],
       };
 
-      const result = selectDocumentsClaims(
+      const result = selectDocumentsClaimsByCredential(
         [document1, document2, document3],
         credential
       );
@@ -288,7 +297,10 @@ describe('selectDocumentsClaims', () => {
         ],
       };
 
-      const result = selectDocumentsClaims([document1, document2], credential);
+      const result = selectDocumentsClaimsByCredential(
+        [document1, document2],
+        credential
+      );
 
       expect(result).toHaveLength(0);
     });
@@ -309,7 +321,7 @@ describe('selectDocumentsClaims', () => {
         ],
       };
 
-      const result = selectDocumentsClaims([], credential);
+      const result = selectDocumentsClaimsByCredential([], credential);
 
       expect(result).toHaveLength(0);
     });
@@ -356,7 +368,10 @@ describe('selectDocumentsClaims', () => {
         claim_sets: [['claim1', 'claim2']],
       };
 
-      const result = selectDocumentsClaims([document1, document2], credential);
+      const result = selectDocumentsClaimsByCredential(
+        [document1, document2],
+        credential
+      );
 
       expect(result).toHaveLength(1);
       expect(result[0].get('docType')).toBe('org.iso.18013.5.1.mDL');
@@ -381,7 +396,7 @@ describe('selectDocumentsClaims', () => {
         multiple: false,
       };
 
-      const result = selectDocumentsClaims([document], credential);
+      const result = selectDocumentsClaimsByCredential([document], credential);
 
       expect(result).toHaveLength(1);
       expect(result[0].get('docType')).toBe('org.iso.18013.5.1.mDL');
@@ -412,7 +427,7 @@ describe('selectDocumentsClaims', () => {
       };
 
       try {
-        selectDocumentsClaims([document], credential);
+        selectDocumentsClaimsByCredential([document], credential);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(ErrorCodeError);
@@ -441,7 +456,7 @@ describe('selectDocumentsClaims', () => {
       };
 
       try {
-        selectDocumentsClaims([document], credential);
+        selectDocumentsClaimsByCredential([document], credential);
         throw new Error('Should have thrown');
       } catch (error) {
         expect(error).toBeInstanceOf(ErrorCodeError);
