@@ -1,1 +1,1 @@
-export const DUMMY = 'DUMMY';
+export * from './verifyIssuerSignedDocuments';
