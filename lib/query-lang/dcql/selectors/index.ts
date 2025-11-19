@@ -5,6 +5,7 @@ export * from './selectDocumentClaimsByCredential';
 export * from './selectDocumentsClaimsByCredential';
 export * from './selectDocumentsClaimsByCredentials';
 export * from './selectDocumentsClaimsByCredentialSet';
+export * from './selectDocumentsClaimsByQuery';
 export * from './selectIssuerNameSpaces';
 export * from './selectIssuerNameSpacesWithClaimSets';
 export * from './selectIssuerNameSpacesWithoutClaimSets';
