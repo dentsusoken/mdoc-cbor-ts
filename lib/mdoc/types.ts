@@ -88,6 +88,16 @@ export enum MdocErrorCode {
   ValidityInfoMissing = 2027,
   /** Failed to verify Issuer-Signed */
   IssuerSignedVerificationFailed = 2028,
+  /** Device name spaces are missing. */
+  DeviceNameSpacesMissing = 2029,
+  /** Device auth is missing. */
+  DeviceAuthMissing = 2030,
+  /** Device signature is missing. */
+  DeviceSignatureMissing = 2031,
+  /** Device MAC is not supported. */
+  DeviceMacNotSupported = 2032,
+  /** Failed to convert Tag 18 to Sign1. */
+  Sign1ConversionFailed = 2033,
 }
 
 /**
