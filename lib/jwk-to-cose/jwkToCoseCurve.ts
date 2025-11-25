@@ -18,6 +18,6 @@ import { toJwkCurve } from '@/jwk/toJwkCurve';
  * jwkToCoseCurve('invalid-curve'); // Throws: Unsupported JWK curve: invalid-curve
  * ```
  */
-export const jwkToCoseCurve = (curve: string): Curve => {
+export const jwkToCoseCurve = (curve: unknown): Curve => {
   return JWK_TO_COSE_CURVE[toJwkCurve(curve)];
 };

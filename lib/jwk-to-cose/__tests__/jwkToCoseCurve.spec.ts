@@ -78,5 +78,23 @@ describe('jwkToCoseCurve', () => {
         'Unsupported JWK curve:  P-256 '
       );
     });
+
+    it('for non-string inputs', () => {
+      expect(() => jwkToCoseCurve(null as unknown)).toThrow(
+        'Unsupported JWK curve: null'
+      );
+      expect(() => jwkToCoseCurve(undefined as unknown)).toThrow(
+        'Unsupported JWK curve: undefined'
+      );
+      expect(() => jwkToCoseCurve(123 as unknown)).toThrow(
+        'Unsupported JWK curve: 123'
+      );
+      expect(() => jwkToCoseCurve({} as unknown)).toThrow(
+        'Unsupported JWK curve: [object Object]'
+      );
+      expect(() => jwkToCoseCurve([] as unknown)).toThrow(
+        'Unsupported JWK curve: '
+      );
+    });
   });
 });
