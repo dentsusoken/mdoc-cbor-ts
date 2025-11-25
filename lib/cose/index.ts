@@ -11,6 +11,7 @@ export * from './MacBase';
 export * from './Sign1';
 export * from './SignBase';
 export * from './toAlgorithm';
+export * from './toCurve';
 export * from './toDigestAlgorithm';
 export * from './toSign1';
 export * from './types';
