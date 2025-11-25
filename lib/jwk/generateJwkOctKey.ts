@@ -1,5 +1,5 @@
 import { encodeBase64Url } from 'u8a-utils';
-import { JwkKeyType, JwkMacAlgorithm, JwkMacKeyOp, JwkOctKey } from './types';
+import { JwkKeyType, JwkMacAlgorithm, JwkOctKey } from './types';
 
 /**
  * Parameters for generating a JWK Octet Sequence Key (JwkOctKey).
@@ -9,10 +9,6 @@ type GenerateJwkOctKeyParams = {
   alg: JwkMacAlgorithm;
   /** The symmetric key value as a Uint8Array. */
   k: Uint8Array;
-  /** Optional key identifier. */
-  kid?: string;
-  /** Optional list of permitted key operations (e.g., "sign", "verify"). */
-  key_ops?: JwkMacKeyOp[];
 };
 
 /**
@@ -21,8 +17,6 @@ type GenerateJwkOctKeyParams = {
  * @param params - The parameters for generating the JWK Octet Sequence Key.
  * @param params.alg - The MAC algorithm to be used with the key.
  * @param params.k - The symmetric key value as a Uint8Array.
- * @param params.kid - Optional key identifier.
- * @param params.key_ops - Optional list of permitted key operations.
  * @returns The generated JwkOctKey object.
  *
  * @example
@@ -31,22 +25,16 @@ type GenerateJwkOctKeyParams = {
  * const jwk = generateJwkOctKey({
  *   alg: JwkMacAlgorithms.HS256,
  *   k: key,
- *   kid: 'my-key-id',
- *   key_ops: [JwkMacKeyOps.MACCreate, JwkMacKeyOps.MACVerify],
  * });
  * ```
  */
 export const generateJwkOctKey = ({
   alg,
   k,
-  kid,
-  key_ops,
 }: GenerateJwkOctKeyParams): JwkOctKey => {
   return {
     kty: JwkKeyType.oct,
     alg,
     k: encodeBase64Url(k),
-    kid,
-    key_ops,
   };
 };

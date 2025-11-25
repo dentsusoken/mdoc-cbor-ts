@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateJwkOctKey } from '../generateJwkOctKey';
-import { JwkKeyType, JwkMacAlgorithm, JwkMacKeyOp, JwkOctKey } from '../types';
+import { JwkKeyType, JwkMacAlgorithm, JwkOctKey } from '../types';
 import { decodeBase64Url } from 'u8a-utils';
 
 describe('generateJwkOctKey', () => {
@@ -123,133 +123,6 @@ describe('generateJwkOctKey', () => {
     });
   });
 
-  describe('optional kid parameter', () => {
-    it('should include kid when provided', () => {
-      const key = new Uint8Array(32);
-      const kid = 'my-key-id';
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-        kid,
-      });
-
-      expect(jwk.kid).toBe(kid);
-    });
-
-    it('should not include kid when not provided', () => {
-      const key = new Uint8Array(32);
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-      });
-
-      expect(jwk.kid).toBeUndefined();
-    });
-
-    it('should handle various kid formats', () => {
-      const key = new Uint8Array(32);
-      const kidFormats = [
-        'simple-id',
-        'complex-id-with-dashes',
-        'id_with_underscores',
-        '123456',
-        'base64encodedId==',
-        'urn:uuid:550e8400-e29b-41d4-a716-446655440000',
-      ];
-
-      kidFormats.forEach((kid) => {
-        const jwk = generateJwkOctKey({
-          alg: JwkMacAlgorithm.HS256,
-          k: key,
-          kid,
-        });
-
-        expect(jwk.kid).toBe(kid);
-      });
-    });
-
-    it('should handle empty string as kid', () => {
-      const key = new Uint8Array(32);
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-        kid: '',
-      });
-
-      expect(jwk.kid).toBe('');
-    });
-  });
-
-  describe('optional key_ops parameter', () => {
-    it('should include key_ops when provided with MACCreate', () => {
-      const key = new Uint8Array(32);
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-        key_ops: [JwkMacKeyOp.MACCreate],
-      });
-
-      expect(jwk.key_ops).toEqual([JwkMacKeyOp.MACCreate]);
-    });
-
-    it('should include key_ops when provided with MACVerify', () => {
-      const key = new Uint8Array(32);
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-        key_ops: [JwkMacKeyOp.MACVerify],
-      });
-
-      expect(jwk.key_ops).toEqual([JwkMacKeyOp.MACVerify]);
-    });
-
-    it('should include key_ops with both MACCreate and MACVerify', () => {
-      const key = new Uint8Array(32);
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-        key_ops: [JwkMacKeyOp.MACCreate, JwkMacKeyOp.MACVerify],
-      });
-
-      expect(jwk.key_ops).toEqual([
-        JwkMacKeyOp.MACCreate,
-        JwkMacKeyOp.MACVerify,
-      ]);
-      expect(jwk.key_ops).toContain(JwkMacKeyOp.MACCreate);
-      expect(jwk.key_ops).toContain(JwkMacKeyOp.MACVerify);
-    });
-
-    it('should not include key_ops when not provided', () => {
-      const key = new Uint8Array(32);
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-      });
-
-      expect(jwk.key_ops).toBeUndefined();
-    });
-
-    it('should handle empty key_ops array', () => {
-      const key = new Uint8Array(32);
-
-      const jwk = generateJwkOctKey({
-        alg: JwkMacAlgorithm.HS256,
-        k: key,
-        key_ops: [],
-      });
-
-      expect(jwk.key_ops).toEqual([]);
-      expect(jwk.key_ops?.length).toBe(0);
-    });
-  });
-
   describe('complete JWK generation', () => {
     it('should generate complete JWK with all parameters', () => {
       const key = new Uint8Array(32);
@@ -260,18 +133,11 @@ describe('generateJwkOctKey', () => {
       const jwk = generateJwkOctKey({
         alg: JwkMacAlgorithm.HS256,
         k: key,
-        kid: 'complete-key-id',
-        key_ops: [JwkMacKeyOp.MACCreate, JwkMacKeyOp.MACVerify],
       });
 
       expect(jwk.kty).toBe(JwkKeyType.oct);
       expect(jwk.alg).toBe(JwkMacAlgorithm.HS256);
       expect(jwk.k).toBeDefined();
-      expect(jwk.kid).toBe('complete-key-id');
-      expect(jwk.key_ops).toEqual([
-        JwkMacKeyOp.MACCreate,
-        JwkMacKeyOp.MACVerify,
-      ]);
 
       // Verify key can be decoded
       const decodedKey = decodeBase64Url(jwk.k);
@@ -289,8 +155,6 @@ describe('generateJwkOctKey', () => {
       expect(jwk.kty).toBe(JwkKeyType.oct);
       expect(jwk.alg).toBe(JwkMacAlgorithm.HS384);
       expect(jwk.k).toBeDefined();
-      expect(jwk.kid).toBeUndefined();
-      expect(jwk.key_ops).toBeUndefined();
     });
 
     it('should return valid JwkOctKey type', () => {
@@ -299,16 +163,12 @@ describe('generateJwkOctKey', () => {
       const jwk: JwkOctKey = generateJwkOctKey({
         alg: JwkMacAlgorithm.HS512,
         k: key,
-        kid: 'test-key',
-        key_ops: [JwkMacKeyOp.MACCreate],
       });
 
       expect(jwk).toBeDefined();
       expect(typeof jwk.kty).toBe('string');
       expect(typeof jwk.alg).toBe('string');
       expect(typeof jwk.k).toBe('string');
-      expect(typeof jwk.kid).toBe('string');
-      expect(Array.isArray(jwk.key_ops)).toBe(true);
     });
   });
 
@@ -406,13 +266,11 @@ describe('generateJwkOctKey', () => {
       const jwk1 = generateJwkOctKey({
         alg: JwkMacAlgorithm.HS256,
         k: key,
-        kid: 'same-id',
       });
 
       const jwk2 = generateJwkOctKey({
         alg: JwkMacAlgorithm.HS256,
         k: key,
-        kid: 'same-id',
       });
 
       expect(jwk1).toEqual(jwk2);

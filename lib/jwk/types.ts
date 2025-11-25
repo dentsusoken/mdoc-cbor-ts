@@ -32,7 +32,6 @@ export interface JwkOctKey {
   alg: string;
   k: string;
   kid?: string;
-  key_ops?: JwkMacKeyOp[];
 }
 
 /**
@@ -151,53 +150,6 @@ export enum JwkKey {
   d = 'd',
   /** "k" – Symmetric key value */
   k = 'k',
-}
-
-/**
- * Enumeration of standard JWK (JSON Web Key) key operations as defined in RFC 7517/7518.
- *
- * @description
- * Enumerates the key operation identifiers that can appear in the `key_ops` member of a JWK.
- * These strings indicate the intended cryptographic usages for the key, such as signing, verification,
- * encryption, decryption, etc.
- *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc7517#section-4.3 | RFC 7517 Section 4.3 - "key_ops" (Key Operations) Parameter}
- * @see {@link https://www.iana.org/assignments/jose/jose.xhtml#web-key-operations}
- */
-export enum JwkKeyOp {
-  /** "sign" – Compute digital signature or MAC */
-  Sign = 'sign',
-  /** "verify" – Verify digital signature or MAC */
-  Verify = 'verify',
-  /** "encrypt" – Encrypt content */
-  Encrypt = 'encrypt',
-  /** "decrypt" – Decrypt content and validate decryption, if applicable */
-  Decrypt = 'decrypt',
-  /** "wrapKey" – Encrypt key (wrap key) */
-  WrapKey = 'wrapKey',
-  /** "unwrapKey" – Decrypt key and validate decryption (unwrap key) */
-  UnwrapKey = 'unwrapKey',
-  /** "deriveKey" – Derive key using this key */
-  DeriveKey = 'deriveKey',
-  /** "deriveBits" – Derive bits not to be used as a key */
-  DeriveBits = 'deriveBits',
-}
-
-/**
- * Enumeration of JWK (JSON Web Key) MAC key operations.
- *
- * @description
- * Enumerates the MAC key operation identifiers, mapped to the underlying JWK key operations.
- * Used to specify the intended cryptographic usages for MAC keys in JWK.
- *
- * @see {@link https://datatracker.ietf.org/doc/html/rfc7517#section-4.3 | RFC 7517 Section 4.3 - "key_ops" (Key Operations) Parameter}
- * @see JwkKeyOp
- */
-export enum JwkMacKeyOp {
-  /** Generate MAC (mapped to 'sign' operation) */
-  MACCreate = 'sign',
-  /** Verify MAC (mapped to 'verify' operation) */
-  MACVerify = 'verify',
 }
 
 /**
