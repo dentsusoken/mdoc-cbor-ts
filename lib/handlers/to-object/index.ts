@@ -1,4 +1,5 @@
 export * from './toDeviceAuthObject';
+export * from './toDeviceKeyInfoObject';
 export * from './toDeviceSignedObject';
 export * from './toIssuerSignedDocumentObject';
 export * from './toIssuerSignedObject';
