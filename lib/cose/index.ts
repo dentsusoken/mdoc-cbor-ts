@@ -5,6 +5,7 @@ export * from './encodeSignature1';
 export * from './isAlgorithm';
 export * from './isCurve';
 export * from './isDigestAlgorithm';
+export * from './isKeyType';
 export * from './isMacAlgorithm';
 export * from './Mac0';
 export * from './MacBase';
