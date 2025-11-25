@@ -19,5 +19,5 @@ export const toDigestAlgorithm = (algorithm: string): DigestAlgorithm => {
     return algorithm;
   }
 
-  throw new Error(`Invalid digest algorithm: ${algorithm}`);
+  throw new Error(`Unsupported COSE digest algorithm: ${algorithm}`);
 };

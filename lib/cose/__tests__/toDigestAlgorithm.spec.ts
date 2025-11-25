@@ -28,7 +28,7 @@ describe('toDigestAlgorithm', (): void => {
       const invalids = ['SHA256', 'sha-256', 'MD5', 'SHA-1', ''];
       invalids.forEach((value) => {
         expect(() => toDigestAlgorithm(value)).toThrowError(
-          `Invalid digest algorithm: ${value}`
+          `Unsupported COSE digest algorithm: ${value}`
         );
       });
     });
