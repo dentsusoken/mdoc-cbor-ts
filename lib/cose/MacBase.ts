@@ -2,7 +2,7 @@ import { CoseBase } from './CoseBase';
 import { generateHmac } from '@/utils/generateHmac';
 import { compareUint8Arrays, decodeBase64Url } from 'u8a-utils';
 import { Header, MacAlgorithm } from './types';
-import { isCoseMacAlgorithm } from './isCoseMacAlgorithm';
+import { isCoseMacAlgorithm } from './isMacAlgorithm';
 import { MAC_ALGORITHM_TO_DIGEST_ALGORITHM } from './constants';
 import { JwkOctKey } from '@/jwk/types';
 import { MAC_ALGORITHM_TO_JWK_ALGORITHM } from './constants';

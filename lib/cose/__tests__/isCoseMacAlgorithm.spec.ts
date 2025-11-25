@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isCoseMacAlgorithm } from '../isCoseMacAlgorithm';
+import { isCoseMacAlgorithm } from '../isMacAlgorithm';
 import { MacAlgorithm } from '../types';
 
 describe('isCoseMacAlgorithm', () => {
