@@ -32,11 +32,11 @@ describe('isJwkKeyType', () => {
     });
 
     it('for non-string values', () => {
-      expect(isJwkKeyType(123 as unknown as string)).toBe(false);
-      expect(isJwkKeyType(null as unknown as string)).toBe(false);
-      expect(isJwkKeyType(undefined as unknown as string)).toBe(false);
-      expect(isJwkKeyType({} as unknown as string)).toBe(false);
-      expect(isJwkKeyType([] as unknown as string)).toBe(false);
+      expect(isJwkKeyType(123 as unknown)).toBe(false);
+      expect(isJwkKeyType(null as unknown)).toBe(false);
+      expect(isJwkKeyType(undefined as unknown)).toBe(false);
+      expect(isJwkKeyType({} as unknown)).toBe(false);
+      expect(isJwkKeyType([] as unknown)).toBe(false);
     });
 
     it('for strings with extra characters', () => {
