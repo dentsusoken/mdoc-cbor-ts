@@ -3,6 +3,7 @@ export * from './CoseBase';
 export * from './encodeMAC0';
 export * from './encodeSignature1';
 export * from './isAlgorithm';
+export * from './isCurve';
 export * from './isDigestAlgorithm';
 export * from './isMacAlgorithm';
 export * from './Mac0';
