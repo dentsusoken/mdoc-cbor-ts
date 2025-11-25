@@ -52,16 +52,22 @@ describe('jwkToCoseKeyType', () => {
     }).toThrow('Unsupported JWK key type: invalid');
   });
 
-  it('should throw error for null key type', () => {
-    expect(() => {
-      jwkToCoseKeyType(null as unknown as string);
-    }).toThrow('Unsupported JWK key type: null');
-  });
-
-  it('should throw error for undefined key type', () => {
-    expect(() => {
-      jwkToCoseKeyType(undefined as unknown as string);
-    }).toThrow('Unsupported JWK key type: undefined');
+  it('for non-string inputs', () => {
+    expect(() => jwkToCoseKeyType(null as unknown)).toThrow(
+      'Unsupported JWK key type: null'
+    );
+    expect(() => jwkToCoseKeyType(undefined as unknown)).toThrow(
+      'Unsupported JWK key type: undefined'
+    );
+    expect(() => jwkToCoseKeyType(123 as unknown)).toThrow(
+      'Unsupported JWK key type: 123'
+    );
+    expect(() => jwkToCoseKeyType({} as unknown)).toThrow(
+      'Unsupported JWK key type: [object Object]'
+    );
+    expect(() => jwkToCoseKeyType([] as unknown)).toThrow(
+      'Unsupported JWK key type: '
+    );
   });
 
   it('should be case sensitive', () => {

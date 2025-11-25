@@ -18,6 +18,6 @@ import { JWK_TO_COSE_KEY_TYPE } from './constants';
  * jwkToCoseKeyType('RSA'); // Throws: Unsupported JWK key type: RSA
  * ```
  */
-export const jwkToCoseKeyType = (jwkKeyType: string): KeyType => {
+export const jwkToCoseKeyType = (jwkKeyType: unknown): KeyType => {
   return JWK_TO_COSE_KEY_TYPE[toJwkKeyType(jwkKeyType)];
 };
