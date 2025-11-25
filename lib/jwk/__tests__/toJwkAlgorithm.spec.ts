@@ -96,19 +96,19 @@ describe('toJwkAlgorithm', () => {
     });
 
     it('for non-string inputs', () => {
-      expect(() => toJwkAlgorithm(null as unknown as string)).toThrow(
+      expect(() => toJwkAlgorithm(null as unknown)).toThrow(
         'Unsupported JWK algorithm: null'
       );
-      expect(() => toJwkAlgorithm(undefined as unknown as string)).toThrow(
+      expect(() => toJwkAlgorithm(undefined as unknown)).toThrow(
         'Unsupported JWK algorithm: undefined'
       );
-      expect(() => toJwkAlgorithm(123 as unknown as string)).toThrow(
+      expect(() => toJwkAlgorithm(123 as unknown)).toThrow(
         'Unsupported JWK algorithm: 123'
       );
-      expect(() => toJwkAlgorithm({} as unknown as string)).toThrow(
+      expect(() => toJwkAlgorithm({} as unknown)).toThrow(
         'Unsupported JWK algorithm: [object Object]'
       );
-      expect(() => toJwkAlgorithm([] as unknown as string)).toThrow(
+      expect(() => toJwkAlgorithm([] as unknown)).toThrow(
         'Unsupported JWK algorithm: '
       );
     });
