@@ -2,22 +2,23 @@ import { isJwkKeyType } from './isJwkKeyType';
 import { JwkKeyType } from './types';
 
 /**
- * Converts a string to a valid JWK key type.
+ * Converts a value to a valid JWK key type.
  *
- * @param keyType - The string to convert to a JWK key type
+ * @param keyType - The value to convert to a JWK key type
  * @returns The validated JWK key type
- * @throws {Error} When the provided keyType is not a valid JWK key type
+ * @throws {Error} When the provided value is not a valid JWK key type
  *
  * @example
  * ```typescript
- * const keyType = toJwkKeyType('EC'); // Returns JwkKeyTypes.EC
- * const octKeyType = toJwkKeyType('oct'); // Returns JwkKeyTypes.oct
+ * const keyType = toJwkKeyType(JwkKeyType.EC); // Returns JwkKeyType.EC
+ * const okpKeyType = toJwkKeyType('OKP'); // Returns JwkKeyType.OKP
  *
  * // Throws error for invalid key types
- * toJwkKeyType('RSA'); // Throws: Unsupported JWK key type: RSA
+ * toJwkKeyType(999); // Throws: Unsupported JWK key type: 999
+ * toJwkKeyType('InvalidKeyType'); // Throws: Unsupported JWK key type: InvalidKeyType
  * ```
  */
-export const toJwkKeyType = (keyType: string): JwkKeyType => {
+export const toJwkKeyType = (keyType: unknown): JwkKeyType => {
   if (isJwkKeyType(keyType)) {
     return keyType;
   }

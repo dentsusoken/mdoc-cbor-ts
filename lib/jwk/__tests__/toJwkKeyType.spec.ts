@@ -57,19 +57,19 @@ describe('toJwkKeyType', () => {
     });
 
     it('for non-string values', () => {
-      expect(() => toJwkKeyType(123 as unknown as string)).toThrow(
+      expect(() => toJwkKeyType(123 as unknown)).toThrow(
         'Unsupported JWK key type: 123'
       );
-      expect(() => toJwkKeyType(null as unknown as string)).toThrow(
+      expect(() => toJwkKeyType(null as unknown)).toThrow(
         'Unsupported JWK key type: null'
       );
-      expect(() => toJwkKeyType(undefined as unknown as string)).toThrow(
+      expect(() => toJwkKeyType(undefined as unknown)).toThrow(
         'Unsupported JWK key type: undefined'
       );
-      expect(() => toJwkKeyType({} as unknown as string)).toThrow(
+      expect(() => toJwkKeyType({} as unknown)).toThrow(
         'Unsupported JWK key type: [object Object]'
       );
-      expect(() => toJwkKeyType([] as unknown as string)).toThrow(
+      expect(() => toJwkKeyType([] as unknown)).toThrow(
         'Unsupported JWK key type: '
       );
     });
