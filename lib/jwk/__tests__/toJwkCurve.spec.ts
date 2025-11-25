@@ -84,6 +84,24 @@ describe('toJwkCurve', () => {
         'Unsupported JWK curve: undefined'
       );
     });
+
+    it('for non-string inputs', () => {
+      expect(() => toJwkCurve(null as unknown)).toThrow(
+        'Unsupported JWK curve: null'
+      );
+      expect(() => toJwkCurve(undefined as unknown)).toThrow(
+        'Unsupported JWK curve: undefined'
+      );
+      expect(() => toJwkCurve(123 as unknown)).toThrow(
+        'Unsupported JWK curve: 123'
+      );
+      expect(() => toJwkCurve({} as unknown)).toThrow(
+        'Unsupported JWK curve: [object Object]'
+      );
+      expect(() => toJwkCurve([] as unknown)).toThrow(
+        'Unsupported JWK curve: '
+      );
+    });
   });
 
   describe('edge cases', () => {

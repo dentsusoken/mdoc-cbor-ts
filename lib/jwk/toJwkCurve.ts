@@ -2,22 +2,23 @@ import { isJwkCurve } from './isJwkCurve';
 import { JwkCurve } from './types';
 
 /**
- * Converts a string to a valid JWK curve.
+ * Converts a value to a valid JWK curve.
  *
- * @param curve - The string to convert to a JWK curve
+ * @param curve - The value to convert to a JWK curve
  * @returns The validated JWK curve
- * @throws {Error} When the provided curve is not a valid JWK curve
+ * @throws {Error} When the provided value is not a valid JWK curve
  *
  * @example
  * ```typescript
- * const curve = toJwkCurve('P-256'); // Returns JwkCurves.P256
- * const edCurve = toJwkCurve('Ed25519'); // Returns JwkCurves.Ed25519
+ * const curve = toJwkCurve(JwkCurve.P256); // Returns JwkCurve.P256
+ * const ed25519Curve = toJwkCurve('Ed25519'); // Returns JwkCurve.Ed25519
  *
  * // Throws error for invalid curves
- * toJwkCurve('invalid-curve'); // Throws: Unsupported JWK curve: invalid-curve
+ * toJwkCurve(999); // Throws: Unsupported JWK curve: 999
+ * toJwkCurve('InvalidCurve'); // Throws: Unsupported JWK curve: InvalidCurve
  * ```
  */
-export const toJwkCurve = (curve: string): JwkCurve => {
+export const toJwkCurve = (curve: unknown): JwkCurve => {
   if (isJwkCurve(curve)) {
     return curve;
   }
