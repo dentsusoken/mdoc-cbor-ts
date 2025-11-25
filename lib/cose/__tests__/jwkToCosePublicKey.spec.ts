@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCosePublicKey } from '../jwkToCosePublicKey';
 import { JwkPublicKey, JwkAlgorithm, JwkCurve } from '@/jwk/types';
-import { Key, KeyType, Curve, Algorithm, KeyOp } from '../types';
+import { Key, KeyType, Curve, Algorithm } from '../types';
 import { encodeBase64Url } from 'u8a-utils';
 
 describe('jwkToCosePublicKey', () => {
@@ -35,7 +35,7 @@ describe('jwkToCosePublicKey', () => {
 
       expect(result).toBeInstanceOf(Map);
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBe(Curve.P256);
+      expect(result.get(Key.Curve)).toBeUndefined();
       expect(result.get(Key.Algorithm)).toBe(Algorithm.ES256);
       expect(result.get(Key.x)).toEqual(xCoord);
       expect(result.get(Key.y)).toEqual(yCoord);
@@ -48,7 +48,7 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBe(Curve.P256);
+      expect(result.get(Key.Curve)).toBeUndefined();
       expect(result.get(Key.Algorithm)).toBe(Algorithm.ES256);
     });
 
@@ -59,7 +59,7 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBe(Curve.P384);
+      expect(result.get(Key.Curve)).toBeUndefined();
       expect(result.get(Key.Algorithm)).toBe(Algorithm.ES384);
     });
 
@@ -70,17 +70,8 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBe(Curve.P521);
+      expect(result.get(Key.Curve)).toBeUndefined();
       expect(result.get(Key.Algorithm)).toBe(Algorithm.ES512);
-    });
-
-    it('for JWK with key operations', () => {
-      const jwk = createValidEcJwk({
-        key_ops: ['sign', 'verify'],
-      });
-      const result = jwkToCosePublicKey(jwk);
-
-      expect(result.get(Key.KeyOps)).toEqual([KeyOp.Sign, KeyOp.Verify]);
     });
   });
 
@@ -107,15 +98,6 @@ describe('jwkToCosePublicKey', () => {
       expect(result.get(Key.Curve)).toBe(Curve.Ed25519);
       expect(result.get(Key.Algorithm)).toBe(Algorithm.EdDSA);
       expect(result.get(Key.y)).toBeUndefined();
-    });
-
-    it('for JWK with key operations', () => {
-      const jwk = createValidOkpJwk({
-        key_ops: ['sign', 'verify'],
-      });
-      const result = jwkToCosePublicKey(jwk);
-
-      expect(result.get(Key.KeyOps)).toEqual([KeyOp.Sign, KeyOp.Verify]);
     });
   });
 
@@ -256,63 +238,27 @@ describe('jwkToCosePublicKey', () => {
   });
 
   describe('should handle edge cases correctly', () => {
-    it('for JWK with empty key operations array', () => {
-      const jwk = createValidEcJwk({
-        key_ops: [],
-      });
+    it('for EC JWK, Curve should not be set', () => {
+      const jwk = createValidEcJwk();
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(Key.KeyOps)).toEqual([]);
+      expect(result.get(Key.Curve)).toBeUndefined();
     });
 
-    it('for JWK with single key operation', () => {
-      const jwk = createValidEcJwk({
-        key_ops: ['sign'],
-      });
+    it('for OKP JWK, Curve should be set', () => {
+      const jwk = createValidOkpJwk();
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(Key.KeyOps)).toEqual([KeyOp.Sign]);
+      expect(result.get(Key.Curve)).toBe(Curve.Ed25519);
     });
 
-    it('for JWK with all possible key operations', () => {
+    it('for JWK with key operations, KeyOps should not be set', () => {
       const jwk = createValidEcJwk({
-        key_ops: [
-          'sign',
-          'verify',
-          'encrypt',
-          'decrypt',
-          'wrapKey',
-          'unwrapKey',
-          'deriveKey',
-          'deriveBits',
-        ],
+        key_ops: ['sign', 'verify'],
       });
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(Key.KeyOps)).toEqual([
-        KeyOp.Sign,
-        KeyOp.Verify,
-        KeyOp.Encrypt,
-        KeyOp.Decrypt,
-        KeyOp.WrapKey,
-        KeyOp.UnwrapKey,
-        KeyOp.DeriveKey,
-        KeyOp.DeriveBits,
-      ]);
-    });
-
-    it('for JWK with duplicate key operations', () => {
-      const jwk = createValidEcJwk({
-        key_ops: ['sign', 'sign', 'verify', 'verify'],
-      });
-      const result = jwkToCosePublicKey(jwk);
-
-      expect(result.get(Key.KeyOps)).toEqual([
-        KeyOp.Sign,
-        KeyOp.Sign,
-        KeyOp.Verify,
-        KeyOp.Verify,
-      ]);
+      expect(result.get(Key.KeyOps)).toBeUndefined();
     });
   });
 });
