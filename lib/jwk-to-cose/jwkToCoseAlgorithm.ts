@@ -9,6 +9,6 @@ import { Algorithm } from '@/cose/types';
  * @returns The corresponding COSE algorithm identifier
  * @throws {Error} When the provided jwkAlgorithm is not a valid JWK algorithm
  */
-export const jwkToCoseAlgorithm = (algorithm: string): Algorithm => {
+export const jwkToCoseAlgorithm = (algorithm: unknown): Algorithm => {
   return JWK_TO_COSE_ALGORITHM[toJwkAlgorithm(algorithm)];
 };

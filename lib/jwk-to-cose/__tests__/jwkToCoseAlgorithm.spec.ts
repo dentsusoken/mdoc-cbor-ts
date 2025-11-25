@@ -107,19 +107,19 @@ describe('jwkToCoseAlgorithm', () => {
     });
 
     it('for non-string inputs', () => {
-      expect(() => jwkToCoseAlgorithm(null as unknown as string)).toThrow(
+      expect(() => jwkToCoseAlgorithm(null as unknown)).toThrow(
         'Unsupported JWK algorithm: null'
       );
-      expect(() => jwkToCoseAlgorithm(undefined as unknown as string)).toThrow(
+      expect(() => jwkToCoseAlgorithm(undefined as unknown)).toThrow(
         'Unsupported JWK algorithm: undefined'
       );
-      expect(() => jwkToCoseAlgorithm(123 as unknown as string)).toThrow(
+      expect(() => jwkToCoseAlgorithm(123 as unknown)).toThrow(
         'Unsupported JWK algorithm: 123'
       );
-      expect(() => jwkToCoseAlgorithm({} as unknown as string)).toThrow(
+      expect(() => jwkToCoseAlgorithm({} as unknown)).toThrow(
         'Unsupported JWK algorithm: [object Object]'
       );
-      expect(() => jwkToCoseAlgorithm([] as unknown as string)).toThrow(
+      expect(() => jwkToCoseAlgorithm([] as unknown)).toThrow(
         'Unsupported JWK algorithm: '
       );
     });
