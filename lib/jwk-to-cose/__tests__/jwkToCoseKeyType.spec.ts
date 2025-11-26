@@ -34,6 +34,12 @@ describe('jwkToCoseKeyType', () => {
     expect(result).toBe(KeyType.oct);
   });
 
+  it('should return number type', () => {
+    const result = jwkToCoseKeyType(JwkKeyType.EC);
+    expect(typeof result).toBe('number');
+    expect(result).toBe(KeyType.EC);
+  });
+
   it('should throw error for unsupported key type RSA', () => {
     expect(() => {
       jwkToCoseKeyType('RSA');
