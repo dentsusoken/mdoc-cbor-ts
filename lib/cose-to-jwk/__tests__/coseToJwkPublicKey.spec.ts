@@ -26,14 +26,17 @@ describe('coseToJwkPublicKey', () => {
   };
 
   const createValidOkpCoseKey = (
-    overrides: Map<number, unknown> = new Map()
+    overrides: Map<number, unknown> = new Map(),
+    includeAlgorithm = false
   ): Map<number, unknown> => {
     const coseKey = new Map<number, unknown>([
       [Key.KeyType, KeyType.OKP],
-      [Key.Algorithm, Algorithm.EdDSA],
       [Key.Curve, Curve.Ed25519],
       [Key.x, edPublicKey],
     ]);
+    if (includeAlgorithm) {
+      coseKey.set(Key.Algorithm, Algorithm.EdDSA);
+    }
     for (const [k, v] of overrides) {
       coseKey.set(k, v);
     }
@@ -81,28 +84,55 @@ describe('coseToJwkPublicKey', () => {
       expect(result.kty).toBe('EC');
       expect(result.alg).toBe(JwkAlgorithm.ES512);
     });
+
+    it('for EC key with curve but no algorithm (algorithm derived from curve)', () => {
+      const coseKey = new Map<number, unknown>([
+        [Key.KeyType, KeyType.EC],
+        [Key.Curve, Curve.P256],
+        [Key.x, xCoord],
+        [Key.y, yCoord],
+      ]);
+      const result = coseToJwkPublicKey(coseKey);
+
+      expect(result.kty).toBe('EC');
+      expect(result.alg).toBe(JwkAlgorithm.ES256);
+      expect(result.crv).toBeUndefined();
+    });
+
+    it('for EC key with both algorithm and curve (curve is ignored)', () => {
+      const coseKey = new Map<number, unknown>([
+        [Key.KeyType, KeyType.EC],
+        [Key.Algorithm, Algorithm.ES256],
+        [Key.Curve, Curve.P384], // Different curve, but should be ignored
+        [Key.x, xCoord],
+        [Key.y, yCoord],
+      ]);
+      const result = coseToJwkPublicKey(coseKey);
+
+      expect(result.kty).toBe('EC');
+      expect(result.alg).toBe(JwkAlgorithm.ES256);
+      expect(result.crv).toBeUndefined();
+    });
   });
 
   describe('should return correct JWK for valid OKP (EdDSA) COSE key inputs', () => {
-    it('for minimal Ed25519 COSE key', () => {
-      const coseKey = createValidOkpCoseKey();
+    it('for minimal Ed25519 COSE key (without algorithm)', () => {
+      const coseKey = createValidOkpCoseKey(new Map(), false);
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('OKP');
-      expect(result.alg).toBe(JwkAlgorithm.EdDSA);
+      expect(result.alg).toBeUndefined();
       expect(result.crv).toBe(JwkCurve.Ed25519);
       expect(result.x).toBe(encodeBase64Url(edPublicKey));
       expect(result.y).toBeUndefined();
     });
 
-    it('for Ed25519 COSE key with algorithm specified', () => {
-      const coseKey = createValidOkpCoseKey(
-        new Map([[Key.Algorithm, Algorithm.EdDSA]])
-      );
+    it('for Ed25519 COSE key with algorithm specified (algorithm is optional and ignored)', () => {
+      const coseKey = createValidOkpCoseKey(new Map(), true);
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('OKP');
-      expect(result.alg).toBe(JwkAlgorithm.EdDSA);
+      expect(result.alg).toBeUndefined();
       expect(result.crv).toBe(JwkCurve.Ed25519);
       expect(result.y).toBeUndefined();
     });
@@ -141,7 +171,7 @@ describe('coseToJwkPublicKey', () => {
       const coseKey = createValidEcCoseKey(new Map([[Key.KeyType, 999]]));
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Unsupported COSE key type: 999'
+        'Unsupported COSE key type for JWK conversion: 999'
       );
     });
 
@@ -155,7 +185,7 @@ describe('coseToJwkPublicKey', () => {
       );
     });
 
-    it('for missing algorithm', () => {
+    it('for missing algorithm in EC key', () => {
       const coseKey = new Map<number, unknown>([
         [Key.KeyType, KeyType.EC],
         [Key.x, xCoord],
@@ -163,25 +193,25 @@ describe('coseToJwkPublicKey', () => {
       ]);
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing algorithm in COSE key'
+        'Missing algorithm in EC COSE key'
       );
     });
 
-    it('for null algorithm', () => {
+    it('for null algorithm in EC key', () => {
       const coseKey = createValidEcCoseKey(new Map([[Key.Algorithm, null]]));
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing algorithm in COSE key'
+        'Missing algorithm in EC COSE key'
       );
     });
 
-    it('for undefined algorithm', () => {
+    it('for undefined algorithm in EC key', () => {
       const coseKey = createValidEcCoseKey(
         new Map([[Key.Algorithm, undefined]])
       );
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing algorithm in COSE key'
+        'Missing algorithm in EC COSE key'
       );
     });
 
@@ -189,7 +219,7 @@ describe('coseToJwkPublicKey', () => {
       const coseKey = createValidEcCoseKey(new Map([[Key.Algorithm, 999]]));
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Unsupported COSE algorithm: 999'
+        'Unsupported COSE algorithm for JWK conversion: 999'
       );
     });
 
@@ -244,7 +274,6 @@ describe('coseToJwkPublicKey', () => {
     it('for missing x coordinate in OKP key', () => {
       const coseKey = new Map<number, unknown>([
         [Key.KeyType, KeyType.OKP],
-        [Key.Algorithm, Algorithm.EdDSA],
         [Key.Curve, Curve.Ed25519],
       ]);
 
@@ -349,28 +378,38 @@ describe('coseToJwkPublicKey', () => {
       const coseKey = createValidOkpCoseKey(new Map([[Key.Curve, 999]]));
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Unsupported COSE curve: 999'
+        'Unsupported COSE curve for JWK conversion: 999'
       );
     });
   });
 
   describe('should handle edge cases correctly', () => {
-    it('for EC COSE key, crv should not be set', () => {
+    it('for EC COSE key, crv should not be set (only alg)', () => {
       const coseKey = createValidEcCoseKey();
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.crv).toBeUndefined();
+      expect(result.alg).toBe(JwkAlgorithm.ES256);
     });
 
-    it('for OKP COSE key, crv should be set', () => {
-      const coseKey = createValidOkpCoseKey();
+    it('for OKP COSE key without algorithm, crv should be set and alg should not be set', () => {
+      const coseKey = createValidOkpCoseKey(new Map(), false);
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.crv).toBe(JwkCurve.Ed25519);
+      expect(result.alg).toBeUndefined();
+    });
+
+    it('for OKP COSE key with algorithm, algorithm is ignored (only crv is set)', () => {
+      const coseKey = createValidOkpCoseKey(new Map(), true);
+      const result = coseToJwkPublicKey(coseKey);
+
+      expect(result.crv).toBe(JwkCurve.Ed25519);
+      expect(result.alg).toBeUndefined();
     });
 
     it('for OKP COSE key, y should not be set', () => {
-      const coseKey = createValidOkpCoseKey();
+      const coseKey = createValidOkpCoseKey(new Map(), false);
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.y).toBeUndefined();
