@@ -38,124 +38,124 @@ describe('coseToJwkAlgorithm', () => {
 
     it('for invalid COSE algorithm numbers', () => {
       expect(() => coseToJwkAlgorithm(0)).toThrow(
-        'Unsupported COSE algorithm: 0'
+        'Unsupported COSE algorithm for JWK conversion: 0'
       );
       expect(() => coseToJwkAlgorithm(1)).toThrow(
-        'Unsupported COSE algorithm: 1'
+        'Unsupported COSE algorithm for JWK conversion: 1'
       );
       expect(() => coseToJwkAlgorithm(-1)).toThrow(
-        'Unsupported COSE algorithm: -1'
+        'Unsupported COSE algorithm for JWK conversion: -1'
       );
       expect(() => coseToJwkAlgorithm(999)).toThrow(
-        'Unsupported COSE algorithm: 999'
+        'Unsupported COSE algorithm for JWK conversion: 999'
       );
     });
 
     it('for MAC algorithm numbers', () => {
       expect(() => coseToJwkAlgorithm(5)).toThrow(
-        'Unsupported COSE algorithm: 5'
+        'Unsupported COSE algorithm for JWK conversion: 5'
       ); // HS256
       expect(() => coseToJwkAlgorithm(6)).toThrow(
-        'Unsupported COSE algorithm: 6'
+        'Unsupported COSE algorithm for JWK conversion: 6'
       ); // HS384
       expect(() => coseToJwkAlgorithm(7)).toThrow(
-        'Unsupported COSE algorithm: 7'
+        'Unsupported COSE algorithm for JWK conversion: 7'
       ); // HS512
     });
 
     it('for encryption algorithm numbers', () => {
       expect(() => coseToJwkAlgorithm(1)).toThrow(
-        'Unsupported COSE algorithm: 1'
+        'Unsupported COSE algorithm for JWK conversion: 1'
       ); // A128GCM
       expect(() => coseToJwkAlgorithm(2)).toThrow(
-        'Unsupported COSE algorithm: 2'
+        'Unsupported COSE algorithm for JWK conversion: 2'
       ); // A192GCM
       expect(() => coseToJwkAlgorithm(3)).toThrow(
-        'Unsupported COSE algorithm: 3'
+        'Unsupported COSE algorithm for JWK conversion: 3'
       ); // A256GCM
       expect(() => coseToJwkAlgorithm(-6)).toThrow(
-        'Unsupported COSE algorithm: -6'
+        'Unsupported COSE algorithm for JWK conversion: -6'
       ); // Direct
     });
 
     it('for string inputs', () => {
       expect(() => coseToJwkAlgorithm('ES256')).toThrow(
-        'Unsupported COSE algorithm: ES256'
+        'Unsupported COSE algorithm for JWK conversion: ES256'
       );
       expect(() => coseToJwkAlgorithm('EdDSA')).toThrow(
-        'Unsupported COSE algorithm: EdDSA'
+        'Unsupported COSE algorithm for JWK conversion: EdDSA'
       );
       expect(() => coseToJwkAlgorithm('-7')).toThrow(
-        'Unsupported COSE algorithm: -7'
+        'Unsupported COSE algorithm for JWK conversion: -7'
       );
       expect(() => coseToJwkAlgorithm('')).toThrow(
-        'Unsupported COSE algorithm: '
+        'Unsupported COSE algorithm for JWK conversion: '
       );
     });
 
     it('for null input', () => {
       expect(() => coseToJwkAlgorithm(null)).toThrow(
-        'Unsupported COSE algorithm: null'
+        'Unsupported COSE algorithm for JWK conversion: null'
       );
     });
 
     it('for undefined input', () => {
       expect(() => coseToJwkAlgorithm(undefined)).toThrow(
-        'Unsupported COSE algorithm: undefined'
+        'Unsupported COSE algorithm for JWK conversion: undefined'
       );
     });
 
     it('for boolean input', () => {
       expect(() => coseToJwkAlgorithm(true)).toThrow(
-        'Unsupported COSE algorithm: true'
+        'Unsupported COSE algorithm for JWK conversion: true'
       );
       expect(() => coseToJwkAlgorithm(false)).toThrow(
-        'Unsupported COSE algorithm: false'
+        'Unsupported COSE algorithm for JWK conversion: false'
       );
     });
 
     it('for object input', () => {
       expect(() => coseToJwkAlgorithm({})).toThrow(
-        'Unsupported COSE algorithm: [object Object]'
+        'Unsupported COSE algorithm for JWK conversion: [object Object]'
       );
       expect(() => coseToJwkAlgorithm({ alg: -7 })).toThrow(
-        'Unsupported COSE algorithm: [object Object]'
+        'Unsupported COSE algorithm for JWK conversion: [object Object]'
       );
     });
 
     it('for array input', () => {
       expect(() => coseToJwkAlgorithm([])).toThrow(
-        'Unsupported COSE algorithm: '
+        'Unsupported COSE algorithm for JWK conversion: '
       );
       expect(() => coseToJwkAlgorithm([-7, -8])).toThrow(
-        'Unsupported COSE algorithm: -7,-8'
+        'Unsupported COSE algorithm for JWK conversion: -7,-8'
       );
     });
 
     it('for decimal numbers', () => {
       expect(() => coseToJwkAlgorithm(-8.5)).toThrow(
-        'Unsupported COSE algorithm: -8.5'
+        'Unsupported COSE algorithm for JWK conversion: -8.5'
       );
       expect(() => coseToJwkAlgorithm(-7.1)).toThrow(
-        'Unsupported COSE algorithm: -7.1'
+        'Unsupported COSE algorithm for JWK conversion: -7.1'
       );
     });
 
     it('for NaN', () => {
       expect(() => coseToJwkAlgorithm(NaN)).toThrow(
-        'Unsupported COSE algorithm: NaN'
+        'Unsupported COSE algorithm for JWK conversion: NaN'
       );
     });
 
     it('for Infinity', () => {
       expect(() => coseToJwkAlgorithm(Infinity)).toThrow(
-        'Unsupported COSE algorithm: Infinity'
+        'Unsupported COSE algorithm for JWK conversion: Infinity'
       );
     });
 
     it('for negative Infinity', () => {
       expect(() => coseToJwkAlgorithm(-Infinity)).toThrow(
-        'Unsupported COSE algorithm: -Infinity'
+        'Unsupported COSE algorithm for JWK conversion: -Infinity'
       );
     });
   });

@@ -1,39 +1,5 @@
-import { JwkKeyType, JwkAlgorithm, JwkCurve } from '@/jwk/types';
-import { Algorithm, Curve, KeyType } from '@/cose/types';
-
-/**
- * Mapping from COSE (CBOR Object Signing and Encryption) algorithm to JWK (JSON Web Key) algorithm.
- *
- * @description
- * This constant provides a direct mapping between COSE algorithm identifier and its corresponding
- * JWK algorithm identifier. COSE uses numeric identifier as defined in the IANA COSE Algorithms registry
- * while JWK uses string-based algorithm name. This mapping covers both JWS and JWE algorithms.
- *
- * @example
- * ```typescript
- * // Convert COSE algorithm to JWK algorithm
- * const jwkAlg = COSE_TO_JWK_ALGORITHM[Algorithm.ES256]; // Returns 'ES256'
- *
- * // Use in JWK key construction
- * const jwk = {
- *   kty: 'EC',
- *   alg: COSE_TO_JWK_ALGORITHM[Algorithm.ES256],
- *   // ...
- * };
- * ```
- *
- * @see {@link Algorithm} - COSE algorithm numeric identifiers
- * @see {@link JwkAlgorithm} - JWK algorithm string identifiers
- * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
- * @see {@link https://tools.ietf.org/html/rfc7518#section-3.1} - JWS algorithm specifications
- * @see {@link https://tools.ietf.org/html/rfc7518#section-4.1} - JWE algorithm specifications
- */
-export const COSE_TO_JWK_ALGORITHM: Partial<Record<Algorithm, JwkAlgorithm>> = {
-  [Algorithm.EdDSA]: JwkAlgorithm.EdDSA,
-  [Algorithm.ES256]: JwkAlgorithm.ES256,
-  [Algorithm.ES384]: JwkAlgorithm.ES384,
-  [Algorithm.ES512]: JwkAlgorithm.ES512,
-};
+import { JwkKeyType, JwkCurve } from '@/jwk/types';
+import { Curve, KeyType } from '@/cose/types';
 
 /**
  * Mapping from COSE (CBOR Object Signing and Encryption) key type to JWK (JSON Web Key) key type.
