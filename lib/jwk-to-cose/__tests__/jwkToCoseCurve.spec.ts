@@ -38,6 +38,12 @@ describe('jwkToCoseCurve', () => {
       const result = jwkToCoseCurve('X448');
       expect(result).toBe(Curve.X448);
     });
+
+    it('should return number type', () => {
+      const result = jwkToCoseCurve('P-256');
+      expect(typeof result).toBe('number');
+      expect(result).toBe(Curve.P256);
+    });
   });
 
   describe('invalid curves', () => {
