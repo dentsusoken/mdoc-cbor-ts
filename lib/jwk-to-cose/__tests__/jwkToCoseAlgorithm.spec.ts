@@ -34,6 +34,12 @@ describe('jwkToCoseAlgorithm', () => {
         );
       });
     });
+
+    it('should return number type', () => {
+      const result = jwkToCoseAlgorithm(JwkAlgorithm.ES256);
+      expect(typeof result).toBe('number');
+      expect(result).toBe(Algorithm.ES256);
+    });
   });
 
   describe('should throw Error', () => {

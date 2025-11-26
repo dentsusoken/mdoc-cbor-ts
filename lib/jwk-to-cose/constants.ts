@@ -2,36 +2,6 @@ import { JwkKeyType, JwkAlgorithm, JwkCurve } from '@/jwk/types';
 import { Algorithm, Curve, KeyType } from '@/cose/types';
 
 /**
- * Mapping from JWK (JSON Web Key) algorithm to COSE (CBOR Object Signing and Encryption) algorithm.
- *
- * @description
- * This constant provides a direct mapping between JWK algorithm identifier and its corresponding
- * COSE algorithm identifier. JWK uses string-based algorithm name while COSE uses numeric identifier
- * as defined in the IANA COSE Algorithms registry. This mapping covers both JWS and JWE algorithms.
- *
- * @example
- * ```typescript
- * // Convert JWK algorithm to COSE algorithm
- * const coseAlg = JWK_TO_COSE_ALGORITHM[JwkAlgorithms.ES256]; // Returns -7
- *
- * // Use in COSE header construction
- * const protectedHeaders = new Map([[Headers.Algorithm, JWK_TO_COSE_ALGORITHM[JwkAlgorithms.ES256]]]);
- * ```
- *
- * @see {@link JwkAlgorithm} - JWK algorithm string identifiers
- * @see {@link Algorithm} - COSE algorithm numeric identifiers
- * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#algorithms} - IANA COSE Algorithms registry
- * @see {@link https://tools.ietf.org/html/rfc7518#section-3.1} - JWS algorithm specifications
- * @see {@link https://tools.ietf.org/html/rfc7518#section-4.1} - JWE algorithm specifications
- */
-export const JWK_TO_COSE_ALGORITHM: Record<JwkAlgorithm, Algorithm> = {
-  [JwkAlgorithm.EdDSA]: Algorithm.EdDSA,
-  [JwkAlgorithm.ES256]: Algorithm.ES256,
-  [JwkAlgorithm.ES384]: Algorithm.ES384,
-  [JwkAlgorithm.ES512]: Algorithm.ES512,
-};
-
-/**
  * Mapping from JWK (JSON Web Key) key type to COSE (CBOR Object Signing and Encryption) key type.
  *
  * @description
@@ -42,10 +12,10 @@ export const JWK_TO_COSE_ALGORITHM: Record<JwkAlgorithm, Algorithm> = {
  * @example
  * ```typescript
  * // Convert JWK key type to COSE key type
- * const coseKeyType = JWK_TO_COSE_KEY_TYPE[JwkKeyTypes.EC]; // Returns 2
+ * const coseKeyType = JWK_TO_COSE_KEY_TYPE[JwkKeyType.EC]; // Returns 2
  *
  * // Use in COSE key construction
- * const coseKey = new Map([[1, JWK_TO_COSE_KEY_TYPE[JwkKeyTypes.EC]]]); // kty parameter
+ * const coseKey = new Map([[1, JWK_TO_COSE_KEY_TYPE[JwkKeyType.EC]]]); // kty parameter
  * ```
  *
  * @see {@link JwkKeyType} - JWK key type string identifiers
@@ -53,7 +23,7 @@ export const JWK_TO_COSE_ALGORITHM: Record<JwkAlgorithm, Algorithm> = {
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#key-type} - IANA COSE Key Types registry
  * @see {@link https://tools.ietf.org/html/rfc7517#section-4.1} - JWK key type specifications
  */
-export const JWK_TO_COSE_KEY_TYPE: Record<JwkKeyType, KeyType> = {
+export const JWK_TO_COSE_KEY_TYPE: Record<string, number> = {
   [JwkKeyType.OKP]: KeyType.OKP,
   [JwkKeyType.EC]: KeyType.EC,
   [JwkKeyType.oct]: KeyType.oct,
@@ -70,12 +40,12 @@ export const JWK_TO_COSE_KEY_TYPE: Record<JwkKeyType, KeyType> = {
  * @example
  * ```typescript
  * // Convert JWK curve to COSE curve
- * const coseCurve = JWK_TO_COSE_CURVE[JwkCurves.P256]; // Returns 1
+ * const coseCurve = JWK_TO_COSE_CURVE[JwkCurve.P256]; // Returns 1
  *
  * // Use in COSE key construction
  * const coseKey = new Map([
- *   [KeyParams.KeyType, KeyTypes.EC],
- *   [KeyParams.Curve, JWK_TO_COSE_CURVE[JwkCurves.P256]]
+ *   [Key.KeyType, KeyType.EC],
+ *   [Key.Curve, JWK_TO_COSE_CURVE[JwkCurve.P256]]
  * ]);
  * ```
  *
@@ -84,7 +54,7 @@ export const JWK_TO_COSE_KEY_TYPE: Record<JwkKeyType, KeyType> = {
  * @see {@link https://www.iana.org/assignments/cose/cose.xhtml#elliptic-curves} - IANA COSE Elliptic Curves registry
  * @see {@link https://tools.ietf.org/html/rfc7518#section-6.2.1} - JWK curve specifications
  */
-export const JWK_TO_COSE_CURVE: Record<JwkCurve, Curve> = {
+export const JWK_TO_COSE_CURVE: Record<string, number> = {
   [JwkCurve.P256]: Curve.P256,
   [JwkCurve.P384]: Curve.P384,
   [JwkCurve.P521]: Curve.P521,
