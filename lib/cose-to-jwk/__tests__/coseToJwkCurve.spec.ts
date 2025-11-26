@@ -78,81 +78,101 @@ describe('coseToJwkCurve', () => {
 
   describe('invalid curves', () => {
     it('should throw error for invalid curve number', () => {
-      expect(() => coseToJwkCurve(0)).toThrow('Unsupported COSE curve: 0');
-      expect(() => coseToJwkCurve(8)).toThrow('Unsupported COSE curve: 8');
-      expect(() => coseToJwkCurve(999)).toThrow('Unsupported COSE curve: 999');
+      expect(() => coseToJwkCurve(0)).toThrow(
+        'Unsupported COSE curve for JWK conversion: 0'
+      );
+      expect(() => coseToJwkCurve(8)).toThrow(
+        'Unsupported COSE curve for JWK conversion: 8'
+      );
+      expect(() => coseToJwkCurve(999)).toThrow(
+        'Unsupported COSE curve for JWK conversion: 999'
+      );
     });
 
     it('should throw error for algorithm numbers', () => {
-      expect(() => coseToJwkCurve(-8)).toThrow('Unsupported COSE curve: -8'); // EdDSA
-      expect(() => coseToJwkCurve(-7)).toThrow('Unsupported COSE curve: -7'); // ES256
+      expect(() => coseToJwkCurve(-8)).toThrow(
+        'Unsupported COSE curve for JWK conversion: -8'
+      ); // EdDSA
+      expect(() => coseToJwkCurve(-7)).toThrow(
+        'Unsupported COSE curve for JWK conversion: -7'
+      ); // ES256
     });
 
     it('should throw error for string input', () => {
       expect(() => coseToJwkCurve('P-256')).toThrow(
-        'Unsupported COSE curve: P-256'
+        'Unsupported COSE curve for JWK conversion: P-256'
       );
       expect(() => coseToJwkCurve('Ed25519')).toThrow(
-        'Unsupported COSE curve: Ed25519'
+        'Unsupported COSE curve for JWK conversion: Ed25519'
       );
-      expect(() => coseToJwkCurve('1')).toThrow('Unsupported COSE curve: 1');
+      expect(() => coseToJwkCurve('1')).toThrow(
+        'Unsupported COSE curve for JWK conversion: 1'
+      );
     });
 
     it('should throw error for null input', () => {
       expect(() => coseToJwkCurve(null)).toThrow(
-        'Unsupported COSE curve: null'
+        'Unsupported COSE curve for JWK conversion: null'
       );
     });
 
     it('should throw error for undefined input', () => {
       expect(() => coseToJwkCurve(undefined)).toThrow(
-        'Unsupported COSE curve: undefined'
+        'Unsupported COSE curve for JWK conversion: undefined'
       );
     });
 
     it('should throw error for boolean input', () => {
       expect(() => coseToJwkCurve(true)).toThrow(
-        'Unsupported COSE curve: true'
+        'Unsupported COSE curve for JWK conversion: true'
       );
       expect(() => coseToJwkCurve(false)).toThrow(
-        'Unsupported COSE curve: false'
+        'Unsupported COSE curve for JWK conversion: false'
       );
     });
 
     it('should throw error for object input', () => {
       expect(() => coseToJwkCurve({})).toThrow(
-        'Unsupported COSE curve: [object Object]'
+        'Unsupported COSE curve for JWK conversion: [object Object]'
       );
       expect(() => coseToJwkCurve({ crv: 1 })).toThrow(
-        'Unsupported COSE curve: [object Object]'
+        'Unsupported COSE curve for JWK conversion: [object Object]'
       );
     });
 
     it('should throw error for array input', () => {
-      expect(() => coseToJwkCurve([])).toThrow('Unsupported COSE curve: ');
+      expect(() => coseToJwkCurve([])).toThrow(
+        'Unsupported COSE curve for JWK conversion: '
+      );
       expect(() => coseToJwkCurve([1, 2])).toThrow(
-        'Unsupported COSE curve: 1,2'
+        'Unsupported COSE curve for JWK conversion: 1,2'
       );
     });
 
     it('should throw error for decimal numbers', () => {
-      expect(() => coseToJwkCurve(1.5)).toThrow('Unsupported COSE curve: 1.5');
-      expect(() => coseToJwkCurve(2.1)).toThrow('Unsupported COSE curve: 2.1');
+      expect(() => coseToJwkCurve(1.5)).toThrow(
+        'Unsupported COSE curve for JWK conversion: 1.5'
+      );
+      expect(() => coseToJwkCurve(2.1)).toThrow(
+        'Unsupported COSE curve for JWK conversion: 2.1'
+      );
     });
 
     it('should throw error for NaN', () => {
-      expect(() => coseToJwkCurve(NaN)).toThrow('Unsupported COSE curve: NaN');
+      expect(() => coseToJwkCurve(NaN)).toThrow(
+        'Unsupported COSE curve for JWK conversion: NaN'
+      );
     });
 
     it('should throw error for Infinity', () => {
       expect(() => coseToJwkCurve(Infinity)).toThrow(
-        'Unsupported COSE curve: Infinity'
+        'Unsupported COSE curve for JWK conversion: Infinity'
       );
     });
 
     it('should throw error for negative Infinity', () => {
       expect(() => coseToJwkCurve(-Infinity)).toThrow(
-        'Unsupported COSE curve: -Infinity'
+        'Unsupported COSE curve for JWK conversion: -Infinity'
       );
     });
   });
