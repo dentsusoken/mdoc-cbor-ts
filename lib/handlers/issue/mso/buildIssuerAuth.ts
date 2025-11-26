@@ -3,9 +3,10 @@ import { IssuerAuth, issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { createTag24 } from '@/cbor/createTag24';
 import { buildMobileSecurityObject } from './buildMobileSecurityObject';
 import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
+import { resolveJwkAlgorithmName } from '@/jwk/resolveJwkAlgorithmName';
 import { Sign1 } from '@/cose/Sign1';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
-import { jwkToCoseCurveAlgorithm } from '@/cose/jwkToCoseCurveAlgorithm';
+import { jwkToCoseAlgorithm } from '@/jwk-to-cose/jwkToCoseAlgorithm';
 import { Header } from '@/cose/types';
 
 /**
@@ -131,7 +132,11 @@ export const buildIssuerAuth = ({
   });
 
   const msoTag24 = createTag24(mso);
-  const { algorithm } = jwkToCoseCurveAlgorithm(issuerJwkPrivateKey);
+  const jwkAlg = resolveJwkAlgorithmName({
+    algorithmName: issuerJwkPrivateKey.alg,
+    curveName: issuerJwkPrivateKey.crv,
+  });
+  const algorithm = jwkToCoseAlgorithm(jwkAlg);
   const protectedHeaders = encodeCbor(
     new Map<number, unknown>([[Header.Algorithm, algorithm]])
   );

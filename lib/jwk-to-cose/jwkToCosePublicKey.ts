@@ -1,15 +1,10 @@
-import { JwkAlgorithm, JwkCurve, JwkPublicKey } from '@/jwk/types';
+import { JwkPublicKey } from '@/jwk/types';
+import { resolveJwkAlgorithmName } from '@/jwk/resolveJwkAlgorithmName';
 import { jwkToCoseKeyType } from './jwkToCoseKeyType';
 import { decodeBase64Url } from 'u8a-utils';
 import { Key, KeyType } from '@/cose/types';
 import { jwkToCoseAlgorithm } from './jwkToCoseAlgorithm';
 import { jwkToCoseCurve } from './jwkToCoseCurve';
-
-const JWK_EC_CURVE_TO_JWK_EC_ALGORITHM: Record<string, string> = {
-  [JwkCurve.P256]: JwkAlgorithm.ES256,
-  [JwkCurve.P384]: JwkAlgorithm.ES384,
-  [JwkCurve.P521]: JwkAlgorithm.ES512,
-};
 
 /**
  * Converts a JWK public key to a COSE public key map.
@@ -94,14 +89,18 @@ export const jwkToCosePublicKey = (jwk: JwkPublicKey): Map<number, unknown> => {
   ]);
 
   if (keyType === KeyType.EC) {
-    const jwkAlg =
-      jwk.alg ??
-      (jwk.crv ? JWK_EC_CURVE_TO_JWK_EC_ALGORITHM[jwk.crv] : undefined);
-
-    if (jwkAlg == null) {
-      throw new Error('Missing algorithm in EC public key');
+    let jwkAlg: string;
+    try {
+      jwkAlg = resolveJwkAlgorithmName({
+        algorithmName: jwk.alg,
+        curveName: jwk.crv,
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Missing algorithm in JWK') {
+        throw new Error('Missing algorithm in EC public key');
+      }
+      throw error;
     }
-
     const algorithm = jwkToCoseAlgorithm(jwkAlg);
     publicKey.set(Key.Algorithm, algorithm);
 
