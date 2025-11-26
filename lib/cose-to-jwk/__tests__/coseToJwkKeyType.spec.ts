@@ -38,102 +38,110 @@ describe('coseToJwkKeyType', () => {
 
   describe('invalid key types', () => {
     it('should throw error for invalid key type number', () => {
-      expect(() => coseToJwkKeyType(0)).toThrow('Unsupported COSE key type: 0');
-      expect(() => coseToJwkKeyType(3)).toThrow('Unsupported COSE key type: 3');
-      expect(() => coseToJwkKeyType(5)).toThrow('Unsupported COSE key type: 5');
+      expect(() => coseToJwkKeyType(0)).toThrow(
+        'Unsupported COSE key type for JWK conversion: 0'
+      );
+      expect(() => coseToJwkKeyType(3)).toThrow(
+        'Unsupported COSE key type for JWK conversion: 3'
+      );
+      expect(() => coseToJwkKeyType(5)).toThrow(
+        'Unsupported COSE key type for JWK conversion: 5'
+      );
       expect(() => coseToJwkKeyType(999)).toThrow(
-        'Unsupported COSE key type: 999'
+        'Unsupported COSE key type for JWK conversion: 999'
       );
     });
 
     it('should throw error for algorithm numbers', () => {
       expect(() => coseToJwkKeyType(-8)).toThrow(
-        'Unsupported COSE key type: -8'
+        'Unsupported COSE key type for JWK conversion: -8'
       ); // EdDSA
       expect(() => coseToJwkKeyType(-7)).toThrow(
-        'Unsupported COSE key type: -7'
+        'Unsupported COSE key type for JWK conversion: -7'
       ); // ES256
     });
 
     it('should throw error for string input', () => {
       expect(() => coseToJwkKeyType('EC')).toThrow(
-        'Unsupported COSE key type: EC'
+        'Unsupported COSE key type for JWK conversion: EC'
       );
       expect(() => coseToJwkKeyType('OKP')).toThrow(
-        'Unsupported COSE key type: OKP'
+        'Unsupported COSE key type for JWK conversion: OKP'
       );
       expect(() => coseToJwkKeyType('oct')).toThrow(
-        'Unsupported COSE key type: oct'
+        'Unsupported COSE key type for JWK conversion: oct'
       );
       expect(() => coseToJwkKeyType('1')).toThrow(
-        'Unsupported COSE key type: 1'
+        'Unsupported COSE key type for JWK conversion: 1'
       );
     });
 
     it('should throw error for null input', () => {
       expect(() => coseToJwkKeyType(null)).toThrow(
-        'Unsupported COSE key type: null'
+        'Unsupported COSE key type for JWK conversion: null'
       );
     });
 
     it('should throw error for undefined input', () => {
       expect(() => coseToJwkKeyType(undefined)).toThrow(
-        'Unsupported COSE key type: undefined'
+        'Unsupported COSE key type for JWK conversion: undefined'
       );
     });
 
     it('should throw error for boolean input', () => {
       expect(() => coseToJwkKeyType(true)).toThrow(
-        'Unsupported COSE key type: true'
+        'Unsupported COSE key type for JWK conversion: true'
       );
       expect(() => coseToJwkKeyType(false)).toThrow(
-        'Unsupported COSE key type: false'
+        'Unsupported COSE key type for JWK conversion: false'
       );
     });
 
     it('should throw error for object input', () => {
       expect(() => coseToJwkKeyType({})).toThrow(
-        'Unsupported COSE key type: [object Object]'
+        'Unsupported COSE key type for JWK conversion: [object Object]'
       );
       expect(() => coseToJwkKeyType({ kty: 2 })).toThrow(
-        'Unsupported COSE key type: [object Object]'
+        'Unsupported COSE key type for JWK conversion: [object Object]'
       );
     });
 
     it('should throw error for array input', () => {
-      expect(() => coseToJwkKeyType([])).toThrow('Unsupported COSE key type: ');
+      expect(() => coseToJwkKeyType([])).toThrow(
+        'Unsupported COSE key type for JWK conversion: '
+      );
       expect(() => coseToJwkKeyType([1, 2])).toThrow(
-        'Unsupported COSE key type: 1,2'
+        'Unsupported COSE key type for JWK conversion: 1,2'
       );
     });
 
     it('should throw error for decimal numbers', () => {
       expect(() => coseToJwkKeyType(1.5)).toThrow(
-        'Unsupported COSE key type: 1.5'
+        'Unsupported COSE key type for JWK conversion: 1.5'
       );
       expect(() => coseToJwkKeyType(2.1)).toThrow(
-        'Unsupported COSE key type: 2.1'
+        'Unsupported COSE key type for JWK conversion: 2.1'
       );
       expect(() => coseToJwkKeyType(4.9)).toThrow(
-        'Unsupported COSE key type: 4.9'
+        'Unsupported COSE key type for JWK conversion: 4.9'
       );
     });
 
     it('should throw error for NaN', () => {
       expect(() => coseToJwkKeyType(NaN)).toThrow(
-        'Unsupported COSE key type: NaN'
+        'Unsupported COSE key type for JWK conversion: NaN'
       );
     });
 
     it('should throw error for Infinity', () => {
       expect(() => coseToJwkKeyType(Infinity)).toThrow(
-        'Unsupported COSE key type: Infinity'
+        'Unsupported COSE key type for JWK conversion: Infinity'
       );
     });
 
     it('should throw error for negative Infinity', () => {
       expect(() => coseToJwkKeyType(-Infinity)).toThrow(
-        'Unsupported COSE key type: -Infinity'
+        'Unsupported COSE key type for JWK conversion: -Infinity'
       );
     });
   });
