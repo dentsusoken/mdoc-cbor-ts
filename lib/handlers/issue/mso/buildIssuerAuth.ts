@@ -3,7 +3,7 @@ import { IssuerAuth, issuerAuthSchema } from '@/schemas/mso/IssuerAuth';
 import { createTag24 } from '@/cbor/createTag24';
 import { buildMobileSecurityObject } from './buildMobileSecurityObject';
 import { JwkPrivateKey, JwkPublicKey } from '@/jwk/types';
-import { resolveJwkAlgorithmName } from '@/jwk/resolveJwkAlgorithmName';
+import { resolveAlgorithmName } from 'noble-curves-extended';
 import { Sign1 } from '@/cose/Sign1';
 import { IssuerNameSpaces } from '@/schemas/mdoc/IssuerNameSpaces';
 import { jwkToCoseAlgorithm } from '@/jwk-to-cose/jwkToCoseAlgorithm';
@@ -132,7 +132,7 @@ export const buildIssuerAuth = ({
   });
 
   const msoTag24 = createTag24(mso);
-  const jwkAlg = resolveJwkAlgorithmName({
+  const jwkAlg = resolveAlgorithmName({
     algorithmName: issuerJwkPrivateKey.alg,
     curveName: issuerJwkPrivateKey.crv,
   });
