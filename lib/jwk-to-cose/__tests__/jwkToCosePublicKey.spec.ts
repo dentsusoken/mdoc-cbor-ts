@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { jwkToCosePublicKey } from '../jwkToCosePublicKey';
 import { JwkPublicKey, JwkAlgorithm, JwkCurve } from '@/jwk/types';
-import { Key, KeyType, Curve, Algorithm } from '@/cose/types';
+import { Key, KeyType, Curve } from '@/cose/types';
 import { encodeBase64Url } from 'u8a-utils';
 
 describe('jwkToCosePublicKey', () => {
@@ -25,71 +25,71 @@ describe('jwkToCosePublicKey', () => {
   ): JwkPublicKey => ({
     kty: 'OKP',
     crv: JwkCurve.Ed25519,
-    alg: JwkAlgorithm.EdDSA,
     x: encodeBase64Url(edPublicKey),
     ...overrides,
   });
 
   describe('should return correct Map for valid EC JWK inputs', () => {
-    it('for minimal P-256 JWK', () => {
+    it('for minimal P-256 JWK with both alg and crv', () => {
       const jwk = createValidEcJwk();
       const result = jwkToCosePublicKey(jwk);
 
       expect(result).toBeInstanceOf(Map);
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES256);
+      expect(result.get(Key.Curve)).toBe(Curve.P256);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
       expect(result.get(Key.x)).toEqual(xCoord);
       expect(result.get(Key.y)).toEqual(yCoord);
     });
 
-    it('for P-256 JWK with algorithm specified', () => {
+    it('for P-256 JWK with algorithm specified (curve derived from algorithm)', () => {
       const jwk = createValidEcJwk({
+        crv: undefined as unknown as string,
         alg: JwkAlgorithm.ES256,
       });
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES256);
+      expect(result.get(Key.Curve)).toBe(Curve.P256);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
     });
 
-    it('for P-384 JWK', () => {
+    it('for P-384 JWK with algorithm specified (curve derived from algorithm)', () => {
       const jwk = createValidEcJwk({
-        crv: JwkCurve.P384,
+        crv: undefined as unknown as string,
         alg: JwkAlgorithm.ES384,
       });
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES384);
+      expect(result.get(Key.Curve)).toBe(Curve.P384);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
     });
 
-    it('for P-521 JWK', () => {
+    it('for P-521 JWK with algorithm specified (curve derived from algorithm)', () => {
       const jwk = createValidEcJwk({
-        crv: JwkCurve.P521,
+        crv: undefined as unknown as string,
         alg: JwkAlgorithm.ES512,
       });
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES512);
+      expect(result.get(Key.Curve)).toBe(Curve.P521);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
     });
 
-    it('for P-256 JWK without algorithm (derived from curve)', () => {
+    it('for P-256 JWK with curve specified (no algorithm)', () => {
       const jwk = createValidEcJwk({
         alg: undefined as unknown as string,
       });
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES256);
+      expect(result.get(Key.Curve)).toBe(Curve.P256);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
     });
 
-    it('for P-384 JWK without algorithm (derived from curve)', () => {
+    it('for P-384 JWK with curve specified (no algorithm)', () => {
       const jwk = createValidEcJwk({
         crv: JwkCurve.P384,
         alg: undefined as unknown as string,
@@ -97,11 +97,11 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES384);
+      expect(result.get(Key.Curve)).toBe(Curve.P384);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
     });
 
-    it('for P-521 JWK without algorithm (derived from curve)', () => {
+    it('for P-521 JWK with curve specified (no algorithm)', () => {
       const jwk = createValidEcJwk({
         crv: JwkCurve.P521,
         alg: undefined as unknown as string,
@@ -109,8 +109,8 @@ describe('jwkToCosePublicKey', () => {
       const result = jwkToCosePublicKey(jwk);
 
       expect(result.get(Key.KeyType)).toBe(KeyType.EC);
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES512);
+      expect(result.get(Key.Curve)).toBe(Curve.P521);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
     });
   });
 
@@ -127,7 +127,7 @@ describe('jwkToCosePublicKey', () => {
       expect(result.get(Key.y)).toBeUndefined();
     });
 
-    it('for Ed25519 JWK with algorithm specified (algorithm is omitted in COSE_Key)', () => {
+    it('for Ed25519 JWK with algorithm specified (algorithm is ignored)', () => {
       const jwk = createValidOkpJwk({
         alg: JwkAlgorithm.EdDSA,
       });
@@ -165,7 +165,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Missing curve in OKP public key'
+        'Either curveName or algorithmName must be provided'
       );
     });
 
@@ -175,7 +175,18 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Missing curve in OKP public key'
+        'Either curveName or algorithmName must be provided'
+      );
+    });
+
+    it('for missing curve parameter with algorithm specified', () => {
+      const invalidJwk = createValidOkpJwk({
+        crv: undefined as unknown as string,
+        alg: JwkAlgorithm.EdDSA,
+      });
+
+      expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
+        'Could not resolve curve name from algorithm: EdDSA'
       );
     });
   });
@@ -202,7 +213,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Missing algorithm in EC public key'
+        'Either curveName or algorithmName must be provided'
       );
     });
 
@@ -213,7 +224,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Missing algorithm in EC public key'
+        'Either curveName or algorithmName must be provided'
       );
     });
 
@@ -281,12 +292,12 @@ describe('jwkToCosePublicKey', () => {
   });
 
   describe('should handle edge cases correctly', () => {
-    it('for EC JWK, Curve should not be set (only Algorithm)', () => {
+    it('for EC JWK, Curve should be set (Algorithm should not be set)', () => {
       const jwk = createValidEcJwk();
       const result = jwkToCosePublicKey(jwk);
 
-      expect(result.get(Key.Curve)).toBeUndefined();
-      expect(result.get(Key.Algorithm)).toBe(Algorithm.ES256);
+      expect(result.get(Key.Curve)).toBe(Curve.P256);
+      expect(result.get(Key.Algorithm)).toBeUndefined();
     });
 
     it('for OKP JWK, Curve should be set (Algorithm should not be set)', () => {
