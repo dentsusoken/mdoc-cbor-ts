@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildMobileSecurityObject } from '../buildMobileSecurityObject';
 import { buildIssuerNameSpaces } from '../../mdoc/buildIssuerNameSpaces';
-import { jwkToCosePublicKey } from '@/cose/jwkToCosePublicKey';
+import { jwkToCosePublicKey } from '@/jwk-to-cose/jwkToCosePublicKey';
 import { randomBytes } from '@noble/hashes/utils';
 import { createSignatureCurve } from 'noble-curves-extended';
 import type { RandomBytes } from 'noble-curves-extended';
