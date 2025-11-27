@@ -98,6 +98,10 @@ export enum MdocErrorCode {
   DeviceMacNotSupported = 2032,
   /** Failed to convert Tag 18 to Sign1. */
   Sign1ConversionFailed = 2033,
+  /** Device key is missing. */
+  DeviceKeyMissing = 2034,
+  /** Device signed structure is missing. */
+  DeviceSignedMissing = 2035,
 }
 
 /**
