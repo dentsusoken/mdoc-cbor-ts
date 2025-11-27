@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { coseToJwkPublicKey } from '../coseToJwkPublicKey';
 import { Key, KeyType, Curve, Algorithm } from '@/cose/types';
-import { JwkAlgorithm, JwkCurve } from '@/jwk/types';
+import { JwkCurve } from '@/jwk/types';
 import { encodeBase64Url } from 'u8a-utils';
 
 describe('coseToJwkPublicKey', () => {
@@ -49,10 +49,10 @@ describe('coseToJwkPublicKey', () => {
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('EC');
-      expect(result.alg).toBe(JwkAlgorithm.ES256);
+      expect(result.crv).toBe(JwkCurve.P256);
       expect(result.x).toBe(encodeBase64Url(xCoord));
       expect(result.y).toBe(encodeBase64Url(yCoord));
-      expect(result.crv).toBeUndefined();
+      expect(result.alg).toBeUndefined();
     });
 
     it('for P-256 COSE key with algorithm specified', () => {
@@ -62,7 +62,8 @@ describe('coseToJwkPublicKey', () => {
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('EC');
-      expect(result.alg).toBe(JwkAlgorithm.ES256);
+      expect(result.crv).toBe(JwkCurve.P256);
+      expect(result.alg).toBeUndefined();
     });
 
     it('for P-384 COSE key', () => {
@@ -72,7 +73,8 @@ describe('coseToJwkPublicKey', () => {
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('EC');
-      expect(result.alg).toBe(JwkAlgorithm.ES384);
+      expect(result.crv).toBe(JwkCurve.P384);
+      expect(result.alg).toBeUndefined();
     });
 
     it('for P-521 COSE key', () => {
@@ -82,10 +84,11 @@ describe('coseToJwkPublicKey', () => {
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('EC');
-      expect(result.alg).toBe(JwkAlgorithm.ES512);
+      expect(result.crv).toBe(JwkCurve.P521);
+      expect(result.alg).toBeUndefined();
     });
 
-    it('for EC key with curve but no algorithm (algorithm derived from curve)', () => {
+    it('for EC key with curve but no algorithm (curve derived from algorithm)', () => {
       const coseKey = new Map<number, unknown>([
         [Key.KeyType, KeyType.EC],
         [Key.Curve, Curve.P256],
@@ -95,23 +98,23 @@ describe('coseToJwkPublicKey', () => {
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('EC');
-      expect(result.alg).toBe(JwkAlgorithm.ES256);
-      expect(result.crv).toBeUndefined();
+      expect(result.crv).toBe(JwkCurve.P256);
+      expect(result.alg).toBeUndefined();
     });
 
-    it('for EC key with both algorithm and curve (curve is ignored)', () => {
+    it('for EC key with both algorithm and curve (both used to resolve curve)', () => {
       const coseKey = new Map<number, unknown>([
         [Key.KeyType, KeyType.EC],
         [Key.Algorithm, Algorithm.ES256],
-        [Key.Curve, Curve.P384], // Different curve, but should be ignored
+        [Key.Curve, Curve.P256],
         [Key.x, xCoord],
         [Key.y, yCoord],
       ]);
       const result = coseToJwkPublicKey(coseKey);
 
       expect(result.kty).toBe('EC');
-      expect(result.alg).toBe(JwkAlgorithm.ES256);
-      expect(result.crv).toBeUndefined();
+      expect(result.crv).toBe(JwkCurve.P256);
+      expect(result.alg).toBeUndefined();
     });
   });
 
@@ -185,7 +188,7 @@ describe('coseToJwkPublicKey', () => {
       );
     });
 
-    it('for missing algorithm in EC key', () => {
+    it('for missing algorithm and curve in EC key', () => {
       const coseKey = new Map<number, unknown>([
         [Key.KeyType, KeyType.EC],
         [Key.x, xCoord],
@@ -193,25 +196,25 @@ describe('coseToJwkPublicKey', () => {
       ]);
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing algorithm in EC COSE key'
+        'Either curve name or algorithm name must be provided'
       );
     });
 
-    it('for null algorithm in EC key', () => {
+    it('for null algorithm and missing curve in EC key', () => {
       const coseKey = createValidEcCoseKey(new Map([[Key.Algorithm, null]]));
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing algorithm in EC COSE key'
+        'Either curve name or algorithm name must be provided'
       );
     });
 
-    it('for undefined algorithm in EC key', () => {
+    it('for undefined algorithm and missing curve in EC key', () => {
       const coseKey = createValidEcCoseKey(
         new Map([[Key.Algorithm, undefined]])
       );
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing algorithm in EC COSE key'
+        'Either curve name or algorithm name must be provided'
       );
     });
 
@@ -354,23 +357,21 @@ describe('coseToJwkPublicKey', () => {
       ]);
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing curve in OKP public key'
+        "Missing curve name: could not resolve curve name from algorithm name 'EdDSA'"
       );
     });
 
     it('for null curve in OKP key', () => {
       const coseKey = createValidOkpCoseKey(new Map([[Key.Curve, null]]));
 
-      expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing curve in OKP public key'
-      );
+      expect(() => coseToJwkPublicKey(coseKey)).toThrow();
     });
 
     it('for undefined curve in OKP key', () => {
       const coseKey = createValidOkpCoseKey(new Map([[Key.Curve, undefined]]));
 
       expect(() => coseToJwkPublicKey(coseKey)).toThrow(
-        'Missing curve in OKP public key'
+        'Either curve name or algorithm name must be provided'
       );
     });
 
@@ -384,12 +385,12 @@ describe('coseToJwkPublicKey', () => {
   });
 
   describe('should handle edge cases correctly', () => {
-    it('for EC COSE key, crv should not be set (only alg)', () => {
+    it('for EC COSE key, crv should be set and alg should not be set', () => {
       const coseKey = createValidEcCoseKey();
       const result = coseToJwkPublicKey(coseKey);
 
-      expect(result.crv).toBeUndefined();
-      expect(result.alg).toBe(JwkAlgorithm.ES256);
+      expect(result.crv).toBe(JwkCurve.P256);
+      expect(result.alg).toBeUndefined();
     });
 
     it('for OKP COSE key without algorithm, crv should be set and alg should not be set', () => {

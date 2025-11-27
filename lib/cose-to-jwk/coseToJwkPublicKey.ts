@@ -1,19 +1,10 @@
 import { JwkPublicKey } from '@/jwk/types';
 import { coseToJwkKeyType } from './coseToJwkKeyType';
 import { encodeBase64Url } from 'u8a-utils';
-import { Algorithm, Curve, Key } from '@/cose/types';
+import { Key } from '@/cose/types';
 import { coseToJwkAlgorithm } from './coseToJwkAlgorithm';
 import { coseToJwkCurve } from './coseToJwkCurve';
-
-/**
- * Mapping from COSE EC curve to COSE EC algorithm.
- * Used to derive algorithm from curve when algorithm is missing in COSE_Key.
- */
-const COSE_EC_CURVE_TO_COSE_EC_ALGORITHM: Record<number, number> = {
-  [Curve.P256]: Algorithm.ES256,
-  [Curve.P384]: Algorithm.ES384,
-  [Curve.P521]: Algorithm.ES512,
-};
+import { resolveCurveName } from 'noble-curves-extended';
 
 /**
  * Converts a COSE public key map to a JWK public key.
@@ -24,18 +15,20 @@ const COSE_EC_CURVE_TO_COSE_EC_ALGORITHM: Record<number, number> = {
  *
  * **EC Key Requirements:**
  * - `x` and `y` coordinates are required.
- * - `Algorithm` is preferred if provided. If `Algorithm` is missing, it will be derived from `Curve`:
- *   - P-256 → ES256
- *   - P-384 → ES384
- *   - P-521 → ES512
+ * - `Curve` is optional. If `Curve` is missing, it will be derived from `Algorithm`:
+ *   - ES256 → P-256
+ *   - ES384 → P-384
+ *   - ES512 → P-521
  * - If both `Algorithm` and `Curve` are missing, an error is thrown.
- * - The algorithm is converted to JWK `alg` field.
- * - COSE_Key includes `Algorithm` only (curve is omitted as it can be derived from algorithm).
+ * - The curve is resolved using {@link resolveCurveName} and included in the JWK `crv` field.
+ * - The resulting JWK includes `kty`, `crv`, `x`, and `y` (no `alg` field).
+ * - COSE_Key may include `Algorithm` only (curve can be derived from algorithm).
  *
  * **OKP Key Requirements:**
  * - `x` coordinate is required.
  * - `Curve` is required.
  * - `Algorithm` is optional and ignored if provided.
+ * - The resulting JWK includes `kty`, `crv`, and `x` (no `alg` field).
  * - COSE_Key includes `Curve` only (algorithm is omitted as it can be derived from curve).
  *
  * To minimize COSE_Key size per mDL specification, only the minimum required parameters are included.
@@ -45,7 +38,7 @@ const COSE_EC_CURVE_TO_COSE_EC_ALGORITHM: Record<number, number> = {
  * @throws {Error} If the key type is missing in the COSE key.
  * @throws {Error} If the key type is not a valid COSE key type.
  * @throws {Error} If the key type is not "EC" or "OKP".
- * @throws {Error} If the algorithm cannot be determined for EC keys (both `Algorithm` and `Curve` are missing).
+ * @throws {Error} If the curve cannot be determined for EC keys (both `Algorithm` and `Curve` are missing).
  * @throws {Error} If the algorithm is not a valid COSE algorithm.
  * @throws {Error} If the algorithm cannot be converted to a JWK algorithm.
  * @throws {Error} If the x coordinate is missing in the COSE key.
@@ -59,28 +52,28 @@ const COSE_EC_CURVE_TO_COSE_EC_ALGORITHM: Record<number, number> = {
  * ```typescript
  * // EC key example with explicit algorithm
  * const ecCoseKey1 = new Map([
- *   [Key.KeyType, KeyType.EC],
- *   [Key.Algorithm, Algorithm.ES256],
+ *   [Key.KeyType, 2], // EC
+ *   [Key.Algorithm, -7], // ES256
  *   [Key.x, xCoordinateBytes],
  *   [Key.y, yCoordinateBytes],
  * ]);
  * const ecJwk1 = coseToJwkPublicKey(ecCoseKey1);
- * // Returns a JWK object with kty: 'EC', alg: 'ES256', x, and y (no crv)
+ * // Returns a JWK object with kty: 'EC', crv: 'P-256' (derived from ES256), x, and y (no alg)
  *
- * // EC key example with algorithm derived from curve
+ * // EC key example with explicit curve
  * const ecCoseKey2 = new Map([
- *   [Key.KeyType, KeyType.EC],
- *   [Key.Curve, Curve.P256],
+ *   [Key.KeyType, 2], // EC
+ *   [Key.Curve, 1], // P-256
  *   [Key.x, xCoordinateBytes],
  *   [Key.y, yCoordinateBytes],
  * ]);
  * const ecJwk2 = coseToJwkPublicKey(ecCoseKey2);
- * // Returns a JWK object with kty: 'EC', alg: 'ES256' (derived from P-256), x, and y
+ * // Returns a JWK object with kty: 'EC', crv: 'P-256', x, and y (no alg)
  *
  * // OKP key example (alg is optional and ignored)
  * const okpCoseKey = new Map([
- *   [Key.KeyType, KeyType.OKP],
- *   [Key.Curve, Curve.Ed25519],
+ *   [Key.KeyType, 1], // OKP
+ *   [Key.Curve, 6], // Ed25519
  *   [Key.x, publicKeyBytes],
  * ]);
  * const okpJwk = coseToJwkPublicKey(okpCoseKey);
@@ -100,6 +93,18 @@ export const coseToJwkPublicKey = (
     throw new Error('Key type must be "EC" or "OKP"');
   }
 
+  const coseCurve = coseKey.get(Key.Curve);
+  const jwkCurve = coseCurve != null ? coseToJwkCurve(coseCurve) : undefined;
+
+  const coseAlgorithm = coseKey.get(Key.Algorithm);
+  const jwkAlgorithm =
+    coseAlgorithm != null ? coseToJwkAlgorithm(coseAlgorithm) : undefined;
+
+  const targetJwkCurve = resolveCurveName({
+    curveName: jwkCurve,
+    algorithmName: jwkAlgorithm,
+  });
+
   const coseX = coseKey.get(Key.x);
   if (coseX == null) {
     const which = jwkKeyType === 'OKP' ? 'OKP' : 'EC';
@@ -110,29 +115,13 @@ export const coseToJwkPublicKey = (
   }
   const jwkX = encodeBase64Url(coseX);
 
-  const jwk: Partial<JwkPublicKey> = {
+  const jwk: JwkPublicKey = {
     kty: jwkKeyType,
+    crv: targetJwkCurve,
     x: jwkX,
   };
 
   if (jwkKeyType === 'EC') {
-    const coseAlgorithm = coseKey.get(Key.Algorithm);
-    const coseCurve = coseKey.get(Key.Curve);
-
-    const targetCoseAlgorithm =
-      coseAlgorithm ??
-      (typeof coseCurve === 'number'
-        ? COSE_EC_CURVE_TO_COSE_EC_ALGORITHM[coseCurve]
-        : undefined);
-
-    if (targetCoseAlgorithm == null) {
-      throw new Error('Missing algorithm in EC COSE key');
-    }
-
-    const jwkAlg = coseToJwkAlgorithm(targetCoseAlgorithm);
-
-    jwk.alg = jwkAlg;
-
     const coseY = coseKey.get(Key.y);
     if (coseY == null) {
       throw new Error('Missing y coordinate in EC public key');
@@ -142,13 +131,6 @@ export const coseToJwkPublicKey = (
     }
     const jwkY = encodeBase64Url(coseY);
     jwk.y = jwkY;
-  } else if (jwkKeyType === 'OKP') {
-    const coseCurve = coseKey.get(Key.Curve);
-    if (coseCurve == null) {
-      throw new Error('Missing curve in OKP public key');
-    }
-    const jwkCurve = coseToJwkCurve(coseCurve);
-    jwk.crv = jwkCurve;
   }
 
   return jwk as JwkPublicKey;
