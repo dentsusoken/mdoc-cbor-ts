@@ -1,6 +1,7 @@
 import {
   createSignatureCurveRngDisallowed,
   JwkPublicKey,
+  resolveCurveName,
 } from 'noble-curves-extended';
 import { Header } from '@/cose/types';
 import { derBytesToX509 } from '@/x509/derBytesToX509';
@@ -223,7 +224,11 @@ export class SignBase extends CoseBase {
     jwkPublicKey,
     toBeSigned,
   }: InternalVerifyParams): boolean => {
-    const curve = createSignatureCurveRngDisallowed(jwkPublicKey.crv);
+    const curveName = resolveCurveName({
+      curveName: jwkPublicKey.crv,
+      algorithmName: jwkPublicKey.alg,
+    });
+    const curve = createSignatureCurveRngDisallowed(curveName);
     const publicKey = curve.toRawPublicKey(jwkPublicKey);
 
     return curve.verify({

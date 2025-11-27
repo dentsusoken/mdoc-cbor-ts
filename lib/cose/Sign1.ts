@@ -5,6 +5,7 @@ import { encodeSignature1 } from './encodeSignature1';
 import {
   createSignatureCurveRngDisallowed,
   JwkPublicKey,
+  resolveCurveName,
 } from 'noble-curves-extended';
 
 /**
@@ -88,7 +89,11 @@ export class Sign1 extends SignBase {
       payload: (payload ?? detachedPayload)!,
     });
 
-    const curve = createSignatureCurveRngDisallowed(jwkPrivateKey.crv);
+    const curveName = resolveCurveName({
+      curveName: jwkPrivateKey.crv,
+      algorithmName: jwkPrivateKey.alg,
+    });
+    const curve = createSignatureCurveRngDisallowed(curveName);
     const privateKey = curve.toRawPrivateKey(jwkPrivateKey);
     const signature = curve.sign({ privateKey, message: toBeSigned });
 
