@@ -1,6 +1,5 @@
 import { encodeCbor } from '@/cbor/codec';
 import { createTag18 } from '@/cbor/createTag18';
-import { jwkToCoseCurveAlgorithm } from '@/cose/jwkToCoseCurveAlgorithm';
 import { Sign1 } from '@/cose/Sign1';
 import { Header } from '@/cose/types';
 import { JwkPrivateKey } from '@/jwk/types';
@@ -8,6 +7,8 @@ import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
 import { DeviceSignature } from '@/schemas/mdoc/DeviceSignature';
 import { SessionTranscript } from '@/mdoc/types';
 import { Tag } from 'cbor-x';
+import { jwkToCoseAlgorithm } from '@/jwk-to-cose';
+import { resolveAlgorithmName } from 'noble-curves-extended';
 
 /**
  * Parameters for building a device signature for mdoc DeviceAuthentication.
@@ -81,7 +82,11 @@ export const buildDeviceSignature = ({
   nameSpacesBytes,
   deviceJwkPrivateKey,
 }: BuildDeviceSignatureParams): DeviceSignature => {
-  const { algorithm } = jwkToCoseCurveAlgorithm(deviceJwkPrivateKey);
+  const jwkAlgorithm = resolveAlgorithmName({
+    algorithmName: deviceJwkPrivateKey.alg,
+    curveName: deviceJwkPrivateKey.crv,
+  });
+  const algorithm = jwkToCoseAlgorithm(jwkAlgorithm);
   const detachedPayload = encodeDeviceAuthentication({
     sessionTranscript,
     docType,
