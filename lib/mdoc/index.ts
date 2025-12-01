@@ -1,4 +1,3 @@
-export * from './calculateOid4vpSessionTranscriptBytes';
 export * from './encodeDeviceAuthentication';
 export * from './ErrorCodeError';
 export * from './getErrorCodeMessage';

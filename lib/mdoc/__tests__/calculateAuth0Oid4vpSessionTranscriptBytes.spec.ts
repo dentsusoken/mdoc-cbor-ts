@@ -6,11 +6,11 @@ import {
   ISSUER_PRIVATE_KEY_JWK,
   PRESENTATION_DEFINITION_1,
 } from '@/__tests__/config';
-import { calculateOid4vpSessionTranscriptBytes } from '../calculateOid4vpSessionTranscriptBytes';
+import { calculateOid4vpSessionTranscriptBytes } from './calculateAuth0Oid4vpSessionTranscriptBytes';
 
 const { ...publicKeyJWK } = DEVICE_JWK as jose.JWK;
 
-describe('calculateOid4vpSessionTranscriptBytes', () => {
+describe('calculateAuth0Oid4vpSessionTranscriptBytes', () => {
   let mdoc: MDoc;
 
   const signed = new Date('2023-10-24T14:55:18Z');
