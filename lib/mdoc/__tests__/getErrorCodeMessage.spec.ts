@@ -239,6 +239,18 @@ describe('getErrorCodeMessage', () => {
         'Claim path is invalid.'
       );
     });
+
+    it('should return correct message for ClaimNameSpaceMissing', () => {
+      expect(getErrorCodeMessage(MdocErrorCode.ClaimNameSpaceMissing)).toBe(
+        'Claim name space is missing.'
+      );
+    });
+
+    it('should return correct message for ClaimDataElementMissing', () => {
+      expect(getErrorCodeMessage(MdocErrorCode.ClaimDataElementMissing)).toBe(
+        'Claim data element is missing.'
+      );
+    });
   });
 
   describe('coverage', () => {

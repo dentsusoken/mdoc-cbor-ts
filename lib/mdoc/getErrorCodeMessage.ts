@@ -102,7 +102,10 @@ export const getErrorCodeMessage = (errorCode: MdocErrorCode): string => {
       return 'Device signed structure is missing.';
     case MdocErrorCode.ClaimPathInvalid:
       return 'Claim path is invalid.';
-
+    case MdocErrorCode.ClaimNameSpaceMissing:
+      return 'Claim name space is missing.';
+    case MdocErrorCode.ClaimDataElementMissing:
+      return 'Claim data element is missing.';
     default: {
       // TypeScript exhaustiveness check
       void errorCode as never;

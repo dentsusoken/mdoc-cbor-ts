@@ -104,6 +104,10 @@ export enum MdocErrorCode {
   DeviceSignedMissing = 2035,
   /** Claim path is invalid. */
   ClaimPathInvalid = 2036,
+  /** Claim name space is missing. */
+  ClaimNameSpaceMissing = 2037,
+  /** Claim data element is missing. */
+  ClaimDataElementMissing = 2038,
 }
 
 /**
