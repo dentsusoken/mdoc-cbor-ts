@@ -3,6 +3,8 @@ import { Tag } from 'cbor-x';
 import { selectIssuerNameSpacesWithoutClaimSets } from '../selectIssuerNameSpacesWithoutClaimSets';
 import { EnrichIssuerSignedItemsResult } from '@/query-lang/common/enrichIssuerSignedItems';
 import { DcqlClaim } from '../../schemas';
+import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
+import { MdocErrorCode } from '@/mdoc/types';
 
 describe('selectIssuerNameSpacesWithoutClaimSets', () => {
   describe('should return selected tags for normal items', () => {
@@ -301,8 +303,8 @@ describe('selectIssuerNameSpacesWithoutClaimSets', () => {
     });
   });
 
-  describe('should return undefined when namespace does not exist', () => {
-    it('returns undefined when claim references non-existent namespace', () => {
+  describe('should throw ErrorCodeError when namespace does not exist', () => {
+    it('throws ClaimNameSpaceMissing when claim references non-existent namespace', () => {
       const enrichedIssuerNameSpaces = new Map<
         string,
         EnrichIssuerSignedItemsResult
@@ -330,17 +332,29 @@ describe('selectIssuerNameSpacesWithoutClaimSets', () => {
         },
       ];
 
-      const result = selectIssuerNameSpacesWithoutClaimSets(
-        enrichedIssuerNameSpaces,
-        claims
-      );
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
 
-      expect(result).toBeUndefined();
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimNameSpaceMissing
+        );
+      }
     });
   });
 
-  describe('should return undefined when element identifier does not match', () => {
-    it('returns undefined when requestedIdentifier does not exist', () => {
+  describe('should throw ErrorCodeError when element identifier does not match', () => {
+    it('throws ClaimDataElementMissing when requestedIdentifier does not exist', () => {
       const enrichedIssuerNameSpaces = new Map<
         string,
         EnrichIssuerSignedItemsResult
@@ -368,15 +382,27 @@ describe('selectIssuerNameSpacesWithoutClaimSets', () => {
         },
       ];
 
-      const result = selectIssuerNameSpacesWithoutClaimSets(
-        enrichedIssuerNameSpaces,
-        claims
-      );
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
 
-      expect(result).toBeUndefined();
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimDataElementMissing
+        );
+      }
     });
 
-    it('returns undefined when elementValue is not in requestedValues', () => {
+    it('throws ClaimDataElementMissing when elementValue is not in requestedValues', () => {
       const enrichedIssuerNameSpaces = new Map<
         string,
         EnrichIssuerSignedItemsResult
@@ -404,12 +430,24 @@ describe('selectIssuerNameSpacesWithoutClaimSets', () => {
         },
       ];
 
-      const result = selectIssuerNameSpacesWithoutClaimSets(
-        enrichedIssuerNameSpaces,
-        claims
-      );
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
 
-      expect(result).toBeUndefined();
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimDataElementMissing
+        );
+      }
     });
   });
 
@@ -493,7 +531,7 @@ describe('selectIssuerNameSpacesWithoutClaimSets', () => {
       expect(result!.get('org.iso.18013.5.1')).toEqual([tag1, tag3]);
     });
 
-    it('returns undefined when first claim fails but second would succeed', () => {
+    it('throws ClaimDataElementMissing when first claim fails but second would succeed', () => {
       const tag1 = new Tag('value1', 24);
       const enrichedIssuerNameSpaces = new Map<
         string,
@@ -527,12 +565,230 @@ describe('selectIssuerNameSpacesWithoutClaimSets', () => {
         },
       ];
 
-      const result = selectIssuerNameSpacesWithoutClaimSets(
-        enrichedIssuerNameSpaces,
-        claims
-      );
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
 
-      expect(result).toBeUndefined();
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimDataElementMissing
+        );
+      }
+    });
+  });
+
+  describe('should throw ErrorCodeError for invalid inputs', () => {
+    it('throws ClaimPathInvalid when path length is not 2', () => {
+      const enrichedIssuerNameSpaces = new Map<
+        string,
+        EnrichIssuerSignedItemsResult
+      >([
+        [
+          'org.iso.18013.5.1',
+          {
+            normalItems: [
+              {
+                elementIdentifier: 'given_name',
+                elementValue: 'John',
+                tag: new Tag('value1', 24),
+              },
+            ],
+            ageOverTrueItems: [],
+            ageOverFalseItems: [],
+          },
+        ],
+      ]);
+      const claims = [
+        {
+          path: ['org.iso.18013.5.1'] as unknown as [string, string],
+          values: undefined,
+          intent_to_retain: false,
+        },
+      ] as DcqlClaim[];
+
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
+
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimPathInvalid
+        );
+        expect((error as ErrorCodeError).message).toBe(
+          `Claim path must have exactly two elements. - ${MdocErrorCode.ClaimPathInvalid} - ClaimPathInvalid`
+        );
+      }
+    });
+
+    it('throws ClaimNameSpaceMissing when namespace does not exist', () => {
+      const enrichedIssuerNameSpaces = new Map<
+        string,
+        EnrichIssuerSignedItemsResult
+      >([
+        [
+          'org.iso.18013.5.1',
+          {
+            normalItems: [
+              {
+                elementIdentifier: 'given_name',
+                elementValue: 'John',
+                tag: new Tag('value1', 24),
+              },
+            ],
+            ageOverTrueItems: [],
+            ageOverFalseItems: [],
+          },
+        ],
+      ]);
+      const claims: DcqlClaim[] = [
+        {
+          path: ['org.iso.18013.5.2', 'given_name'],
+          values: undefined,
+          intent_to_retain: false,
+        },
+      ];
+
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
+
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimNameSpaceMissing
+        );
+        expect((error as ErrorCodeError).message).toBe(
+          `Claim name space is missing. - ${MdocErrorCode.ClaimNameSpaceMissing} - ClaimNameSpaceMissing`
+        );
+      }
+    });
+
+    it('throws ClaimDataElementMissing when element identifier does not match', () => {
+      const enrichedIssuerNameSpaces = new Map<
+        string,
+        EnrichIssuerSignedItemsResult
+      >([
+        [
+          'org.iso.18013.5.1',
+          {
+            normalItems: [
+              {
+                elementIdentifier: 'given_name',
+                elementValue: 'John',
+                tag: new Tag('value1', 24),
+              },
+            ],
+            ageOverTrueItems: [],
+            ageOverFalseItems: [],
+          },
+        ],
+      ]);
+      const claims: DcqlClaim[] = [
+        {
+          path: ['org.iso.18013.5.1', 'family_name'],
+          values: undefined,
+          intent_to_retain: false,
+        },
+      ];
+
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
+
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimDataElementMissing
+        );
+        expect((error as ErrorCodeError).message).toBe(
+          `Claim data element is missing. - ${MdocErrorCode.ClaimDataElementMissing} - ClaimDataElementMissing`
+        );
+      }
+    });
+
+    it('throws ClaimDataElementMissing when elementValue is not in requestedValues', () => {
+      const enrichedIssuerNameSpaces = new Map<
+        string,
+        EnrichIssuerSignedItemsResult
+      >([
+        [
+          'org.iso.18013.5.1',
+          {
+            normalItems: [
+              {
+                elementIdentifier: 'given_name',
+                elementValue: 'John',
+                tag: new Tag('value1', 24),
+              },
+            ],
+            ageOverTrueItems: [],
+            ageOverFalseItems: [],
+          },
+        ],
+      ]);
+      const claims: DcqlClaim[] = [
+        {
+          path: ['org.iso.18013.5.1', 'given_name'],
+          values: ['Jane', 'Bob'],
+          intent_to_retain: false,
+        },
+      ];
+
+      expect(() => {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      }).toThrow(ErrorCodeError);
+
+      try {
+        selectIssuerNameSpacesWithoutClaimSets(
+          enrichedIssuerNameSpaces,
+          claims
+        );
+      } catch (error) {
+        expect(error).toBeInstanceOf(ErrorCodeError);
+        expect((error as ErrorCodeError).errorCode).toBe(
+          MdocErrorCode.ClaimDataElementMissing
+        );
+        expect((error as ErrorCodeError).message).toBe(
+          `Claim data element is missing. - ${MdocErrorCode.ClaimDataElementMissing} - ClaimDataElementMissing`
+        );
+      }
     });
   });
 });

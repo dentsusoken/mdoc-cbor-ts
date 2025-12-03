@@ -3,6 +3,8 @@ import { DcqlClaim } from '../schemas';
 import { Tag } from 'cbor-x';
 import { EnrichIssuerSignedItemsResult } from '@/query-lang/common/enrichIssuerSignedItems';
 import { selectTag } from './selectTag';
+import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
+import { MdocErrorCode } from '@/mdoc/types';
 
 /**
  * Selects issuer-signed name spaces based on DCQL claims.
@@ -15,17 +17,18 @@ import { selectTag } from './selectTag';
  *    and optional requested values
  * 4. Groups all selected tags by namespace
  *
- * The function returns `undefined` if:
- * - Any claim references a namespace that doesn't exist in `enrichedIssuerNameSpaces`
- * - Any claim's element identifier cannot be matched (no corresponding tag found)
- *
  * @param enrichedIssuerNameSpaces - Map from namespace string to enriched issuer signed items.
  *   Each entry contains normal items, age_over_* true items, and age_over_* false items
  *   that have been pre-processed and sorted for efficient selection.
  * @param claims - Array of DCQL claims to process. Each claim contains a path (namespace, elementIdentifier)
  *   and optional requested values to match against.
- * @returns A Map from namespace string to array of selected Tag(24) objects, or `undefined`
- *   if any claim cannot be satisfied.
+ * @returns A Map from namespace string to array of selected Tag(24) objects.
+ * @throws {ErrorCodeError} If any claim's path does not have exactly two elements (namespace and element identifier).
+ *   Error code: {@link MdocErrorCode.ClaimPathInvalid}
+ * @throws {ErrorCodeError} If any claim references a namespace that doesn't exist in `enrichedIssuerNameSpaces`.
+ *   Error code: {@link MdocErrorCode.ClaimNameSpaceMissing}
+ * @throws {ErrorCodeError} If any claim's element identifier cannot be matched (no corresponding tag found).
+ *   Error code: {@link MdocErrorCode.ClaimDataElementMissing}
  *
  * @example
  * ```typescript
@@ -81,11 +84,21 @@ export const selectIssuerNameSpacesWithoutClaimSets = (
   const result = new Map<string, Tag[]>();
 
   for (const claim of claims) {
+    if (claim.path.length !== 2) {
+      throw new ErrorCodeError(
+        'Claim path must have exactly two elements.',
+        MdocErrorCode.ClaimPathInvalid
+      );
+    }
+
     const [nameSpace, elementIdentifier] = claim.path;
     const enriched = enrichedIssuerNameSpaces.get(nameSpace);
 
     if (!enriched) {
-      return undefined;
+      throw new ErrorCodeError(
+        'Claim name space is missing.',
+        MdocErrorCode.ClaimNameSpaceMissing
+      );
     }
 
     const { normalItems, ageOverTrueItems, ageOverFalseItems } = enriched;
@@ -99,7 +112,10 @@ export const selectIssuerNameSpacesWithoutClaimSets = (
     });
 
     if (!tag) {
-      return undefined;
+      throw new ErrorCodeError(
+        'Claim data element is missing.',
+        MdocErrorCode.ClaimDataElementMissing
+      );
     }
 
     const selectedTags = result.get(nameSpace) || [];
