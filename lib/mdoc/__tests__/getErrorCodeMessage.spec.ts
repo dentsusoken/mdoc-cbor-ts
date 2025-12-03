@@ -221,6 +221,24 @@ describe('getErrorCodeMessage', () => {
         'Failed to convert Tag 18 to Sign1.'
       );
     });
+
+    it('should return correct message for DeviceKeyMissing', () => {
+      expect(getErrorCodeMessage(MdocErrorCode.DeviceKeyMissing)).toBe(
+        'Device key is missing.'
+      );
+    });
+
+    it('should return correct message for DeviceSignedMissing', () => {
+      expect(getErrorCodeMessage(MdocErrorCode.DeviceSignedMissing)).toBe(
+        'Device signed structure is missing.'
+      );
+    });
+
+    it('should return correct message for ClaimPathInvalid', () => {
+      expect(getErrorCodeMessage(MdocErrorCode.ClaimPathInvalid)).toBe(
+        'Claim path is invalid.'
+      );
+    });
   });
 
   describe('coverage', () => {

@@ -102,6 +102,8 @@ export enum MdocErrorCode {
   DeviceKeyMissing = 2034,
   /** Device signed structure is missing. */
   DeviceSignedMissing = 2035,
+  /** Claim path is invalid. */
+  ClaimPathInvalid = 2036,
 }
 
 /**

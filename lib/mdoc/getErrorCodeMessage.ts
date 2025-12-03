@@ -96,6 +96,12 @@ export const getErrorCodeMessage = (errorCode: MdocErrorCode): string => {
       return 'The device MAC is not supported.';
     case MdocErrorCode.Sign1ConversionFailed:
       return 'Failed to convert Tag 18 to Sign1.';
+    case MdocErrorCode.DeviceKeyMissing:
+      return 'Device key is missing.';
+    case MdocErrorCode.DeviceSignedMissing:
+      return 'Device signed structure is missing.';
+    case MdocErrorCode.ClaimPathInvalid:
+      return 'Claim path is invalid.';
 
     default: {
       // TypeScript exhaustiveness check
