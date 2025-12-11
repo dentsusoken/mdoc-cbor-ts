@@ -93,6 +93,66 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
         {
           id: 'claim1',
           path: ['org.iso.18013.5.1', 'given_name'],
+          values: ['Jane', 'Bob'], // Values don't match 'John', so first claim set fails
+          intent_to_retain: false,
+        },
+        {
+          id: 'claim2',
+          path: ['org.iso.18013.5.1', 'given_name'],
+          intent_to_retain: false,
+        },
+        {
+          id: 'claim3',
+          path: ['org.iso.18013.5.1', 'family_name'],
+          intent_to_retain: false,
+        },
+      ];
+      const claimSets = [
+        ['claim1'], // First claim set fails (values don't match)
+        ['claim2', 'claim3'], // Second claim set succeeds
+      ];
+
+      const result = selectIssuerNameSpacesWithClaimSets(
+        enrichedIssuerNameSpaces,
+        claims,
+        claimSets
+      );
+
+      expect(result).not.toBeUndefined();
+      expect(result!.get('org.iso.18013.5.1')).toEqual([tag1, tag2]);
+    });
+
+    it('returns tags when second claim set succeeds after first fails due to non-existent element', () => {
+      const tag1 = new Tag('value1', 24);
+      const tag2 = new Tag('value2', 24);
+      const enrichedIssuerNameSpaces = new Map<
+        string,
+        EnrichIssuerSignedItemsResult
+      >([
+        [
+          'org.iso.18013.5.1',
+          {
+            normalItems: [
+              {
+                elementIdentifier: 'given_name',
+                elementValue: 'John',
+                tag: tag1,
+              },
+              {
+                elementIdentifier: 'family_name',
+                elementValue: 'Doe',
+                tag: tag2,
+              },
+            ],
+            ageOverTrueItems: [],
+            ageOverFalseItems: [],
+          },
+        ],
+      ]);
+      const claims: DcqlClaim[] = [
+        {
+          id: 'claim1',
+          path: ['org.iso.18013.5.1', 'given_name'],
           intent_to_retain: false,
         },
         {
@@ -107,7 +167,7 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
         },
       ];
       const claimSets = [
-        ['claim3'], // First claim set fails (non_existent element)
+        ['claim3'], // First claim set fails (non_existent element) - error is logged and next claim set is tried
         ['claim1', 'claim2'], // Second claim set succeeds
       ];
 
@@ -224,6 +284,44 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
   });
 
   describe('should return undefined when all claim sets fail', () => {
+    it('returns undefined when claim set references non-existent namespace', () => {
+      const enrichedIssuerNameSpaces = new Map<
+        string,
+        EnrichIssuerSignedItemsResult
+      >([
+        [
+          'org.iso.18013.5.1',
+          {
+            normalItems: [
+              {
+                elementIdentifier: 'given_name',
+                elementValue: 'John',
+                tag: new Tag('value1', 24),
+              },
+            ],
+            ageOverTrueItems: [],
+            ageOverFalseItems: [],
+          },
+        ],
+      ]);
+      const claims: DcqlClaim[] = [
+        {
+          id: 'claim1',
+          path: ['org.iso.18013.5.2', 'given_name'],
+          intent_to_retain: false,
+        },
+      ];
+      const claimSets = [['claim1']];
+
+      const result = selectIssuerNameSpacesWithClaimSets(
+        enrichedIssuerNameSpaces,
+        claims,
+        claimSets
+      );
+
+      expect(result).toBeUndefined();
+    });
+
     it('returns undefined when all claim sets reference non-existent namespaces', () => {
       const enrichedIssuerNameSpaces = new Map<
         string,
@@ -266,8 +364,10 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
 
       expect(result).toBeUndefined();
     });
+  });
 
-    it('returns undefined when all claim sets reference non-existent element identifiers', () => {
+  describe('should return undefined when all claim sets fail', () => {
+    it('returns undefined when claim set references non-existent element identifier', () => {
       const enrichedIssuerNameSpaces = new Map<
         string,
         EnrichIssuerSignedItemsResult
@@ -395,7 +495,7 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
       }).toThrow('Claim with id non_existent not found');
     });
 
-    it('throws error when claim ID in second claim set is not found', () => {
+    it('throws ClaimDataElementMissing when first claim set fails, then throws error when claim ID in second claim set is not found', () => {
       const enrichedIssuerNameSpaces = new Map<
         string,
         EnrichIssuerSignedItemsResult
@@ -423,10 +523,11 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
         },
       ];
       const claimSets = [
-        ['claim1'], // First claim set fails (non_existent element)
-        ['non_existent'], // Second claim set throws error
+        ['claim1'], // First claim set throws ClaimDataElementMissing
+        ['non_existent'], // Second claim set throws error (claim ID not found)
       ];
 
+      // First claim set fails and error is logged, then second claim set throws error (claim ID not found)
       expect(() => {
         selectIssuerNameSpacesWithClaimSets(
           enrichedIssuerNameSpaces,
@@ -605,7 +706,7 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
       expect(result!.get('org.iso.18013.5.1')).toEqual([tag1, tag2]);
     });
 
-    it('tries next claim set when first fails due to missing namespace', () => {
+    it('returns tags when second claim set succeeds after first fails due to missing namespace', () => {
       const tag1 = new Tag('value1', 24);
       const enrichedIssuerNameSpaces = new Map<
         string,
@@ -639,7 +740,7 @@ describe('selectIssuerNameSpacesWithClaimSets', () => {
         },
       ];
       const claimSets = [
-        ['claim1'], // First claim set fails (non-existent namespace)
+        ['claim1'], // First claim set fails (non-existent namespace) - error is logged and next claim set is tried
         ['claim2'], // Second claim set succeeds
       ];
 

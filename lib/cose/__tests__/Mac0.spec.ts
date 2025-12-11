@@ -161,7 +161,6 @@ describe('Mac0', () => {
         const jwkOctKey = generateJwkOctKey({
           alg: JwkMacAlgorithm.HS256,
           k: key,
-          kid: 'test-key-id',
         });
 
         const ph = new Map<number, unknown>([
@@ -541,7 +540,6 @@ describe('Mac0', () => {
       const jwkOctKey = generateJwkOctKey({
         alg: JwkMacAlgorithm.HS256,
         k: key,
-        kid: 'mac-key-1',
       });
 
       const ph = new Map<number, unknown>([

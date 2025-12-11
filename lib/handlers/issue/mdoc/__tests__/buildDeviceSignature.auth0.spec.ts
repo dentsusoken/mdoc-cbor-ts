@@ -13,7 +13,7 @@ import {
   ISSUER_PRIVATE_KEY_JWK,
   PRESENTATION_DEFINITION_1,
 } from '@/__tests__/config';
-import { calculateOid4vpSessionTranscriptBytes } from '@/mdoc/calculateOid4vpSessionTranscriptBytes';
+import { calculateOid4vpSessionTranscriptBytes } from '@/session-transcript/__tests__/calculateAuth0Oid4vpSessionTranscriptBytes';
 import { encodeDeviceAuthentication } from '@/mdoc/encodeDeviceAuthentication';
 import { nameSpacesRecordToMap } from '@/mdoc/nameSpacesRecordToMap';
 import { decodeTag24 } from '@/cbor/decodeTag24';

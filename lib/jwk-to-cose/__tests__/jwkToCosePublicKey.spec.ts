@@ -165,7 +165,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Either curveName or algorithmName must be provided'
+        'Either curve name or algorithm name must be provided'
       );
     });
 
@@ -175,7 +175,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Either curveName or algorithmName must be provided'
+        'Either curve name or algorithm name must be provided'
       );
     });
 
@@ -186,7 +186,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Could not resolve curve name from algorithm: EdDSA'
+        "Missing curve name: could not resolve curve name from algorithm name 'EdDSA'"
       );
     });
   });
@@ -213,7 +213,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Either curveName or algorithmName must be provided'
+        'Either curve name or algorithm name must be provided'
       );
     });
 
@@ -224,7 +224,7 @@ describe('jwkToCosePublicKey', () => {
       });
 
       expect(() => jwkToCosePublicKey(invalidJwk)).toThrow(
-        'Either curveName or algorithmName must be provided'
+        'Either curve name or algorithm name must be provided'
       );
     });
 

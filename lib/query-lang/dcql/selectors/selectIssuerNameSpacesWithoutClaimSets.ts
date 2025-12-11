@@ -80,7 +80,7 @@ import { MdocErrorCode } from '@/mdoc/types';
 export const selectIssuerNameSpacesWithoutClaimSets = (
   enrichedIssuerNameSpaces: Map<string, EnrichIssuerSignedItemsResult>,
   claims: DcqlClaim[]
-): IssuerNameSpaces | undefined => {
+): IssuerNameSpaces => {
   const result = new Map<string, Tag[]>();
 
   for (const claim of claims) {

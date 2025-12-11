@@ -5,6 +5,7 @@ import { DcqlClaimSet } from '../schemas/DcqlClaimSet';
 import { toClaimMap } from '../utils/toClaimMap';
 import { extractClaims } from '../utils/extractClaims';
 import { selectIssuerNameSpacesWithoutClaimSets } from './selectIssuerNameSpacesWithoutClaimSets';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Selects issuer-signed name spaces based on DCQL claim sets.
@@ -19,14 +20,16 @@ import { selectIssuerNameSpacesWithoutClaimSets } from './selectIssuerNameSpaces
  * 2. Attempts to select issuer-signed name spaces for those claims using
  *    {@link selectIssuerNameSpacesWithoutClaimSets}
  * 3. If successful, returns the result immediately
- * 4. If unsuccessful, continues to the next claim set
+ * 4. If an error occurs (e.g., namespace missing, element identifier not found, values don't match),
+ *    logs the error message and continues to the next claim set
  *
  * This is useful when you have multiple alternative claim sets and want to find
  * the first one that can be satisfied with the available issuer-signed data.
  *
  * The function returns `undefined` if:
  * - All claim sets fail to be satisfied (e.g., any claim in a claim set references
- *   a namespace that doesn't exist, or any claim's element identifier cannot be matched)
+ *   a namespace that doesn't exist, any claim's element identifier cannot be matched,
+ *   or requested values don't match the element value)
  *
  * @param enrichedIssuerNameSpaces - Map from namespace string to enriched issuer signed items.
  *   Each entry contains normal items, age_over_* true items, and age_over_* false items
@@ -100,13 +103,13 @@ export const selectIssuerNameSpacesWithClaimSets = (
 
   for (const claimSet of claimSets) {
     const innerClaims = extractClaims(claimMap, claimSet);
-    const nameSpaces = selectIssuerNameSpacesWithoutClaimSets(
-      enrichedIssuerNameSpaces,
-      innerClaims
-    );
-
-    if (nameSpaces) {
-      return nameSpaces;
+    try {
+      return selectIssuerNameSpacesWithoutClaimSets(
+        enrichedIssuerNameSpaces,
+        innerClaims
+      );
+    } catch (error) {
+      console.log(getErrorMessage(error));
     }
   }
 

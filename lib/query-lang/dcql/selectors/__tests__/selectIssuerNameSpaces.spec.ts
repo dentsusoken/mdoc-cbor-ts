@@ -5,8 +5,6 @@ import { createTag24 } from '@/cbor/createTag24';
 import { selectIssuerNameSpaces } from '../selectIssuerNameSpaces';
 import { DcqlClaim } from '../../schemas/DcqlClaim';
 import { DcqlClaimSet } from '../../schemas/DcqlClaimSet';
-import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
-import { MdocErrorCode } from '@/mdoc/types';
 
 /**
  * Helper to build a Tag(24) containing an IssuerSignedItem map.
@@ -56,27 +54,18 @@ describe('selectIssuerNameSpaces', () => {
     });
   });
 
-  describe('should throw ErrorCodeError when claimSets is provided without claims', () => {
-    it('throws ErrorCodeError when claimSets is provided but claims is undefined', () => {
+  describe('should return undefined when claimSets is provided without claims', () => {
+    it('returns undefined when claimSets is provided but claims is undefined', () => {
       const nameSpaces = new Map([['org.iso.18013.5.1', []]]);
       const claimSets: DcqlClaimSet[] = [['claim1']];
 
-      try {
-        selectIssuerNameSpaces({
-          nameSpaces,
-          claims: undefined,
-          claimSets,
-        });
-      } catch (error) {
-        expect(error).toBeInstanceOf(ErrorCodeError);
-        const errorCodeError = error as ErrorCodeError;
-        expect(errorCodeError.errorCode).toBe(
-          MdocErrorCode.ClaimSetsPresentWhenClaimsAbsent
-        );
-        expect(errorCodeError.message).toBe(
-          'Claim sets are present when claims are absent. - 2017 - ClaimSetsPresentWhenClaimsAbsent'
-        );
-      }
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims: undefined,
+        claimSets,
+      });
+
+      expect(result).toBeUndefined();
     });
   });
 
@@ -233,7 +222,7 @@ describe('selectIssuerNameSpaces', () => {
       expect(result).toBeUndefined();
     });
 
-    it('throws ErrorCodeError when claim ID in claim set is not found', () => {
+    it('returns undefined when claim ID in claim set is not found', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
       const nameSpaces = new Map([['org.iso.18013.5.1', [tag1]]]);
       const claims: DcqlClaim[] = [
@@ -245,53 +234,33 @@ describe('selectIssuerNameSpaces', () => {
       ];
       const claimSets: DcqlClaimSet[] = [['non_existent']];
 
-      try {
-        selectIssuerNameSpaces({
-          nameSpaces,
-          claims,
-          claimSets,
-        });
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(ErrorCodeError);
-        const errorCodeError = error as ErrorCodeError;
-        expect(errorCodeError.errorCode).toBe(
-          MdocErrorCode.IssuerNameSpacesSelectionFailed
-        );
-        expect(errorCodeError.message).toBe(
-          'Failed to select issuer name spaces: Claim with id non_existent not found - 2018 - IssuerNameSpacesSelectionFailed'
-        );
-      }
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets,
+      });
+
+      expect(result).toBeUndefined();
     });
   });
 
   describe('should handle errors', () => {
-    it('re-throws ErrorCodeError without wrapping', () => {
-      // Test that ErrorCodeError from claimSets without claims is thrown correctly
+    it('returns undefined when ErrorCodeError occurs (claimSets without claims)', () => {
+      // Test that ErrorCodeError from claimSets without claims is logged and returns undefined
       const nameSpaces = new Map([['org.iso.18013.5.1', []]]);
       const claimSets: DcqlClaimSet[] = [['claim1']];
 
-      try {
-        selectIssuerNameSpaces({
-          nameSpaces,
-          claims: undefined,
-          claimSets,
-        });
-        throw new Error('Should have thrown');
-      } catch (error) {
-        expect(error).toBeInstanceOf(ErrorCodeError);
-        const errorCodeError = error as ErrorCodeError;
-        expect(errorCodeError.errorCode).toBe(
-          MdocErrorCode.ClaimSetsPresentWhenClaimsAbsent
-        );
-        expect(errorCodeError.message).toBe(
-          'Claim sets are present when claims are absent. - 2017 - ClaimSetsPresentWhenClaimsAbsent'
-        );
-      }
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims: undefined,
+        claimSets,
+      });
+
+      expect(result).toBeUndefined();
     });
 
-    it('wraps non-ErrorCodeError in ErrorCodeError with IssuerNameSpacesSelectionFailed', () => {
-      // Test that when a regular Error occurs (like from extractClaims), it gets wrapped
+    it('returns undefined when Error occurs (claim ID not found)', () => {
+      // Test that when a regular Error occurs (like from extractClaims), it is logged and returns undefined
       const nameSpaces = new Map([
         ['org.iso.18013.5.1', [makeItemTag(1, 'given_name', 'John')]],
       ]);
@@ -304,24 +273,13 @@ describe('selectIssuerNameSpaces', () => {
       ];
       const claimSets: DcqlClaimSet[] = [['non_existent']];
 
-      try {
-        selectIssuerNameSpaces({
-          nameSpaces,
-          claims,
-          claimSets,
-        });
-        throw new Error('Should have thrown');
-      } catch (error) {
-        // The error from extractClaims should be wrapped in ErrorCodeError
-        expect(error).toBeInstanceOf(ErrorCodeError);
-        const errorCodeError = error as ErrorCodeError;
-        expect(errorCodeError.errorCode).toBe(
-          MdocErrorCode.IssuerNameSpacesSelectionFailed
-        );
-        expect(errorCodeError.message).toBe(
-          'Failed to select issuer name spaces: Claim with id non_existent not found - 2018 - IssuerNameSpacesSelectionFailed'
-        );
-      }
+      const result = selectIssuerNameSpaces({
+        nameSpaces,
+        claims,
+        claimSets,
+      });
+
+      expect(result).toBeUndefined();
     });
   });
 

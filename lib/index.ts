@@ -8,6 +8,7 @@ export * from './jwk-to-cose';
 export * from './mdoc';
 export * from './query-lang';
 export * from './schemas';
+export * from './session-transcript';
 export * from './strict-map';
 export * from './types';
 export * from './utils';

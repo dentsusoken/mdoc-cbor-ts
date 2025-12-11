@@ -29,6 +29,7 @@
     "@auth0/cose": "^1.0.2",
     "@auth0/mdl": "^3.0.0",
     "@edge-runtime/vm": "^5.0.0",
+    "@types/jsrsasign": "^10.5.15",
     "@types/node": "^22.5.5",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
@@ -46,7 +47,7 @@
     "@noble/hashes": "^1.8.0",
     "cbor-x": "^1.6.0",
     "jsrsasign": "^11.1.0",
-    "noble-curves-extended": "^0.2.10",
+    "noble-curves-extended": "^0.2.11",
     "u8a-utils": "^1.0.12",
     "zod": "^3.25.76"
   }

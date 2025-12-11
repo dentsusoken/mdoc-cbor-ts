@@ -671,7 +671,6 @@ describe('MacBase', () => {
       const jwkOctKey = generateJwkOctKey({
         alg: JwkMacAlgorithm.HS256,
         k: key,
-        kid: 'test-key-id',
       });
 
       const tag = generateHmac({

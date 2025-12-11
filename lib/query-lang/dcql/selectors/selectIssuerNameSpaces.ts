@@ -45,16 +45,13 @@ interface SelectIssuerNameSpacesParams {
  * The function returns `undefined` if:
  * - All claims cannot be satisfied (when `claimSets` is not provided)
  * - All claim sets fail to be satisfied (when `claimSets` is provided)
+ * - An error occurs during selection (e.g., `claimSets` is provided but `claims` is `undefined`,
+ *   or any claim ID in a claim set is not found). In such cases, the error is logged and
+ *   the function returns `undefined` instead of throwing.
  *
  * @param params - Selection parameters including name spaces, claims, and optional claim sets.
  * @returns A Map from namespace string to array of selected Tag(24) objects, or `undefined`
  *   if no claims/claim sets can be satisfied, or an empty Map if `claims` is `undefined`.
- * @throws {ErrorCodeError} If `claimSets` is provided but `claims` is `undefined`.
- *   Error code: {@link MdocErrorCode.ClaimSetsPresentWhenClaimsAbsent}
- * @throws {ErrorCodeError} If selection fails due to an unexpected error.
- *   Error code: {@link MdocErrorCode.IssuerNameSpacesSelectionFailed}
- * @throws {Error} If any claim ID in a claim set is not found in the claims array
- *   (when `claimSets` is provided). The error is thrown by {@link extractClaims}.
  *
  * @example
  * ```typescript
@@ -117,18 +114,18 @@ export const selectIssuerNameSpaces = ({
   claims,
   claimSets,
 }: SelectIssuerNameSpacesParams): IssuerNameSpaces | undefined => {
-  if (!claims) {
-    if (claimSets) {
-      throw new ErrorCodeError(
-        'Claim sets are present when claims are absent.',
-        MdocErrorCode.ClaimSetsPresentWhenClaimsAbsent
-      );
+  try {
+    if (!claims) {
+      if (claimSets) {
+        throw new ErrorCodeError(
+          'Claim sets are present when claims are absent.',
+          MdocErrorCode.ClaimSetsPresentWhenClaimsAbsent
+        );
+      }
+
+      return new Map();
     }
 
-    return new Map();
-  }
-
-  try {
     const enrichedIssuerNameSpaces = enrichIssuerNameSpaces(nameSpaces);
 
     if (claimSets) {
@@ -144,13 +141,7 @@ export const selectIssuerNameSpaces = ({
       claims
     );
   } catch (error) {
-    if (error instanceof ErrorCodeError) {
-      throw error;
-    }
-
-    throw new ErrorCodeError(
-      `Failed to select issuer name spaces: ${getErrorMessage(error)}`,
-      MdocErrorCode.IssuerNameSpacesSelectionFailed
-    );
+    console.log(getErrorMessage(error));
+    return undefined;
   }
 };
