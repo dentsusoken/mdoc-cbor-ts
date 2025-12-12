@@ -24,6 +24,7 @@ export default defineConfig({
         'cbor-x',
         'zod',
         'u8a-utils',
+        'noble-curves-extended',
         'node:crypto',
         'node:buffer',
         /^@noble\/curves($|\/)/,

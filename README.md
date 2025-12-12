@@ -22,7 +22,7 @@ A TypeScript implementation for handling Mobile Document (MDOC) issuance and ver
 ## Installation
 
 ```bash
-npm install mdoc-cbor-ts
+npm install @vecrea/mdoc-cbor-ts
 ```
 
 ### Peer Dependencies
@@ -38,7 +38,7 @@ npm install @noble/curves @noble/hashes cbor-x jsrsasign noble-curves-extended u
 ### Verifying an MDOC
 
 ```typescript
-import { verifyDeviceResponse } from 'mdoc-cbor-ts';
+import { verifyDeviceResponse } from '@vecrea/mdoc-cbor-ts';
 
 const deviceResponse = // ... MDOC structure
 const sessionTranscript = [null, null, {}];
@@ -68,7 +68,7 @@ import {
   createTag1004,
   nameSpacesRecordToMap,
   certificatePemToDerBytes,
-} from 'mdoc-cbor-ts';
+} from '@vecrea/mdoc-cbor-ts';
 import { randomBytes } from '@noble/hashes/utils';
 
 // Prepare name spaces with date values using createTag1004 for date-only fields
@@ -99,7 +99,7 @@ const issuerSigned = buildIssuerSigned({
 ### Working with CBOR
 
 ```typescript
-import { encodeCbor, decodeCbor } from 'mdoc-cbor-ts';
+import { encodeCbor, decodeCbor } from '@vecrea/mdoc-cbor-ts';
 
 const data = { name: 'John', age: 30 };
 const encoded = encodeCbor(data);
@@ -114,7 +114,7 @@ The library uses CBOR tags for date values:
 - **Tag(1004)**: For date-only values (ISO 8601 format: `yyyy-MM-dd`)
 
 ```typescript
-import { createTag0, createTag1004 } from 'mdoc-cbor-ts';
+import { createTag0, createTag1004 } from '@vecrea/mdoc-cbor-ts';
 
 // Date-time (Tag 0)
 const dateTime = createTag0(new Date('2024-03-20T15:30:45Z'));
@@ -126,7 +126,7 @@ const dateOnly = createTag1004(new Date('2024-03-20'));
 ### COSE Signatures
 
 ```typescript
-import { Sign1, encodeSignature1 } from 'mdoc-cbor-ts';
+import { Sign1, encodeSignature1 } from '@vecrea/mdoc-cbor-ts';
 
 // Create and verify COSE_Sign1 signatures
 const sign1 = new Sign1({
@@ -161,7 +161,7 @@ const isValid = await sign1.verify(publicKeyJWK, detachedPayload);
 The library uses `ErrorCodeError` with `MdocErrorCode` enum for structured error reporting:
 
 ```typescript
-import { ErrorCodeError, MdocErrorCode } from 'mdoc-cbor-ts';
+import { ErrorCodeError, MdocErrorCode } from '@vecrea/mdoc-cbor-ts';
 
 try {
   // ... verification code
@@ -205,8 +205,8 @@ Tests are written using Vitest and stored in `__tests__` directories alongside t
 
 ## License
 
-[Add your license information here]
+Apache-2.0
 
 ## Contributing
 
-[Add contributing guidelines here]
+Contributions are welcome! Please feel free to submit a Pull Request.

@@ -1,7 +1,7 @@
 {
-  "name": "mdoc-cbor-ts",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@vecrea/mdoc-cbor-ts",
+  "version": "0.1.0",
+  "description": "A TypeScript implementation for handling Mobile Document (MDOC) issuance and verification according to ISO/IEC 18013-5 standard",
   "type": "module",
   "files": [
     "dist"
@@ -50,5 +50,21 @@
     "noble-curves-extended": "^0.2.11",
     "u8a-utils": "^1.0.12",
     "zod": "^3.25.76"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dentsusoken/mdoc-cbor-ts.git"
+  },
+  "keywords": [
+    "mdoc",
+    "mdl",
+    "iso-18013-5",
+    "mobile-document",
+    "cbor",
+    "cose",
+    "verifiable-credentials",
+    "oid4vc",
+    "typescript"
+  ],
+  "license": "Apache-2.0"
 }

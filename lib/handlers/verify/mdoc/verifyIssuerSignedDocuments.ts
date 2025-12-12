@@ -4,6 +4,7 @@ import { DocumentError } from '@/schemas/mdoc/DocumentError';
 import { verifyIssuerSigned } from '../mso/verifyIssuerSigned';
 import { ErrorCodeError } from '@/mdoc/ErrorCodeError';
 import { MdocErrorCode } from '@/mdoc/types';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Parameters for verifying multiple issuer-signed documents.
@@ -106,6 +107,7 @@ export const verifyIssuerSignedDocuments = ({
       verifyIssuerSigned({ issuerSigned, now, clockSkew });
       documents.push(document);
     } catch (error) {
+      console.log(getErrorMessage(error));
       const errorCode =
         error instanceof ErrorCodeError
           ? error.errorCode
