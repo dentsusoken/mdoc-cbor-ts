@@ -362,8 +362,8 @@ describe('selectDocumentsClaimsByCredentialSet', () => {
     });
   });
 
-  describe('should throw error when required credential set does not match', () => {
-    it('throws error when no option matches and required is true', () => {
+  describe('should log and return undefined when required credential set does not match', () => {
+    it('logs and returns undefined when no option matches and required is true', () => {
       const tag1 = makeItemTag(1, 'given_name', 'John');
       const issuerAuth1 = makeIssuerAuth();
       const issuerSigned1 = createIssuerSigned([
@@ -423,17 +423,25 @@ describe('selectDocumentsClaimsByCredentialSet', () => {
           return undefined;
         });
 
-      expect(() => {
-        selectDocumentsClaimsByCredentialSet(
-          [document1],
-          credentialSet,
-          credentialMap
-        );
-      }).toThrow(
-        'The required credential set did not match any documents. Options:'
+      const consoleLogSpy = vi
+        .spyOn(console, 'log')
+        .mockImplementation(() => {});
+
+      const result = selectDocumentsClaimsByCredentialSet(
+        [document1],
+        credentialSet,
+        credentialMap
       );
 
+      expect(result).toBeUndefined();
       expect(selectSpy).toHaveBeenCalledTimes(2);
+      expect(consoleLogSpy).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'The required credential set did not match any documents. Options:'
+        )
+      );
+
+      consoleLogSpy.mockRestore();
     });
   });
 

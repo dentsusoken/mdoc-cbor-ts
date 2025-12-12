@@ -126,13 +126,13 @@ export const selectDocumentsClaimsByCredentials = (
   const result: Map<string, Document[]> = new Map();
 
   for (const credential of credentials) {
-    const selectedDocument = selectDocumentsClaimsByCredential(
+    const selectedDocuments = selectDocumentsClaimsByCredential(
       documents,
       credential
     );
 
-    if (selectedDocument) {
-      result.set(credential.id, selectedDocument);
+    if (selectedDocuments) {
+      result.set(credential.id, selectedDocuments);
     } else {
       return undefined;
     }

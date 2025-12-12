@@ -3,6 +3,7 @@ import { DcqlCredentialSet } from '../schemas/DcqlCredentialSet';
 import { extractCredentials } from '../utils/extractCredentials';
 import { selectDocumentsClaimsByCredentials } from './selectDocumentsClaimsByCredentials';
 import { DcqlCredential } from '../schemas/DcqlCredential';
+import { getErrorMessage } from '@/utils/getErrorMessage';
 
 /**
  * Selects and filters Documents for a DCQL credential set using a first-match strategy.
@@ -161,14 +162,13 @@ export const selectDocumentsClaimsByCredentialSet = (
       if (selectedDocuments) {
         return selectedDocuments;
       }
-    } catch {
-      // If this option fails, try the next option
-      continue;
+    } catch (error) {
+      console.log(getErrorMessage(error));
     }
   }
 
   if (credentialSet.required) {
-    throw new Error(
+    console.log(
       `The required credential set did not match any documents. Options: ${JSON.stringify(credentialSet.options)}`
     );
   }
