@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-12-12
+
+### Changed
+
+- Configured `vite-plugin-dts` to generate a single `index.d.ts` file using `rollupTypes: true`
+- Restructured `lib/jsrsasign` exports to avoid API Extractor issues with external `jsrsasign` types
+
+### Fixed
+
+- Fixed TypeScript declaration file generation to produce a single bundled `index.d.ts` instead of multiple declaration files
+
 ## [0.1.0] - 2025-12-12
 
 ### Added

@@ -2,7 +2,7 @@ export * from './cbor';
 export * from './cose';
 export * from './cose-to-jwk';
 export * from './handlers';
-export * from './jsrsasign';
+export * from './jsrsasign/initSECURERANDOMGEN';
 export * from './jwk';
 export * from './jwk-to-cose';
 export * from './mdoc';
